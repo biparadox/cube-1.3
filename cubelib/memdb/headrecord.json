@@ -1,0 +1,12 @@
+{
+	"head":
+	{
+		"type":"MESSAGE",
+		"subtype":"HEAD"
+	},
+	"record":
+	{
+		"record_type":"MESSAGE",
+		"record_subtype":"FLOW_TRACE"
+	}
+}

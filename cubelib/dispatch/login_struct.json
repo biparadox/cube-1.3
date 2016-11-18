@@ -1,0 +1,34 @@
+{
+	"head":
+	{
+		"name":"login_info",
+		"type":"STRUCT"
+	},
+	"record":
+	{
+		"elem_desc":
+		[
+			{"name":"user","type":"STRING","size":32},
+			{"name":"passwd","type":"STRING","size":32}
+		]
+	}
+}
+
+{
+	"head":
+	{
+		"name":"login_info",
+		"type":"RECORDTYPE"
+	},
+	"record":
+	{
+		"type":"LOGIN",
+		"subtype":"LOGIN_INFO",
+		"uuid":"login_info",
+		"index":
+		{
+			"flag":"INDEX",
+			"elemlist":"user,passwd"
+		}
+	}	
+}

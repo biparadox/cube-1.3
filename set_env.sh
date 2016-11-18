@@ -1,0 +1,7 @@
+#!/bin/bash
+export CUBE_PATH=`pwd`
+export CUBELIBPATH=$CUBE_PATH/cubelib
+export LD_LIBRARY_PATH=$CUBELIBPATH/lib/:$LD_LIBRARY_PATH
+export CUBE_SYS_PLUGIN=$CUBE_PATH/proc/plugin/
+export CUBE_APP_PLUGIN=../plugin
+#export CUBE_PATH CUBELIBPATH LD_LIBRARY_PATH

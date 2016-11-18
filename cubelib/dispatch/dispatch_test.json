@@ -1,0 +1,20 @@
+
+{
+	"match":[
+		{	
+			"area":"HEAD",
+			"value":{
+				"type":"LOGIN",
+				"subtype":"LOGIN_INFO"
+			}
+		}
+	],
+	"router":[
+		{
+			"type":"QUERY",
+			"target_type":"CONN",
+			"target_mode":"NORMAL",
+			"target_name":"verify_server"
+		}
+	]		
+}
