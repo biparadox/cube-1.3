@@ -1,0 +1,76 @@
+{
+	"head":
+	{
+		"name":"default_struct",
+		"type":"SUBTYPELIST"
+	},
+	"record":
+	{
+		"type":"DEFAULT",
+		"elem_no":2,
+		"elemlist":
+		[
+			"MSG=0x01",
+			"RET",
+		]
+	}
+}
+{
+	"head":
+	{
+		"name":"message_subtypelist",
+		"type":"SUBTYPELIST"
+	},
+	"record":
+	{
+		"type":"MESSAGE",
+		"elem_no":4,
+		"elemlist":
+		[
+			"HEAD=0x01",
+			"EXPAND",
+			"FLOW_TRACE",
+			"ASPECT_POINT",
+			"CONN_SYNC",
+			"CONN_ACKI"
+		]
+	}
+}
+{
+	"info-type":"subtypelist",
+	"head":
+	{
+		"name":"tube_subtypelist",
+		"type":"SUBTYPELIST"
+	},
+	"record":
+	{
+		"type":"TUBE",
+		"elem_no":4,
+		"elemlist":
+		[
+			"BASEINFO=0x01",
+			"SERVER",
+			"CLIENT",
+			"CHANNEL"
+		]
+	}
+}
+{
+	"head":
+	{
+		"name":"block_struct",
+		"type":"SUBTYPELIST"
+	},
+	"record":
+	{
+		"type":"BLOCK",
+		"elem_no":3,
+		"elemlist":
+		[
+			"BASEINFO=0x01",
+			"SUBJECT",
+			"CONTEXT"
+		]
+	}
+}

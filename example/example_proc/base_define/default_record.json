@@ -1,0 +1,27 @@
+{
+	"head":
+	{
+		"name":"simple_string",
+		"type":"STRUCT"
+	},
+	"record":
+	{
+		"elem_desc":
+		[
+			{"name":"message","type":"ESTRING"}
+		]
+	}
+}
+{
+	"head":
+	{
+		"name":"basic_message",
+		"type":"RECORDTYPE",
+	},
+	"record":
+	{
+		"type":"DEFAULT",
+		"subtype":"MSG",
+		"uuid":"simple_string",
+	}	
+}

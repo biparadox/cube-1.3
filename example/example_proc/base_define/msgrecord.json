@@ -1,0 +1,72 @@
+{
+	"head":
+	{
+		"name":"msg_head",
+		"type":"RECORDTYPE",
+	},
+	"record":
+	{
+		"type":"MESSAGE",
+		"subtype":"HEAD",
+		"uuid":"msg_head",
+		"index":
+		{
+			"flag":"INDEX",
+			"elemlist":"sender_uuid,receiver_uuid,flow,state,flag,record_type,record_subtype"
+		}
+	}	
+}
+{
+	"head":
+	{
+		"name":"conn_sync",
+		"type":"RECORDTYPE",
+	},
+	"record":
+	{
+		"type":"MESSAGE",
+		"subtype":"CONN_SYNC",
+		"uuid":"msg_conn_sync",
+		"index":
+		{
+			"flag":"INDEX",
+			"elemlist":"server_name,service,server_addr"
+		}
+	}	
+}
+{
+	"head":
+	{
+		"name":"conn_acki",
+		"type":"RECORDTYPE",
+	},
+	"record":
+	{
+		"type":"MESSAGE",
+		"subtype":"CONN_ACKI",
+		"uuid":"msg_conn_acki",
+		"index":
+		{
+			"flag":"INDEX",
+			"elemlist":"client_name,client_proc,client_addr,server_name,service,server_addr"
+		}
+	}	
+}
+{
+	"head":
+	{
+		"name":"msg_expand",
+		"type":"RECORDTYPE",
+	},
+	"record":
+	{
+		"type":"MESSAGE",
+		"subtype":"EXPAND",
+		"uuid":"msg_expand",
+		"index":
+		{
+			"flag":"INDEX",
+			"elemlist":"data_size,type,subtype"
+		}
+	}	
+}

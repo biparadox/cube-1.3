@@ -1,0 +1,9 @@
+{
+	"type":"struct",
+	"name":"message",
+	"desc":
+	[
+		{"name":"message","type":"ESTRING"}
+	]
+	"KEY_ELEM":"message",
+}

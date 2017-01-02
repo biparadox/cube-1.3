@@ -1,0 +1,14 @@
+{
+	"type":"namelist",
+	"head":
+	{
+		"name":"dbtype",
+	}
+	"elem_no":3,
+	"elemlist":
+	[
+		"STRUCT=0x01",
+		"NAMELIST",
+		"DYNAMICDB=0x100"
+	]
+}
