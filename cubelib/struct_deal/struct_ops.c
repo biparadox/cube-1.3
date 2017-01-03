@@ -75,11 +75,12 @@ Decode_UINT32(BYTE * y)
 	x = ((x << 8) | (y[3] & 0xFF));
 }
 
-int dup_str(char ** dest,char * src, int size)
+char *dup_str(char * src, int size)
 {
+	char * dest;
 	int len;
 	int ret;
-	*dest=NULL;
+	dest=NULL;
 	if(src==NULL)
 		return 0;
 	if(size == 0)
@@ -92,11 +93,12 @@ int dup_str(char ** dest,char * src, int size)
 		if(len!=size)
 			len++;
 	}
-	ret=Palloc((void **)dest,len);
-	if(ret<0)
-		return ret;
-	Memcpy(*dest,src,len);
-	return len;			
+	
+	dest=Talloc(len);	
+	if(dest==NULL)
+		return dest;
+	Memcpy(dest,src,len);
+	return dest;			
 }
 
 int estring_get_length (void * value,void * attr)

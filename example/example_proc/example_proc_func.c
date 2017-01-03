@@ -14,9 +14,6 @@
 #include "message.h"
 #include "connector.h"
 
-#include "main_proc_func.h"
-#include "proc_config.h"
-
 int example_proc_init()
 {
 	int ret;

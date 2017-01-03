@@ -171,8 +171,6 @@ int message_read_from_src(void ** message,void * src,
     if(ret<sizeof(MESSAGE_HEAD))
         return ret;
 
-
-
     retval=message_read_head(message,readbuf,ret);
     if(retval<0)
          return -EINVAL;

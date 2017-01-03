@@ -36,7 +36,7 @@ static struct InitElemInfo_struct InitElemInfo [] =
 	{CUBE_TYPE_ENDDATA,NULL,ELEM_ATTR_EMPTY,0},
 };
 
-void ** struct_deal_ops;
+static void ** struct_deal_ops;
 int * struct_deal_flag;
 int * struct_deal_offset;
 static void * ops_list[CUBE_TYPE_ENDDATA];
@@ -131,7 +131,9 @@ ELEM_OPS * _elem_get_ops(void * elem)
 		return NULL;
 	if((curr_elem->elem_desc->type<0)|| (curr_elem->elem_desc->type>CUBE_TYPE_ENDDATA))
 		return NULL;
-	return struct_deal_ops[curr_elem->elem_desc->type];  
+	int index=curr_elem->elem_desc->type;
+	printf("%x\n",&struct_deal_ops);
+	return struct_deal_ops[index];  
 
 }
 

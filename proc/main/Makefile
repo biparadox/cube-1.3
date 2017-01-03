@@ -3,7 +3,7 @@ INCLUDE= -I../include/
 CFLAGS= -g -c -fPIC -DUSER_MODE $(INCLUDE)
 CC=gcc
 CCP=g++
-TEST_LIB= -L../lib -lexmodule -lmessage -lmemdb -lconnector -lbasefunc -lstruct -ljson -lcrypto_func -lstring -lalloc -lpthread
+TEST_LIB= -L../lib -lexmodule -lmessage -lmemdb -lconnector -lstruct -lcrypto_func -ljson -lbasefunc -lstring -lalloc -lpthread
 
 main: libconnector_process_func.so  
 #main_proc:  main_proc.c main_proc_func.h

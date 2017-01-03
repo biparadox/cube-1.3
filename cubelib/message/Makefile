@@ -1,5 +1,6 @@
 FLAGS= -g -o
-CFLAGS= -g -c -DUSER_MODE 
+FLAGS= -g -o 
+CFLAGS= -g -c -fPIC -DUSER_MODE 
 CC=gcc
 LD=ld
 CCP=g++

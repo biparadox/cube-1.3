@@ -21,12 +21,6 @@
 #include "connector_process_func.h"
 #include "main_proc_func.h"
 
-enum  conn_config_attr
-{
-	CONN_ATTR_DEFAULT=0x01,
-	CONN_ATTR_STOP=0x8000,
-};
-
 struct  connector_config
 {
 	char name[DIGEST_SIZE*2];
@@ -44,14 +38,18 @@ static NAME2VALUE connector_family_valuelist[] =
 	{NULL,0}
 };
 
+enum  conn_config_attr
+{
+	CONN_ATTR_DEFAULT=0x01,
+	CONN_ATTR_STOP=0x8000,
+};
+
 static NAME2VALUE connector_attr_valuelist[] = 
 {
 	{"DEFAULT",CONN_ATTR_DEFAULT},
 	{"STOP",CONN_ATTR_STOP},
 	{NULL,0}
 };
-
-
 static struct struct_elem_attr connector_config_desc[] =
 {
     {"name",CUBE_TYPE_STRING,DIGEST_SIZE*2,NULL,NULL},
@@ -88,7 +86,8 @@ struct connect_syn
 }__attribute__((packed));
 
 static void * default_conn=NULL;
-
+ 
+static void * conn_cfg_template=NULL;
 
 int message_read_from_conn(void ** message,void * conn)
 {
@@ -288,7 +287,6 @@ int read_conn_cfg_buffer(FILE * stream, char * buf, int size)
 
 int read_one_connector(void ** connector,void * json_node)
 {
-    void * conn_cfg_template=create_struct_template(&connector_config_desc);
     void * conn_cfg_node;
     void * temp_node;
     char buffer[1024];
@@ -375,7 +373,7 @@ int connector_read_cfg(char * filename,void * hub)
                 fp=NULL;
             }
         }
-        printf("conn %d is %.4s\n",conn_num+1,buffer);
+        printf("conn %d is %s\n",conn_num+1,buffer);
 
         solve_offset=json_solve_str(&root,buffer);
         if(solve_offset<=0)
@@ -583,6 +581,9 @@ int proc_conn_init(void * sub_proc,void * para)
 //	ret=sec_subject_getcontext(sub_proc,&context);
 //	if(ret<0)
 //		return ret;
+    	conn_cfg_template=create_struct_template(&main_config_desc);
+	printf("main template create succeed!\n");
+    	conn_cfg_template=create_struct_template(&connector_config_desc);
 	sub_proc_pointer=malloc(sizeof(struct connector_proc_pointer));
 	if(sub_proc_pointer==NULL)
 		return -ENOMEM;

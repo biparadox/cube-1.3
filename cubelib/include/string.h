@@ -20,7 +20,7 @@ int    Strnlen(char * str,int n);
 int    Getfiledfromstr(char * name,char * str,char IFS,int maxsize);
 int    Itoa(int n,char * str);
 int    Atoi(char * str,int maxlen);
-int    Getlowestbit(BYTE  * addr,int size,int bit); 
+int    Getlowestbit(BYTE * addr,int size,int bit); 
 static inline int  Ischarinset(BYTE char_value,char * set)
 {
 	int i;

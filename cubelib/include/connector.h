@@ -4,7 +4,7 @@
 
 enum    connector_type
 {
-	CONN_INVALID,
+	CONN_INVALID=1,
 	CONN_P2P,
 	CONN_CLIENT,
 	CONN_CHANNEL,

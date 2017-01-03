@@ -21,6 +21,11 @@ extern ELEM_OPS enumtype_convert_ops;
 extern ELEM_OPS recordtype_convert_ops;
 extern ELEM_OPS subtype_convert_ops;
 
+struct memdb_desc ** static_db_list;
+struct memdb_desc * dynamic_db_list;
+struct struct_namelist *elemenumlist;
+struct struct_namelist *typeenumlist;
+
 static struct InitElemInfo_struct MemdbElemInfo[] =
 {
 	{CUBE_TYPE_ELEMTYPE,&enumtype_convert_ops,0,sizeof(int)},

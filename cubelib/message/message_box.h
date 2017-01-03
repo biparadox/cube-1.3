@@ -3,6 +3,20 @@
 
 #define MAX_EXPAND_NUM 10
 
+enum message_box_state
+{
+    MSG_BOX_INIT=1,  // just init a msg_box
+    MSG_BOX_ADD,   // finishing the msg's loading
+    MSG_BOX_EXPAND,	//begin to add msg's record , at that time the message head can't be set
+    MSG_BOX_DEAL,	//begin to add msg's expand , at that time the message head can't be set  ,and we can't add record again
+    MSG_BOX_LOADDATA=0x1000,    // read data to the msg box, if all the data were read,change state to MSG_BOX_REBUILD
+    MSG_BOX_REBUILDING,
+    MSG_BOX_RECOVER,  	//finish the record set and expand set, now the message can output data
+    MSG_BOX_CUT, // load message box's head
+    MSG_BOX_READ,
+    MSG_BOX_ERROR=0xffff,
+};
+
 struct message_box
 {
 	MSG_HEAD head;	 // a fixed size structure to store the message's head

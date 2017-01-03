@@ -12,27 +12,13 @@
 
 #include "data_type.h"
 
-enum message_box_state
-{
-    MSG_BOX_INIT=1,  // just init a msg_box
-    MSG_BOX_ADD,   // finishing the msg's loading
-    MSG_BOX_EXPAND,	//begin to add msg's record , at that time the message head can't be set
-    MSG_BOX_DEAL,	//begin to add msg's expand , at that time the message head can't be set  ,and we can't add record again
-    MSG_BOX_LOADDATA=0x1000,    // read data to the msg box, if all the data were read,change state to MSG_BOX_REBUILD
-    MSG_BOX_REBUILDING,
-    MSG_BOX_RECOVER,  	//finish the record set and expand set, now the message can output data
-    MSG_BOX_CUT, // load message box's head
-    MSG_BOX_READ,
-    MSG_BOX_ERROR=0xffff,
-};
-
 enum message_flow_type
 {
     MSG_FLOW_INIT=0x01,
-    MSG_FLOW_DELIVER=0x02,
-    MSG_FLOW_PROXY=0x04,
+    MSG_FLOW_DELIVER=0x04,
+    MSG_FLOW_QUERY=0x08,
+    MSG_FLOW_RESPONSE=0x10,
     MSG_FLOW_ASPECT=0x08,
-    MSG_FLOW_BROADCAST=0x10,
     MSG_FLOW_FINISH=0x8000,
     MSG_FLOW_ERROR=0xFFFF,
 };
@@ -62,10 +48,12 @@ typedef struct tagMessage_Head  //强制访问控制标记
    int  version;          //  the message's version, now is 0x00010001
    char sender_uuid[DIGEST_SIZE];     // sender's uuid, or '@' followed with a name, or ':' followed with a connector's name
    char receiver_uuid[DIGEST_SIZE];   // receiver's uuid, or '@" followed with a name, or ':' followed with a connector's name
+   char route[DIGEST_SIZE];
    int  flow;
    int  state;
    int  flag;
-   int  jump;
+   int  ljump;
+   int  rjump;
    int  record_type;
    int  record_subtype;
    int  record_num;
@@ -91,6 +79,11 @@ typedef struct expand_extra_info  //expand data struct to store one or more DIGE
 } __attribute__((packed)) MSGEX_UUID;
 
 int message_get_state(void * message);
+
+struct basic_message
+{
+	char * message;
+}__attribute__((packed));
 
 void * message_init();
 int message_record_init(void * message);

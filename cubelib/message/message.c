@@ -4,6 +4,7 @@
 #include <errno.h>
 
 #include "../include/data_type.h"
+#include "../include/kernel_comp.h"
 #include "../include/list.h"
 #include "../include/string.h"
 #include "../include/alloc.h"
@@ -187,6 +188,18 @@ int message_record_init(void * message)
 
         __message_alloc_record_site(message);
         return 0;
+}
+
+int message_load_record_template(void * message)
+{
+        struct message_box * msg_box=message;
+        MSG_HEAD * message_head;
+	void * template;
+	message_head=&(msg_box->head);
+	if(msg_box->record_template!=NULL)
+		return msg_box->record_template;
+	return memdb_get_template(message_head->record_type,message_head->record_subtype);
+
 }
 
 void * message_create(int type,int subtype,void * active_msg)
@@ -405,6 +418,7 @@ int message_expand_struct2blob(void * message)
 	msg_box->head.expand_size=expand_size;
 	return expand_size;
 }
+
 int message_output_blob(void * message, BYTE ** blob)
 {
 	struct message_box * msg_box;
@@ -565,7 +579,317 @@ int message_output_json(void * message, char * text)
 	Free(buffer);
 	return offset;
 }
-/*
+
+int message_read_head(void ** message,void * blob,int blob_size)
+{
+	struct message_box * msg_box;
+	int ret;
+	MSG_HEAD * msg_head;
+	BYTE * data;
+	BYTE * buffer;
+	int i,j;
+	int record_size,expand_size;
+	int head_size;
+	int current_offset;
+	int total_size;
+	
+
+	if(message==NULL)
+		return -EINVAL;
+        if(blob_size<sizeof(MSG_HEAD))
+        	return -EINVAL;
+	if(blob==NULL)
+		return -EINVAL;
+
+	msg_box=message_init("MESG",0x00010001);
+	if(msg_box==NULL)
+		return -EINVAL;
+
+	if(msg_box->box_state != MSG_BOX_INIT)
+		return -EINVAL;
+
+	head_size=blob_2_struct(blob,&(msg_box->head),msg_box->head_template);
+	if(head_size<=0)
+		return -EINVAL;
+	msg_box->head_size=head_size;
+        msg_box->current_offset=0;
+
+	// check the head value
+	if(msg_box->head.record_num<=0)
+		return -EINVAL;
+	if(msg_box->head.expand_num<0)
+		return -EINVAL;
+	if(msg_box->head.expand_num>MAX_EXPAND_NUM)
+		return -EINVAL;
+
+	if(strncmp(msg_box->head.tag,"MESG",4)!=0)
+		return -EINVAL;
+	if(msg_box->head.version!=0x00010001)
+		return -EINVAL;
+
+    	msg_box->box_state=MSG_BOX_LOADDATA;
+
+   	total_size=msg_box->head.record_size+msg_box->head.expand_size;
+	data=kmalloc(total_size,GFP_KERNEL);
+	if(data==NULL)
+		return -ENOMEM;
+   	 msg_box->blob=data;
+	 *message=msg_box;
+   	 return sizeof(MSG_HEAD);
+}
+
+int  message_read_data(void * message,void * blob,int data_size)
+{
+	struct message_box * msg_box;
+	int ret;
+	MSG_HEAD * msg_head;
+	BYTE * data;
+	int new_size;
+	int current_offset;
+	int total_size;
+
+	msg_box=(struct message_box *)message;
+        if(msg_box->box_state!=MSG_BOX_LOADDATA)
+                return -EINVAL;
+
+	if(message==NULL)
+		return -EINVAL;
+	if(blob==NULL)
+		return -EINVAL;
+	
+	if(data_size<=0)
+		return -EINVAL;
+
+	data=msg_box->blob;
+
+        total_size=msg_box->head.record_size+msg_box->head.expand_size;
+
+        if(data_size+msg_box->current_offset>=total_size)
+	{
+		new_size=total_size-msg_box->current_offset;
+		memcpy(data+msg_box->current_offset,blob,new_size);
+		msg_box->current_offset=0;
+                current_offset=msg_box->head.record_size;
+		int i;
+		for(i=0;i<msg_box->head.expand_num;i++)
+		{
+			msg_box->expand[i]=data+current_offset;
+			msg_box->expand_size[i]=*(int *)(data+current_offset);
+			current_offset+=msg_box->expand_size[i];
+		}
+                __message_alloc_record_site(msg_box);
+                msg_box->current_offset=0;
+                msg_box->box_state=MSG_BOX_REBUILDING;
+		return new_size;
+	}	
+
+	memcpy(data+msg_box->current_offset,blob,data_size);
+	msg_box->current_offset+=data_size;
+	return 0;
+}
+
+int message_read_from_blob(void ** message,void * blob, int data_size)
+{
+    const int buf_size=1024;
+    int offset=0;
+    int retval;
+    int left_size;
+
+    retval=message_read_head(message,blob,data_size);
+    if(retval<0)
+        return retval;
+    offset=retval;
+    left_size=data_size-retval;
+    retval=message_read_data(*message,blob+offset,left_size);
+    if(retval<0)
+        return retval;
+    return retval+offset;
+}
+
+int message_read_from_src(void ** message,void * src,
+           int (*read_func)(void *,char *,int size))
+{
+    const int fixed_buf_size=4096;
+    char readbuf[fixed_buf_size];
+    struct message_box *message_box;
+    MSG_HEAD * message_head;
+    int read_size;
+    int seek_size;
+    int offset=0;
+    int ret;
+    int retval;
+    int message_size;
+
+
+    seek_size=0;
+    ret=read_func(src,readbuf,sizeof(MSG_HEAD));
+    if(ret<sizeof(MSG_HEAD))
+        return ret;
+
+    retval=message_read_head(message,readbuf,ret);
+    if(retval<0)
+         return -EINVAL;
+     seek_size=sizeof(MSG_HEAD);
+     message_head=message_get_head(*message);
+   
+     message_box=(struct message_box *)(*message);
+
+    message_size = message_head->record_size+message_head->expand_size;
+
+    while(offset<message_size)
+    {
+        read_size=message_size-offset;
+        if(read_size>fixed_buf_size)
+        {
+            read_size=fixed_buf_size;
+        }
+
+        ret=read_func(src,readbuf,read_size);
+        if(ret<=0)
+        {
+   //         message_free(*message);
+            break;
+        }
+        retval=message_read_data(*message,readbuf,ret);
+        if(retval<read_size)
+            break;
+        offset+=read_size;
+        seek_size+=read_size;
+    }
+    return seek_size;
+}
+
+int message_load_record(void * message)
+// this function read all the record from blob, and output these record
+// struct to the precord point in the message_box
+{
+
+    struct message_box * msg_box;
+    int ret;
+    MSG_HEAD * msg_head;
+    BYTE * data;
+    BYTE * buffer;
+    int i,j;
+    int record_size,expand_size;
+    int head_size;
+    int no;
+
+    struct struct_elem_attr * record_desc;
+
+    msg_box=(struct message_box *)message;
+
+    if(message==NULL)
+        return -EINVAL;
+
+// if(msg_box->box_state!=MSG_BOX_REBUILDING)
+//       return -EINVAL;
+
+    // choose the record's type
+    if(msg_box->record_template==NULL)
+    {
+        ret= message_load_record_template(message);
+        if(ret!=0)
+            return ret;
+    }
+
+
+//  __message_alloc_record_site(msg_box);
+//  msg_box->current_offset=msg_box->head_size;
+
+    no=0;
+    while(msg_box->record[no]!=NULL)
+    {
+        if(no>=msg_box->head.record_num)
+            return 0;
+        no++;
+    }
+
+    for(;no<msg_box->head.record_num;no++)
+    {
+        void * record;
+        msg_box->record[no]=(BYTE *)(msg_box->blob)+msg_box->current_offset;
+        ret=message_get_record(msg_box,&record,no);
+        if(ret<0)
+            return ret;
+        if(record==NULL)
+            return -EINVAL;
+        msg_box->current_offset+=msg_box->record_size[no];
+    }
+
+//	record_size=blob_2_struct((BYTE *)(msg_box->record[no]),record,msg_box->record_template);
+    if(ret<0)
+        return ret;
+    msg_box->current_offset+=msg_box->record_size[no];
+//	msg_box->record_size[no]=record_size;
+    return 1;
+}
+
+int message_load_expand(void * message)
+// this function read all the expand from blob, and output these expand 
+// struct to the pexpand point in the message_box
+{
+
+    struct message_box * msg_box;
+    int ret;
+    MSG_HEAD * msg_head;
+    MSG_EXPAND * expand;
+    BYTE * data;
+    BYTE * buffer;
+    int i,j;
+    int expand_size;
+    int head_size;
+    int no;
+    int offset;
+    void * struct_template;
+    void * expand_struct;
+
+    msg_box=(struct message_box *)message;
+
+    if(message==NULL)
+        return -EINVAL;
+
+//    if(msg_box->box_state!=MSG_BOX_REBUILDING)
+//        return -EINVAL;
+
+    // choose the record's type
+
+    no=0;
+    offset=msg_box->head.record_size;
+
+    data=msg_box->blob+offset;
+    offset=0;
+    for(;no<msg_box->head.expand_num;no++)
+    {
+	if(offset>=msg_box->head.expand_size)
+		return -EINVAL;
+	    
+	expand=(MSG_EXPAND *)data;
+	if(expand->data_size<0)
+		return -EINVAL;
+	offset+=expand->data_size;
+	struct_template=memdb_get_template(expand->type,expand->subtype);
+	if(struct_template==NULL)
+	{
+		data+=expand->data_size;
+		continue;
+	}
+	buffer=Talloc(struct_size(struct_template));
+	if(buffer==NULL)
+		return -EINVAL;
+	ret=blob_2_struct(data,buffer,struct_template);
+	if(ret!=expand->data_size)
+	{
+		struct_free(buffer,struct_template);
+		return -EINVAL;
+	}
+	msg_box->pexpand[no]=buffer;
+	data+=expand->data_size;
+
+    }
+    return offset;
+}
+
+
 void message_free(void * message)
 {
 	struct message_box * msg_box;
@@ -574,33 +898,22 @@ void message_free(void * message)
 	if(message==NULL)
 		return ;
 
-	switch(msg_box->box_state)
+	for(i=0;i<msg_box->head.expand_num;i++)
 	{
-		case 	MSG_BOX_INIT:
-			return;   // finishing the msg's head set
-        case 	MSG_BOX_EXPAND:
-        case    MSG_BOX_CUT:
-        case    MSG_BOX_DEAL:
-        case    MSG_BOX_RECOVER:
-			for(i=0;i<msg_box->head.expand_num;i++)
-			{
-				if(msg_box->expand[i]!=NULL)
+		if(msg_box->expand[i]!=NULL)
                 {
-					free(msg_box->expand[i]);
-                    msg_box->expand[i]=NULL;
+			free(msg_box->expand[i]);
+                    	msg_box->expand[i]=NULL;
                 }
                 if(msg_box->pexpand[i]!=NULL)
                 {
                     free(msg_box->pexpand[i]);
                     msg_box->pexpand[i]=NULL;
                 }
-            }
-       case    MSG_BOX_ADD:
-       case    MSG_BOX_READ:
-
-            for(i=0;i<msg_box->head.record_num;i++)
-            {
-                if(msg_box->record[i]!=NULL)
+       }
+       for(i=0;i<msg_box->head.record_num;i++)
+       {
+        	if(msg_box->record[i]!=NULL)
                 {
                     free(msg_box->record[i]);
                     msg_box->record[i]=NULL;
@@ -610,20 +923,15 @@ void message_free(void * message)
                     free(msg_box->precord[i]);
                     msg_box->precord[i]=NULL;
                 }
-
-            }
-
-            free(msg_box->record);
-            free_struct_template(msg_box->record_template);
-            break;
-		default:
-			return;
 	}
-    free_struct_template(msg_box->head_template);
-    free(msg_box);
+
+        free(msg_box->record);
+        free_struct_template(msg_box->record_template);
+    	free_struct_template(msg_box->head_template);
+    	free(msg_box);
 	return;
 }
-
+/*
 void * message_get_activemsg(void * message)
 {
 	struct message_box * msg_box;

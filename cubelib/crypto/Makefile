@@ -1,10 +1,12 @@
 FLAGS= -g -o 
-CFLAGS= -g -c -DUSER_MODE 
+CFLAGS= -g -c -fPIC -Wall -DUSER_MODE 
 CC=gcc
 CCP=g++
-FUNCOBJ= sha1.o sm3.o crypto_func.o radix64.o
+STRUCTOBJ= sha1.o sm3.o crypto_func.o radix64.o
+LIBNAME=crypto_func
+DEPENDLIB=
 
-main: ../lib/libcrypto_func.a
+main: ../lib/lib$(LIBNAME).a  ../lib/lib$(LIBNAME).so
 	rm -f *~ *.o *.a
 #policy_test: ui/policy_test.c ui/policy_ui.so
 #	$(CC) $(FLAGS) policy_test ui/policy_test.c ui/policy_ui.so
@@ -16,9 +18,11 @@ crypto_func.o:  crypto_func.c
 	$(CC) $(CFLAGS) crypto_func.c
 radix64.o:  radix64.c ../include/radix64.h 
 	$(CC) $(CFLAGS) radix64.c
-../lib/libcrypto_func.a: $(FUNCOBJ) 	
-	ar rs libcrypto_func.a $(FUNCOBJ) 
-	cp libcrypto_func.a ../lib
-#	cp $(MEMDBHEADER) ../include
+../lib/lib$(LIBNAME).a: $(STRUCTOBJ)
+	ar rs lib$(LIBNAME).a $(STRUCTOBJ)
+	mv    lib$(LIBNAME).a ../lib
+../lib/lib$(LIBNAME).so:  $(STRUCTOBJ)
+	ar cr lib$(LIBNAME).so $(STRUCTOBJ) 
+	mv    lib$(LIBNAME).so ../lib
 clean:
-	rm -f *~ *.o *.a
+	rm -f *~ *.a *.o ../lib/$(LIBNAME).a ../lib/lib$(LIBNAME).so

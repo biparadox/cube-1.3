@@ -1,7 +1,7 @@
 #ifndef _ATTR_LIST_H
 #define _ATTR_LIST_H       
 
-#ifndef _OS210_DATA_TYPE_H
+#ifndef _CUBE_DATA_TYPE_H
 #include "data_type.h"
 #endif
 //#include "../include/extern_interface.h"
@@ -15,7 +15,7 @@
 #include <linux/slab.h>
 #endif
 */
-typedef struct tagOs210_Record_List_type
+typedef struct tagCube_Record_List_type
 {
 	struct List_head list;
 	void * record;

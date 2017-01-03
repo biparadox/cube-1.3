@@ -32,8 +32,8 @@ struct memdb_desc
 };
 
 
-static struct memdb_desc ** static_db_list;
-static struct memdb_desc * dynamic_db_list;
+extern struct memdb_desc ** static_db_list;
+extern struct memdb_desc * dynamic_db_list;
 
 
 static void * elem_template;
@@ -86,8 +86,8 @@ struct struct_recordtype
 
 // the 2 init namelist
 
-static struct struct_namelist *elemenumlist;
-static struct struct_namelist *typeenumlist;
+extern struct struct_namelist *elemenumlist;
+extern struct struct_namelist *typeenumlist;
 
 
 typedef struct memdb_desc_record

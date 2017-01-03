@@ -232,6 +232,7 @@ int main(int argc,char **argv)
 //    sec_respool_list_init();
     // init the main proc struct
 
+    void * main_config_template=create_struct_template(&main_config_desc);
 /*
     struct main_config main_initpara;
     fd=open(main_config_file,O_RDONLY);

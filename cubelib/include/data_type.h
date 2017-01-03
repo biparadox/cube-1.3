@@ -7,19 +7,15 @@
 *       content:        this file describe some basic data type 
 *       changelog:       
 *************************************************/
-#ifndef _OS210_DATA_TYPE_H
-#define _OS210_DATA_TYPE_H
-//#define NULL 0
-//#ifndef TSS_PLATFORM_H
+#ifndef CUBE_DATA_TYPE_H
+#define CUBE_DATA_TYPE_H
+
 typedef unsigned char         BYTE;
 typedef unsigned short int  UINT16;
 typedef unsigned int        UINT32;
 typedef unsigned long int   UINT64;
-//#endif
-
 typedef unsigned short int    WORD;
 typedef unsigned int         DWORD;
-
 
 #define BITSTRING (unsigned char *)
 #define CUBE_DEBUG  

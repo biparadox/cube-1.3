@@ -149,7 +149,7 @@ int struct_read_elem_text(char * name, void * addr, char * text, void * struct_t
 int struct_write_elem_text(char * name, void * addr, char * string, void * struct_template);
 void * get_desc_from_template(void * struct_template);
 
-int dup_str(char ** dest,char * src, int size);
+char * dup_str(char * src, int size);
 void * clone_struct(void * addr, void * struct_template);
 //void * struct_get_elem_attr(char * name, void * struct_template);
 //int struct_set_elem_var(char * name, void * attr, void * struct_template);

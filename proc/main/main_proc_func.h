@@ -11,11 +11,11 @@ struct main_config
 
 static struct struct_elem_attr main_config_desc[]=
 {
-        {"proc_name",CUBE_TYPE_STRING,DIGEST_SIZE,NULL},
-        {"init_dlib",CUBE_TYPE_ESTRING,DIGEST_SIZE*4,NULL},
-        {"init_func",CUBE_TYPE_ESTRING,DIGEST_SIZE*2,NULL},
-        {"init_para",CUBE_TYPE_ESTRING,DIGEST_SIZE*2,NULL},
-	{NULL,CUBE_TYPE_ENDDATA,0,NULL}
+        {"proc_name",CUBE_TYPE_STRING,DIGEST_SIZE,NULL,NULL},
+        {"init_dlib",CUBE_TYPE_ESTRING,DIGEST_SIZE*4,NULL,NULL},
+        {"init_func",CUBE_TYPE_ESTRING,DIGEST_SIZE*2,NULL,NULL},
+        {"init_para",CUBE_TYPE_ESTRING,DIGEST_SIZE*2,NULL,NULL},
+	{NULL,CUBE_TYPE_ENDDATA,0,NULL,NULL}
 };
 
 struct plugin_config
@@ -30,17 +30,18 @@ struct plugin_config
 
 static struct struct_elem_attr plugin_config_desc[]=
 {
-        {"name",CUBE_TYPE_STRING,DIGEST_SIZE,NULL},
+        {"name",CUBE_TYPE_STRING,DIGEST_SIZE,NULL,NULL},
 //        {"type",CUBE_TYPE_ENUM,sizeof(int),&sec_subject_type_valuelist},
-        {"plugin_dlib",CUBE_TYPE_ESTRING,DIGEST_SIZE*4,NULL},
-        {"init",CUBE_TYPE_ESTRING,DIGEST_SIZE*2,NULL},
-        {"start",CUBE_TYPE_ESTRING,DIGEST_SIZE*2,NULL},
-	{NULL,CUBE_TYPE_ENDDATA,0,NULL}
+        {"plugin_dlib",CUBE_TYPE_ESTRING,DIGEST_SIZE*4,NULL,NULL},
+        {"init",CUBE_TYPE_ESTRING,DIGEST_SIZE*2,NULL,NULL},
+        {"start",CUBE_TYPE_ESTRING,DIGEST_SIZE*2,NULL,NULL},
+	{NULL,CUBE_TYPE_ENDDATA,0,NULL,NULL}
 };
 
 enum dynamic_typelist
 {
 	DTYPE_MESSAGE=0x200,
+	DTYPE_CONFIG,
 	DTYPE_TUBE,
 	DTYPE_BLOCK,
 	DTYPE_MATCH,
