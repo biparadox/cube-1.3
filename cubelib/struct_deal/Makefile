@@ -7,12 +7,12 @@ STRUCTOBJ= struct_ops.o enum_flag_ops.o struct_deal.o struct_init.o
 LIBNAME=struct
 DEPENDLIB= -ljson -lalloc -lstring
 
-main: ../lib/lib$(LIBNAME).a  test_main 
-test_main: test_main.c ../lib/lib$(LIBNAME).a
-	$(CC) $(FLAGS) test_main test_main.c -L../lib $(DEPENDLIB) -l$(LIBNAME)  
-../lib/lib$(LIBNAME).a: $(STRUCTOBJ)
-	ar rs lib$(LIBNAME).a $(STRUCTOBJ)
-	mv    lib$(LIBNAME).a ../lib
+main: ../lib/lib$(LIBNAME).so  test_main 
+test_main: test_main.c ../lib/lib$(LIBNAME).so
+	$(CC) $(FLAGS) test_main test_main.c -L../lib $(DEPENDLIB) -l$(LIBNAME)
+../lib/lib$(LIBNAME).so: $(STRUCTOBJ)
+	$(CC) -shared -o lib$(LIBNAME).so $(STRUCTOBJ)
+	mv   lib$(LIBNAME).so ../lib
 struct_deal.o:  struct_deal.c ../include/struct_deal.h
 	$(CC) $(CFLAGS) struct_deal.c
 struct_ops.o:  struct_ops.c struct_ops.h
@@ -22,4 +22,4 @@ struct_init.o:  struct_init.c struct_ops.h
 enum_flag_ops.o:  enum_flag_ops.c struct_ops.h
 	$(CC) $(CFLAGS) enum_flag_ops.c
 clean:
-	rm -f test_main *~ *.a *.o ../lib/$(LIBNAME).a 
+	rm -f test_main *~ *.a *.o ../lib/$(LIBNAME).so

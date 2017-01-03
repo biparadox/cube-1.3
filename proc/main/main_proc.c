@@ -151,9 +151,9 @@ int main(int argc,char **argv)
 
 
     sys_plugin=getenv("CUBE_SYS_PLUGIN");
-    if(sys_plugin==NULL)
-	return -EINVAL;		
-    app_plugin=getenv("CUBE_APP_PLUGIN");
+//    if(sys_plugin==NULL)
+//	return -EINVAL;		
+//    app_plugin=getenv("CUBE_APP_PLUGIN");
     // process the command argument
     if(argc>=2)
     {

@@ -132,7 +132,6 @@ ELEM_OPS * _elem_get_ops(void * elem)
 	if((curr_elem->elem_desc->type<0)|| (curr_elem->elem_desc->type>CUBE_TYPE_ENDDATA))
 		return NULL;
 	int index=curr_elem->elem_desc->type;
-	printf("%x\n",&struct_deal_ops);
 	return struct_deal_ops[index];  
 
 }
