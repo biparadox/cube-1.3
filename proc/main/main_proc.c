@@ -314,9 +314,10 @@ int main(int argc,char **argv)
     ex_module_init(conn_proc,connector_config_file);
     add_ex_module(conn_proc);
     ex_module_start(conn_proc,NULL);
-/*
+
     // init the router proc	
-    strcpy(namebuffer,sys_plugin);
+//    strcpy(namebuffer,sys_plugin);
+    strcpy(namebuffer,"../../proc/plugin/");
     strcat(namebuffer,router_plugin_file);
     plugin_proc.init =main_read_func(namebuffer,"proc_router_init");
     if(plugin_proc.init==NULL)
@@ -327,21 +328,22 @@ int main(int argc,char **argv)
      plugin_proc.name=dup_str("router_proc",0);	
      plugin_proc.type=PROC_TYPE_ROUTER;
 	
-    ret=sec_subject_create("router_proc",PROC_TYPE_MONITOR,NULL,&router_proc);
+    ret=ex_module_create("router_proc",PROC_TYPE_MONITOR,NULL,&router_proc);
     if(ret<0)
 	    return ret;
 
-    sec_subject_setinitfunc(router_proc,plugin_proc.init);
-    sec_subject_setstartfunc(router_proc,plugin_proc.start);
+    ex_module_setinitfunc(router_proc,plugin_proc.init);
+    ex_module_setstartfunc(router_proc,plugin_proc.start);
 
-    sec_subject_init(router_proc,router_config_file);
+    ex_module_init(router_proc,router_config_file);
 	
     printf("prepare the router proc\n");
-    ret=sec_subject_start(router_proc,NULL);
+    ret=add_ex_module(router_proc);
     if(ret<0)
 	    return ret;
 
     // loop to init all the plugin's 
+/*
     fd=open(plugin_config_file,O_RDONLY);
     if(fd<0)
 	return -EINVAL;

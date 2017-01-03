@@ -5,7 +5,7 @@ CC=gcc
 CCP=g++
 TEST_LIB= -L../lib -lexmodule -lmessage -lmemdb -lconnector -lstruct -lcrypto_func -ljson -lbasefunc -lstring -lalloc -lpthread
 
-main: libconnector_process_func.so  
+main: libconnector_process_func.so librouter_process_func.so 
 #main_proc:  main_proc.c main_proc_func.h
 #	$(CC) $(FLAGS) main_proc main_proc.c $(TEST_LIB) -ldl
 libconnector_process_func.so: connector_process_func.o connector_process_func.h

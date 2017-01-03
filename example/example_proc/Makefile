@@ -9,7 +9,7 @@ INIT_OBJ=lib$(MAIN_PROC).so
 TEST_LIB= -L../lib -lexmodule -lmessage -lmemdb -lconnector -lstruct -lcrypto_func -ljson -lbasefunc -lstring -lalloc -lpthread
 
 main: $(MAIN_PROC)
-$(MAIN_PROC):  $(INIT_OBJ)
+$(MAIN_PROC):  $(INIT_OBJ) main_proc.c
 	$(CC) $(FLAGS) $(MAIN_PROC) main_proc.c -I$(INCLUDE) $(TEST_LIB) -ldl
 $(INIT_OBJ): $(MAIN_PROC)_func.o
 	$(CC) $(LIBFLAGS) $(INIT_OBJ) $(MAIN_PROC)_func.o
