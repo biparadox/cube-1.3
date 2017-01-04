@@ -101,4 +101,10 @@ typedef struct tagex_module_head
 	char name[DIGEST_SIZE];
 	int type;
 }__attribute__((packed)) EX_MODULE_HEAD;
+
+int ex_module_sendmsg(void * ex_mod,void *msg);
+int ex_module_recvmsg(void * ex_mod,void **msg);
+
+int send_ex_module_msg(void * ex_mod,void * msg);
+int recv_ex_module_msg(void * ex_mod,void ** msg);
 #endif

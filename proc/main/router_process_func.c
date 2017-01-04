@@ -129,7 +129,7 @@ int proc_router_send_msg(void * message,char * local_uuid,char * proc_name)
 			{
 				return  -EINVAL;
 			}
-			ret=find_sec_subject(msg_head->receiver_uuid,&sec_sub);	
+			ret=find_ex_module(msg_head->receiver_uuid,&sec_sub);	
 			if(sec_sub!=NULL)
 			{
 //				if(sec_subject_getprocstate(sec_sub)<SEC_PROC_START)
@@ -137,7 +137,7 @@ int proc_router_send_msg(void * message,char * local_uuid,char * proc_name)
 //					printf("start process %s!\n",sec_subject_getname(sec_sub));
   //  					ret=sec_subject_start(sec_sub,NULL);
 //				}
-				send_sec_subject_msg(sec_sub,message);
+				send_ex_module_msg(sec_sub,message);
 			}
 			break;
 
@@ -145,13 +145,13 @@ int proc_router_send_msg(void * message,char * local_uuid,char * proc_name)
 		case MSG_FLOW_QUERY:
 		case MSG_FLOW_RESPONSE:
 		case MSG_FLOW_ASPECT:
-			ret=find_sec_subject("connector_proc",&sec_sub);	
+			ret=find_ex_module("connector_proc",&sec_sub);	
 			if(sec_sub==NULL)
 			{
 				printf("can't find conn process!\n");
 				return -EINVAL;
 			}
-			send_sec_subject_msg(sec_sub,message);
+			send_ex_module_msg(sec_sub,message);
 			printf("send message to conn process!\n");
 				
 			break;
@@ -242,25 +242,25 @@ int proc_router_start(void * sub_proc,void * para)
 
 				
 			// receiver an outside message
-			ret=recv_sec_subject_msg(sub_proc,&message);
+			ret=recv_ex_module_msg(sub_proc,&message);
 			if(ret<0)
 			{
-				get_next_sec_subject(&sub_proc);
+				get_next_ex_module(&sub_proc);
 				continue;
 			}
 			else if((message==NULL) ||IS_ERR(message))
 			{
-				get_next_sec_subject(&sub_proc);
+				get_next_ex_module(&sub_proc);
 				continue;	
 			}
-			origin_proc=sec_subject_getname(sub_proc);
+			origin_proc=ex_module_getname(sub_proc);
 
 			printf("router get proc %.64s's message!\n",origin_proc); 
 			
 			//duplicate active message's info and init policy
 			router_dup_activemsg_info(message);
 			MSG_HEAD * msg_head;
-			msg_head=get_message_head(message);
+			msg_head=message_get_head(message);
 			msg_policy=NULL;
 			aspect_policy=NULL;
 
