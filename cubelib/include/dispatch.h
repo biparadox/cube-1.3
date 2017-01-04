@@ -3,6 +3,20 @@
 
 #define DIGEST_SIZE 32
 
+
+enum dynamic_dispatch_typelist
+{
+	DTYPE_DISPATCH=0x210,
+};
+
+enum subtypelist_dispatch
+{
+	STYPE_POLICY_HEAD=0x01,
+	STYPE_MATCH_RULE,
+	STYPE_ROUTER_RULE
+};
+
+
 enum match_op_type
 {
     DISPATCH_MATCH_AND=0x01,
@@ -48,7 +62,7 @@ void * dispatch_read_route_policy(void * policy_node);
 int dispatch_add_route_policy(void * list,void * policy);
 
 void * dispatch_read_policy(void * policy_node);
-int dispatch_policy_add(void * object,void * policy);
+int dispatch_policy_add(void * policy);
 
 
 

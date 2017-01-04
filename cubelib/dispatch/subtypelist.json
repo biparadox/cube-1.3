@@ -13,29 +13,14 @@
 			"HEAD=0x01",
 			"EXPAND",
 			"FLOW_TRACE",
-			"ASPECT_POINT"
+			"ASPECT_POINT",
+			"CONN_SYNI",
+			"CONN_ACKI"
 		]
 	}
 }
 {
-	"head":
-	{
-		"name":"router_policy_struct",
-		"type":"SUBTYPELIST"
-	},
-	"record":
-	{
-		"type":"ROUTER",
-		"elem_no":3,
-		"elemlist":
-		[
-			"POLICY_HEAD=0x01",
-			"MATCH_POLICY",
-			"ROUTER_POLICY"
-		]
-	}
-}
-{
+	"info-type":"subtypelist",
 	"head":
 	{
 		"name":"tube_subtypelist",
@@ -43,32 +28,13 @@
 	},
 	"record":
 	{
-		"type":"TUBE",
+		"type":"DISPATCH",
 		"elem_no":4,
 		"elemlist":
 		[
-			"BASEINFO=0x01",
-			"SERVER",
-			"CLIENT",
-			"CHANNEL"
-		]
-	}
-}
-{
-	"head":
-	{
-		"name":"msg_expand_struct",
-		"type":"SUBTYPELIST"
-	},
-	"record":
-	{
-		"type":"MSG_EXPAND",
-		"elem_no":3,
-		"elemlist":
-		[
-			"FLOW_TRACE=0x01",
-			"ASPECT_POINT",
-			"ROUTER_STACK"
+			"POLICY_HEAD=0x01",
+			"MATCH_RULE",
+			"ROUTER_RULE"
 		]
 	}
 }

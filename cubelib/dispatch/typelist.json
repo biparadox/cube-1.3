@@ -6,13 +6,12 @@
 	},
 	"record":
 	{
-		"elem_no":5,
+		"elem_no":4,
 		"elemlist":
 		[
 			"MESSAGE=0x200",
-			"ROUTER",
 			"MSG_EXPAND",
-			"TUBE"
+			"DISPATCH=0x210"
 		]
 	}
 }

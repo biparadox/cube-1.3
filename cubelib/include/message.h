@@ -12,6 +12,21 @@
 
 #include "data_type.h"
 
+enum dynamic_message_typelist
+{
+	DTYPE_MESSAGE=0x200,
+	DTYPE_MSG_EXPAND,
+};
+enum subtypelist_message
+{
+	SUBTYPE_HEAD=0x01,
+	SUBTYPE_EXPAND,
+	SUBTYPE_FLOW_TRACE,
+	SUBTYPE_ASPECT_POINT,
+	SUBTYPE_CONN_SYNI,
+	SUBTYPE_CONN_ACKI
+};
+
 enum message_flow_type
 {
     MSG_FLOW_INIT=0x01,

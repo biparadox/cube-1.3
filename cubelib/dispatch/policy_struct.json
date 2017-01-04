@@ -1,0 +1,100 @@
+{
+	"head":
+	{
+		"name":"expand_flow_trace",
+		"type":"STRUCT"
+	},
+	"record":
+	{
+		"elem_desc":
+		[
+			{"name":"data_size","type":"INT"},
+			{"name":"type","type":"TYPE"},
+			{"name":"subtype","type":"SUBTYPE"},
+			{"name":"record_num","type":"INT"},
+			{"name":"trace_record","type":"UUIDARRAY","def":"record_num"}
+		]
+	}
+}
+{
+	"head":
+	{
+		"name":"expand_aspect_point",
+		"type":"STRUCT"
+	},
+	"record":
+	{
+		"elem_desc":
+		[
+			{"name":"data_size","type":"INT"},
+			{"name":"type","type":"TYPE"},
+			{"name":"subtype","type":"SUBTYPE"},
+			{"name":"record_num","type":"INT"},
+			{"name":"aspect_proc","type":"UUIDARRAY","def":"record_num"},
+			{"name":"aspect_point","type":"UUIDARRAY","def":"record_num"}
+		]
+	}
+}
+{
+	"head":
+	{
+		"name":"expand_route_record",
+		"type":"STRUCT"
+	},
+	"record":
+	{
+		"elem_desc":
+		[
+			{"name":"data_size","type":"INT"},
+			{"name":"type","type":"TYPE"},
+			{"name":"subtype","type":"SUBTYPE"},
+			{"name":"sender_uuid","type":"UUID"},
+			{"name":"receiver_uuid","type":"UUID"},
+			{"name":"route","type":"STRING","size":32},
+			{"name":"flow","type":"INT"},
+			{"name":"state","type":"INT"},
+			{"name":"flag","type":"INT"},
+			{"name":"ljump","type":"INT"},
+			{"name":"rjump","type":"INT"}
+		]
+	}
+}
+{
+	"head":
+	{
+		"name":"expand_flow_trace",
+		"type":"RECORDTYPE"
+	},
+	"record":
+	{
+		"type":"MSG_EXPAND",
+		"subtype":"FLOW_TRACE",
+		"uuid":"expand_flow_trace"
+	}	
+}
+{
+	"head":
+	{
+		"name":"expand_aspect_point",
+		"type":"RECORDTYPE"
+	},
+	"record":
+	{
+		"type":"MSG_EXPAND",
+		"subtype":"ASPECT_POINT",
+		"uuid":"expand_aspect_point"
+	}	
+}
+{
+	"head":
+	{
+		"name":"expand_router_record",
+		"type":"RECORDTYPE"
+	},
+	"record":
+	{
+		"type":"MSG_EXPAND",
+		"subtype":"ROUTER_RECORD",
+		"uuid":"expand_router_record"
+	}	
+}

@@ -35,7 +35,7 @@
 #include "../include/struct_deal.h"
 #include "../include/memdb.h"
 #include "../include/message.h"
-#include "../include/routine.h"
+#include "../include/dispatch.h"
 
 
 int read_json_file(char * file_name)
@@ -156,15 +156,16 @@ int main() {
 	
 	char * baseconfig[] =
 	{
+		"namelist.json",
 		"typelist.json",
 		"subtypelist.json",
 		"msghead.json",
-		"login_struct.json",
-		"headrecord.json",
+		"msgstruct.json",
+		"msgrecord.json",
 		NULL
 	};
 
-	alloc_init(alloc_buffer);
+//	alloc_init(alloc_buffer);
 	struct_deal_init();
 	memdb_init();
 

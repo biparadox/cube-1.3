@@ -7,7 +7,7 @@ STRUCTOBJ= dispatch.o
 
 main: ../lib/libdispatch.a  test_main
 test_main: test_main.c ../lib/libdispatch.a  
-	$(CC) $(FLAGS) test_main test_main.c -L../lib -ldispatch -lmessage -lmemdb -lchannel -lbasefunc -lcrypto_func -lstruct -ljson -lalloc -lstring -lpthread
+	$(CC) $(FLAGS) test_main test_main.c -L../lib -ldispatch -lmessage -lmemdb -lbasefunc -lcrypto_func -lstruct -ljson -lalloc -lstring -lpthread
 ../lib/libdispatch.a: $(STRUCTOBJ)
 	ar rs libdispatch.a $(STRUCTOBJ)
 	mv    libdispatch.a ../lib

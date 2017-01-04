@@ -1,0 +1,41 @@
+{
+	"head":
+	{
+		"name":"message_flow_type",
+		"type":"NAMELIST"
+	},
+	"record":
+	{
+		"elem_no":7,
+		"elemlist":
+		[
+			"INIT=0x01",
+			"DELIVER=0x04",
+			"QUERY=0x08",
+			"RESPONSE=0x10",
+			"ASPECT=0x20",
+			"FINISH=0x8000",
+			"ERROR=0xFFFF"
+		]
+	}
+}
+{
+	"head":
+	{
+		"name":"message_flag_type",
+		"type":"NAMELIST"
+	},
+	"record":
+	{
+		"elem_no":6,
+		"elemlist":
+		[
+			"LOCAL=0x01",
+			"RESPONSE=0x02",
+			"CRYPT=0x10",
+			"SIGN=0x20",
+			"ZIP=0x40",
+			"VERIFY=0x80",
+		]
+	}
+}

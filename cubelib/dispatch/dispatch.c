@@ -18,6 +18,7 @@
 static POLICY_LIST process_policy;
 static POLICY_LIST aspect_policy;
 
+static void * policy_head_template;
 static void * match_rule_template;
 static void * route_rule_template;
 
@@ -41,8 +42,9 @@ int dispatch_init(void * object )
 	{
 		ret=_init_policy_list(&process_policy);
 		ret=_init_policy_list(&aspect_policy);
-    		match_rule_template=create_struct_template(&match_rule_desc);
-    		route_rule_template=create_struct_template(&route_rule_desc);
+    		policy_head_template=memdb_get_template(DTYPE_DISPATCH,STYPE_POLICY_HEAD);
+    		match_rule_template=memdb_get_template(DTYPE_DISPATCH,STYPE_MATCH_RULE);
+    		route_rule_template=memdb_get_template(DTYPE_DISPATCH,STYPE_ROUTER_RULE);
 	}
 	return 0;
 }
@@ -317,17 +319,12 @@ int _dispatch_policy_add(void * list,void * policy)
 	return _dispatch_rule_add(list,policy);	
 }
 
-int dispatch_policy_add(void * object,void * policy)
+int dispatch_policy_add(void * policy)
 {
       void * general_policy_list;
       void * aspect_policy_list;
       DISPATCH_POLICY * dispatch_policy=(DISPATCH_POLICY *)policy;
-     if(object!=NULL)
-	  return -EINVAL;
-      else
-      {
-	    _dispatch_policy_add(&process_policy,policy);
-      }
+      _dispatch_policy_add(&process_policy,policy);
       return 1;
 }
 
