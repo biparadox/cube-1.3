@@ -33,6 +33,7 @@ int read_json_file(char * file_name)
 
 	int fd;
 	int readlen;
+	int leftlen;
 	int json_offset;
 
 	int struct_no=0;
@@ -49,9 +50,8 @@ int read_json_file(char * file_name)
 	readlen=read(fd,json_buffer,1024);
 	if(readlen<0)
 		return -EIO;
+	leftlen=readlen;
 	json_buffer[readlen]=0;
-	printf("%s\n",json_buffer);
-	close(fd);
 
 	json_offset=0;
 	while(json_offset<readlen)
@@ -62,9 +62,21 @@ int read_json_file(char * file_name)
 			printf("solve json str error!\n");
 			break;
 		}
+
+		leftlen-=ret;
 		json_offset+=ret;
+
 		if(ret<32)
 			continue;
+		if(leftlen+json_offset==1024)
+		{
+			Memcpy(json_buffer,json_buffer+json_offset,leftlen);
+			readlen=read(fd,json_buffer+leftlen,1024-leftlen);
+			if(readlen<0)
+				return readlen;
+			leftlen+=readlen;
+			json_offset=0;
+		}
 
 		ret=memdb_read_desc(root_node,uuid);
 		if(ret<0)
@@ -72,6 +84,7 @@ int read_json_file(char * file_name)
 		struct_no++;
 	}
 
+	close(fd);
 	return struct_no;
 }
 
@@ -140,8 +153,10 @@ int main(int argc,char **argv)
     char * baseconfig[] =
     {
 //		"baseflag.json",
+	"base_define/namelist.json",
 	"base_define/typelist.json",
 	"base_define/subtypelist.json",
+	"base_define/msghead.json",
 	"base_define/msgstruct.json",
 	"base_define/msgrecord.json",
 	"base_define/default_record.json",
@@ -169,7 +184,6 @@ int main(int argc,char **argv)
 //	alloc_init(alloc_buffer);
 	struct_deal_init();
 	memdb_init();
-	ex_module_list_init();
 
 	for(i=0;baseconfig[i]!=NULL;i++)
 	{
@@ -179,6 +193,7 @@ int main(int argc,char **argv)
 		printf("read %d elem from file %s!\n",ret,baseconfig[i]);
 	}
 
+	ex_module_list_init();
     for(argv_offset=1;argv_offset<argc;argv_offset+=2)
     {
 	if((argv[argv_offset][0]!='-')

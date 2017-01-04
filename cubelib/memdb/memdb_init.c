@@ -50,8 +50,19 @@ void * _alloc_dynamic_db(int type,int subtype);
 int _namelist_tail_func(void * memdb,void * record)
 {
 	DB_RECORD * db_record=record;
+	NAME2VALUE * namevalue;
+	int i;
+	int ret;
 	struct struct_namelist * namelist=db_record->record;
-	db_record->tail=namelist->elemlist;
+	ret=Galloc0(&namevalue,sizeof(NAME2VALUE)*(namelist->elem_no+1));
+	if(ret<0)
+		return ret;
+	for(i=0;i<namelist->elem_no;i++)
+	{
+		namevalue[i].name=namelist->elemlist[i].name;
+		namevalue[i].value=namelist->elemlist[i].value;
+	}
+	db_record->tail=namevalue;
 	return 0;
 }
 
@@ -309,6 +320,9 @@ void * _struct_octet_to_attr(void * octet_array,int elem_no)
 	struct struct_elem_attr * elem_desc;
 	DB_RECORD * child_desc_record;
 	DB_RECORD * ref_namelist;
+	BYTE ref_comp[DIGEST_SIZE];
+
+	Memset(ref_comp,0,DIGEST_SIZE);
 
 	ret=Galloc0(&struct_desc,sizeof(struct struct_elem_attr)*(elem_no+1));
 	if(ret<0)
@@ -331,8 +345,15 @@ void * _struct_octet_to_attr(void * octet_array,int elem_no)
 		// if their is no valid ref
 		if(_issubsetelem(elem_desc_octet->type))
 		{
-			
-			child_desc_record=memdb_find(elem_desc_octet->ref,DB_STRUCT_DESC,0);
+			if(Memcmp(ref_comp,elem_desc_octet->ref,DIGEST_SIZE/2)==0)
+			{
+				// invalid ref uuid, we should find ref by ref_name
+				child_desc_record=memdb_find_byname(elem_desc_octet->ref,DB_STRUCT_DESC,0);
+			}
+			else
+			{
+				child_desc_record=memdb_find(elem_desc_octet->ref,DB_STRUCT_DESC,0);
+			}
 			if(child_desc_record==NULL)
 				return NULL;
 			elem_desc->ref=child_desc_record->tail;	
@@ -342,7 +363,17 @@ void * _struct_octet_to_attr(void * octet_array,int elem_no)
 
 		else if(_isnamelistelem(elem_desc_octet->type))
 		{
-			ref_namelist=memdb_find(elem_desc_octet->ref,DB_NAMELIST,0);
+
+			
+			if(Memcmp(ref_comp,elem_desc_octet->ref,DIGEST_SIZE/2)==0)
+			{
+				// invalid ref uuid, we should find ref by ref_name
+				ref_namelist=memdb_find_byname(elem_desc_octet->ref_name,DB_NAMELIST,0);
+			}
+			else
+			{
+				ref_namelist=memdb_find(elem_desc_octet->ref,DB_NAMELIST,0);
+			}
 			if(ref_namelist==NULL)
 				return NULL;
 			elem_desc->ref=ref_namelist->tail;	

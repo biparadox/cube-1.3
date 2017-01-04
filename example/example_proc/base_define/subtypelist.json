@@ -1,23 +1,6 @@
 {
 	"head":
 	{
-		"name":"default_struct",
-		"type":"SUBTYPELIST"
-	},
-	"record":
-	{
-		"type":"DEFAULT",
-		"elem_no":2,
-		"elemlist":
-		[
-			"MSG=0x01",
-			"RET",
-		]
-	}
-}
-{
-	"head":
-	{
 		"name":"message_subtypelist",
 		"type":"SUBTYPELIST"
 	},
@@ -30,9 +13,7 @@
 			"HEAD=0x01",
 			"EXPAND",
 			"FLOW_TRACE",
-			"ASPECT_POINT",
-			"CONN_SYNC",
-			"CONN_ACKI"
+			"ASPECT_POINT"
 		]
 	}
 }

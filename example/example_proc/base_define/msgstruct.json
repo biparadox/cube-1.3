@@ -1,52 +1,6 @@
 {
 	"head":
 	{
-		"name":"msg_head",
-		"type":"STRUCT"
-	},
-	"record":
-	{
-		"elem_desc":
-		[
-			{"name":"tag","type":"STRING","size":4},
-			{"name":"version","type":"INT"},
-			{"name":"sender_uuid","type":"UUID"},
-			{"name":"receiver_uuid","type":"UUID"},
-			{"name":"route","type":"STRING","size":32},
-			{"name":"flow","type":"INT"},
-			{"name":"state","type":"INT"},
-			{"name":"flag","type":"INT"},
-			{"name":"ljump","type":"INT"},
-			{"name":"rjump","type":"INT"},
-			{"name":"record_type","type":"TYPE"},
-			{"name":"record_subtype","type":"SUBTYPE","def":"record_type"},
-			{"name":"record_num","type":"INT"},
-			{"name":"record_size","type":"INT"},
-			{"name":"expand_num","type":"INT"},
-			{"name":"expand_size","type":"INT"},
-			{"name":"msg_uuid","type":"UUID"}
-		]
-	}
-}
-{
-	"head":
-	{
-		"name":"msg_expand",
-		"type":"STRUCT"
-	},
-	"record":
-	{
-		"elem_desc":
-		[
-			{"name":"data_size","type":"INT","size":4},
-			{"name":"type","type":"TYPE"},
-			{"name":"subtype","type":"SUBTYPE","def":"record_type"},
-		]
-	}
-}
-{
-	"head":
-	{
 		"name":"msg_conn_sync",
 		"type":"STRUCT"
 	},

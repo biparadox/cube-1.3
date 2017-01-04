@@ -99,7 +99,7 @@ int main() {
 	
 	char * baseconfig[] =
 	{
-//		"baseflag.json",
+		"namelist.json",
 		"typelist.json",
 		"subtypelist.json",
 		"msghead.json",

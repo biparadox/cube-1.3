@@ -197,7 +197,6 @@ int read_subtypelist_json_desc(void * root,void * record)
 	return ret;	
 }
 		
-
 int read_default_json_desc(void * root,void * record)
 {
 

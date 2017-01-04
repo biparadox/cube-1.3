@@ -10,10 +10,8 @@
 		"elemlist":
 		[
 			"MESSAGE=0x200",
-			"CONFIG",
 			"TUBE",
 			"BLOCK",
-			"MATCH",
 			"ROUTER"
 		]
 	}

@@ -157,6 +157,8 @@ int main() {
 		return -EINVAL;
 	Strcpy(msg_head->sender_uuid,"Test sender");	
 	Strcpy(msg_head->receiver_uuid,"Test receiver");
+	msg_head->flow=MSG_FLOW_QUERY;
+	msg_head->flag=MSG_FLAG_LOCAL|MSG_FLAG_CRYPT;
 	ret=message_add_record(message,msg_head);
 	if(ret<0)
 	{

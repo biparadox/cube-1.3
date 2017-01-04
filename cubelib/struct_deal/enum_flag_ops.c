@@ -161,10 +161,9 @@ int flag_get_text_value(void * addr, char * text, void * elem_template){
 	
 	for(i=0;flag_list[i].name!=NULL;i++)
 	{
-		j=0;
 		if(flag_list[i].value & flag_value)
 		{
-			if(j!=0)
+			if(offset!=0)
 			{
 				text[offset++]='|';
 			}
