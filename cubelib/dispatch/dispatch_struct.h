@@ -100,9 +100,48 @@ struct struct_elem_attr route_rule_desc[] =
 */
 typedef struct tagdispatch_policy
 {
+	char * name;
+	int type;
+	int flag;
 	char sender[DIGEST_SIZE];
+	int jump;
 	POLICY_LIST match_list;
 	POLICY_LIST route_list;
-}  DISPATCH_POLICY;
+}__attribute__((packed))  DISPATCH_POLICY;
+
+static POLICY_LIST local_router_policy;
+static POLICY_LIST main_router_policy;
+static POLICY_LIST aspect_router_policy;
+
+struct expand_flow_trace
+{
+    int  data_size;
+    char tag[4];                 // this should be "FTRE" and "APRE"
+    int  record_num;
+    char *trace_record;
+} __attribute__((packed));
+
+struct expand_aspect_point
+{
+    int  data_size;
+    char tag[4];                 // this should be "APRE"
+    int  record_num;
+    char * aspect_proc;
+    char * aspect_point;
+} __attribute__((packed));
+
+struct expand_route_record
+{
+	int data_size;
+	char tag[4];
+	char sender_uuid[DIGEST_SIZE*2];
+	char receiver_uuid[DIGEST_SIZE*2];
+	char route[DIGEST_SIZE];
+	int  flow;
+	int  state;
+	int  flag;
+	int  ljump;
+	int  rjump;	
+} __attribute__((packed));
 
 #endif // DISPATCH_STRUCT_H

@@ -20,6 +20,24 @@
 {
 	"head":
 	{
+		"name":"router_policy_struct",
+		"type":"SUBTYPELIST"
+	},
+	"record":
+	{
+		"type":"ROUTER",
+		"elem_no":3,
+		"elemlist":
+		[
+			"POLICY_HEAD=0x01",
+			"MATCH_POLICY",
+			"ROUTER_POLICY"
+		]
+	}
+}
+{
+	"head":
+	{
 		"name":"tube_subtypelist",
 		"type":"SUBTYPELIST"
 	},

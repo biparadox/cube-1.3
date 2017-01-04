@@ -102,6 +102,7 @@ int main() {
 	
 	char * baseconfig[] =
 	{
+		"namelist.json",
 		"typelist.json",
 		"subtypelist.json",
 		"msghead.json",
