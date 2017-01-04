@@ -59,12 +59,11 @@ int dispatch_policy_getfirstrouterule(void * policy,void ** rule);
 
 int dispatch_match_message(void * policy,void * message);
 
-int  	aspect_policy_getfirst(void ** policy);
+int aspect_policy_getfirst(void ** policy);
 int aspect_policy_getnext(void ** policy);
 
 int route_find_local_policy(void * message,void **msg_policy,char * sender_proc);
 int route_find_aspect_policy(void * message,void **msg_policy,char * sender_proc);
-int route_find_aspect_local_policy(void * message,void **msg_policy,char * sender_proc);
 
 int route_push_site(void * message,char * name,char * type);
 int route_push_aspect_site(void * message,char * proc,char * point);

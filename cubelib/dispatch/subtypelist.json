@@ -18,7 +18,6 @@
 	}
 }
 {
-	"info-type":"subtypelist",
 	"head":
 	{
 		"name":"tube_subtypelist",
@@ -40,35 +39,18 @@
 {
 	"head":
 	{
-		"name":"block_struct",
+		"name":"msg_expand_struct",
 		"type":"SUBTYPELIST"
 	},
 	"record":
 	{
-		"type":"BLOCK",
+		"type":"MSG_EXPAND",
 		"elem_no":3,
 		"elemlist":
 		[
-			"BASEINFO=0x01",
-			"SUBJECT",
-			"CONTEXT"
-		]
-	}
-}
-{
-	"head":
-	{
-		"name":"login_struct",
-		"type":"SUBTYPELIST"
-	},
-	"record":
-	{
-		"type":"LOGIN",
-		"elem_no":2,
-		"elemlist":
-		[
-			"LOGIN_INFO=0x01",
-			"RETURN"
+			"FLOW_TRACE=0x01",
+			"ASPECT_POINT",
+			"ROUTER_STACK"
 		]
 	}
 }

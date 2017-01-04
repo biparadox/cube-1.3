@@ -22,6 +22,7 @@ typedef struct tagmatch_rule
 	void * value;
 }__attribute__((packed)) MATCH_RULE;
 
+/*
 static NAME2VALUE match_op_type_list[] =
 {
 	{"AND",DISPATCH_MATCH_AND},
@@ -59,7 +60,7 @@ static struct struct_elem_attr match_rule_desc[] =
 	{"area",CUBE_TYPE_ENUM,0,&message_area_type_list,NULL},
 	{"type",CUBE_TYPE_RECORDTYPE,sizeof(int),NULL,NULL},
 	{"subtype",CUBE_TYPE_RECORDSUBTYPE,sizeof(int),NULL,"type"},
-	{NULL,CUBE_TYPE_ENDDATA,0,NULL}
+	{NULL,CUBE_TYPE_ENDDATA,0,NULL,NULL}
 };
 
 static NAME2VALUE message_flow_type_valuelist[]=
@@ -79,7 +80,7 @@ static NAME2VALUE message_flow_type_valuelist[]=
 	{"ERROR",MSG_FLOW_ERROR},
 	{"NULL",0},
 };
-
+*/
 
 typedef struct tagroute_rule
 {
@@ -88,13 +89,15 @@ typedef struct tagroute_rule
 	char * target_name;
 }__attribute__((packed)) ROUTE_RULE;
 
+/*
 struct struct_elem_attr route_rule_desc[] =
 {
-	{"type",CUBE_TYPE_ENUM,0,&message_flow_type_valuelist},
-	{"target_type",CUBE_TYPE_ENUM,0,&route_target_type_list},
-	{"target_name",CUBE_TYPE_ESTRING,DIGEST_SIZE*2,NULL},
-	{NULL,CUBE_TYPE_ENDDATA,0,NULL}
+	{"type",CUBE_TYPE_ENUM,0,&message_flow_type_valuelist,NULL},
+	{"target_type",CUBE_TYPE_ENUM,0,&route_target_type_list,NULL},
+	{"target_name",CUBE_TYPE_ESTRING,DIGEST_SIZE*2,NULL,NULL},
+	{NULL,CUBE_TYPE_ENDDATA,0,NULL,NULL}
 };
+*/
 typedef struct tagdispatch_policy
 {
 	char sender[DIGEST_SIZE];

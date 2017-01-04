@@ -10,10 +10,9 @@
 		"elemlist":
 		[
 			"MESSAGE=0x200",
-			"TUBE",
-			"BLOCK",
 			"ROUTER",
-			"LOGIN"
+			"MSG_EXPAND",
+			"TUBE"
 		]
 	}
 }

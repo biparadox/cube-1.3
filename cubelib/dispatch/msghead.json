@@ -12,6 +12,7 @@
 			{"name":"version","type":"INT"},
 			{"name":"sender_uuid","type":"UUID"},
 			{"name":"receiver_uuid","type":"UUID"},
+			{"name":"route","type":"STRING","size":32},
 			{"name":"flow","type":"INT"},
 			{"name":"state","type":"INT"},
 			{"name":"flag","type":"INT"},
