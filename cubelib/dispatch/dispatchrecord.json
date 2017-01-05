@@ -29,7 +29,7 @@
 	"head":
 	{
 		"name":"dispatch_match_head",
-		"type":"RECORDTYPE",
+		"type":"RECORDTYPE"
 	},
 	"record":
 	{
@@ -40,7 +40,7 @@
 			"elem_desc":
 			[
 				{"name":"op","type":"ENUM","ref_name":"match_op_type"},
-				{"name":"area","type":"ENUM","ref_name":"match_area_type"},
+				{"name":"area","type":"ENUM","ref_name":"message_area_type"},
 				{"name":"type","type":"TYPE"},
 				{"name":"subtype","type":"SUBTYPE","def":"type"}
 			]
@@ -51,7 +51,7 @@
 	"head":
 	{
 		"name":"dispatch_router_rule",
-		"type":"RECORDTYPE",
+		"type":"RECORDTYPE"
 	},
 	"record":
 	{
@@ -61,7 +61,7 @@
 		{
 			"elem_desc":
 			[
-				{"name":"target_type","type":"ENUM","ref_name":"match_area_type"},
+				{"name":"target_type","type":"ENUM","ref_name":"message_area_type"},
 				{"name":"target_name","type":"ESTRING"}
 			]
 		}

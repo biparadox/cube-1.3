@@ -1,24 +1,21 @@
 {
-	"sender":"test_channel",
+	
+	"policy_head":
+	{
+		"name":"test",
+       		"type":"DELIVER",
+        	"sender_proc":"hello",
+		"jump":0
+	},
 	"MATCH_RULES":
 	[
-		{"op":"AND","area":"RECORD","type":"LOGIN","subtype":"LOGIN_INFO",
-			"value":{"user":"hujun"}}
+		{"op":"AND","area":"RECORD","type":"MESSAGE","subtype":"BASE_MSG",
+			"value":{"message":"hello"}}
 	],
 	"ROUTE_RULES":
 	[
-		{"type":"LOCAL","target_type":"LOCAL","target_name":"echo"}
-	]
-}
-{
-	"sender":"echo",
-	"MATCH_RULES":
-	[
-		{"op":"AND","area":"RECORD","type":"LOGIN","subtype":"LOGIN_INFO",
-			"value":{"user":"hujun"}}
-	],
-	"ROUTE_RULES":
-	[
-		{"type":"LOCAL","target_type":"CHANNEL","target_name":"test_channel"}
+		"main_policy":[
+			{"target_type":"LOCAL","target_name":"echo"}
+		]
 	]
 }
