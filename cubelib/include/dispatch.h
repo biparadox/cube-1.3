@@ -47,7 +47,7 @@ enum route_target_type
     ROUTE_TARGET_ERROR=0xFFFF,
 };
 
-int dispatch_init(void * object);
+int dispatch_init();
 void * dispatch_policy_create();
 
 

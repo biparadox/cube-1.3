@@ -51,17 +51,12 @@ int _namelist_tail_func(void * memdb,void * record)
 {
 	DB_RECORD * db_record=record;
 	NAME2VALUE * namevalue;
+	struct struct_namelist * namelist=db_record->record;
 	int i;
 	int ret;
-	struct struct_namelist * namelist=db_record->record;
 	ret=Galloc0(&namevalue,sizeof(NAME2VALUE)*(namelist->elem_no+1));
-	if(ret<0)
-		return ret;
-	for(i=0;i<namelist->elem_no;i++)
-	{
-		namevalue[i].name=namelist->elemlist[i].name;
-		namevalue[i].value=namelist->elemlist[i].value;
-	}
+	Memcpy(namevalue,namelist->elemlist,sizeof(NAME2VALUE)*namelist->elem_no);	
+
 	db_record->tail=namevalue;
 	return 0;
 }
@@ -73,7 +68,6 @@ static inline int _get_namelist_no(void * list)
 
 	if(list==NULL)
 		return -EINVAL;
-
 	while(namelist[i].name!=NULL)
 		i++;
 	return i;
@@ -200,7 +194,7 @@ int _memdb_record_find_name(void * record,char * name)
 	if(record_db->head.name[0]!=0)
 		namelist_no--;
 	if(namelist_no<1)
-		return -EINVAL;
+		return 0;
 	for(i=0;i<namelist_no;i++)
 	{
 		if(Strncmp(record_db->names[i],name,DIGEST_SIZE)==0)

@@ -24,7 +24,8 @@ enum subtypelist_message
 	SUBTYPE_FLOW_TRACE,
 	SUBTYPE_ASPECT_POINT,
 	SUBTYPE_CONN_SYNI,
-	SUBTYPE_CONN_ACKI
+	SUBTYPE_CONN_ACKI,
+	SUBTYPE_BASE_MSG
 };
 
 enum message_flow_type

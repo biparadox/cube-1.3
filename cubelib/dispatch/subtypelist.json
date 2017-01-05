@@ -7,7 +7,7 @@
 	"record":
 	{
 		"type":"MESSAGE",
-		"elem_no":4,
+		"elem_no":7,
 		"elemlist":
 		[
 			"HEAD=0x01",
@@ -15,7 +15,8 @@
 			"FLOW_TRACE",
 			"ASPECT_POINT",
 			"CONN_SYNI",
-			"CONN_ACKI"
+			"CONN_ACKI",
+			"BASE_MSG"
 		]
 	}
 }
@@ -29,7 +30,7 @@
 	"record":
 	{
 		"type":"DISPATCH",
-		"elem_no":4,
+		"elem_no":3,
 		"elemlist":
 		[
 			"POLICY_HEAD=0x01",

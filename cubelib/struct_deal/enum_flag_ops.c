@@ -13,14 +13,14 @@ int enum_get_text_value(void * addr,char * text,void * elem_template){
 	struct elem_template * elem_attr=elem_template;
 	struct struct_elem_attr * elem_desc = elem_attr->elem_desc;
 	int enum_value;
-	NAME2VALUE * enum_list;
+	struct struct_namelist * enum_list;
 	int len;
 	int offset=0;
 	int i;
 
 	enum_list=elem_attr->ref;
 	if(enum_list==NULL)
-		enum_list=elem_desc->ref;
+		return -EINVAL;
 
 	switch(elem_desc->type)
 	{
@@ -46,12 +46,12 @@ int enum_get_text_value(void * addr,char * text,void * elem_template){
 		return len;
 	}
 	
-	for(i=0;enum_list[i].name!=NULL;i++)
+	for(i=0;i<enum_list->elem_no;i++)
 	{
-		if(enum_list[i].value==enum_value)
+		if(enum_list->elemlist[i].value==enum_value)
 		{
-			len=Strlen(enum_list[i].name);
-			Memcpy(text+offset,enum_list[i].name,len+1);
+			len=Strlen(enum_list->elemlist[i].name);
+			Memcpy(text+offset,enum_list->elemlist[i].name,len+1);
 			offset+=len+1;
 			return offset;
 		}
@@ -71,13 +71,13 @@ int enum_set_text_value(void * addr,void * text,void * elem_template){
 	struct elem_template * elem_attr=elem_template;
 	struct struct_elem_attr * elem_desc = elem_attr->elem_desc;
 	int enum_value;
-	NAME2VALUE * enum_list;
+	struct struct_namelist * enum_list;
 	int len;
 	int offset=0;
 	int i;
 	enum_list=elem_attr->ref;
 	if(enum_list==NULL)
-		enum_list=elem_desc->ref;
+		return -EINVAL;
 	
 	if(!Strcmp(nulstring,text))
 	{
@@ -95,11 +95,11 @@ int enum_set_text_value(void * addr,void * text,void * elem_template){
 	}
 	else
 	{
-		for(i=0;enum_list[i].name!=NULL;i++)
+		for(i=0;i<enum_list->elem_no;i++)
 		{
-			if(!Strcmp(enum_list[i].name,text))
+			if(!Strcmp(enum_list->elemlist[i].name,text))
 			{
-				enum_value=enum_list[i].value;
+				enum_value=enum_list->elemlist[i].value;
 			}
 		}
 	}
@@ -133,13 +133,11 @@ int flag_get_text_value(void * addr, char * text, void * elem_template){
 	int flag_value;
 	int retval;
 	int offset=0;
-	NAME2VALUE * flag_list;
+	struct struct_namelist * flag_list;
 	int len;
 	int i,j;
 
 	flag_list=elem_attr->ref;
-	if(flag_list==NULL)
-		flag_list=elem_desc->ref;
 	if(flag_list==NULL)
 		return -EINVAL;
 	
@@ -159,16 +157,16 @@ int flag_get_text_value(void * addr, char * text, void * elem_template){
 			return -EINVAL;
 	}
 	
-	for(i=0;flag_list[i].name!=NULL;i++)
+	for(i=0;i<flag_list->elem_no;i++)
 	{
-		if(flag_list[i].value & flag_value)
+		if(flag_list->elemlist[i].value & flag_value)
 		{
 			if(offset!=0)
 			{
 				text[offset++]='|';
 			}
-			len=Strlen(flag_list[i].name);
-			Memcpy(text+offset,flag_list[i].name,len);
+			len=Strlen(flag_list->elemlist[i].name);
+			Memcpy(text+offset,flag_list->elemlist[i].name,len);
 			offset+=len;
 		}
 	}
@@ -189,12 +187,10 @@ int flag_set_text_value(void * addr, char * text, void * elem_template){
 	int flag_value;
 	int retval;
 	int offset=0;
-	NAME2VALUE * flag_list;
+	struct struct_namelist * flag_list;
 	int i,j;
 
 	flag_list=elem_attr->ref;
-	if(flag_list==NULL)
-		flag_list=elem_desc->ref;
 	if(flag_list==NULL)
 		return -EINVAL;
 	
@@ -214,14 +210,14 @@ int flag_set_text_value(void * addr, char * text, void * elem_template){
 			continue;
 		temp_string[offset]=0;
 		offset=0;
-		for(j=0;flag_list[j].name!=NULL;j++)
+		for(j=0;j<flag_list->elem_no;j++)
 		{
-			if(Strcmp(flag_list[j].name,temp_string))
+			if(Strcmp(flag_list->elemlist[j].name,temp_string))
 				continue;
-			flag_value |= flag_list[j].value;
+			flag_value |= flag_list->elemlist[j].value;
 			break;
 		}
-		if(flag_list[j].name==NULL)
+		if(flag_list->elemlist[j].name==NULL)
 			return -EINVAL;
 	}
 	switch(elem_desc->type)

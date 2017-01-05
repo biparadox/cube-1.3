@@ -144,8 +144,8 @@ int main() {
 
 	Memset(init_struct.head.uuid,'B',0x20);
 	Strcpy(init_struct.head.name,"login_list");
-	init_struct.head.type=1025;
-	init_struct.head.subtype=6;
+	init_struct.head.type=0;
+	init_struct.head.subtype=0;
 
 	for(i=0;name_list[i]!=NULL;i++);
 	init_struct.record_no=i;

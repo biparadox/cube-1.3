@@ -48,12 +48,6 @@ struct struct_desc_record
 	struct elem_attr_octet * elem_desc;
 }__attribute__((packed));
 
-struct struct_namelist
-{
-	int elem_no;
-	NAME2VALUE * elemlist;
-}__attribute__((packed));
-
 struct struct_typelist
 {
 	int elem_no;

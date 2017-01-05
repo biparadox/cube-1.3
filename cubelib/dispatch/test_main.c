@@ -57,7 +57,7 @@ int read_json_file(char * file_name)
 	if(fd<0)
 		return fd;
 
-	readlen=read(fd,json_buffer,1024);
+	readlen=read(fd,json_buffer,4096);
 	if(readlen<0)
 		return -EIO;
 	json_buffer[readlen]=0;
@@ -162,6 +162,7 @@ int main() {
 		"msghead.json",
 		"msgstruct.json",
 		"msgrecord.json",
+		"base_msg.json",
 		NULL
 	};
 
@@ -184,6 +185,7 @@ int main() {
 // test struct desc reading start
 
 	msgfunc_init();
+	dispatch_init();
 	
 	void * message;
 	void * policy;

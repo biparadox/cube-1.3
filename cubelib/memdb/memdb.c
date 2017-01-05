@@ -257,16 +257,31 @@ int read_recordtype_json_desc(void * root,void * record)
 
 	temp_node=json_find_elem("uuid",root);
 	if(temp_node==NULL)
-		return -EINVAL;
-	char * uuid_str=json_get_valuestr(temp_node);
-	
-	if(!Isvaliduuid(uuid_str))
 	{
-		struct_record=memdb_find_byname(uuid_str,DB_STRUCT_DESC,0);
-		if(struct_record==NULL)
-			return -EINVAL;		
+		temp_node=json_find_elem("struct_desc",root);
+		if(temp_node==NULL)
+			return -EINVAL;
+		ret=Galloc0(&struct_record,sizeof(*struct_record));
+		if(ret<0)
+			return ret;
+		struct_record->head.type=DB_STRUCT_DESC;
+		ret=read_default_json_desc(temp_node,struct_record);
+		if(ret<0)
+			return ret;	
 		Memcpy(recordtype->uuid,struct_record->head.uuid,DIGEST_SIZE);
-		ret=json_remove_node(temp_node);
+	}
+	else
+	{
+		char * uuid_str=json_get_valuestr(temp_node);
+	
+		if(!Isvaliduuid(uuid_str))
+		{
+			struct_record=memdb_find_byname(uuid_str,DB_STRUCT_DESC,0);
+			if(struct_record==NULL)
+				return -EINVAL;		
+			Memcpy(recordtype->uuid,struct_record->head.uuid,DIGEST_SIZE);
+			ret=json_remove_node(temp_node);
+		}
 	}
 
 	ret=json_2_struct(root,recordtype,struct_template);

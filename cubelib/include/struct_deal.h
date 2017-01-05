@@ -85,6 +85,12 @@ typedef struct tagnameofvalue
 	int value;
 }__attribute__((packed)) NAME2VALUE;
 
+struct struct_namelist
+{
+	int elem_no;
+	NAME2VALUE * elemlist;
+}__attribute__((packed));
+
 typedef struct tagnameofpointer
 {
 	char * name;

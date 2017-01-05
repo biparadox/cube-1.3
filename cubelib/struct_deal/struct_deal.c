@@ -1,4 +1,3 @@
-
 #include "../include/data_type.h"
 #include "../include/alloc.h"
 #include "../include/struct_deal.h"
@@ -16,6 +15,30 @@ struct struct_deal_ops
 	int (*exitstruct)(void * addr,void * data,void * elem,void * para);
 	int (*proc_func)(void * addr, void * data, void * elem,void * para);
 	int (*finish)(void * addr, void * data,void *elem,void * para);
+};
+
+struct struct_namelist * _namevalue_2_namelist(NAME2VALUE * namevalue)
+{
+	struct struct_namelist * namelist;
+	int i;
+	int ret;
+	const int max_namelist_no=1024;
+	ret=Galloc0(&namelist,sizeof(*namelist));
+	if(namevalue==NULL)
+	{
+		namelist->elem_no=0;
+		namelist->elemlist=NULL;
+		return namelist;
+	}
+	for(namelist->elem_no=0;namelist->elem_no<max_namelist_no;namelist->elem_no++)
+	{
+		if(namevalue[namelist->elem_no].name==NULL)
+			break;	
+	}
+	if(namelist->elem_no==max_namelist_no)
+		return NULL;
+	namelist->elemlist=namevalue;
+	return namelist;
 };
 
 int  _convert_frame_func (void *addr, void * data, void * struct_template,
@@ -289,6 +312,15 @@ int _create_template_proc_func(void * addr,void * data,void * elem, void * para)
 		my_para->curr_offset+=curr_elem->size;
 		
 	}
+	if(_isnamelistelem(curr_elem->elem_desc->type))
+	{
+		struct struct_namelist * namelist;
+		namelist=_namevalue_2_namelist(curr_elem->elem_desc->ref);
+		curr_elem->ref=namelist;
+				
+	}
+
+
 	curr_elem->father=my_para->parent_elem;
 	return 0;
 }
