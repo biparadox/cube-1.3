@@ -34,8 +34,8 @@
 		"elemlist":
 		[
 			"POLICY_HEAD=0x01",
-			"MATCH_RULE",
-			"ROUTER_RULE"
+			"MATCH_HEAD",
+			"ROUTE_RULE"
 		]
 	}
 }

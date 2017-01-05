@@ -157,12 +157,13 @@ int main() {
 	char * baseconfig[] =
 	{
 		"namelist.json",
+		"dispatch_namelist.json",
 		"typelist.json",
 		"subtypelist.json",
 		"msghead.json",
-		"msgstruct.json",
 		"msgrecord.json",
 		"base_msg.json",
+		"dispatchrecord.json",
 		NULL
 	};
 

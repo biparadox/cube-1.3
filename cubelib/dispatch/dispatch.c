@@ -43,8 +43,8 @@ int dispatch_init(void * object )
 		ret=_init_policy_list(&process_policy);
 		ret=_init_policy_list(&aspect_policy);
     		policy_head_template=memdb_get_template(DTYPE_DISPATCH,STYPE_POLICY_HEAD);
-    		match_rule_template=memdb_get_template(DTYPE_DISPATCH,STYPE_MATCH_RULE);
-    		route_rule_template=memdb_get_template(DTYPE_DISPATCH,STYPE_ROUTER_RULE);
+    		match_rule_template=memdb_get_template(DTYPE_DISPATCH,STYPE_MATCH_HEAD);
+    		route_rule_template=memdb_get_template(DTYPE_DISPATCH,STYPE_ROUTE_RULE);
 	}
 	return 0;
 }

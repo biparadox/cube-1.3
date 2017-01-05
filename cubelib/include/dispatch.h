@@ -12,8 +12,8 @@ enum dynamic_dispatch_typelist
 enum subtypelist_dispatch
 {
 	STYPE_POLICY_HEAD=0x01,
-	STYPE_MATCH_RULE,
-	STYPE_ROUTER_RULE
+	STYPE_MATCH_HEAD,
+	STYPE_ROUTE_RULE
 };
 
 
