@@ -38,25 +38,5 @@ static struct struct_elem_attr plugin_config_desc[]=
 	{NULL,CUBE_TYPE_ENDDATA,0,NULL,NULL}
 };
 
-enum dynamic_typelist
-{
-	DTYPE_MESSAGE=0x200,
-	DTYPE_CONFIG,
-	DTYPE_TUBE,
-	DTYPE_BLOCK,
-	DTYPE_MATCH,
-	DTYPE_ROUTER
-};
-
-enum subtypelist_message
-{
-	SUBTYPE_HEAD=0x01,
-	SUBTYPE_EXPAND,
-	SUBTYPE_FLOW_TRACE,
-	SUBTYPE_ASPECT_POINT,
-	SUBTYPE_CONN_SYNI,
-	SUBTYPE_CONN_ACKI
-};
-
 static struct timeval time_val={0,50*1000};
 #endif

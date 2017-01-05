@@ -7,13 +7,16 @@
 	"record":
 	{
 		"type":"MESSAGE",
-		"elem_no":4,
+		"elem_no":7,
 		"elemlist":
 		[
 			"HEAD=0x01",
 			"EXPAND",
 			"FLOW_TRACE",
-			"ASPECT_POINT"
+			"ASPECT_POINT",
+			"CONN_SYNI",
+			"CONN_ACKI",
+			"BASE_MSG"
 		]
 	}
 }
@@ -26,32 +29,13 @@
 	},
 	"record":
 	{
-		"type":"TUBE",
-		"elem_no":4,
-		"elemlist":
-		[
-			"BASEINFO=0x01",
-			"SERVER",
-			"CLIENT",
-			"CHANNEL"
-		]
-	}
-}
-{
-	"head":
-	{
-		"name":"block_struct",
-		"type":"SUBTYPELIST"
-	},
-	"record":
-	{
-		"type":"BLOCK",
+		"type":"DISPATCH",
 		"elem_no":3,
 		"elemlist":
 		[
-			"BASEINFO=0x01",
-			"SUBJECT",
-			"CONTEXT"
+			"POLICY_HEAD=0x01",
+			"MATCH_HEAD",
+			"ROUTE_RULE"
 		]
 	}
 }

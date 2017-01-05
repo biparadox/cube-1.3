@@ -8,7 +8,18 @@
 	{
 		"type":"MESSAGE",
 		"subtype":"CONN_SYNC",
-		"uuid":"msg_conn_sync",
+		"struct_desc":
+		{
+			"elem_desc":
+			[
+				{"name":"uuid","type":"UUID"},
+				{"name":"server_name","type":"ESTRING","size":256},
+				{"name":"service","type":"ESTRING","size":64},
+				{"name":"server_addr","type":"ESTRING","size":256},
+				{"name":"flags","type":"INT"},
+				{"name":"nonce","type":"STRING","size":32},
+			]
+		},
 		"index":
 		{
 			"flag":"INDEX",
@@ -26,7 +37,22 @@
 	{
 		"type":"MESSAGE",
 		"subtype":"CONN_ACKI",
-		"uuid":"msg_conn_acki",
+		"struct_desc":
+		{
+			"elem_desc":
+			[
+				{"name":"uuid","type":"UUID"},
+				{"name":"client_name","type":"ESTRING","size":256},
+				{"name":"client_proc","type":"ESTRING","size":64},
+				{"name":"client_addr","type":"ESTRING","size":256},
+				{"name":"server_uuid","type":"UUID"},
+				{"name":"server_name","type":"ESTRING","size":256},
+				{"name":"service","type":"ESTRING","size":64},
+				{"name":"server_addr","type":"ESTRING","size":256},
+				{"name":"flags","type":"INT"},
+				{"name":"nonce","type":"STRING","size":32},
+			]
+		},
 		"index":
 		{
 			"flag":"INDEX",

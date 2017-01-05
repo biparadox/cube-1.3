@@ -154,12 +154,12 @@ int main(int argc,char **argv)
     {
 //		"baseflag.json",
 	"base_define/namelist.json",
+	"base_define/dispatchnamelist.json",
 	"base_define/typelist.json",
 	"base_define/subtypelist.json",
 	"base_define/msghead.json",
-	"base_define/msgstruct.json",
 	"base_define/msgrecord.json",
-	"base_define/default_record.json",
+	"base_define/dispatchrecord.json",
 	"base_define/headrecord.json",
 	 NULL
     };

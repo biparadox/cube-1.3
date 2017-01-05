@@ -1,18 +1,17 @@
 {
 	"head":
 	{
-		"name":"internal_type",
+		"name":"dispatch_type",
 		"type":"TYPELIST"
 	},
 	"record":
 	{
-		"elem_no":4,
+		"elem_no":3,
 		"elemlist":
 		[
 			"MESSAGE=0x200",
-			"TUBE",
-			"BLOCK",
-			"ROUTER"
+			"MSG_EXPAND",
+			"DISPATCH=0x210"
 		]
 	}
 }

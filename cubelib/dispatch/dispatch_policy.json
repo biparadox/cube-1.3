@@ -1,5 +1,4 @@
 {
-	
 	"policy_head":
 	{
 		"name":"test",
@@ -9,13 +8,15 @@
 	},
 	"MATCH_RULES":
 	[
-		{"op":"AND","area":"RECORD","type":"MESSAGE","subtype":"BASE_MSG",
-			"value":{"message":"hello"}}
+		{
+			"op":"AND","area":"RECORD","type":"MESSAGE","subtype":"BASE_MSG",
+				"value":{"message":"hello"}
+		}
 	],
 	"ROUTE_RULES":
-	[
+	{
 		"main_policy":[
 			{"target_type":"LOCAL","target_name":"echo"}
 		]
-	]
+	}
 }
