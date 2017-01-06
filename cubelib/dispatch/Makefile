@@ -1,17 +1,19 @@
 FLAGS= -g -o
-CFLAGS= -g -c -DUSER_MODE 
+CFLAGS= -g -c -fPIC -Wall -DUSER_MODE 
 CC=gcc
 LD=ld
 CCP=g++
 STRUCTOBJ= dispatch.o 
+LIBNAME=dispatch
+DEPENDLIB= -lmessage -lmemdb -lbasefunc -lcrypto_func -lstruct -ljson -lalloc -lstring
 
-main: ../lib/libdispatch.a  test_main
-test_main: test_main.c ../lib/libdispatch.a  
-	$(CC) $(FLAGS) test_main test_main.c -L../lib -ldispatch -lmessage -lmemdb -lbasefunc -lcrypto_func -lstruct -ljson -lalloc -lstring -lpthread
-../lib/libdispatch.a: $(STRUCTOBJ)
-	ar rs libdispatch.a $(STRUCTOBJ)
-	mv    libdispatch.a ../lib
+main: ../lib/lib$(LIBNAME).so  test_main
+test_main: test_main.c ../lib/lib$(LIBNAME).so 
+	$(CC) $(FLAGS) test_main test_main.c -L../lib -l$(LIBNAME) $(DEPENDLIB)   
+../lib/lib$(LIBNAME).so: $(STRUCTOBJ)
+	$(CC) -shared -o lib$(LIBNAME).so $(STRUCTOBJ)
+	mv   lib$(LIBNAME).so ../lib
 dispatch.o:  dispatch.c ../include/dispatch.h  dispatch_struct.h
 	$(CC) $(CFLAGS) dispatch.c
 clean:
-	rm -f *~ *.a *.o test_main
+	rm -f test_main *~ *.a *.o ../lib/lib$(LIBNAME).so

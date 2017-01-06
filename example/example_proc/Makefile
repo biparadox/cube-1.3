@@ -6,7 +6,7 @@ CC=gcc
 CCP=g++
 MAIN_PROC=example_proc
 INIT_OBJ=lib$(MAIN_PROC).so
-TEST_LIB= -L../lib -lexmodule -lmessage -lmemdb -lconnector -lstruct -lcrypto_func -ljson -lbasefunc -lstring -lalloc -lpthread
+TEST_LIB= -L../lib -lexmodule -ldispatch -lmessage -lmemdb -lconnector -lstruct -lcrypto_func -ljson -lbasefunc -lstring -lalloc -lpthread
 
 main: $(MAIN_PROC)
 $(MAIN_PROC):  $(INIT_OBJ) main_proc.c

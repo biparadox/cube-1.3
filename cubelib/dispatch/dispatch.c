@@ -42,9 +42,9 @@ int dispatch_init(void * object )
 	{
 		ret=_init_policy_list(&process_policy);
 		ret=_init_policy_list(&aspect_policy);
-    		policy_head_template=memdb_get_template(DTYPE_DISPATCH,STYPE_POLICY_HEAD);
-    		match_rule_template=memdb_get_template(DTYPE_DISPATCH,STYPE_MATCH_HEAD);
-    		route_rule_template=memdb_get_template(DTYPE_DISPATCH,STYPE_ROUTE_RULE);
+    		policy_head_template=memdb_get_template(DTYPE_DISPATCH,SUBTYPE_POLICY_HEAD);
+    		match_rule_template=memdb_get_template(DTYPE_DISPATCH,SUBTYPE_MATCH_HEAD);
+    		route_rule_template=memdb_get_template(DTYPE_DISPATCH,SUBTYPE_ROUTE_RULE);
 	}
 	return 0;
 }
@@ -612,7 +612,7 @@ int route_read_cfg(char * filename)
 int match_message_head(void * match_rule,void * message)
 {
     int ret;
-    MESSAGE_HEAD * msg_head=get_message_head(message);
+    MSG_HEAD * msg_head=get_message_head(message);
     if(msg_head==NULL)
         return -EINVAL;
     MATCH_RULE * rule=(MATCH_RULE *)match_rule;
@@ -625,7 +625,7 @@ int match_message_head(void * match_rule,void * message)
 int match_message_record(void * match_rule,void * message)
 {
     int ret;
-    MESSAGE_HEAD * msg_head=get_message_head(message);
+    MSG_HEAD * msg_head=get_message_head(message);
     if(msg_head==NULL)
         return -EINVAL;
     void * record_template = load_record_template(msg_head->record_type);
@@ -643,7 +643,7 @@ int match_message_expand(void * match_rule,void * message)
 {
     int ret;
     int i;
-    MESSAGE_HEAD * msg_head=get_message_head(message);
+    MSG_HEAD * msg_head=get_message_head(message);
     MESSAGE_EXPAND * expand;
     if(msg_head==NULL)
         return -EINVAL;
@@ -1036,7 +1036,7 @@ int route_dup_activemsg_info (void * message)
 {
 	int ret;
 	struct message_box * msg_box=message;
-	MESSAGE_HEAD * msg_head;
+	MSG_HEAD * msg_head;
 	if(message==NULL)
 		return -EINVAL;
 
@@ -1467,7 +1467,7 @@ int route_pop_site(void * message, char * type)
 	if(strcmp(type,"FTRE")!=0)
 			return -EINVAL;
 
-	MESSAGE_HEAD * msg_head =get_message_head(message);
+	MSG_HEAD * msg_head =get_message_head(message);
 
 	ret=message_get_define_expand(message,&flow_trace,type);
 	if(ret<0)
@@ -1494,7 +1494,7 @@ int route_pop_aspect_site(void * message, char * proc)
 	int ret;
 	int len;
 
-	MESSAGE_HEAD * msg_head =get_message_head(message);
+	MSG_HEAD * msg_head =get_message_head(message);
 
 	ret=message_get_define_expand(message,&aspect_point,"APRE");
 	if(ret<0)
@@ -1516,3 +1516,31 @@ int route_pop_aspect_site(void * message, char * proc)
 	}
 	return 1;
 }*/
+int router_store_route(void * message)
+{
+	int ret;
+	MSG_HEAD * msg_head;
+	struct expand_route_record * route_record;
+	if(message==NULL)
+		return  -EINVAL;
+	msg_head=(MSG_HEAD *)message_get_head(message);	
+	route_record=malloc(sizeof(*route_record)); 	
+	if(route_record==NULL)
+		return -ENOMEM;
+
+	memset(route_record,0,sizeof(*route_record));
+	route_record->type=DTYPE_MESSAGE;
+	route_record->subtype=SUBTYPE_ROUTE_RECORD;
+	route_record->data_size=sizeof(*route_record);
+	memcpy(route_record->sender_uuid,msg_head->sender_uuid,DIGEST_SIZE*2);
+	memcpy(route_record->receiver_uuid,msg_head->receiver_uuid,DIGEST_SIZE*2);
+	memcpy(route_record->route,msg_head->route,DIGEST_SIZE);
+	route_record->flow=msg_head->flow;
+	route_record->state=msg_head->state;
+	route_record->flag=msg_head->flag;
+	route_record->ljump=msg_head->ljump;
+	route_record->rjump=msg_head->rjump;
+		
+	ret=message_add_expand(message,route_record);
+	return ret;
+}

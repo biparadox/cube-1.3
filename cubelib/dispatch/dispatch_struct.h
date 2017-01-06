@@ -62,7 +62,8 @@ struct expand_aspect_point
 struct expand_route_record
 {
 	int data_size;
-	char tag[4];
+	int type;
+	int subtype;
 	char sender_uuid[DIGEST_SIZE*2];
 	char receiver_uuid[DIGEST_SIZE*2];
 	char route[DIGEST_SIZE];

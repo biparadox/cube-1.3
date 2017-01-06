@@ -61,7 +61,6 @@ int read_json_file(char * file_name)
 	if(readlen<0)
 		return -EIO;
 	json_buffer[readlen]=0;
-	printf("%s\n",json_buffer);
 	close(fd);
 
 	json_offset=0;

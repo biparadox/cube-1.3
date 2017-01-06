@@ -21,11 +21,16 @@ enum subtypelist_message
 {
 	SUBTYPE_HEAD=0x01,
 	SUBTYPE_EXPAND,
-	SUBTYPE_FLOW_TRACE,
-	SUBTYPE_ASPECT_POINT,
 	SUBTYPE_CONN_SYNI,
 	SUBTYPE_CONN_ACKI,
 	SUBTYPE_BASE_MSG
+};
+
+enum subtypelist_msg_expand
+{
+	SUBTYPE_FLOW_TRACE,
+	SUBTYPE_ASPECT_POINT,
+	SUBTYPE_ROUTE_RECORD
 };
 
 enum message_flow_type
