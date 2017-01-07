@@ -61,7 +61,7 @@
 		{
 			"elem_desc":
 			[
-				{"name":"target_type","type":"ENUM","ref_name":"message_area_type"},
+				{"name":"target_type","type":"ENUM","ref_name":"route_target_type"},
 				{"name":"target_name","type":"ESTRING"}
 			]
 		}

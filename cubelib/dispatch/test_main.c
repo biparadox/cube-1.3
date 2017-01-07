@@ -134,6 +134,7 @@ int read_dispatch_file(char * file_name)
 		dispatch_policy_add(policy);
 		count++;
 	}
+	printf("read %d policy succeed!\n",count);
 	return count;
 }
 
@@ -217,7 +218,25 @@ int main() {
 	while(policy!=NULL)
 	{
 		ret=dispatch_match_message(policy,message);
+		if(ret==0)
+		{
+			printf("this message match the policy!\n");
+			break;
+		}
 		ret=dispatch_policy_getnext(&policy);
+	}
+
+	if(policy!=NULL)
+	{
+		router_set_local_route(message,policy);	
+		ret=message_output_json(message,json_buffer);
+		if(ret<0)
+		{
+			printf("message output json failed!\n");
+			return ret;
+		}
+
+		printf("%s\n",json_buffer);
 	}
 
 //	routine_start();

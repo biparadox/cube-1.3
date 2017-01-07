@@ -117,7 +117,7 @@ void * dispatch_read_policy(void * policy_node)
         return NULL;
 
     temp_node=json_find_elem("policy_head",policy_node);
-    if(temp_node!=NULL)
+    if(temp_node==NULL)
     {
 	return NULL;
     }
@@ -184,7 +184,11 @@ void * dispatch_read_policy(void * policy_node)
     // read the route policy
     // first,read the main route policy
 
-    route_rule_node=json_get_first_child(route_policy_node);
+    temp_node=json_find_elem("main_policy",route_policy_node);
+    if(temp_node==NULL)
+	return -EINVAL;	
+
+    route_rule_node=json_get_first_child(temp_node);
     while(route_rule_node!=NULL)
     {
     	ret=Galloc0(&temp_route_rule,sizeof(ROUTE_RULE));
@@ -197,7 +201,7 @@ void * dispatch_read_policy(void * policy_node)
 	ret=dispatch_policy_addrouterule(policy,temp_route_rule);
 	if(ret<0)
 		return NULL;	
-        route_rule_node=json_get_next_child(route_policy_node);
+        route_rule_node=json_get_next_child(temp_node);
     } 
 
     return policy;
@@ -572,7 +576,7 @@ int router_set_local_route(void * message,void * policy)
 	ret=dispatch_policy_getfirstrouterule(policy,&rule);
 	if(rule==NULL)
 		return 0;
-	memset(msg_head->receiver_uuid,0,DIGEST_SIZE*2);
+	memset(msg_head->receiver_uuid,0,DIGEST_SIZE);
 	switch(rule->target_type)
 	{
 		case ROUTE_TARGET_LOCAL:
@@ -580,7 +584,7 @@ int router_set_local_route(void * message,void * policy)
 			ret=rule_get_target(rule,message,&target);
 			if(ret<0)
 				return ret;		
-			memcpy(msg_head->receiver_uuid,target,DIGEST_SIZE*2);
+			memcpy(msg_head->receiver_uuid,target,DIGEST_SIZE);
 			free(target);
 //			message_set_state(message,MSG_FLOW_LOCAL);
 			break;

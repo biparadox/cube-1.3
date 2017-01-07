@@ -3,7 +3,7 @@
 	{
 		"name":"test",
        		"type":"DELIVER",
-        	"sender_proc":"hello",
+        	"sender":"hello",
 		"jump":0
 	},
 	"MATCH_RULES":
