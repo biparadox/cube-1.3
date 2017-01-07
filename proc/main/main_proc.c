@@ -54,7 +54,7 @@ int read_json_file(char * file_name)
 	json_buffer[readlen]=0;
 
 	json_offset=0;
-	while(json_offset<readlen)
+	while(leftlen>32)
 	{
 		ret=json_solve_str(&root_node,json_buffer+json_offset);
 		if(ret<0)
@@ -160,8 +160,8 @@ int main(int argc,char **argv)
 	"base_define/msghead.json",
 	"base_define/msgrecord.json",
 	"base_define/expandrecord.json",
+	"base_define/base_msg.json",
 	"base_define/dispatchrecord.json",
-	"base_define/headrecord.json",
 	 NULL
     };
 
