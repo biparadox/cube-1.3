@@ -24,6 +24,58 @@
 #include "router_process_func.h"
 #include "main_proc_func.h"
 
+int read_dispatch_file(char * file_name)
+{
+	int ret;
+
+	int fd;
+	int readlen;
+	int json_offset;
+
+	int count=0;
+	void * root_node;
+	void * findlist;
+	void * memdb_template ;
+	BYTE uuid[DIGEST_SIZE];
+	char json_buffer[4096];
+	void * policy;
+
+	fd=open(file_name,O_RDONLY);
+	if(fd<0)
+		return fd;
+
+	readlen=read(fd,json_buffer,1024);
+	if(readlen<0)
+		return -EIO;
+	json_buffer[readlen]=0;
+	printf("%s\n",json_buffer);
+	close(fd);
+
+	json_offset=0;
+	while(json_offset<readlen)
+	{
+		ret=json_solve_str(&root_node,json_buffer+json_offset);
+		if(ret<0)
+		{
+			printf("solve json str error!\n");
+			break;
+		}
+		json_offset+=ret;
+		if(ret<32)
+			continue;
+
+		policy=dispatch_read_policy(root_node);
+		if(policy==NULL)
+		{
+			printf("read %d file error!\n",count);
+			break;
+		}
+		dispatch_policy_add(policy);
+		count++;
+	}
+	printf("read %d policy succeed!\n",count);
+	return count;
+}
 int proc_router_hit_target(void * message,char * local_uuid,char * proc_name)
 {
 	int ret;
@@ -166,12 +218,12 @@ int proc_router_init(void * sub_proc,void * para)
 {
     int ret;
     // main proc: read router config	
-    char * config_filename= "./router_policy.cfg";
+    char * config_filename= "./dispatch_policy.json";
    if(para!=NULL)
         config_filename= para;
 
  // router_policy_init();
-    ret=router_read_cfg(config_filename);	
+    ret=read_dispatch_file(config_filename);	
     if(ret<=0)
     {
 	    printf("read router policy error %d!\n",ret);
@@ -361,7 +413,7 @@ int proc_router_start(void * sub_proc,void * para)
 							printf("message %s is discarded in FINISH state!\n",message_get_recordtype(message));
 							break;
 						}
-						if(router_policy_gettype(msg_policy)==MSG_FLOW_QUERY) 
+						if(dispatch_policy_gettype(msg_policy)==MSG_FLOW_QUERY) 
 						{
 							// if this message's flow is query, we should push it into the stack
 							route_push_site(message,origin_proc);

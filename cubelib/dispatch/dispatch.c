@@ -46,6 +46,13 @@ int dispatch_init( )
 	return 0;
 }
 
+int dispatch_policy_gettype(void * policy)
+{
+    DISPATCH_POLICY * dispatch_policy=policy;
+    if(policy==NULL)
+	    return -EINVAL;
+    return dispatch_policy->type;
+}
 void * dispatch_policy_create()
 {
 	int ret;
@@ -591,7 +598,7 @@ int router_set_local_route(void * message,void * policy)
 			ret=rule_get_target(rule,message,&target);
 			if(ret<0)
 				return ret;		
-//			if(is_valid_uuid(target))
+//			if(Isvaliduuid(target))
 //			{
 //				memcpy(msg_head->receiver_uuid,target,DIGEST_SIZE*2);
 //			}
@@ -643,6 +650,54 @@ int router_find_route_policy(void * message,void **msg_policy,void * sender_proc
              return ret;
     }
     return ret;
+}
+int router_dup_activemsg_info (void * message)
+{
+	int ret;
+	struct message_box * msg_box=message;
+	MSG_HEAD * msg_head;
+	MSG_HEAD * new_msg_head;
+	if(message==NULL)
+		return -EINVAL;
+
+	void * active_msg=message_get_activemsg(message);
+	if(active_msg==NULL)
+		return 0;
+	
+	msg_head=message_get_head(active_msg);
+	new_msg_head=message_get_head(message);
+	message_set_flow(msg_box,msg_head->flow);
+	message_set_state(msg_box,msg_head->state);
+	message_set_route(msg_box,msg_head->route);
+	new_msg_head->ljump=msg_head->ljump;	
+	new_msg_head->rjump=msg_head->rjump;	
+
+	void * flow_expand;
+	ret=message_get_define_expand(active_msg,&flow_expand,DTYPE_MSG_EXPAND,SUBTYPE_FLOW_TRACE);
+	if(flow_expand!=NULL) 
+	{
+		void * struct_template =memdb_get_template(DTYPE_MSG_EXPAND,SUBTYPE_FLOW_TRACE);
+		void * new_expand = clone_struct(flow_expand,struct_template);
+
+		message_add_expand(message,new_expand);
+	}
+	ret=message_get_define_expand(active_msg,&flow_expand,DTYPE_MSG_EXPAND,SUBTYPE_ASPECT_POINT);
+	if(flow_expand!=NULL) 
+	{
+		void * struct_template =memdb_get_template(DTYPE_MSG_EXPAND,SUBTYPE_ASPECT_POINT);
+		void * new_expand = clone_struct(flow_expand,struct_template);
+
+		message_add_expand(message,new_expand);
+	}
+	ret=message_get_define_expand(active_msg,&flow_expand,DTYPE_MSG_EXPAND,SUBTYPE_ROUTE_RECORD);
+	if(flow_expand!=NULL) 
+	{
+		void * struct_template =memdb_get_template(DTYPE_MSG_EXPAND,SUBTYPE_ROUTE_RECORD);
+		void * new_expand = clone_struct(flow_expand,struct_template);
+
+		message_add_expand(message,new_expand);
+	}
+	return 1;
 }
 /*
 int __message_policy_init(void * policy)
@@ -1572,6 +1627,76 @@ int route_set_dup_flow(void * src_msg,void * dup_rule,void **dup_msg)
     return 0;
 }
 */
+int router_set_aspect_flow(void * message,void * policy)
+{
+	int ret;
+    	MSG_HEAD * msg_head;	
+   	DISPATCH_POLICY * msg_policy=(DISPATCH_POLICY *)policy;
+	ROUTE_RULE * rule;
+	char * target;
+
+    	if(policy==NULL)
+        	return -EINVAL;
+    	if(message==NULL)
+        	return -EINVAL;
+    	msg_head=message_get_head(message);
+		
+//	memset(msg_head->route,0,DIGEST_SIZE);
+//	memcpy(msg_head->route,msg_policy->name,DIGEST_SIZE);
+	msg_head->ljump=0;
+	msg_head->flow=msg_policy->type;
+//	msg_head->flag=msg_policy->flag;
+	ret=dispatch_policy_getfirstrouterule(policy,&rule);
+	if(rule==NULL)
+		return 0;
+	Memset(msg_head->receiver_uuid,0,DIGEST_SIZE*2);
+	switch(rule->target_type)
+	{
+		case ROUTE_TARGET_LOCAL:
+		case ROUTE_TARGET_PORT:
+			ret=rule_get_target(rule,message,&target);
+			if(ret<0)
+				return ret;		
+			Memcpy(msg_head->receiver_uuid,target,DIGEST_SIZE*2);
+			free(target);
+			int flag=message_get_flag(message);		
+			message_set_flag(message,flag|MSG_FLAG_LOCAL);
+			break;
+		case ROUTE_TARGET_NAME:
+		case ROUTE_TARGET_RECORD:
+		case ROUTE_TARGET_EXPAND:
+			ret=rule_get_target(rule,message,&target);
+			if(ret<0)
+				return ret;		
+			if(Isvaliduuid(target))
+			{
+				Memcpy(msg_head->receiver_uuid,target,DIGEST_SIZE*2);
+				
+			}
+			else
+			{
+				msg_head->receiver_uuid[0]='@';
+				strncpy(msg_head->receiver_uuid+1,target,DIGEST_SIZE*2-1);
+			}	
+			free(target);
+			message_set_state(message,MSG_FLOW_DELIVER);
+			msg_head->rjump++;
+			break;
+		case ROUTE_TARGET_CONN:
+			ret=rule_get_target(rule,message,&target);
+			if(ret<0)
+				return ret;		
+			msg_head->receiver_uuid[0]=':';
+			Strncpy(msg_head->receiver_uuid+1,target,DIGEST_SIZE*2-1);
+			free(target);
+			message_set_state(message,MSG_FLOW_DELIVER);
+			msg_head->rjump++;
+			break;
+		default:
+			return -EINVAL;
+	}
+	return 1;	
+}
 int route_push_site(void * message,char * name)
 {
 	struct expand_flow_trace * flow_trace;
@@ -1713,7 +1838,7 @@ int router_pop_site(void * message)
 	}
 		
 /*
-	if(is_valid_uuid(msg_head->receiver_uuid))
+	if(Isvaliduuid(msg_head->receiver_uuid))
 	{
 		msg_head->state=MSG_FLOW_DELIVER;	
 	}

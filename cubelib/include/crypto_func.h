@@ -9,5 +9,6 @@ int calculate_by_context(char **buffer,int countline,UINT32 *SM3_hash);
 int calculate_context_sm3(char* context, int context_size, UINT32 *SM3_hash);
 int calculate_context_sha1(char* context,int context_size,UINT32 *SM3_hash);
 int extend_pcr_sm3digest(BYTE * pcr_value,BYTE * sm3digest);
+int is_valid_uuidstr(char * uuidstr);
 
 #endif

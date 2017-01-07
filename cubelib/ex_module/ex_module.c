@@ -359,6 +359,16 @@ int ex_module_getcontext(void * ex_mod,void ** context)
 	return 0;
 }
 
+int ex_module_gettype(void * ex_mod)
+{
+	int ret;
+	EX_MODULE * ex_module;
+	if(ex_mod==NULL)
+		return -EINVAL;
+	ex_module = (EX_MODULE *)ex_mod;
+
+	return ex_module->head.type;
+}
 int _ex_module_passpara(void * pointer)
 {
 	struct subject_para_struct

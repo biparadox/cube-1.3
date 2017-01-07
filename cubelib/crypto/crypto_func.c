@@ -98,3 +98,4 @@ int comp_proc_uuid(BYTE * dev_uuid,char * name,BYTE * conn_uuid)
 	calculate_context_sm3(buffer,DIGEST_SIZE*2,conn_uuid);
 	return 0;
 }
+

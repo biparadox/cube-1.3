@@ -80,6 +80,21 @@ void * _msg_load_template(char * subtypename)
 		return NULL;
 	return memdb_get_template(msg_kits->type,subtype);	
 }
+int message_set_route(void * message,const char * route)
+{
+	struct message_box * msg_box;
+	int ret;
+	int len;
+	if(message==NULL)
+		return -EINVAL;
+	msg_box=(struct message_box *)message;
+	len=strlen(route);
+	if(len<DIGEST_SIZE)
+		Memcpy(&(msg_box->head.route),route,len+1);
+	else
+		Memcpy(&(msg_box->head.route),route,DIGEST_SIZE);
+	return 0;
+}
 
 int msgfunc_init()
 {
@@ -889,6 +904,16 @@ int message_load_expand(void * message)
     return offset;
 }
 
+
+const char * message_get_receiver(void * message)
+{
+	struct message_box * msg_box;
+	int ret;
+	if(message==NULL)
+		return NULL;
+	msg_box=(struct message_box *)message;
+	return &(msg_box->head.receiver_uuid);
+}
 
 void message_free(void * message)
 {
