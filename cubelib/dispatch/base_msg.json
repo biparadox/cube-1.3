@@ -1,0 +1,24 @@
+{
+	"head":
+	{
+		"name":"base_msg",
+		"type":"RECORDTYPE"
+	},
+	"record":
+	{
+		"type":"MESSAGE",
+		"subtype":"BASE_MSG",
+		"struct_desc":
+		{
+			"elem_desc":
+			[
+				{"name":"message","type":"ESTRING"}
+			]
+		},
+		"index":
+		{
+			"flag":"INDEX",
+			"elemlist":"message"
+		}
+	}
+}

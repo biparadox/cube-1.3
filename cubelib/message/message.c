@@ -1042,7 +1042,7 @@ int message_comp_head_elem_text(void * message,char * item_name, char * text)
     ret=struct_comp_elem_text(item_name,&(msg_box->head),text,msg_box->head_template);
     return ret;
 }
-
+*/
 int message_read_elem(void * message,char * item_name, int index, void ** value)
 {
     struct message_box * msg_box;
@@ -1059,7 +1059,7 @@ int message_read_elem(void * message,char * item_name, int index, void ** value)
         return -EINVAL;
     if(msg_box->record_template ==NULL)
     {
-	 msg_box->record_template=load_record_template(msg_box->head.record_type);
+	 msg_box->record_template=memdb_get_template(msg_box->head.record_type,msg_box->head.record_subtype);
         if(msg_box->record_template==NULL)
        		return -EINVAL;
     }
@@ -1079,7 +1079,7 @@ int message_read_elem(void * message,char * item_name, int index, void ** value)
     memcpy(*value,buffer,ret+1);
     return ret;
 }
-
+/*
 int message_comp_elem_text(void * message,char * item_name, int index, char * text)
 {
     struct message_box * msg_box;
@@ -1110,7 +1110,7 @@ int message_comp_elem_text(void * message,char * item_name, int index, char * te
     ret=struct_comp_elem_text(item_name,msg_box->precord[index],text,msg_box->record_template);
     return ret;
 }
-
+*/
 int message_set_flag(void * message, int flag)
 {
 	struct message_box * msg_box;
@@ -1149,18 +1149,6 @@ int message_set_flow(void * message, int flow)
 	return 0;
 }
 
-
-int message_get_state(void * message)
-{
-	struct message_box * msg_box;
-
-	msg_box=(struct message_box *)message;
-
-	if(message==NULL)
-		return -EINVAL;
-	return msg_box->head.state;
-}
-
 int message_get_flow(void * message)
 {
 	struct message_box * msg_box;
@@ -1172,157 +1160,7 @@ int message_get_flow(void * message)
 	return msg_box->head.flow;
 }
 
-
-int message_get_flag(void * message)
-{
-	struct message_box * msg_box;
-	int ret;
-
-	msg_box=(struct message_box *)message;
-
-	return msg_box->head.flag;
-}
-
-MSG_HEAD * get_message_head(void * message)
-{
-	struct message_box * msg_box;
-	int ret;
-
-	msg_box=(struct message_box *)message;
-
-	if(message==NULL)
-		return -EINVAL;
-	return &(msg_box->head);
-}
-
-void * message_create(char * type,void * active_msg)
-{
-	struct message_box * msg_box;
-	MSG_HEAD * message_head;
-	void * template;
-	int record_size;
-	int ret;
-	int readbuf[1024];
-
-	msg_box=(struct message_box *)message_init("MESG",0x00010001);
-	if((msg_box==NULL) || IS_ERR(msg_box))
-		return -EINVAL;
-	if((type==NULL) || IS_ERR(type))
-		return -EINVAL;
-
-	set_message_head(msg_box,"record_type",type);
-   	msg_box->box_state=MSG_BOX_INIT;
-	msg_box->head.state=MSG_BOX_INIT;
-
-	msg_box->head.record_num=0;
-	msg_box->head.record_size=0;
-	msg_box->head.flag=0;
-	ret=message_record_init(msg_box);
-	if(ret<0)
-	{
-		message_free(msg_box);
-		return NULL;	
-	}
-	msg_box->active_msg=active_msg;
-	return msg_box;
-
-}
-
-void * message_clone(void * message)
-{
-	struct message_box * src_msg;
-	struct message_box * new_msg;
-	MSG_HEAD * message_head;
-	void * template;
-	void * clone;
-	int record_size;
-	int ret;
-	int readbuf[1024];
-	int i;
-
-	src_msg=(struct message_box *)message;
-
-	new_msg=(struct message_box *)message_init("MESG",0x00010001);
-
-	if((new_msg==NULL) || IS_ERR(new_msg))
-		return -EINVAL;
-	if((src_msg==NULL) || IS_ERR(src_msg))
-		return -EINVAL;
-
-	memcpy(&(new_msg->head),&(src_msg->head),sizeof(MSG_HEAD));
-
-   	new_msg->box_state=MSG_BOX_INIT;
-	new_msg->head.record_num=0;
-	new_msg->head.record_size=0;
-	new_msg->head.expand_num=0;
-	new_msg->head.expand_size=0;
-
-	ret=message_record_init(new_msg);
-	if(ret<0)
-	{
-		message_free(new_msg);
-		return NULL;	
-	}
-
-	for(i=0;i<src_msg->head.record_num;i++)
-	{
-		if(src_msg->precord[i]!=NULL)
-		{
-			void * record=clone_struct(src_msg->precord[i],src_msg->record_template);
-			if(record==NULL)
-			{
-				printf("duplicate message's record error!\n");
-				message_free(new_msg);
-				return NULL;	
-			}
-			message_add_record(new_msg,record);
-		}
-		else
-		{
-			message_free(new_msg);
-			return NULL;
-		}
-	}
-	for(i=0;i<src_msg->head.expand_num;i++)
-	{
-		MSG_EXPAND * src_expand = (MSG_EXPAND *)src_msg->pexpand[i];
-		if(src_expand!=NULL)
-		{
-			void * expand_template;
-			MSG_EXPAND * expand;
-			if(!strncmp("FTRE",src_expand->tag,4))
-				continue;
-			if(!strncmp("FTAE",src_expand->tag,4))
-				continue;
-
-			expand_template=load_record_template(src_expand->tag);
-			if(expand_template==NULL)
-			{
-				message_free(new_msg);
-				return NULL;
-			}
-			expand= clone_struct(src_expand,expand_template);
-			if(expand==NULL)
-			{
-				printf("duplicate message's record error!\n");
-				message_free(new_msg);
-				free_struct_template(expand_template);
-				return NULL;	
-			}
-			message_add_expand(new_msg,expand);
-		}
-		else
-		{
-			message_free(new_msg);
-			return NULL;
-		}
-	}
-
-	new_msg->active_msg=message;
-	return new_msg;
-}
-
-
+/*
 int __message_alloc_record_site(void * message)
 {
 	struct message_box * msg_box;
@@ -1881,4 +1719,83 @@ int message_get_record(void * message,void ** msg_record, int record_no)
 	if(*msg_record==NULL)
 		return -EINVAL;
 	return 0;
+}
+int message_get_define_expand(void * message,void ** addr,int type,int subtype)
+{
+    	struct message_box * msg_box;
+	int ret;
+	MSG_HEAD * msg_head;
+	BYTE * data;
+	int struct_size;
+	int i;
+	MSG_EXPAND * define_expand=NULL;
+
+	msg_box=(struct message_box *)message;
+
+	if(message==NULL)
+		return -EINVAL;
+	*addr=NULL;
+
+	for(i=0;i<msg_box->head.expand_num;i++)
+	{
+		if(msg_box->pexpand[i]==NULL)
+			return 0;
+		MSG_EXPAND *curr_expand=(MSG_EXPAND *)(msg_box->pexpand[i]);	
+
+		if((curr_expand->type!=type)
+			||(curr_expand->subtype!=subtype))
+			continue;
+		define_expand=curr_expand;
+		break;
+	}
+	if(define_expand==NULL)
+		return 0;
+	*addr=define_expand;
+	return i;
+}
+
+int message_replace_define_expand(void * message,void * addr,int type,int subtype)
+{
+    	struct message_box * msg_box;
+	int ret;
+	MSG_HEAD * msg_head;
+	BYTE * data;
+	int struct_size;
+	int i;
+
+	msg_box=(struct message_box *)message;
+	MSG_EXPAND * temp_expand;
+
+	if(message==NULL)
+		return -EINVAL;
+
+//:	msg_box->box_state=MSG_BOX_ADD_EXPAND;
+	for(i=0;i<msg_box->head.expand_num;i++)
+	{
+		if(msg_box->pexpand[i]==NULL)
+			return 0;
+		MSG_EXPAND *curr_expand=(MSG_EXPAND *)(msg_box->pexpand[i]);	
+
+		if((curr_expand->type!=type)
+			||(curr_expand->subtype!=subtype))
+			continue;
+		break;
+	}
+	if(i==msg_box->head.expand_num)
+		return 0;
+
+	temp_expand=msg_box->pexpand[i];
+	if(msg_box->expand[i]!=NULL)
+	{
+		msg_box->expand[i]=NULL;
+		msg_box->expand_size[i]=0;
+	}
+	msg_box->pexpand[i]=addr;
+
+	void * struct_template=memdb_get_template(type,subtype);
+	if(struct_template!=NULL)
+	{
+		struct_free(temp_expand,struct_template);
+	}
+	return i;
 }

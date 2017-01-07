@@ -161,6 +161,7 @@ int main() {
 		"subtypelist.json",
 		"msghead.json",
 		"msgrecord.json",
+		"expandrecord.json",
 		"base_msg.json",
 		"dispatchrecord.json",
 		NULL
@@ -191,14 +192,33 @@ int main() {
 	void * policy;
 	
 	dispatch_init(NULL);
-	policy=dispatch_policy_create();
-	if(policy==NULL)
-	{
-		printf("create policy failed!\n");
-		return -EINVAL;
-	}
 	
 	ret=read_dispatch_file("dispatch_policy.json");
+
+	message=message_create(DTYPE_MESSAGE,SUBTYPE_BASE_MSG,NULL);	
+
+	struct basic_message * base_msg;
+	ret=Galloc0(&base_msg,sizeof(*base_msg));
+	if(base_msg==NULL)
+		return -ENOMEM;
+	base_msg->message=dup_str("hello",0);
+
+	message_add_record(message,base_msg);	
+	ret=message_output_json(message,json_buffer);
+	if(ret<0)
+	{
+		printf("message output json failed!\n");
+		return ret;
+	}
+
+	printf("%s\n",json_buffer);
+
+	ret=dispatch_policy_getfirst(&policy);
+	while(policy!=NULL)
+	{
+		ret=dispatch_match_message(policy,message);
+		ret=dispatch_policy_getnext(&policy);
+	}
 
 //	routine_start();
 //	sleep(100000);

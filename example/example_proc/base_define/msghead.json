@@ -16,6 +16,8 @@
 			{"name":"flow","type":"ENUM","ref_name":"message_flow_type"},
 			{"name":"state","type":"ENUM","ref_name":"message_flow_type"},
 			{"name":"flag","type":"FLAG","ref_name":"message_flag_type"},
+			{"name":"ljump","type":"INT"},
+			{"name":"rjump","type":"INT"},
 			{"name":"record_type","type":"TYPE"},
 			{"name":"record_subtype","type":"SUBTYPE","def":"record_type"},
 			{"name":"record_num","type":"INT"},

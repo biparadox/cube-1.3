@@ -41,7 +41,7 @@ typedef struct tagdispatch_policy
 static POLICY_LIST local_router_policy;
 static POLICY_LIST main_router_policy;
 static POLICY_LIST aspect_router_policy;
-
+/*
 struct expand_flow_trace
 {
     int  data_size;
@@ -58,7 +58,7 @@ struct expand_aspect_point
     char * aspect_proc;
     char * aspect_point;
 } __attribute__((packed));
-
+*/
 struct expand_route_record
 {
 	int data_size;

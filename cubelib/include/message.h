@@ -106,6 +106,26 @@ struct basic_message
 	char * message;
 }__attribute__((packed));
 
+struct expand_flow_trace
+{
+    int  data_size;
+    int  type;		      // this should be "MSG_EXPAND"
+    int  subtype;	      // this should be "FLOW_TRACE"	
+    int  record_num;
+    char *trace_record;
+} __attribute__((packed));
+
+struct expand_aspect_point
+{
+    int  data_size;
+    int  type;		      // this should be "MSG_EXPAND"
+    int  subtype;	      // this should be "ASPECT_POINT"	
+    int  record_num;
+    char * aspect_proc;
+    char * aspect_point;
+} __attribute__((packed));
+
+
 void * message_init();
 int message_record_init(void * message);
 void message_free(void * message);
@@ -171,7 +191,7 @@ int message_output_json(void * message, char * text);
 int message_load_record(void * message);
 int message_load_expand(void * message);
 
-int message_get_define_expand(void * message,void ** addr,char * type);
+int message_get_define_expand(void * message,void ** addr,int type,int subtype);
 int add_message_define_expand(void * message, void * expand, char * type);
 
 int add_message_expand_state(void * message,int state_machine_no,int state);

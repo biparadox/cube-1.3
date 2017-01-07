@@ -114,19 +114,16 @@ void * dispatch_read_policy(void * policy_node)
 
     DISPATCH_POLICY * policy=dispatch_policy_create();
     if(policy==NULL)
-        return -EINVAL;
+        return NULL;
 
-    temp_node=json_find_elem("sender",policy_node);
+    temp_node=json_find_elem("policy_head",policy_node);
     if(temp_node!=NULL)
     {
-	ret=json_node_getvalue(temp_node,buffer,1024);
-	if(ret<0)
-		return ret;
-	if(ret>DIGEST_SIZE)
-		return -EINVAL;
-	Memcpy(policy->sender,buffer,ret);
+	return NULL;
     }
-
+    ret=json_2_struct(temp_node,policy,policy_head_template);
+    if(ret<0)
+        return NULL;
     // get the match policy json node
     match_policy_node=json_find_elem("MATCH_RULES",policy_node);
     if(match_policy_node==NULL)
@@ -134,6 +131,7 @@ void * dispatch_read_policy(void * policy_node)
 
     // get the match policy json node
     route_policy_node=json_find_elem("ROUTE_RULES",policy_node);
+
     if(route_policy_node==NULL)
         return -EINVAL;
 
@@ -148,7 +146,7 @@ void * dispatch_read_policy(void * policy_node)
 		return NULL;
         ret=json_2_struct(match_rule_node,temp_match_rule,match_rule_template);
         if(ret<0)
-            return -EINVAL;
+            return NULL;
 	temp_node=json_find_elem("value",match_rule_node);
 	if(temp_node!=NULL)
 	{
@@ -195,7 +193,7 @@ void * dispatch_read_policy(void * policy_node)
    	 temp_route_rule=malloc(sizeof(ROUTE_RULE));
     	ret=json_2_struct(route_rule_node,temp_route_rule,route_rule_template);
     	if(ret<0)
-        	return -EINVAL;
+        	return NULL;
 	ret=dispatch_policy_addrouterule(policy,temp_route_rule);
 	if(ret<0)
 		return NULL;	
@@ -372,6 +370,254 @@ int dispatch_match_message(void * policy,void * message)
 	
 }
 
+int rule_get_target(void * router_rule,void * message,void **result)
+{
+    char * target;
+    int ret;
+    ROUTE_RULE * rule= (ROUTE_RULE *)router_rule;
+    *result=NULL;
+    switch(rule->target_type){
+	    case ROUTE_TARGET_NAME:
+	    case ROUTE_TARGET_PORT:
+	    case ROUTE_TARGET_LOCAL:
+		    target=dup_str(rule->target_name,DIGEST_SIZE*2);
+		    break;
+	    case ROUTE_TARGET_UUID:
+		    target=dup_str(rule->target_name,DIGEST_SIZE*2);
+		    break;
+	    case ROUTE_TARGET_CONN:
+		    target=dup_str(rule->target_name,DIGEST_SIZE*2);
+		    break;
+	    case ROUTE_TARGET_RECORD:
+		   {
+			ret=message_read_elem(message,rule->target_name,0,&target);
+			if(ret<0)
+				return -EINVAL;
+			if(target==NULL)
+				return -EINVAL;
+			break;
+		   }
+/*
+	    case ROUTE_TARGET_EXPAND:
+		   {
+			char expand_type[5];
+			void * struct_template;
+			void * expand;
+			if(rule->target_name[4]!=':')
+				return -EINVAL;
+			memcpy(expand_type,rule->target_name,4);
+		        ret = message_get_define_expand(message,&expand,expand_type);
+			if(ret<0)
+				return -EINVAL;
+			if(expand==NULL)
+				return -EINVAL;
+			struct_template=load_record_template(expand_type);
+			if(struct_template==NULL)
+				return -EINVAL;
+			target=malloc(DIGEST_SIZE*2+1);
+			ret=struct_read_elem(rule->target_name+5,expand,target,struct_template);		
+			free_struct_template(struct_template);
+			if(ret<0)
+				return ret;
+		   	if(target==NULL)
+				return -EINVAL;
+		   	break;
+		   }
+
+
+	    case ROUTE_TARGET_SPLIT:
+		    return -EINVAL;
+*/
+	    case ROUTE_TARGET_MIXUUID:
+		    {
+			    void * json_root;
+			    void * json_elem;
+			    const int repeat_time=2;
+			    char mixvalue[repeat_time][DIGEST_SIZE*2];
+			    char tag[16];
+			    char uuid[DIGEST_SIZE*2];
+			    int i;
+
+			    ret=json_solve_str(&json_root,rule->target_name);
+			    if(ret<0)
+				    return ret;
+			    if(json_get_type(json_root)!=JSON_ELEM_MAP)
+				    return -EINVAL;
+			
+			    memset(uuid,0,DIGEST_SIZE*2);
+
+			    char * value;
+			    char name[DIGEST_SIZE*2];
+
+			    for(i=0;i<repeat_time;i++)
+			    {
+			   	 memset(mixvalue[i],0,DIGEST_SIZE*2);
+
+				 if(i==0)
+				 {
+			      	 	 // first json_elem is the node uuid value
+			       		json_elem=json_get_first_child(json_root);
+				 }
+				 else
+				 {
+					json_elem=json_get_next_child(json_root);
+
+				 }
+				 ret=json_node_getname(json_elem,name);
+			    	 if(ret<0)
+					return ret;
+				 if(json_get_type(json_elem)!=JSON_ELEM_STRING)
+					return -EINVAL;
+
+				 ret=json_node_getvalue(json_elem,tag,15);
+				// tag is "RECORD"  means this elem defines an elem in the message's record
+				 if(strcmp(tag,"RECORD")==0)
+				 {
+					void * record;	
+					ret=message_read_elem(message,name,0,&record);
+					if(ret<0)
+						return ret;
+				        int len=strlen(record);
+					if(len<DIGEST_SIZE*2)
+					{
+						Memcpy(mixvalue[i],record,len);
+					}
+					else
+					{
+						Memcpy(mixvalue[i],record,DIGEST_SIZE*2);
+					}
+				}
+				// tag is "name" means this elem defines remote proc's value
+				else if(strcmp(tag,"NAME")==0)
+				{
+				        int len=strlen(name);
+					if(len<DIGEST_SIZE*2)
+					{
+						Memcpy(mixvalue[i],name,len);
+					}
+					else
+					{
+						Memcpy(mixvalue[i],name,DIGEST_SIZE*2);
+					}
+				}
+/*
+			    	else if(strncmp(tag,"EXPAND",6)==0)
+			    	{
+					char * type=tag+7;
+			       		if(strlen(type)!=4)
+					{
+						return -EINVAL;	
+					}		
+					void * expand;
+				        ret = message_get_define_expand(message,&expand,type);
+					if(ret<0)
+						return -EINVAL;
+					if(expand==NULL)
+						return -EINVAL;
+					void * struct_template=load_record_template(type);
+					if(struct_template==NULL)
+						return -EINVAL;
+					ret=struct_read_elem(name,expand,mixvalue[i],struct_template);		
+					free_struct_template(struct_template);
+					if(ret<0)
+						return ret;
+			    	}
+*/
+		    		else
+			    	{
+			    		return -EINVAL;
+			    	}
+			  	if(i==0)
+					continue;
+			  	if(i==1)
+			   	{
+					comp_proc_uuid(mixvalue[0],mixvalue[1],uuid);
+				  	continue;
+			    	}
+			   	comp_proc_uuid(uuid,mixvalue[i],uuid);
+		
+			  }
+		   	 target=malloc(DIGEST_SIZE*2);
+		 	 Memcpy(target,uuid,DIGEST_SIZE*2);
+		   	 break;
+		   }
+		    
+	    case ROUTE_TARGET_ERROR:
+	    default:
+		    return -EINVAL;
+    }
+    *result=target;
+    return rule->target_type;	
+
+}
+int router_set_local_route(void * message,void * policy)
+{
+	int ret;
+    	MSG_HEAD * msg_head;	
+   	DISPATCH_POLICY * msg_policy=(DISPATCH_POLICY *)policy;
+	ROUTE_RULE * rule;
+	char * target;
+
+    	if(policy==NULL)
+        	return -EINVAL;
+    	if(message==NULL)
+        	return -EINVAL;
+    	msg_head=message_get_head(message);
+		
+	memset(msg_head->route,0,DIGEST_SIZE);
+	memcpy(msg_head->route,msg_policy->name,DIGEST_SIZE);
+	msg_head->ljump=0;
+	msg_head->flow=msg_policy->type;
+//	msg_head->flag=msg_policy->flag;
+	ret=dispatch_policy_getfirstrouterule(policy,&rule);
+	if(rule==NULL)
+		return 0;
+	memset(msg_head->receiver_uuid,0,DIGEST_SIZE*2);
+	switch(rule->target_type)
+	{
+		case ROUTE_TARGET_LOCAL:
+		case ROUTE_TARGET_PORT:
+			ret=rule_get_target(rule,message,&target);
+			if(ret<0)
+				return ret;		
+			memcpy(msg_head->receiver_uuid,target,DIGEST_SIZE*2);
+			free(target);
+//			message_set_state(message,MSG_FLOW_LOCAL);
+			break;
+		case ROUTE_TARGET_NAME:
+		case ROUTE_TARGET_RECORD:
+		case ROUTE_TARGET_EXPAND:
+			ret=rule_get_target(rule,message,&target);
+			if(ret<0)
+				return ret;		
+//			if(is_valid_uuid(target))
+//			{
+//				memcpy(msg_head->receiver_uuid,target,DIGEST_SIZE*2);
+//			}
+//			else
+//			{
+				msg_head->receiver_uuid[0]='@';
+				strncpy(msg_head->receiver_uuid+1,target,DIGEST_SIZE);
+//			}	
+			free(target);
+			message_set_state(message,MSG_FLOW_DELIVER);
+			msg_head->rjump++;
+			break;
+		case ROUTE_TARGET_CONN:
+			ret=rule_get_target(rule,message,&target);
+			if(ret<0)
+				return ret;		
+			msg_head->receiver_uuid[0]=':';
+			strncpy(msg_head->receiver_uuid+1,target,DIGEST_SIZE*2);
+			free(target);
+			message_set_state(message,MSG_FLOW_DELIVER);
+			msg_head->rjump++;
+			break;
+		default:
+			return -EINVAL;
+	}
+	return 1;	
+}
 
 /*
 int __message_policy_init(void * policy)
@@ -828,60 +1074,6 @@ int route_find_aspect_policy(void * message,void **msg_policy,char * sender_proc
     return ret;
 }
 
-
-int route_find_local_policy(void * message,void **msg_policy,char * sender_proc)
-{
-    void * policy;
-    int ret;
-    *msg_policy=NULL;
-    ret=local_policy_getfirst(&policy);
-    if(ret<0)
-        return ret;
-    while(policy!=NULL)
-    {
-        ret=route_policy_match_message(policy,message,sender_proc);
-        if(ret<0)
-            return ret;
-        if(ret>0)
-        {
-            *msg_policy=policy;
-            return ret;
-        }
-    	ret=local_policy_getnext(&policy);
-    	if(ret<0)
-             return ret;
-    }
-    return ret;
-}
-
-int route_find_aspect_local_policy(void * message,void **msg_policy,char * sender_proc)
-{
-    void * policy;
-    int ret;
-    *msg_policy=NULL;
-    ret=aspect_local_getfirst(&policy);
-    if(ret<0)
-        return ret;
-    while(policy!=NULL)
-    {
-        ret=route_policy_match_message(policy,message,sender_proc);
-        if(ret<0)
-            return ret;
-        if(ret>0)
-        {
-            *msg_policy=policy;
-            return ret;
-        }
-    	ret=aspect_local_getnext(&policy);
-    	if(ret<0)
-             return ret;
-    }
-    return ret;
-}
-
-
-
-
 int rule_get_target(void * route_rule,void * message,void **result)
 {
     char * target;
@@ -889,17 +1081,17 @@ int rule_get_target(void * route_rule,void * message,void **result)
     ROUTE_RULE * rule= (ROUTE_RULE *)route_rule;
     *result=NULL;
     switch(rule->target_type){
-	    case MSG_TARGET_NAME:
-	    case MSG_TARGET_LOCAL:
+	    case ROUTE_TARGET_NAME:
+	    case ROUTE_TARGET_LOCAL:
 		    target=dup_str(rule->target_name,DIGEST_SIZE*2);
 		    break;
-	    case MSG_TARGET_UUID:
+	    case ROUTE_TARGET_UUID:
 		    target=dup_str(rule->target_name,DIGEST_SIZE*2);
 		    break;
-	    case MSG_TARGET_CONN:
+	    case ROUTE_TARGET_CONN:
 		    target=dup_str(rule->target_name,DIGEST_SIZE*2);
 		    break;
-	    case MSG_TARGET_RECORD:
+	    case ROUTE_TARGET_RECORD:
 		   {
 			ret=message_read_elem(message,rule->target_name,0,&target);
 			if(ret<0)
@@ -909,9 +1101,9 @@ int rule_get_target(void * route_rule,void * message,void **result)
 			break;
 		   }
 
-	    case MSG_TARGET_SPLIT:
+	    case ROUTE_TARGET_SPLIT:
 		    return -EINVAL;
-	    case MSG_TARGET_MIXUUID:
+	    case ROUTE_TARGET_MIXUUID:
 		    {
 			    void * json_root;
 			    void * json_elem;
@@ -1023,7 +1215,7 @@ int rule_get_target(void * route_rule,void * message,void **result)
 		   	 break;
 		   }
 		    
-	    case MSG_TARGET_ERROR:
+	    case ROUTE_TARGET_ERROR:
 	    default:
 		    return -EINVAL;
     }
@@ -1177,17 +1369,17 @@ int route_set_main_flow(void * message,void * msg_policy)
 		   	return target_type;
 		    switch (target_type)
 		    {
-			    case MSG_TARGET_UUID:
-			    case MSG_TARGET_MIXUUID:
+			    case ROUTE_TARGET_UUID:
+			    case ROUTE_TARGET_MIXUUID:
     				set_message_head(message,"receiver_uuid",target);
 				break;
-			    case MSG_TARGET_NAME:
-			    case MSG_TARGET_RECORD:
+			    case ROUTE_TARGET_NAME:
+			    case ROUTE_TARGET_RECORD:
 				buffer[0]='@';
 				strncpy(buffer+1,target,DIGEST_SIZE*2-1);
 				set_message_head(message,"receiver_uuid",buffer);  
 				break;
-			    case MSG_TARGET_CONN:
+			    case ROUTE_TARGET_CONN:
 				buffer[0]=':';
 				strncpy(buffer+1,target,DIGEST_SIZE*2-1);
 				set_message_head(message,"receiver_uuid",buffer);  
@@ -1258,19 +1450,19 @@ int route_set_aspect_flow(void * message,void * msg_policy)
    	return target_type;
     switch (target_type)
     {
-	    case MSG_TARGET_LOCAL:
+	    case ROUTE_TARGET_LOCAL:
 		message_set_receiver(message,target);
 		break;
-	    case MSG_TARGET_UUID:
-	    case MSG_TARGET_MIXUUID:
+	    case ROUTE_TARGET_UUID:
+	    case ROUTE_TARGET_MIXUUID:
 		message_set_receiver(message,target);
 		break;
-	    case MSG_TARGET_NAME:
+	    case ROUTE_TARGET_NAME:
 		buffer[0]='@';
 		strncpy(buffer+1,target,DIGEST_SIZE*2-1);
 		message_set_receiver(message,buffer);  
 		break;
-	    case MSG_TARGET_CONN:
+	    case ROUTE_TARGET_CONN:
 		buffer[0]=':';
 		strncpy(buffer+1,target,DIGEST_SIZE*2-1);
 		message_set_receiver(message,buffer);  
@@ -1324,15 +1516,15 @@ int route_set_dup_flow(void * src_msg,void * dup_rule,void **dup_msg)
 		   	return target_type;
 		    switch (target_type)
 		    {
-			    case MSG_TARGET_UUID:
+			    case ROUTE_TARGET_UUID:
     				set_message_head(message,"receiver_uuid",target);
 				break;
-			    case MSG_TARGET_NAME:
+			    case ROUTE_TARGET_NAME:
 				buffer[0]='@';
 				strncpy(buffer+1,target,DIGEST_SIZE*2-1);
 				set_message_head(message,"receiver_uuid",buffer);  
 				break;
-			    case MSG_TARGET_CONN:
+			    case ROUTE_TARGET_CONN:
 				buffer[0]=':';
 				strncpy(buffer+1,target,DIGEST_SIZE*2-1);
 				set_message_head(message,"receiver_uuid",buffer);  
@@ -1354,18 +1546,16 @@ int route_set_dup_flow(void * src_msg,void * dup_rule,void **dup_msg)
     }
     return 0;
 }
-
-int route_push_site(void * message,char * name,char * type)
+*/
+int route_push_site(void * message,char * name)
 {
 	struct expand_flow_trace * flow_trace;
 	int ret;
 	int len;
 	int index;
 
-	if(strcmp(type,"FTRE")!=0)
-		return -EINVAL;
 
-	index=message_get_define_expand(message,&flow_trace,type);
+	index=message_get_define_expand(message,&flow_trace,DTYPE_MSG_EXPAND,SUBTYPE_FLOW_TRACE);
 	if(index<0)
 		return -EINVAL;
 	if(flow_trace==NULL)
@@ -1374,7 +1564,8 @@ int route_push_site(void * message,char * name,char * type)
 		flow_trace=malloc(sizeof(struct expand_flow_trace));
 		flow_trace->data_size=0;
 		flow_trace->record_num=1;
-		memcpy(flow_trace->tag, type,4);
+		flow_trace->type=DTYPE_MSG_EXPAND;
+		flow_trace->subtype=SUBTYPE_FLOW_TRACE;
 		flow_trace->trace_record=dup_str(name,DIGEST_SIZE*2);
 		message_add_expand(message,flow_trace);	
 	}
@@ -1391,7 +1582,7 @@ int route_push_site(void * message,char * name,char * type)
 			memcpy(buffer+curr_offset,name,DIGEST_SIZE*2);
 		free(flow_trace->trace_record);
 		flow_trace->trace_record=buffer;
-		message_replace_define_expand(message,flow_trace,type);
+		message_replace_define_expand(message,flow_trace);
 	}
 	return 0;
 }
@@ -1403,7 +1594,7 @@ int route_push_aspect_site(void * message,char * proc,char * point)
 	int len;
 	int index;
 
-	index=message_get_define_expand(message,&aspect_point,"APRE");
+	index=message_get_define_expand(message,&aspect_point,DTYPE_MSG_EXPAND,SUBTYPE_ASPECT_POINT);
 	if(index<0)
 		return -EINVAL;
 	if(aspect_point==NULL)
@@ -1412,7 +1603,8 @@ int route_push_aspect_site(void * message,char * proc,char * point)
 		aspect_point=malloc(sizeof(struct expand_aspect_point));
 		aspect_point->data_size=0;
 		aspect_point->record_num=1;
-		memcpy(aspect_point->tag,"APRE",4);
+		aspect_point->type=DTYPE_MSG_EXPAND;
+		aspect_point->subtype=SUBTYPE_ASPECT_POINT;
 		aspect_point->aspect_proc=dup_str(proc,DIGEST_SIZE*2);
 		aspect_point->aspect_point=dup_str(point,DIGEST_SIZE*2);
 		message_add_expand(message,aspect_point);	
@@ -1447,7 +1639,7 @@ int route_push_aspect_site(void * message,char * proc,char * point)
 	}
 	return 0;
 }
-
+/*
 int route_check_sitestack(void * message,char * type)
 {
 	struct expand_flow_trace * flow_trace;

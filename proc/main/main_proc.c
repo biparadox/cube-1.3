@@ -159,6 +159,7 @@ int main(int argc,char **argv)
 	"base_define/subtypelist.json",
 	"base_define/msghead.json",
 	"base_define/msgrecord.json",
+	"base_define/expandrecord.json",
 	"base_define/dispatchrecord.json",
 	"base_define/headrecord.json",
 	 NULL

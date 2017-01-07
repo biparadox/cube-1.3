@@ -303,7 +303,7 @@ int proc_router_start(void * sub_proc,void * para)
 								&&!(msg_head->flag & MSG_FLAG_RESPONSE))	
 							{
 								msg_head->rjump++;
-								router_push_aspect_site(message,origin_proc,conn_uuid);
+								route_push_aspect_site(message,origin_proc,conn_uuid);
 							}
 							msg_head->ljump=1;
 							break;
@@ -329,7 +329,7 @@ int proc_router_start(void * sub_proc,void * para)
 								&&!(msg_head->flag & MSG_FLAG_RESPONSE))	
 							{
 								msg_head->rjump++;
-								router_push_aspect_site(message,origin_proc,conn_uuid);
+								route_push_aspect_site(message,origin_proc,conn_uuid);
 								break;
 							}
 						}
@@ -364,7 +364,7 @@ int proc_router_start(void * sub_proc,void * para)
 						if(router_policy_gettype(msg_policy)==MSG_FLOW_QUERY) 
 						{
 							// if this message's flow is query, we should push it into the stack
-							router_push_site(message,origin_proc,"FTRE");
+							route_push_site(message,origin_proc,"FTRE");
 						}
 						 
 						ret=router_set_local_route(message,msg_policy);
@@ -491,7 +491,7 @@ int proc_router_start(void * sub_proc,void * para)
 						msg_head->rjump++;
 						if(msg_head->flow==MSG_FLOW_QUERY)
 						{
-							router_push_site(message,conn_uuid,"FTRE");
+							route_push_site(message,conn_uuid,"FTRE");
 						}
 					}
 					ret=router_find_aspect_policy(message,&aspect_policy,sub_proc);
@@ -509,7 +509,7 @@ int proc_router_start(void * sub_proc,void * para)
 						}
 						ret=router_set_aspect_flow(message,aspect_policy);
 						msg_head->rjump=0;
-						router_push_aspect_site(message,origin_proc,conn_uuid);
+						route_push_aspect_site(message,origin_proc,conn_uuid);
 					}	
 				}
 				proc_audit_log(message);

@@ -39,8 +39,9 @@ enum route_target_type
     ROUTE_TARGET_LOCAL=0x01,
     ROUTE_TARGET_NAME=0x02,
     ROUTE_TARGET_UUID=0x04,
-    ROUTE_TARGET_RECORD=0x08,
-    ROUTE_TARGET_EXPAND=0x10,
+    ROUTE_TARGET_CONN=0x08,
+    ROUTE_TARGET_RECORD=0x10,
+    ROUTE_TARGET_EXPAND=0x20,
     ROUTE_TARGET_CHANNEL=0x40,
     ROUTE_TARGET_PORT=0x80,
     ROUTE_TARGET_MIXUUID=0x100,
@@ -79,11 +80,12 @@ int aspect_policy_getnext(void ** policy);
 int route_find_local_policy(void * message,void **msg_policy,char * sender_proc);
 int route_find_aspect_policy(void * message,void **msg_policy,char * sender_proc);
 
-int route_push_site(void * message,char * name,char * type);
+int route_push_site(void * message,char * name);
 int route_push_aspect_site(void * message,char * proc,char * point);
 int route_check_sitestack(void * message,char * type);
 int route_pop_site(void * message, char * type);
 int route_pop_aspect_site(void * message, char * proc);
+int router_set_local_route(void * message,void * policy);
 int route_dup_activemsg_info (void * message);
 
 
