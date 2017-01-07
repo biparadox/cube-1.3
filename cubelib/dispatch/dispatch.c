@@ -1697,6 +1697,163 @@ int router_set_aspect_flow(void * message,void * policy)
 	}
 	return 1;	
 }
+int router_find_policy_byname(void **msg_policy,char * name)
+{
+    DISPATCH_POLICY * policy;
+    int ret;
+		
+    *msg_policy=NULL;
+    ret=dispatch_policy_getfirst(&policy);
+    if(ret<0)
+        return ret;
+    while(policy!=NULL)
+    {
+	ret=Strncmp(name,policy->name,DIGEST_SIZE);
+	if(ret==0)
+	{
+		*msg_policy=policy;		
+		break;
+	}
+    	ret=dispatch_policy_getnext(&policy);
+    }
+    return ret;
+}
+
+int router_find_aspect_policy(void * message,void **msg_policy,char * sender_proc)
+{
+    void * policy;
+    int ret;
+    *msg_policy=NULL;
+    ret=dispatch_policy_getfirst(&policy);
+    if(ret<0)
+        return ret;
+    while(policy!=NULL)
+    {
+        ret=dispatch_match_message(policy,message);
+        if(ret<0)
+            return ret;
+        if(ret>0)
+        {
+            *msg_policy=policy;
+            return ret;
+        }
+    	ret=dispatch_policy_getnext(&policy);
+    	if(ret<0)
+             return ret;
+    }
+    return ret;
+}
+
+int router_find_aspect_policy_byname(void **msg_policy,char * name)
+{
+    DISPATCH_POLICY * policy;
+    int ret;
+		
+    *msg_policy=NULL;
+    ret=dispatch_policy_getfirst(&policy);
+    if(ret<0)
+        return ret;
+    while(policy!=NULL)
+    {
+		
+	if(policy->type==MSG_FLOW_ASPECT)
+	{
+		ret=Strncmp(name,policy->name,DIGEST_SIZE);
+		if(ret==0)
+		{
+			*msg_policy=policy;		
+			break;
+		}
+    		ret=dispatch_policy_getnext(&policy);
+	}	
+    }
+    return ret;
+}
+
+int router_set_next_jump(void * message)
+{
+	int ret;
+    	MSG_HEAD * msg_head;	
+   	DISPATCH_POLICY * msg_policy;
+	ROUTE_RULE * rule;
+	char * target;
+	int i;
+
+    	if(message==NULL)
+        	return -EINVAL;
+    	msg_head=message_get_head(message);
+		
+	if(msg_head->flow!=MSG_FLOW_ASPECT)
+	{
+		ret=router_find_policy_byname(&msg_policy,msg_head->route);
+	}
+//	else
+//	{
+//		ret=router_find_aspect_policy_byname(&msg_policy,msg_head->route);
+//	}	
+	if(ret<0)
+		return ret;
+	if(msg_policy==NULL)
+		return 0;	
+
+	ret=dispatch_policy_getfirstrouterule(msg_policy,&rule);
+	if(rule==NULL)
+		return 0;
+	for(i=0;i<msg_head->ljump;i++)
+	{
+		ret=dispatch_policy_getnextrouterule(msg_policy,&rule);		
+		if(rule==NULL)
+			return 0;
+	}
+
+	Memset(msg_head->receiver_uuid,0,DIGEST_SIZE);
+
+	switch(rule->target_type)
+	{
+		case ROUTE_TARGET_LOCAL:
+		case ROUTE_TARGET_PORT:
+			ret=rule_get_target(rule,message,&target);
+			if(ret<0)
+				return ret;		
+			Memcpy(msg_head->receiver_uuid,target,DIGEST_SIZE);
+			free(target);
+			//message_set_state(message,MSG_FLOW_LOCAL);
+			break;
+		case ROUTE_TARGET_NAME:
+		case ROUTE_TARGET_RECORD:
+		case ROUTE_TARGET_EXPAND:
+			ret=rule_get_target(rule,message,&target);
+			if(ret<0)
+				return ret;		
+			if(Isvaliduuid(target))
+			{
+				Memcpy(msg_head->receiver_uuid,target,DIGEST_SIZE);
+				
+			}
+			else
+			{
+				msg_head->receiver_uuid[0]='@';
+				Strncpy(msg_head->receiver_uuid+1,target,DIGEST_SIZE-1);
+			}	
+			free(target);
+			message_set_state(message,MSG_FLOW_DELIVER);
+			msg_head->rjump++;
+			break;
+		case ROUTE_TARGET_CONN:
+			ret=rule_get_target(rule,message,&target);
+			if(ret<0)
+				return ret;		
+			msg_head->receiver_uuid[0]=':';
+			Strncpy(msg_head->receiver_uuid+1,target,DIGEST_SIZE-1);
+			free(target);
+			message_set_state(message,MSG_FLOW_DELIVER);
+			msg_head->rjump++;
+			break;
+		default:
+			return -EINVAL;
+	}
+	return 1;	
+}
 int route_push_site(void * message,char * name)
 {
 	struct expand_flow_trace * flow_trace;
@@ -1965,4 +2122,36 @@ int router_store_route(void * message)
 		
 	ret=message_add_expand(message,route_record);
 	return ret;
+}
+int route_recover_route(void * message)
+{
+	int ret;
+	MSG_HEAD * msg_head;
+	struct expand_route_record * route_record=NULL;
+	if(message==NULL)
+		return  -EINVAL;
+	ret=message_get_define_expand(message,&route_record,DTYPE_MSG_EXPAND,SUBTYPE_ROUTE_RECORD);
+	if(ret<0)
+		return ret;
+	if(route_record==NULL)
+		return -EINVAL;	
+
+	int temp_flag=0;
+	msg_head=(MSG_HEAD *)message_get_head(message);	
+
+	Memcpy(msg_head->sender_uuid,route_record->sender_uuid,DIGEST_SIZE);
+	Memcpy(msg_head->receiver_uuid,route_record->receiver_uuid,DIGEST_SIZE);
+	Memcpy(msg_head->route,route_record->route,DIGEST_SIZE);
+	msg_head->flow=route_record->flow;
+	msg_head->state=route_record->state;
+	msg_head->ljump=route_record->ljump;
+	msg_head->rjump=route_record->rjump;
+
+	int temp_mask=MSG_FLAG_CRYPT|MSG_FLAG_SIGN|MSG_FLAG_ZIP|MSG_FLAG_VERIFY;
+
+	msg_head->flag = (msg_head->flag &temp_mask) | (route_record->flag & (~temp_mask));
+
+	message_remove_expand(message,DTYPE_MSG_EXPAND,SUBTYPE_ROUTE_RECORD,&route_record);
+	free(route_record);
+	return 1;
 }

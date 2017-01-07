@@ -956,16 +956,6 @@ void message_free(void * message)
     	free(msg_box);
 	return;
 }
-/*
-void * message_get_activemsg(void * message)
-{
-	struct message_box * msg_box;
-	int ret;
-	if(message==NULL)
-		return -EINVAL;
-	msg_box=(struct message_box *)message;
-	return msg_box->active_msg;
-}
 
 const char * message_get_recordtype(void * message)
 {
@@ -986,15 +976,6 @@ const char * message_get_sender(void * message)
 	msg_box=(struct message_box *)message;
 	return &(msg_box->head.sender_uuid);
 }
-const char * message_get_receiver(void * message)
-{
-	struct message_box * msg_box;
-	int ret;
-	if(message==NULL)
-		return NULL;
-	msg_box=(struct message_box *)message;
-	return &(msg_box->head.receiver_uuid);
-}
 
 
 int message_set_receiver(void * message,const char * receiver_uuid)
@@ -1013,14 +994,15 @@ int message_set_receiver(void * message,const char * receiver_uuid)
 	return 0;
 }
 
-int set_message_head(void * message,char * item_name, void * value)
+/*
+int message_set_head(void * message,char * item_name, void * value)
 {
 	struct message_box * msg_box;
 	int ret;
 
 	msg_box=(struct message_box *)message;
 
-	msg_box->box_state=MSG_BOX_DEAL;
+//	msg_box->box_state=MSG_BOX_DEAL;
 	if(message==NULL)
 		return -EINVAL;
 	if(value==NULL)
@@ -1745,6 +1727,64 @@ int message_get_record(void * message,void ** msg_record, int record_no)
 		return -EINVAL;
 	return 0;
 }
+int message_get_expand(void * message,void ** msg_record, int record_no)
+{
+	struct message_box * msg_box;
+	MSG_HEAD * msg_head;
+	MSG_EXPAND * expand_head;
+	void * struct_template;
+	int ret;
+
+	msg_box=(struct message_box *)message;
+
+	if(message==NULL)
+		return -EINVAL;
+	*msg_record=NULL;
+	
+	msg_head=message_get_head(message);
+	if((msg_head==NULL) || IS_ERR(msg_head))
+		return -EINVAL;
+	if(record_no<0)
+		return -EINVAL;
+	if(record_no>=msg_head->expand_num)
+		return 0;
+        struct_template=memdb_get_template(DTYPE_MESSAGE,SUBTYPE_EXPAND);
+	if(msg_box->precord[record_no]==NULL)
+	{
+
+		ret=Galloc0(&expand_head,struct_size(struct_template));
+		if(ret<0)
+			return ret;
+		ret=blob_2_struct(expand_head,msg_box->record[record_no],struct_template);
+		if(ret<0)
+			return ret;
+		struct_template=memdb_get_template(expand_head->type,expand_head->subtype);
+		if(struct_template==NULL)
+			return -EINVAL;
+		
+		ret=Galloc0(&(msg_box->precord[record_no]),struct_size(struct_template));
+		if(msg_box->precord[record_no]==NULL)
+			return -ENOMEM;	
+		ret=blob_2_struct(msg_box->precord[record_no],msg_box->record[record_no],struct_template);
+		if(ret<0)
+		{
+			struct_free(msg_box->precord[record_no],msg_box->record_template);
+			return ret;
+		}
+		msg_box->record_size[record_no]=ret;
+	}
+	else
+	{
+		expand_head=msg_box->precord[record_no];
+		struct_template=memdb_get_template(expand_head->type,expand_head->subtype);
+		if(struct_template==NULL)
+			return -EINVAL;
+	}
+	*msg_record=clone_struct(msg_box->precord[record_no],msg_box->record_template);
+	if(*msg_record==NULL)
+		return -EINVAL;
+	return 0;
+}
 int message_get_define_expand(void * message,void ** addr,int type,int subtype)
 {
     	struct message_box * msg_box;
@@ -1824,3 +1864,71 @@ int message_replace_define_expand(void * message,void * addr,int type,int subtyp
 	}
 	return i;
 }
+int message_remove_indexed_expand(void * message, int expand_no,void **expand)
+{
+	struct message_box * msg_box;
+	char type[5];
+	int i,j;
+	void * addr;
+	int retval;
+	MSG_EXPAND * expand_data;
+	MSG_HEAD * msg_head;
+
+	msg_box=(struct message_box *)message;
+
+	if((message==NULL) || IS_ERR(message))
+		return -EINVAL;
+	if(expand_no<0)
+		return -EINVAL;
+	if(expand_no>=msg_box->head.expand_num)
+		return -EINVAL;
+	msg_head=&(msg_box->head);
+
+	*expand=msg_box->pexpand[expand_no];
+/*	
+	if(msg_box->expand[expand_no]!=NULL)
+	{
+		free(msg_box->expand[expand_no]);
+	}
+*/
+	for(i=expand_no;i<msg_head->expand_num;i++)
+	{
+		msg_box->expand[i]=msg_box->expand[i+1];
+		msg_box->pexpand[i]=msg_box->pexpand[i+1];
+		msg_box->expand_size[i]=msg_box->expand_size[i+1];
+	}
+	msg_head->expand_num--;
+	return 0;
+}
+int message_remove_expand(void * message, int type,int subtype,void ** expand)
+{
+	struct message_box * msg_box;
+	int i,j;
+	void * addr;
+	int retval;
+	MSG_EXPAND * expand_data;
+
+	msg_box=(struct message_box *)message;
+
+	if((message==NULL) || IS_ERR(message))
+		return -EINVAL;
+	*expand=NULL;
+
+	for(i=0;i<msg_box->head.expand_num;i++)
+	{
+		retval=message_get_expand(message,&expand_data,i);
+		if(retval<0)
+			continue;
+		if(expand_data==NULL)
+			return 0;
+		if((expand_data->type==type) &&
+			(expand_data->subtype==subtype))
+		{
+			retval=message_remove_indexed_expand(message,i,expand);
+			break;
+		}
+	}
+
+	return 0;
+}
+

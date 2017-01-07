@@ -252,8 +252,8 @@ int proc_router_start(void * sub_proc,void * para)
 	char receiver_uuid[DIGEST_SIZE*2+1];
 	BYTE conn_uuid[DIGEST_SIZE*2];
 	
-	ret=proc_share_data_getvalue("uuid",local_uuid);
-	ret=proc_share_data_getvalue("proc_name",proc_name);
+//	ret=proc_share_data_getvalue("uuid",local_uuid);
+//	ret=proc_share_data_getvalue("proc_name",proc_name);
 
 
 
@@ -327,7 +327,7 @@ int proc_router_start(void * sub_proc,void * para)
 
 					if(msg_head->rjump==0)
 					{
-						router_recover_route(message);
+						route_recover_route(message);
 						printf("recover from aspect\n");
 					}	
 					else
