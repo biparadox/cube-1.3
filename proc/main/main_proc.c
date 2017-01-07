@@ -194,6 +194,9 @@ int main(int argc,char **argv)
 		printf("read %d elem from file %s!\n",ret,baseconfig[i]);
 	}
 
+	msgfunc_init();
+	dispatch_init();
+
 	ex_module_list_init();
     for(argv_offset=1;argv_offset<argc;argv_offset+=2)
     {

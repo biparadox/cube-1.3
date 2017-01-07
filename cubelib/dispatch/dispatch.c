@@ -35,17 +35,14 @@ static inline int _init_policy_list(void * list)
 
 }
 
-int dispatch_init(void * object )
+int dispatch_init( )
 {
 	int ret;
-	if(object==NULL)
-	{
-		ret=_init_policy_list(&process_policy);
-		ret=_init_policy_list(&aspect_policy);
-    		policy_head_template=memdb_get_template(DTYPE_DISPATCH,SUBTYPE_POLICY_HEAD);
-    		match_rule_template=memdb_get_template(DTYPE_DISPATCH,SUBTYPE_MATCH_HEAD);
-    		route_rule_template=memdb_get_template(DTYPE_DISPATCH,SUBTYPE_ROUTE_RULE);
-	}
+	ret=_init_policy_list(&process_policy);
+	ret=_init_policy_list(&aspect_policy);
+    	policy_head_template=memdb_get_template(DTYPE_DISPATCH,SUBTYPE_POLICY_HEAD);
+    	match_rule_template=memdb_get_template(DTYPE_DISPATCH,SUBTYPE_MATCH_HEAD);
+    	route_rule_template=memdb_get_template(DTYPE_DISPATCH,SUBTYPE_ROUTE_RULE);
 	return 0;
 }
 
@@ -623,6 +620,30 @@ int router_set_local_route(void * message,void * policy)
 	return 1;	
 }
 
+int router_find_route_policy(void * message,void **msg_policy,void * sender_proc)
+{
+    void * policy;
+    int ret;
+    *msg_policy=NULL;
+    ret=dispatch_policy_getfirst(&policy);
+    if(ret<0)
+        return ret;
+    while(policy!=NULL)
+    {
+        ret=dispatch_match_message(policy,message);
+        if(ret<0)
+            return ret;
+        if(ret>0)
+        {
+            *msg_policy=policy;
+            return ret;
+        }
+    	ret=dispatch_policy_getnext(&policy);
+    	if(ret<0)
+             return ret;
+    }
+    return ret;
+}
 /*
 int __message_policy_init(void * policy)
 {
@@ -1643,18 +1664,98 @@ int route_push_aspect_site(void * message,char * proc,char * point)
 	}
 	return 0;
 }
-/*
-int route_check_sitestack(void * message,char * type)
+
+int route_check_sitestack(void * message)
 {
 	struct expand_flow_trace * flow_trace;
 	int ret;
-	ret=message_get_define_expand(message,&flow_trace,type);
+	ret=message_get_define_expand(message,&flow_trace,DTYPE_MSG_EXPAND,SUBTYPE_FLOW_TRACE);
 	if(ret<0)
 		return -EINVAL;
 	if(flow_trace==NULL)
 		return 0;
 	return flow_trace->record_num;
 }
+int route_check_aspectstack(void * message)
+{
+	struct expand_aspect_point * flow_trace;
+	int ret;
+	ret=message_get_define_expand(message,&flow_trace,DTYPE_MSG_EXPAND,SUBTYPE_ASPECT_POINT);
+	if(ret<0)
+		return -EINVAL;
+	if(flow_trace==NULL)
+		return 0;
+	return flow_trace->record_num;
+}
+int router_pop_site(void * message)
+{
+	struct expand_flow_trace * flow_trace;
+	int ret;
+	int len;
+
+	MSG_HEAD * msg_head =message_get_head(message);
+
+	ret=message_get_define_expand(message,&flow_trace,DTYPE_MSG_EXPAND,SUBTYPE_FLOW_TRACE);
+	if(ret<0)
+		return -EINVAL;
+	if(flow_trace==NULL)
+		return 0;
+	if(flow_trace->record_num<1)
+		return 0;
+
+	int curr_offset=(--(flow_trace->record_num))*DIGEST_SIZE*2;
+	memcpy(msg_head->receiver_uuid,flow_trace->trace_record+curr_offset,DIGEST_SIZE*2);
+
+	if(flow_trace->record_num==0)
+	{
+		free(flow_trace->trace_record);
+//		message_remove_expand(message,type,&flow_trace);
+	}
+		
+/*
+	if(is_valid_uuid(msg_head->receiver_uuid))
+	{
+		msg_head->state=MSG_FLOW_DELIVER;	
+	}
+	else
+*/
+	{
+		msg_head->state=MSG_FLOW_DELIVER;
+		msg_head->flag |= MSG_FLAG_LOCAL;
+	}
+
+	return 1;
+}
+
+int router_pop_aspect_site(void * message, char * proc)
+{
+	struct expand_aspect_point * aspect_point;
+	int ret;
+	int len;
+
+	MSG_HEAD * msg_head =message_get_head(message);
+
+	ret=message_get_define_expand(message,&aspect_point,DTYPE_MSG_EXPAND,SUBTYPE_ASPECT_POINT);
+	if(ret<0)
+		return -EINVAL;
+	if(aspect_point==NULL)
+		return 0;
+	if(aspect_point->record_num<1)
+		return 0;
+
+	int curr_offset=(--(aspect_point->record_num))*DIGEST_SIZE*2;
+	memcpy(msg_head->receiver_uuid,aspect_point->aspect_point+curr_offset,DIGEST_SIZE);
+	memcpy(proc,aspect_point->aspect_proc+curr_offset,DIGEST_SIZE);
+
+	if(aspect_point->record_num==0)
+	{
+		free(aspect_point->aspect_proc);
+		free(aspect_point->aspect_point);
+//		message_remove_expand(message,"APRE",&aspect_point);
+	}
+	return 1;
+}
+/*
 int route_pop_site(void * message, char * type)
 {
 	struct expand_flow_trace * flow_trace;

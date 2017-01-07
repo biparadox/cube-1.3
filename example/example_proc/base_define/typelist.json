@@ -1,17 +1,1 @@
-{
-	"head":
-	{
-		"name":"dispatch_type",
-		"type":"TYPELIST"
-	},
-	"record":
-	{
-		"elem_no":3,
-		"elemlist":
-		[
-			"MESSAGE=0x200",
-			"MSG_EXPAND",
-			"DISPATCH=0x210"
-		]
-	}
-}
+../../../cubelib/dispatch/typelist.json

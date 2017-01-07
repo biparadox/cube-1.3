@@ -82,7 +82,7 @@ int route_find_aspect_policy(void * message,void **msg_policy,char * sender_proc
 
 int route_push_site(void * message,char * name);
 int route_push_aspect_site(void * message,char * proc,char * point);
-int route_check_sitestack(void * message,char * type);
+int route_check_sitestack(void * message);
 int route_pop_site(void * message, char * type);
 int route_pop_aspect_site(void * message, char * proc);
 int router_set_local_route(void * message,void * policy);

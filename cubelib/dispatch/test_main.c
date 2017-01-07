@@ -192,8 +192,6 @@ int main() {
 	void * message;
 	void * policy;
 	
-	dispatch_init(NULL);
-	
 	ret=read_dispatch_file("dispatch_policy.json");
 
 	message=message_create(DTYPE_MESSAGE,SUBTYPE_BASE_MSG,NULL);	

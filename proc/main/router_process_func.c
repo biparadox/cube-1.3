@@ -62,7 +62,7 @@ int     proc_audit_log (void * message)
 	char audit_text[4096];
         const char * audit_filename= "./message.log";
     	int fd ;
-	ret=message_2_json(message,audit_text);	
+	ret=message_output_json(message,audit_text);	
 
 	audit_text[ret]='\n';			
     	fd=open(audit_filename,O_WRONLY|O_APPEND);
@@ -91,7 +91,7 @@ int proc_router_recv_msg(void * message,char * local_uuid,char * proc_name)
 	if(message_get_state(message) & MSG_FLOW_RESPONSE)
 	{
 		
-		ret=router_check_sitestack(message,"FTRE");
+		ret=route_check_sitestack(message);
 		if(ret<0)
 			return ret;
 		// if response stack finished, set the state to FINISH 
@@ -101,7 +101,7 @@ int proc_router_recv_msg(void * message,char * local_uuid,char * proc_name)
 	if(message_get_flow(message) & MSG_FLOW_ASPECT)
 	{
 		
-		ret=router_check_sitestack(message,"APRE");
+		ret=route_check_aspectstack(message);
 		if(ret<0)
 			return ret;
 		if(ret==0)
@@ -124,7 +124,7 @@ int proc_router_send_msg(void * message,char * local_uuid,char * proc_name)
 	{
 		case MSG_FLAG_LOCAL:
 		
-			msg_head=get_message_head(message);
+			msg_head=message_get_head(message);
 			if(msg_head==NULL)
 			{
 				return  -EINVAL;
@@ -170,7 +170,7 @@ int proc_router_init(void * sub_proc,void * para)
    if(para!=NULL)
         config_filename= para;
 
-    router_policy_init();
+ // router_policy_init();
     ret=router_read_cfg(config_filename);	
     if(ret<=0)
     {
@@ -178,10 +178,10 @@ int proc_router_init(void * sub_proc,void * para)
 //	    return ret;
     }
 
-    void * context;
-    ret=sec_subject_getcontext(sub_proc,&context);
-    if(ret<0)
-	return ret;
+//    void * context;
+//    ret=ex_module_getcontext(sub_proc,&context);
+//    if(ret<0)
+//	return ret;
     proc_audit_init();
     return 0;
 }
@@ -223,7 +223,7 @@ int proc_router_start(void * sub_proc,void * para)
 		char * origin_proc;
 
 		// throughout all the sub_proc
-		ret=get_first_sec_subject(&sub_proc);
+		ret=get_first_ex_module(&sub_proc);
 		msg_policy=NULL;
 		while(sub_proc!=NULL)
 		{
@@ -238,7 +238,7 @@ int proc_router_start(void * sub_proc,void * para)
 			enum proc_type curr_proc_type;
 
 			// this pro is a port proc
-			curr_proc_type=sec_subject_gettype(sub_proc);
+			curr_proc_type=ex_module_gettype(sub_proc);
 
 				
 			// receiver an outside message
@@ -364,7 +364,7 @@ int proc_router_start(void * sub_proc,void * para)
 						if(router_policy_gettype(msg_policy)==MSG_FLOW_QUERY) 
 						{
 							// if this message's flow is query, we should push it into the stack
-							route_push_site(message,origin_proc,"FTRE");
+							route_push_site(message,origin_proc);
 						}
 						 
 						ret=router_set_local_route(message,msg_policy);
@@ -464,6 +464,7 @@ int proc_router_start(void * sub_proc,void * para)
 
 				if(msg_policy!=NULL)
 				{
+				/*
 					// duplicate message send process
 					router_rule=router_get_first_duprule(msg_policy);
 					while(router_rule!=NULL)
@@ -479,6 +480,7 @@ int proc_router_start(void * sub_proc,void * para)
 						}
 						router_rule=router_get_next_duprule(msg_policy);
 					}
+				*/
 				}
 				if((msg_head->state==MSG_FLOW_DELIVER)
 					||(curr_proc_type==PROC_TYPE_CONN))
@@ -491,7 +493,7 @@ int proc_router_start(void * sub_proc,void * para)
 						msg_head->rjump++;
 						if(msg_head->flow==MSG_FLOW_QUERY)
 						{
-							route_push_site(message,conn_uuid,"FTRE");
+							route_push_site(message,conn_uuid);
 						}
 					}
 					ret=router_find_aspect_policy(message,&aspect_policy,sub_proc);
