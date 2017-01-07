@@ -46,6 +46,25 @@ struct ex_module_list
 	struct List_head * curr;
 }; 
 
+EX_MODULE * main_module;
+
+struct proc_context
+{
+	BYTE uuid[32];
+	char *proc_name;
+	char *host_name;
+	int  state;
+};
+
+static struct struct_elem_attr proc_context_desc[]=
+{
+	{"uuid",CUBE_TYPE_UUID,DIGEST_SIZE,NULL,NULL},
+	{"proc_name",CUBE_TYPE_ESTRING,DIGEST_SIZE*2,NULL},
+	{"host_name",CUBE_TYPE_ESTRING,DIGEST_SIZE*2,NULL},
+	{"state",CUBE_TYPE_ENUM,0,NULL,NULL},
+	{NULL,CUBE_TYPE_ENDDATA,0,NULL}
+};
+
 static struct ex_module_list * ex_module_list;
 
 int entity_comp_uuid(void * List_head, void * uuid) 
@@ -94,6 +113,13 @@ int ex_module_list_init()
 	ex_module_list->head.record=NULL;
 	ex_module_list->curr=&(ex_module_list->head.list);
 	ret=pthread_rwlock_init(&(ex_module_list->rwlock),NULL);
+
+	ret=Galloc0(&main_module,sizeof(*main_module));
+	main_module->context_template=create_struct_template(&proc_context_desc);
+	if(main_module->context_template==NULL)
+		return -EINVAL;
+	ret=Galloc0(&main_module->context,struct_size(main_module->context_template));
+
 	return 0;
 }
 
@@ -220,6 +246,7 @@ int remove_ex_module(char * name,void **ex_mod)
         *ex_mod=record;	
 	return 1;
 }	
+
 
  
 int ex_module_create(char * name,int type,struct struct_elem_attr *  context_desc, void ** ex_mod)
@@ -537,4 +564,73 @@ void ex_module_destroy(void * ex_mod)
 	pthread_mutex_destroy(&(ex_module->mutex));
 	kfree(ex_module);
 	return;
+}
+
+int proc_share_data_getstate()
+{
+
+	struct proc_context * context;
+	if(main_module==NULL)
+		return -1;
+	context=main_module->context;
+	if(context==NULL)
+		return -1;
+	return context->state;
+}
+
+int proc_share_data_setstate(int state)
+{
+	struct proc_context * context;
+	if(main_module==NULL)
+		return -1;
+	context=main_module->context;
+	if(context==NULL)
+		return -1;
+	context->state=state;	
+	return state;
+}
+
+
+void * proc_share_data_getpointer()
+{
+	struct proc_context * context;
+	if(main_module==NULL)
+		return -1;
+	return main_module->pointer;
+}
+int proc_share_data_setpointer(void * pointer)
+{
+	struct proc_context * context;
+	if(main_module==NULL)
+		return -1;
+	main_module->pointer=pointer;
+	return 0;
+}
+
+int proc_share_data_getvalue(char * valuename,void * value)
+{
+	struct proc_context * context;
+	if(main_module==NULL)
+		return -1;
+	context=main_module->context;
+	if(context==NULL)
+		return -1;
+	int ret;
+	
+	ret=struct_read_elem(valuename,main_module->context,value,main_module->context_template);
+	return ret;
+
+}
+ 
+int proc_share_data_setvalue(char * valuename,void * value)
+{
+	struct proc_context * context;
+	if(main_module==NULL)
+		return -1;
+	context=main_module->context;
+	if(context==NULL)
+		return -1;
+	int ret;
+	ret=struct_write_elem(valuename,main_module->context,value,main_module->context_template);
+	return ret;
 }
