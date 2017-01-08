@@ -8,12 +8,10 @@ MAIN_PROC=example_proc
 INIT_OBJ=lib$(MAIN_PROC).so
 TEST_LIB= -L../lib -lexmodule -ldispatch -lmessage -lmemdb -lconnector -lstruct -lcrypto_func -ljson -lbasefunc -lstring -lalloc -lpthread
 
-main: $(MAIN_PROC)
-$(MAIN_PROC):  $(INIT_OBJ) main_proc.c
-	$(CC) $(FLAGS) $(MAIN_PROC) main_proc.c -I$(INCLUDE) $(TEST_LIB) -ldl
+main: $(INIT_OBJ)
 $(INIT_OBJ): $(MAIN_PROC)_func.o
 	$(CC) $(LIBFLAGS) $(INIT_OBJ) $(MAIN_PROC)_func.o
 $(MAIN_PROC)_func.o: $(MAIN_PROC)_func.c
 	$(CC) $(CFLAGS) $(MAIN_PROC)_func.c
 clean:
-	rm -f $(MAIN_PROC) *~ *.o *.a $(INIT_OBJ)
+	rm -f *~ *.o *.a $(INIT_OBJ)

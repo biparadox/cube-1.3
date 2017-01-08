@@ -6,17 +6,8 @@ struct main_config
 	char proc_name[DIGEST_SIZE];
 	char * init_dlib;
 	char * init_func;
-	char * init_para;	
+	void * init_para;	
 }__attribute__((packed));
-
-static struct struct_elem_attr main_config_desc[]=
-{
-        {"proc_name",CUBE_TYPE_STRING,DIGEST_SIZE,NULL,NULL},
-        {"init_dlib",CUBE_TYPE_ESTRING,DIGEST_SIZE*4,NULL,NULL},
-        {"init_func",CUBE_TYPE_ESTRING,DIGEST_SIZE*2,NULL,NULL},
-        {"init_para",CUBE_TYPE_ESTRING,DIGEST_SIZE*2,NULL,NULL},
-	{NULL,CUBE_TYPE_ENDDATA,0,NULL,NULL}
-};
 
 struct plugin_config
 {
@@ -28,15 +19,21 @@ struct plugin_config
 	void * init_para;
 }__attribute__((packed));
 
-static struct struct_elem_attr plugin_config_desc[]=
+struct lib_para_struct
 {
-        {"name",CUBE_TYPE_STRING,DIGEST_SIZE,NULL,NULL},
-//        {"type",CUBE_TYPE_ENUM,sizeof(int),&sec_subject_type_valuelist},
-        {"plugin_dlib",CUBE_TYPE_ESTRING,DIGEST_SIZE*4,NULL,NULL},
-        {"init",CUBE_TYPE_ESTRING,DIGEST_SIZE*2,NULL,NULL},
-        {"start",CUBE_TYPE_ESTRING,DIGEST_SIZE*2,NULL,NULL},
-	{NULL,CUBE_TYPE_ENDDATA,0,NULL,NULL}
-};
+	char * libname;	
+	char * dynamic_lib;
+	char * init_func;
+	char * start_func;
+	void * para_template;
+}__attribute__((packed));
+
+
+char *  get_temp_filename(char * tag );
+int get_local_uuid(char * uuid);
+int read_json_file(char * file_name);
+void * main_read_func(char * libname,char * sym);
+int read_sys_cfg(void ** lib_para_struct,void * root_node);
 
 static struct timeval time_val={0,50*1000};
 #endif

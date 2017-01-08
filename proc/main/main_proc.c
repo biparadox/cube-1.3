@@ -27,138 +27,11 @@ typedef struct proc_init_parameter
 	int (* start) (void *,void *);
 }PROC_INIT;
 
-char *  get_temp_filename(char * tag )
-{
-	char buf[128];
-	int len;
-	pid_t pid=getpid();
-	sprintf(buf,"/tmp/temp.%d",pid);
-	len=strlen(buf);
-	if(tag!= NULL)
-	{
-		len+=strlen(tag);
-		if(strlen(tag)+strlen(tag)>=128)
-			return -EINVAL;
-		strcat(buf,tag);
-	}
-	char * tempbuf = malloc(len+1);
-	if(tempbuf==NULL)
-		return -EINVAL;
-	memcpy(tempbuf,buf,len+1);
-	return tempbuf;
-}
-	
-int get_local_uuid(char * uuid)
-{
-	FILE *fi,*fo;
-	int i=0;
-	char *s,ch;
-	int len;
-
-	char cmd[128];
-	char *tempfile1,*tempfile2;
-
-	tempfile1=get_temp_filename(".001");
-	if((tempfile1==NULL) || IS_ERR(tempfile1)) 
-		return tempfile1;
-
-	sprintf(cmd,"dmidecode | grep UUID | awk '{print $2}' > %s",tempfile1);
-	system(cmd);
-
-	fi=fopen(tempfile1,"r");
-	memset(uuid,0,DIGEST_SIZE*2);
-	len=fread(uuid,1,36,fi);
-	sprintf(cmd,"rm -f %s",tempfile1);
-	system(cmd);
-	return len;
-}
-
-int read_json_file(char * file_name)
-{
-	int ret;
-
-	int fd;
-	int readlen;
-	int leftlen;
-	int json_offset;
-
-	int struct_no=0;
-	void * root_node;
-	void * findlist;
-	void * memdb_template ;
-	BYTE uuid[DIGEST_SIZE];
-	char json_buffer[4096];
-
-	fd=open(file_name,O_RDONLY);
-	if(fd<0)
-		return fd;
-
-	readlen=read(fd,json_buffer,1024);
-	if(readlen<0)
-		return -EIO;
-	leftlen=readlen;
-	json_buffer[readlen]=0;
-
-	json_offset=0;
-	while(leftlen>32)
-	{
-		ret=json_solve_str(&root_node,json_buffer+json_offset);
-		if(ret<0)
-		{
-			printf("solve json str error!\n");
-			break;
-		}
-
-		leftlen-=ret;
-		json_offset+=ret;
-
-		if(ret<32)
-			continue;
-		if(leftlen+json_offset==1024)
-		{
-			Memcpy(json_buffer,json_buffer+json_offset,leftlen);
-			readlen=read(fd,json_buffer+leftlen,1024-leftlen);
-			if(readlen<0)
-				return readlen;
-			leftlen+=readlen;
-			json_offset=0;
-		}
-
-		ret=memdb_read_desc(root_node,uuid);
-		if(ret<0)
-			break;
-		struct_no++;
-	}
-
-	close(fd);
-	return struct_no;
-}
-
-void * main_read_func(char * libname,char * sym)
-{
-    void * handle;	
-    int (*func)(void *,void *);
-    char * error;
-    handle=dlopen(libname,RTLD_NOW);
-     if(handle == NULL)		
-     {
-    	fprintf(stderr, "Failed to open library %s error:%s\n", libname, dlerror());
-    	return NULL;
-     }
-     func=dlsym(handle,sym);
-     if(func == NULL)		
-     {
-    	fprintf(stderr, "Failed to open func %s error:%s\n", sym, dlerror());
-    	return NULL;
-     }
-     return func;
-}     	
-
-
 static char connector_config_file[DIGEST_SIZE*2]="./connector_config.cfg";
 static char router_config_file[DIGEST_SIZE*2]="./router_policy.cfg";
 static char plugin_config_file[DIGEST_SIZE*2]="./plugin_config.cfg";
 static char main_config_file[DIGEST_SIZE*2]="./main_config.cfg";
+static char sys_config_file[DIGEST_SIZE*2]="./sys_config.cfg";
 static char audit_file[DIGEST_SIZE*2]="./message.log";
 static char connector_plugin_file[DIGEST_SIZE*2]="libconnector_process_func.so";
 static char router_plugin_file[DIGEST_SIZE*2]="librouter_process_func.so";
@@ -295,10 +168,11 @@ int main(int argc,char **argv)
     system("mkdir lib");
     // init the main proc struct
 
-    void * main_config_template=create_struct_template(&main_config_desc);
+//    void * main_config_template=create_struct_template(&main_config_desc);
 /*
     struct main_config main_initpara;
-    fd=open(main_config_file,O_RDONLY);
+*/
+    fd=open(sys_config_file,O_RDONLY);
     if(fd<0)
 	return -EINVAL;
 
@@ -315,7 +189,12 @@ int main(int argc,char **argv)
     if(ret<0)
 	return ret;	
 
+    struct lib_para_struct * lib_para;
 
+    ret=read_sys_cfg(&lib_para,root_node);
+    if(ret<0)
+	return ret; 		
+/*
      void * struct_template=create_struct_template(&main_config_desc);
     if(struct_template==NULL)
     {

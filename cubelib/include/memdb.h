@@ -84,6 +84,7 @@ int memdb_print(void * data,char * json_str);
 
 int memdb_read_desc(void * root,BYTE * uuid);
 int memdb_comp_uuid(void * record);
+void * memdb_read_struct_template(void * node);
 
 #endif
 
