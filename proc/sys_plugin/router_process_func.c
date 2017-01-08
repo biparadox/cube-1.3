@@ -22,7 +22,6 @@
 
 //#include "router_value.h"
 #include "router_process_func.h"
-#include "main_proc_func.h"
 
 int read_dispatch_file(char * file_name)
 {

@@ -18,7 +18,6 @@
 #include "ex_module.h"
 
 #include "main_proc_func.h"
-#include "proc_config.h"
 
 typedef struct proc_init_parameter
 {

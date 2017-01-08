@@ -40,4 +40,5 @@ static NAME2POINTER router_func_list[]=
 	{NULL,0}
 };
 
+static struct timeval time_val={0,50*1000};
 #endif

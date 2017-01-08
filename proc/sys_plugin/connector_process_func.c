@@ -19,7 +19,6 @@
 #include "connector.h"
 #include "connector_value.h"
 #include "connector_process_func.h"
-#include "main_proc_func.h"
 
 struct  connector_config
 {
@@ -581,8 +580,8 @@ int proc_conn_init(void * sub_proc,void * para)
 //	ret=sec_subject_getcontext(sub_proc,&context);
 //	if(ret<0)
 //		return ret;
-    	conn_cfg_template=create_struct_template(&main_config_desc);
-	printf("main template create succeed!\n");
+//    	conn_cfg_template=create_struct_template(&main_config_desc);
+//	printf("main template create succeed!\n");
     	conn_cfg_template=create_struct_template(&connector_config_desc);
 	sub_proc_pointer=malloc(sizeof(struct connector_proc_pointer));
 	if(sub_proc_pointer==NULL)
