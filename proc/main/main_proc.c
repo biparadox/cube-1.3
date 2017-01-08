@@ -27,6 +27,53 @@ typedef struct proc_init_parameter
 	int (* init) (void *,void *);
 	int (* start) (void *,void *);
 }PROC_INIT;
+
+char *  get_temp_filename(char * tag )
+{
+	char buf[128];
+	int len;
+	pid_t pid=getpid();
+	sprintf(buf,"/tmp/temp.%d",pid);
+	len=strlen(buf);
+	if(tag!= NULL)
+	{
+		len+=strlen(tag);
+		if(strlen(tag)+strlen(tag)>=128)
+			return -EINVAL;
+		strcat(buf,tag);
+	}
+	char * tempbuf = malloc(len+1);
+	if(tempbuf==NULL)
+		return -EINVAL;
+	memcpy(tempbuf,buf,len+1);
+	return tempbuf;
+}
+	
+int get_local_uuid(char * uuid)
+{
+	FILE *fi,*fo;
+	int i=0;
+	char *s,ch;
+	int len;
+
+	char cmd[128];
+	char *tempfile1,*tempfile2;
+
+	tempfile1=get_temp_filename(".001");
+	if((tempfile1==NULL) || IS_ERR(tempfile1)) 
+		return tempfile1;
+
+	sprintf(cmd,"dmidecode | grep UUID | awk '{print $2}' > %s",tempfile1);
+	system(cmd);
+
+	fi=fopen(tempfile1,"r");
+	memset(uuid,0,DIGEST_SIZE*2);
+	len=fread(uuid,1,36,fi);
+	sprintf(cmd,"rm -f %s",tempfile1);
+	system(cmd);
+	return len;
+}
+
 int read_json_file(char * file_name)
 {
 	int ret;
@@ -247,8 +294,6 @@ int main(int argc,char **argv)
 
     // init system
     system("mkdir lib");
-//    openstack_trust_lib_init();
-//    sec_respool_list_init();
     // init the main proc struct
 
     void * main_config_template=create_struct_template(&main_config_desc);
@@ -292,9 +337,11 @@ int main(int argc,char **argv)
 
     // init the proc's main share data
     ret=proc_share_data_init(share_data_desc);
+*/
     ret=get_local_uuid(local_uuid);
     printf("this machine's local uuid is %s\n",local_uuid);
     proc_share_data_setvalue("uuid",local_uuid);
+/*
     proc_share_data_setvalue("proc_name",main_initpara.proc_name);
 
     // do the main proc's init function
