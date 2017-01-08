@@ -107,4 +107,11 @@ int ex_module_recvmsg(void * ex_mod,void **msg);
 
 int send_ex_module_msg(void * ex_mod,void * msg);
 int recv_ex_module_msg(void * ex_mod,void ** msg);
+
+int proc_share_data_getstate();
+int proc_share_data_setstate(int state);
+void * proc_share_data_getpointer();
+int proc_share_data_setpointer(void * pointer);
+int proc_share_data_getvalue(char * valuename,void * value);
+int proc_share_data_setvalue(char * valuename,void * value);
 #endif

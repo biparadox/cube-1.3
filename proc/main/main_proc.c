@@ -194,6 +194,27 @@ int main(int argc,char **argv)
     ret=read_sys_cfg(&lib_para,root_node);
     if(ret<0)
 	return ret; 		
+    fd=open(main_config_file,O_RDONLY);
+    if(fd<0)
+	return -EINVAL;
+
+    json_offset=read(fd,buffer,4096);
+    if(json_offset<0)
+	return ret;
+    if(json_offset>4096)
+    {
+	printf("main config file is too long!\n");
+	return -EINVAL;
+    }
+    close(fd);
+    ret=json_solve_str(&root_node,buffer);
+    if(ret<0)
+	return ret;	
+
+    ret=read_main_cfg(lib_para,root_node);
+    if(ret<0)
+	return ret; 		
+/*
 /*
      void * struct_template=create_struct_template(&main_config_desc);
     if(struct_template==NULL)

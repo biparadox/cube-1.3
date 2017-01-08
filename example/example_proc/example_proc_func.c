@@ -14,8 +14,16 @@
 #include "message.h"
 #include "connector.h"
 
-int example_proc_init()
+struct init_struct
+{
+	char * name;
+};
+
+int example_proc_init(void * main_proc,void * init_para)
 {
 	int ret;
+	struct init_struct * para=(struct init_struct *)init_para;
+	printf("init para is %s!\n",para->name);
+
 	return 0;
 }

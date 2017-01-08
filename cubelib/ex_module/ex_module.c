@@ -308,10 +308,11 @@ int ex_module_create(char * name,int type,struct struct_elem_attr *  context_des
 int ex_module_setinitfunc(void * ex_mod,void * init)
 {
 	int ret;
-	EX_MODULE * ex_module;
+	EX_MODULE * ex_module=(EX_MODULE *)ex_mod;
 	if(ex_mod==NULL)
-		return -EINVAL;
-	ex_module = (EX_MODULE *)ex_mod;
+	{
+		ex_module=main_module;
+	}
 	ex_module->init=init;
 	return 0;
 }
@@ -420,7 +421,7 @@ int ex_module_init(void * ex_mod,void * para)
 	EX_MODULE * ex_module=(EX_MODULE *)ex_mod;
 	if(ex_mod==NULL)
 	{
-		return -EINVAL;
+		ex_module=main_module;
 	}
 
 	// judge if the ex_module's state is right
@@ -428,7 +429,7 @@ int ex_module_init(void * ex_mod,void * para)
 	{
 		return ret;
 	}
-	ret=ex_module->init(ex_mod,para);
+	ret=ex_module->init(ex_module,para);
 
 	return ret;
 }

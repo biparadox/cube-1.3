@@ -233,6 +233,7 @@ int read_default_json_desc(void * root,void * record)
 void * memdb_read_struct_template(void * node)
 {
 	DB_RECORD * struct_record;
+	void * struct_template;
 	BYTE uuid[DIGEST_SIZE];
 	int ret;
 	ret=Galloc0(&struct_record,sizeof(*struct_record));
@@ -240,7 +241,9 @@ void * memdb_read_struct_template(void * node)
 	ret=read_default_json_desc(node,struct_record);
 	if(ret<0)
 		return NULL;
-	return struct_record->tail;		
+	struct_template=create_struct_template(struct_record->tail);
+	
+	return struct_template;		
 }
 
 
