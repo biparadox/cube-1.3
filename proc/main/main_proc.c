@@ -168,14 +168,10 @@ int main(int argc,char **argv)
     system("mkdir lib");
     // init the main proc struct
 
-//    void * main_config_template=create_struct_template(&main_config_desc);
-/*
-    struct main_config main_initpara;
-*/
     fd=open(sys_config_file,O_RDONLY);
     if(fd<0)
 	return -EINVAL;
-
+/*
     json_offset=read(fd,buffer,4096);
     if(json_offset<0)
 	return ret;
@@ -188,7 +184,13 @@ int main(int argc,char **argv)
     ret=json_solve_str(&root_node,buffer);
     if(ret<0)
 	return ret;	
+*/
 
+    ret=read_json_node(fd,&root_node);
+    if(ret<0)
+	return ret;	
+    close(fd);
+	
     struct lib_para_struct * lib_para;
 
     ret=read_sys_cfg(&lib_para,root_node);
@@ -198,58 +200,19 @@ int main(int argc,char **argv)
     if(fd<0)
 	return -EINVAL;
 
-    json_offset=read(fd,buffer,4096);
-    if(json_offset<0)
-	return ret;
-    if(json_offset>4096)
-    {
-	printf("main config file is too long!\n");
-	return -EINVAL;
-    }
-    close(fd);
-    ret=json_solve_str(&root_node,buffer);
+    ret=read_json_node(fd,&root_node);
     if(ret<0)
 	return ret;	
-
+    close(fd);
+	
     ret=read_main_cfg(lib_para,root_node);
     if(ret<0)
 	return ret; 		
-/*
-/*
-     void * struct_template=create_struct_template(&main_config_desc);
-    if(struct_template==NULL)
-    {
-	printf("Fatal error!\n");
-	return -EINVAL;
-    }
-    ret=json_2_struct(root_node,&main_initpara,struct_template);
-    if(ret<0)
-    {
-	printf("main config file format error!\n");
-	return -EINVAL;
-     }
-     free_struct_template(struct_template); 
-    
-    ret=sec_subject_create(main_initpara.proc_name,PROC_TYPE_MAIN,NULL,&main_proc);
-    if(ret<0)
-    	return ret;
 
-    // init the proc's main share data
-    ret=proc_share_data_init(share_data_desc);
-*/
     ret=get_local_uuid(local_uuid);
     printf("this machine's local uuid is %s\n",local_uuid);
     proc_share_data_setvalue("uuid",local_uuid);
-/*
-    proc_share_data_setvalue("proc_name",main_initpara.proc_name);
 
-    // do the main proc's init function
-    void * initfunc =main_read_func(main_initpara.init_dlib,main_initpara.init_func);
-    if(initfunc==NULL)
-	return -EINVAL;
-    sec_subject_setinitfunc(main_proc,initfunc);
-    sec_subject_setstartfunc(main_proc,NULL);
-*/	
     // init all the proc database
 
     usleep(time_val.tv_usec);
@@ -308,17 +271,16 @@ int main(int argc,char **argv)
 	    return ret;
 
     // loop to init all the plugin's 
-/*
+
     fd=open(plugin_config_file,O_RDONLY);
     if(fd<0)
 	return -EINVAL;
 
-    int json_left=read(fd,buffer,4096);
-    char * json_str=buffer;
-    json_offset=0;
-    struct plugin_config plugin_initpara; 
-    void * sub_proc;
-    struct_template=create_struct_template(&plugin_config_desc);
+    while(read_json_node(fd,&root_node)>0)
+    {  		
+    	struct plugin_config plugin_initpara; 
+    	void * sub_proc;
+    	struct_template=create_struct_template(&plugin_config_desc);
     if(struct_template == NULL)
     {
 	printf("fatal error!\n");
