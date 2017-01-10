@@ -1,7 +1,27 @@
 #ifndef SEC_ENTITY_H
 #define SEC_ENTITY_H
 
+enum dynamic_exmodule_typelist
+{
+	DTYPE_EXMODULE=0x220,
+};
 
+enum subtypelist_dispatch
+{
+	SUBTYPE_LIB_PARA=0x01,
+};
+
+enum module_type
+{
+	MOD_TYPE_MAIN,
+	MOD_TYPE_CONN,
+	MOD_TYPE_ROUTER,
+	MOD_TYPE_PORT,
+	MOD_TYPE_MONITOR,
+	MOD_TYPE_DECIDE,
+	MOD_TYPE_CONTROL,
+	MOD_TYPE_TRANSLATER,
+};
 enum ex_mod_state
 {
 	EX_MOD_CREATE=0,
@@ -18,25 +38,6 @@ enum default_fsm_state
 	PROC_LOCAL_INIT=0,
 	PROC_LOCAL_START,
 	PROC_LOCAL_STOP=0x7fff,
-};
-
-static NAME2VALUE default_state_list[]=
-{
-	{"init",PROC_LOCAL_INIT},
-	{"start",PROC_LOCAL_START},
-	{"stop",PROC_LOCAL_STOP},
-	{NULL,0},
-};
-
-enum proc_type
-{
-	PROC_TYPE_MAIN,
-	PROC_TYPE_CONN,
-	PROC_TYPE_ROUTER,
-	PROC_TYPE_PORT,
-	PROC_TYPE_MONITOR,
-	PROC_TYPE_DECIDE,
-	PROC_TYPE_CONTROL,
 };
 
 // sec subject manage function

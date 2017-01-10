@@ -22,7 +22,7 @@ struct plugin_config
 struct lib_para_struct
 {
 	char * libname;	
-//	int type;
+	enum module_type type;
 	char * dynamic_lib;
 	char * init_func;
 	char * start_func;

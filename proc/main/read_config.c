@@ -19,6 +19,7 @@
 
 #include "main_proc_func.h"
 
+/*
 static struct struct_elem_attr lib_para_struct_desc[]=
 {
         {"libname",CUBE_TYPE_ESTRING,DIGEST_SIZE,NULL,NULL},
@@ -27,6 +28,7 @@ static struct struct_elem_attr lib_para_struct_desc[]=
         {"start_func",CUBE_TYPE_ESTRING,DIGEST_SIZE*2,NULL,NULL},
 	{NULL,CUBE_TYPE_ENDDATA,0,NULL,NULL}
 };
+*/
 
 char *  get_temp_filename(char * tag )
 {
@@ -165,7 +167,7 @@ int read_sys_cfg(void ** lib_para_struct,void * root_node)
     if(lib_para==NULL)
 	return -ENOMEM;
 
-     void * struct_template=create_struct_template(&lib_para_struct_desc);
+     void * struct_template=memdb_get_template(DTYPE_EXMODULE,SUBTYPE_LIB_PARA);
     if(struct_template==NULL)
     {
 	printf("Fatal error!\n");
@@ -298,7 +300,7 @@ int read_plugin_cfg(void ** plugin,void * root_node)
     temp_node=json_find_elem("name",root_node);
     if(temp_node==NULL)
 	return -EINVAL;	
-    ret=ex_module_create(json_get_valuestr(temp_node),PROC_TYPE_MONITOR,NULL,&ex_module);
+    ret=ex_module_create(json_get_valuestr(temp_node),MOD_TYPE_MONITOR,NULL,&ex_module);
     if(ret<0)
 	return -EINVAL;
     return ret;

@@ -81,6 +81,7 @@ int main(int argc,char **argv)
 	"base_define/expandrecord.json",
 	"base_define/base_msg.json",
 	"base_define/dispatchrecord.json",
+	"base_define/exmoduledefine.json",
 	 NULL
     };
 
@@ -230,9 +231,9 @@ int main(int argc,char **argv)
     if(plugin_proc.start==NULL)
 	return -EINVAL;
      plugin_proc.name=dup_str("connector_proc",0);	
-     plugin_proc.type=PROC_TYPE_CONN;
+     plugin_proc.type=MOD_TYPE_CONN;
 	
-     ret=ex_module_create("connector_proc",PROC_TYPE_CONN,NULL,&conn_proc);
+     ret=ex_module_create("connector_proc",MOD_TYPE_CONN,NULL,&conn_proc);
     if(ret<0)
 	    return ret;
 
@@ -254,9 +255,9 @@ int main(int argc,char **argv)
     if(plugin_proc.start==NULL)
 	return -EINVAL;
      plugin_proc.name=dup_str("router_proc",0);	
-     plugin_proc.type=PROC_TYPE_ROUTER;
+     plugin_proc.type=MOD_TYPE_ROUTER;
 	
-    ret=ex_module_create("router_proc",PROC_TYPE_MONITOR,NULL,&router_proc);
+    ret=ex_module_create("router_proc",MOD_TYPE_MONITOR,NULL,&router_proc);
     if(ret<0)
 	    return ret;
 
@@ -278,32 +279,9 @@ int main(int argc,char **argv)
 
     while(read_json_node(fd,&root_node)>0)
     {  		
-    	struct plugin_config plugin_initpara; 
-    	void * sub_proc;
-    	struct_template=create_struct_template(&plugin_config_desc);
-    if(struct_template == NULL)
-    {
-	printf("fatal error!\n");
-	return -EINVAL;
     }
     
-    while(json_left>DIGEST_SIZE/2)
-    {
-	ret=json_solve_str(&root_node,json_str);
-	if(ret<0)
-	{
-		printf("read plugin config failed!\n");
-		break;		
-	}	
-	json_offset+=ret;
-	json_str=buffer+json_offset;
-	json_left-=ret;
-        ret=json_2_struct(root_node,&plugin_initpara,struct_template);
-	if(ret<0)
-	{
-		printf("plugin config format error!\n");
-		break;		
-	}		
+/*
        	ret=sec_subject_create(plugin_initpara.name,plugin_initpara.type,NULL,&sub_proc);
    	if(ret<0)
 		return ret;
@@ -340,22 +318,22 @@ int main(int argc,char **argv)
   		return ret;
         add_sec_subject(sub_proc);
     }
-     
+  */   
     usleep(time_val.tv_usec);
     printf("prepare the conn proc\n");
-    ret=sec_subject_start(conn_proc,NULL);
+    ret=ex_module_start(conn_proc,NULL);
     if(ret<0)
 	    return ret;
 
     // second loop:  start all the monitor process
-       	
+/*       	
     ret=get_first_sec_subject(&sub_proc);
 
     if(ret<0)
 	return ret;
     while(sub_proc!=NULL)
     {
-	  if(sec_subject_gettype(sub_proc) == PROC_TYPE_MONITOR)
+	  if(sec_subject_gettype(sub_proc) == MOD_TYPE_MONITOR)
 	  {
   		ret=sec_subject_start(sub_proc,NULL);
 	  	if(ret<0)

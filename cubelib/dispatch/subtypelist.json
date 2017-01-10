@@ -19,7 +19,6 @@
 	}
 }
 {
-	"info-type":"subtypelist",
 	"head":
 	{
 		"name":"message_expand_subtypelist",
@@ -38,7 +37,6 @@
 	}
 }
 {
-	"info-type":"subtypelist",
 	"head":
 	{
 		"name":"tube_subtypelist",

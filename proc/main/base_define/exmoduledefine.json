@@ -1,0 +1,81 @@
+{
+	"head":
+	{
+		"name":"exmodule_type",
+		"type":"TYPELIST"
+	},
+	"record":
+	{
+		"elem_no":1,
+		"elemlist":
+		[
+			"EXMODULE=0x220"
+		]
+	}
+}
+{
+	"head":
+	{
+		"name":"exmodule_subtypelist",
+		"type":"SUBTYPELIST"
+	},
+	"record":
+	{
+		"type":"EXMODULE",
+		"elem_no":1,
+		"elemlist":
+		[
+			"LIB_PARA=0x01"
+		]
+	}
+}
+{
+	"head":
+	{
+		"name":"module_type",
+		"type":"NAMELIST"
+	},
+	"record":
+	{
+		"elem_no":8,
+		"elemlist":
+		[
+			"MAIN=0x01",
+			"CONN",
+			"ROUTER",
+			"PORT",
+			"MONITOR",
+			"DECIDE",
+			"CONTROL",
+			"TRANSLATER"
+		]
+	}
+}
+{
+	"head":
+	{
+		"name":"dispatch_policy_head",
+		"type":"RECORDTYPE"
+	},
+	"record":
+	{
+		"type":"EXMODULE",
+		"subtype":"LIB_PARA",
+		"struct_desc":
+		{
+			"elem_desc":
+			[
+				{"name":"libname","type":"ESTRING"},
+				{"name":"type","type":"ENUM","ref_name":"module_type"},
+				{"name":"dynamic_lib","type":"ESTRING"},
+				{"name":"init_func","type":"ESTRING"},
+				{"name":"start_func","type":"ESTRING"}
+			]
+		},
+		"index":
+		{
+			"flag":"INDEX",
+			"elemlist":"libname,type,dynamic_lib,init_func,start_func"
+		}
+	}	
+}
