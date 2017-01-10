@@ -271,6 +271,8 @@ int read_plugin_cfg(void ** plugin,void * root_node)
     int fd;
     char * libname;	
     char filename[512];   
+    char * plugin_dir=NULL;
+    void * init_para;	
 
     temp_node=json_find_elem("libname",root_node);
     if(temp_node==NULL)
@@ -280,13 +282,24 @@ int read_plugin_cfg(void ** plugin,void * root_node)
     fd=open(libname,O_RDONLY);
     if(fd<0)
     {
-    	char * sys_plugin=getenv("CUBE_SYS_PLUGIN");
-        Strcpy(filename,sys_plugin);
-	Strcat(filename,"/");
-	Strcat(filename,libname);
-    	fd=open(libname,O_RDONLY);
+    	plugin_dir=getenv("CUBE_APP_PLUGIN");
+	if(plugin_dir!=NULL)
+	{
+       		Strcpy(filename,plugin_dir);
+		Strcat(filename,"/");
+		Strcat(filename,libname);
+    		fd=open(libname,O_RDONLY);
+	}
 	if(fd<0)
-		return -EIO;
+	{
+    		plugin_dir=getenv("CUBE_SYS_PLUGIN");
+        	Strcpy(filename,plugin_dir);
+		Strcat(filename,"/");
+		Strcat(filename,libname);
+    		fd=open(libname,O_RDONLY);
+		if(fd<0)
+			return -EIO;
+	}
     }	
 
     ret=read_json_node(fd,&lib_node);
@@ -300,8 +313,43 @@ int read_plugin_cfg(void ** plugin,void * root_node)
     temp_node=json_find_elem("name",root_node);
     if(temp_node==NULL)
 	return -EINVAL;	
-    ret=ex_module_create(json_get_valuestr(temp_node),MOD_TYPE_MONITOR,NULL,&ex_module);
+    ret=ex_module_create(json_get_valuestr(temp_node),lib_para->type,NULL,&ex_module);
     if(ret<0)
 	return -EINVAL;
+    if(lib_para->dynamic_lib==NULL)
+	return -EINVAL;
+ 
+    if(plugin_dir==NULL)
+    {	
+   	 Strcpy(filename,lib_para->dynamic_lib);
+    }
+    else
+    {
+   	 Strcpy(filename,plugin_dir);
+	 Strcat(filename,"/");
+   	 Strcat(filename,lib_para->dynamic_lib);
+    }			
+
+    init=main_read_func(filename,lib_para->init_func);
+    if(init==NULL)
+	return -EINVAL;
+    ex_module_setinitfunc(NULL,init);
+    start=main_read_func(filename,lib_para->start_func);
+    if(init==NULL)
+	return -EINVAL;
+    ex_module_setstartfunc(NULL,init);
+    init_para=NULL;
+    temp_node=json_find_elem("init_para",root_node);
+    if(temp_node!=NULL)
+    {
+	ret=Galloc0(&init_para,struct_size(lib_para->para_template));
+	if(init_para==NULL)
+		return -ENOMEM;
+	ret=json_2_struct(temp_node,init_para,lib_para->para_template);
+	if(ret<0)
+		return -EINVAL;
+    }
+    ret=ex_module_init(ex_module,init_para);
+    *plugin=ex_module;	  
     return ret;
 }

@@ -218,7 +218,6 @@ int main(int argc,char **argv)
 
     usleep(time_val.tv_usec);
 
-    PROC_INIT plugin_proc; 
 
     // init the connect proc	
 //    strcpy(namebuffer,sys_plugin);
@@ -273,50 +272,19 @@ int main(int argc,char **argv)
 
     // loop to init all the plugin's 
 
+    void * ex_module;	
+
     fd=open(plugin_config_file,O_RDONLY);
     if(fd<0)
 	return -EINVAL;
 
     while(read_json_node(fd,&root_node)>0)
     {  		
+	read_plugin_cfg(&ex_module,root_node);
     }
+    add_ex_module(ex_module);
     
 /*
-       	ret=sec_subject_create(plugin_initpara.name,plugin_initpara.type,NULL,&sub_proc);
-   	if(ret<0)
-		return ret;
-
-	if(app_plugin != NULL)
-        {
-      	        strcpy(namebuffer,app_plugin);
-        	strcat(namebuffer,plugin_initpara.plugin_dlib);
-		ret=access(namebuffer,R_OK|X_OK);
-		if(ret<0)
-		{
-      	        	strcpy(namebuffer,sys_plugin);
-       	 		strcat(namebuffer,plugin_initpara.plugin_dlib);
-		}
-	}
-        else
-	{      
-      	        strcpy(namebuffer,sys_plugin);
-        	strcat(namebuffer,plugin_initpara.plugin_dlib);
-        }
-    	plugin_initpara.init =main_read_func(namebuffer,plugin_initpara.init);
-    	if(plugin_initpara.init==NULL)
-		return -EINVAL;
-    	plugin_initpara.start =main_read_func(namebuffer,plugin_initpara.start);
-    	if(plugin_initpara.start==NULL)
-		return -EINVAL;
-
-    	sec_subject_setinitfunc(sub_proc,plugin_initpara.init);
-   	sec_subject_setstartfunc(sub_proc,plugin_initpara.start);
-	void * init_para;
-	init_para=find_json_elem("init_para",root_node);
-  	ret= sec_subject_init(sub_proc,init_para);
-	if(ret<0)
-  		return ret;
-        add_sec_subject(sub_proc);
     }
   */   
     usleep(time_val.tv_usec);
@@ -326,21 +294,22 @@ int main(int argc,char **argv)
 	    return ret;
 
     // second loop:  start all the monitor process
-/*       	
-    ret=get_first_sec_subject(&sub_proc);
+       	
+    ret=get_first_ex_module(&ex_module);
 
     if(ret<0)
 	return ret;
-    while(sub_proc!=NULL)
+    while(ex_module!=NULL)
     {
-	  if(sec_subject_gettype(sub_proc) == MOD_TYPE_MONITOR)
+	  if((ex_module_gettype(ex_module) == MOD_TYPE_MONITOR)
+	  	||(ex_module_gettype(ex_module) == MOD_TYPE_PORT))
 	  {
-  		ret=sec_subject_start(sub_proc,NULL);
+  		ret=ex_module_start(ex_module,NULL);
 	  	if(ret<0)
   			return ret;
-		printf("monitor sub_proc %s started successfully!\n",sec_subject_getname(sub_proc));
+		printf("monitor ex_modulec %s started successfully!\n",ex_module_getname(ex_module));
 	  }
-    	  ret=get_next_sec_subject(&sub_proc);
+    	  ret= get_next_ex_module;
 
     	  if(ret<0)
 		return ret;
@@ -348,8 +317,7 @@ int main(int argc,char **argv)
 
 
     int thread_retval;
-    ret=sec_subject_join(conn_proc,&thread_retval);
+    ret=ex_module_join(conn_proc,&thread_retval);
     printf("thread return value %d!\n",thread_retval);
-*/
     return ret;
 }
