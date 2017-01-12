@@ -297,6 +297,7 @@ int ex_module_create(char * name,int type,struct struct_elem_attr *  context_des
 	*ex_mod=ex_module;		
 
 	pthread_attr_init(&(ex_module->thread_attr));
+	ex_module->head.type=type;
 	ex_module->init=NULL;
 	ex_module->start=NULL;
 	// init the proc's mutex and the cond

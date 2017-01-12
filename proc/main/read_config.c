@@ -327,11 +327,11 @@ int read_plugin_cfg(void ** plugin,void * root_node)
     init=main_read_func(filename,lib_para->init_func);
     if(init==NULL)
 	return -EINVAL;
-    ex_module_setinitfunc(NULL,init);
+    ex_module_setinitfunc(ex_module,init);
     start=main_read_func(filename,lib_para->start_func);
     if(init==NULL)
 	return -EINVAL;
-    ex_module_setstartfunc(NULL,init);
+    ex_module_setstartfunc(ex_module,start);
     init_para=NULL;
     temp_node=json_find_elem("init_para",root_node);
     if(temp_node!=NULL)
