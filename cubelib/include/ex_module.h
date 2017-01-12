@@ -13,7 +13,7 @@ enum subtypelist_dispatch
 
 enum module_type
 {
-	MOD_TYPE_MAIN,
+	MOD_TYPE_MAIN=0x01,
 	MOD_TYPE_CONN,
 	MOD_TYPE_ROUTER,
 	MOD_TYPE_PORT,

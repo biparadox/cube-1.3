@@ -66,6 +66,6 @@ int proc_hello_message(void * sub_proc,void * message)
 	msg_info->message=dup_str("hello,world!",0);
 
 	message_add_record(new_msg,&record);
-	sec_subject_sendmsg(sub_proc,new_msg);
+	ex_module_sendmsg(sub_proc,new_msg);
 	return ret;
 }

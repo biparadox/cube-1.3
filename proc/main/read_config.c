@@ -301,7 +301,7 @@ int read_plugin_cfg(void ** plugin,void * root_node)
 	return ret;	
     close(fd);
 
-    ret=read_sys_cfg(&lib_para,root_node);
+    ret=read_sys_cfg(&lib_para,lib_node);
     if(ret<0)
 	return ret;		    	
     temp_node=json_find_elem("name",root_node);

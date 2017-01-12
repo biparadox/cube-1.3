@@ -68,8 +68,8 @@
 				{"name":"libname","type":"ESTRING"},
 				{"name":"type","type":"ENUM","ref_name":"module_type"},
 				{"name":"dynamic_lib","type":"ESTRING"},
-				{"name":"init_func","type":"ESTRING"},
-				{"name":"start_func","type":"ESTRING"}
+				{"name":"init","type":"ESTRING"},
+				{"name":"start","type":"ESTRING"}
 			]
 		},
 		"index":

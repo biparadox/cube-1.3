@@ -39,7 +39,7 @@ int echo_plugin_start(void * sub_proc,void * para)
 	for(i=0;i<3000*1000;i++)
 	{
 		usleep(time_val.tv_usec);
-		ret=sec_subject_recvmsg(sub_proc,&recv_msg);
+		ret=ex_module_recvmsg(sub_proc,&recv_msg);
 		if(ret<0)
 			continue;
 		if(recv_msg==NULL)
@@ -50,11 +50,11 @@ int echo_plugin_start(void * sub_proc,void * para)
 			printf("message format error!\n");
 			continue;
 		}
-		if(!find_record_type(type))
-		{
-			printf("message format is not registered!\n");
-			continue;
-		}
+//		if(!find_record_type(type))
+//		{
+//			printf("message format is not registered!\n");
+//			continue;
+//		}
 		proc_echo_message(sub_proc,recv_msg);
 	}
 
@@ -88,7 +88,7 @@ int proc_echo_message(void * sub_proc,void * message)
 			return ret;
 	}
 
-	sec_subject_sendmsg(sub_proc,new_msg);
+	ex_module_sendmsg(sub_proc,new_msg);
 */
 	return ret;
 }
