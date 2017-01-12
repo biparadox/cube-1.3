@@ -68,6 +68,7 @@ int main(int argc,char **argv)
     char buffer[4096];
     void * root_node;
     void * temp_node;
+    PROC_INIT plugin_proc; 
 
     char * baseconfig[] =
     {
@@ -280,9 +281,10 @@ int main(int argc,char **argv)
 
     while(read_json_node(fd,&root_node)>0)
     {  		
-	read_plugin_cfg(&ex_module,root_node);
+	ret=read_plugin_cfg(&ex_module,root_node);
+	if(ret>=0)
+    		add_ex_module(ex_module);
     }
-    add_ex_module(ex_module);
     
 /*
     }
@@ -309,7 +311,7 @@ int main(int argc,char **argv)
   			return ret;
 		printf("monitor ex_modulec %s started successfully!\n",ex_module_getname(ex_module));
 	  }
-    	  ret= get_next_ex_module;
+    	  ret= get_next_ex_module(&ex_module);
 
     	  if(ret<0)
 		return ret;

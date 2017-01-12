@@ -54,7 +54,7 @@
 {
 	"head":
 	{
-		"name":"dispatch_policy_head",
+		"name":"exmodule_lib_para",
 		"type":"RECORDTYPE"
 	},
 	"record":

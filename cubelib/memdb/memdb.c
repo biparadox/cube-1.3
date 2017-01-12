@@ -300,6 +300,8 @@ int read_recordtype_json_desc(void * root,void * record)
 			ret=json_remove_node(temp_node);
 		}
 	}
+//	struct_template=create_struct_template(struct_record->tail);
+//	db_record->tail=struct_template;
 
 	ret=json_2_struct(root,recordtype,struct_template);
 //	namelist->elem_no=json_get_elemno(temp_node);

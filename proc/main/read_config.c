@@ -19,16 +19,6 @@
 
 #include "main_proc_func.h"
 
-/*
-static struct struct_elem_attr lib_para_struct_desc[]=
-{
-        {"libname",CUBE_TYPE_ESTRING,DIGEST_SIZE,NULL,NULL},
-        {"dynamic_lib",CUBE_TYPE_ESTRING,DIGEST_SIZE*2,NULL,NULL},
-        {"init_func",CUBE_TYPE_ESTRING,DIGEST_SIZE*2,NULL,NULL},
-        {"start_func",CUBE_TYPE_ESTRING,DIGEST_SIZE*2,NULL,NULL},
-	{NULL,CUBE_TYPE_ENDDATA,0,NULL,NULL}
-};
-*/
 
 char *  get_temp_filename(char * tag )
 {
@@ -179,7 +169,6 @@ int read_sys_cfg(void ** lib_para_struct,void * root_node)
 	printf("sys config file format error!\n");
 	return -EINVAL;
      }
-     free_struct_template(struct_template); 
      
     void * para_node=json_find_elem("init_para_desc",root_node);
      
@@ -279,7 +268,10 @@ int read_plugin_cfg(void ** plugin,void * root_node)
 	return -EINVAL;
 
     libname=json_get_valuestr(temp_node);
-    fd=open(libname,O_RDONLY);
+    Strcpy(filename,libname);
+    Strcat(filename,".cfg");
+   
+    fd=open(filename,O_RDONLY);
     if(fd<0)
     {
     	plugin_dir=getenv("CUBE_APP_PLUGIN");
@@ -288,7 +280,8 @@ int read_plugin_cfg(void ** plugin,void * root_node)
        		Strcpy(filename,plugin_dir);
 		Strcat(filename,"/");
 		Strcat(filename,libname);
-    		fd=open(libname,O_RDONLY);
+    		Strcat(filename,".cfg");
+    		fd=open(filename,O_RDONLY);
 	}
 	if(fd<0)
 	{
@@ -296,7 +289,8 @@ int read_plugin_cfg(void ** plugin,void * root_node)
         	Strcpy(filename,plugin_dir);
 		Strcat(filename,"/");
 		Strcat(filename,libname);
-    		fd=open(libname,O_RDONLY);
+    		Strcat(filename,".cfg");
+    		fd=open(filename,O_RDONLY);
 		if(fd<0)
 			return -EIO;
 	}
