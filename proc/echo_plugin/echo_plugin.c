@@ -33,7 +33,8 @@ int echo_plugin_start(void * sub_proc,void * para)
 	int ret;
 	void * recv_msg;
 	int i;
-	const char * type;
+	int type;
+	int subtype;
 
 
 	for(i=0;i<3000*1000;i++)
@@ -44,8 +45,9 @@ int echo_plugin_start(void * sub_proc,void * para)
 			continue;
 		if(recv_msg==NULL)
 			continue;
-		type=message_get_recordtype(recv_msg);
-		if(type==NULL)
+		type=message_get_type(recv_msg);
+		subtype=message_get_subtype(recv_msg);
+		if(type==0)
 		{
 			printf("message format error!\n");
 			continue;
@@ -63,20 +65,22 @@ int echo_plugin_start(void * sub_proc,void * para)
 
 int proc_echo_message(void * sub_proc,void * message)
 {
-	const char * type;
+	int type;
+	int subtype;
 	int i;
 	int ret;
 	printf("begin proc echo \n");
 	struct message_box * msg_box=message;
-	type=message_get_recordtype(message);
+	type=message_get_type(message);
+	subtype=message_get_subtype(message);
 
 	struct message_box * new_msg;
 	void * record;
-//	new_msg=message_create(type,message);
+	new_msg=message_create(type,subtype,message);
 	
 	i=0;
 
-/*
+
 	ret=message_get_record(message,&record,i++);
 	if(ret<0)
 		return ret;
@@ -89,6 +93,6 @@ int proc_echo_message(void * sub_proc,void * message)
 	}
 
 	ex_module_sendmsg(sub_proc,new_msg);
-*/
+
 	return ret;
 }

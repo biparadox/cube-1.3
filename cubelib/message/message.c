@@ -957,14 +957,21 @@ void message_free(void * message)
 	return;
 }
 
-const char * message_get_recordtype(void * message)
+int message_get_type(void * message)
 {
-	struct message_box * msg_box;
+	struct message_box * msg_box=message;
 	int ret;
 	if(message==NULL)
-		return NULL;
-	msg_box=(struct message_box *)message;
-	return &(msg_box->head.record_type);
+		return -EINVAL;
+	return msg_box->head.record_type;
+}
+int message_get_subtype(void * message)
+{
+	struct message_box * msg_box=message;
+	int ret;
+	if(message==NULL)
+		return -EINVAL;
+	return msg_box->head.record_subtype;
 }
 
 const char * message_get_sender(void * message)

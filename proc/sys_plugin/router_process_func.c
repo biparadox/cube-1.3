@@ -389,7 +389,7 @@ int proc_router_start(void * sub_proc,void * para)
 					}	
 				}	
 				proc_audit_log(message);
-				printf("aspect message %s is send to %s!\n",message_get_recordtype(message),message_get_receiver(message));
+				printf("aspect message %d is send to %s!\n",message_get_type(message),message_get_receiver(message));
 				ret=proc_router_send_msg(message,local_uuid,proc_name);
 				if(ret<0)
 					return ret;
@@ -409,7 +409,7 @@ int proc_router_start(void * sub_proc,void * para)
 						if(msg_policy==NULL)
 						{
 							proc_audit_log(message);
-							printf("message %s is discarded in FINISH state!\n",message_get_recordtype(message));
+							printf("message %d is discarded in FINISH state!\n",message_get_type(message));
 							break;
 						}
 						if(dispatch_policy_gettype(msg_policy)==MSG_FLOW_QUERY) 
@@ -446,7 +446,7 @@ int proc_router_start(void * sub_proc,void * para)
 							if(msg_policy==NULL)
 							{
 								proc_audit_log(message);
-								printf("message %s is discarded in FINISH state!\n",message_get_recordtype(message));
+								printf("message %d is discarded in FINISH state!\n",message_get_type(message));
 								msg_head->flow=MSG_FLOW_FINISH;
 								break;
 							}
@@ -492,7 +492,7 @@ int proc_router_start(void * sub_proc,void * para)
 							if(msg_policy==NULL)
 							{
 								proc_audit_log(message);
-								printf("message %s is discarded in FINISH state!\n",message_get_recordtype(message));
+								printf("message %d is discarded in FINISH state!\n",message_get_type(message));
 								msg_head->flow=MSG_FLOW_FINISH;
 								break;
 							}
@@ -566,7 +566,7 @@ int proc_router_start(void * sub_proc,void * para)
 					}	
 				}
 				proc_audit_log(message);
-				printf("message %s is send to %s!\n",message_get_recordtype(message),message_get_receiver(message));
+				printf("message %d is send to %s!\n",message_get_type(message),message_get_receiver(message));
 				ret=proc_router_send_msg(message,local_uuid,proc_name);
 				if(ret<0)
 					return ret;
