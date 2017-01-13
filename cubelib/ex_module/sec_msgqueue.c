@@ -65,6 +65,7 @@ int __message_queue_putmsg(void * msg_queue,void * msg)
 	queue->msg_num++;
 	List_add_tail(&(newrecord->list),recordhead);
 	pthread_rwlock_unlock(&(queue->rwlock));
+	printf("queue %x's msg_num add to %d!\n",queue,queue->msg_num);
 	return 0;
 }
 
@@ -100,6 +101,7 @@ int __message_queue_getmsg(void * msg_queue,void ** msg)
 	queue->msg_num--;
 	List_del(&(newrecord->list));
 	pthread_rwlock_unlock(&(queue->rwlock));
+	printf("queue %x's msg_num dec to %d!\n",queue,queue->msg_num);
 	*msg=newrecord->record;
 	kfree(newrecord);
 	return 0;

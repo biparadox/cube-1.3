@@ -39,7 +39,7 @@ int hello_start(void * sub_proc,void * para)
 	for(i=0;i<3000*1000;i++)
 	{
 		usleep(time_val.tv_usec);
-		if(i==10000)
+		if(i==1)
 			proc_hello_message(sub_proc,NULL);
 	}
 
@@ -55,8 +55,7 @@ int proc_hello_message(void * sub_proc,void * message)
 	printf("begin proc hello \n");
 
 	struct message_box * new_msg;
-	void * record;
-	new_msg=message_create(DB_DTYPE_START,DB_STYPE_MSG,message);
+	new_msg=message_create(DTYPE_MESSAGE,SUBTYPE_BASE_MSG,message);
 	
 	i=0;
 
@@ -65,7 +64,7 @@ int proc_hello_message(void * sub_proc,void * message)
 
 	msg_info->message=dup_str("hello,world!",0);
 
-	message_add_record(new_msg,&record);
+	message_add_record(new_msg,msg_info);
 	ex_module_sendmsg(sub_proc,new_msg);
 	return ret;
 }
