@@ -98,9 +98,9 @@ int entity_comp_name(void * List_head, void * name)
 	entity_head = (EX_MODULE_HEAD *) record->record;                      
 	if(entity_head == NULL)
 		return -EINVAL;
-	if(entity_head->uuid==NULL)
+	if(entity_head->name==NULL)
 		return -EINVAL;
-	return strncmp(entity_head->uuid,string,DIGEST_SIZE*2);        
+	return strncmp(entity_head->name,string,DIGEST_SIZE*2);        
 }
 
 int ex_module_list_init()

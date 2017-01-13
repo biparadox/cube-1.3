@@ -773,7 +773,7 @@ int _elem_compare_deffunc(void * addr, void * dest,void * elem)
 	else
 		ret=Memcmp(elem_dest,elem_src,ret);
 	if(ret!=0)
-		return -EINVAL;
+		return ret;
 	return ret;
 }
 

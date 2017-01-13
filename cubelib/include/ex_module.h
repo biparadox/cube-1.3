@@ -6,7 +6,7 @@ enum dynamic_exmodule_typelist
 	DTYPE_EXMODULE=0x220,
 };
 
-enum subtypelist_dispatch
+enum subtypelist_exmodule
 {
 	SUBTYPE_LIB_PARA=0x01,
 };

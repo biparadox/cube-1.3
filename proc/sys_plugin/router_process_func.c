@@ -286,7 +286,7 @@ int proc_router_start(void * sub_proc,void * para)
 			int send_state;
 			int hit_target;
 
-			enum proc_type curr_proc_type;
+			enum module_type curr_proc_type;
 
 			// this pro is a port proc
 			curr_proc_type=ex_module_gettype(sub_proc);
@@ -339,8 +339,8 @@ int proc_router_start(void * sub_proc,void * para)
 				else
 				{
 					switch(curr_proc_type){
-						case PROC_TYPE_CONN:
-						case PROC_TYPE_PORT:
+						case MOD_TYPE_CONN:
+						case MOD_TYPE_PORT:
 						{
 							// remote aspect receive
 							ret=router_find_aspect_policy(message,&aspect_policy,sub_proc);
@@ -359,9 +359,9 @@ int proc_router_start(void * sub_proc,void * para)
 							msg_head->ljump=1;
 							break;
 						}
-						case PROC_TYPE_MONITOR:
-						case PROC_TYPE_DECIDE:
-						case PROC_TYPE_CONTROL:
+						case MOD_TYPE_MONITOR:
+						case MOD_TYPE_DECIDE:
+						case MOD_TYPE_CONTROL:
 						{
 							ret=router_set_next_jump(message);
 							if(ret<0)
@@ -400,7 +400,7 @@ int proc_router_start(void * sub_proc,void * para)
 				// message receive process
 				switch(curr_proc_type)
 				{
-					case PROC_TYPE_PORT:
+					case MOD_TYPE_PORT:
 
 					// if this message is from a port, we find a policy match it and turned it to local message
 						ret=router_find_route_policy(message,&msg_policy,sub_proc);	
@@ -422,7 +422,7 @@ int proc_router_start(void * sub_proc,void * para)
 						if(ret<0)
 							return ret;
 						break;
-					case PROC_TYPE_CONN:
+					case MOD_TYPE_CONN:
 						// if it is in response route
 						if((msg_head->route[0]!=0)
 							&&(msg_head->flow ==MSG_FLOW_QUERY)
@@ -456,9 +456,9 @@ int proc_router_start(void * sub_proc,void * para)
 
 							break;
 						}
-					case PROC_TYPE_MONITOR:
-					case PROC_TYPE_CONTROL:
-					case PROC_TYPE_DECIDE:
+					case MOD_TYPE_MONITOR:
+					case MOD_TYPE_CONTROL:
+					case MOD_TYPE_DECIDE:
 					{
 						if(msg_head->route[0]!=0)
 						{
@@ -534,7 +534,7 @@ int proc_router_start(void * sub_proc,void * para)
 				*/
 				}
 				if((msg_head->state==MSG_FLOW_DELIVER)
-					||(curr_proc_type==PROC_TYPE_CONN))
+					||(curr_proc_type==MOD_TYPE_CONN))
 				{
 					// remote message send process
 					// if this message is a query message, we should record its trace
