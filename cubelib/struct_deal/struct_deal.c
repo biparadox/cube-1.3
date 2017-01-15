@@ -282,7 +282,7 @@ int _create_template_proc_func(void * addr,void * data,void * elem, void * para)
 			return -EINVAL;
 		curr_elem->def=temp_elem;
 		curr_elem->offset=my_para->curr_offset;
-		if(_ispointerelem(curr_elem->elem_desc->type)&&
+		if(_ispointerelem(curr_elem->elem_desc->type)||
 			_isarrayelem(curr_elem->elem_desc->type))
 			curr_elem->size=sizeof(void *);
 		else
@@ -302,15 +302,21 @@ int _create_template_proc_func(void * addr,void * data,void * elem, void * para)
 		curr_elem->offset=my_para->curr_offset;
 		if(elem_ops->elem_size==NULL)
 		{
-			if((curr_elem->size=get_fixed_elemsize(curr_elem->elem_desc->type))<0)
+			if(_ispointerelem(curr_elem->elem_desc->type)
+				||_isarrayelem(curr_elem->elem_desc->type))
+			{
+				curr_elem->size=sizeof(void *);
+			}
+			else if((curr_elem->size=get_fixed_elemsize(curr_elem->elem_desc->type))<0)
+			{
 				curr_elem->size=curr_elem->elem_desc->size;
+			}
 		}
 		else
 		{
 			curr_elem->size=elem_ops->elem_size(curr_elem->elem_desc);
 		}
 		my_para->curr_offset+=curr_elem->size;
-		
 	}
 	if(_isnamelistelem(curr_elem->elem_desc->type))
 	{
@@ -596,7 +602,7 @@ int struct_size(void * struct_template)
 
 	elem_ops=_elem_get_ops(last_elem);
 	if((elem_ops==NULL)|| (elem_ops->elem_size==NULL))
-		return last_elem->offset+last_elem->elem_desc->size;
+		return last_elem->offset+last_elem->size;
 	return last_elem->offset+elem_ops->elem_size(last_elem);
 		
 } 
