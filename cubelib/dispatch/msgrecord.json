@@ -7,7 +7,7 @@
 	"record":
 	{
 		"type":"MESSAGE",
-		"subtype":"CONN_SYNC",
+		"subtype":"CONN_SYNI",
 		"struct_desc":
 		{
 			"elem_desc":

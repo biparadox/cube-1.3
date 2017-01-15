@@ -4,14 +4,16 @@ CC=gcc
 LD=ld
 CCP=g++
 STRUCTOBJ= alloc.o 
+LIBNAME=alloc
+DEPENDLIB= -lstring
 
-main: ../lib/liballoc.a  test_main
-test_main: test_main.c ../lib/liballoc.a
-	$(CC) $(FLAGS) test_main test_main.c -L../lib -lalloc -lstring
-../lib/liballoc.a: $(STRUCTOBJ)
-	ar rs liballoc.a $(STRUCTOBJ)
-	mv    liballoc.a ../lib
+main: ../lib/lib$(LIBNAME).so  test_main
+test_main: test_main.c ../lib/lib$(LIBNAME).so 
+	$(CC) $(FLAGS) test_main test_main.c -L../lib -l$(LIBNAME) $(DEPENDLIB)   
+../lib/lib$(LIBNAME).so: $(STRUCTOBJ)
+	$(CC) -shared -o lib$(LIBNAME).so $(STRUCTOBJ)
+	mv   lib$(LIBNAME).so ../lib
 alloc.o:  alloc.c ../include/alloc.h
 	$(CC) $(CFLAGS) alloc.c
 clean:
-	rm -f test_main *~ *.a *.o ../lib/liballoc.a
+	rm -f test_main *~ *.a *.o ../lib/lib$(LIBNAME).so

@@ -452,6 +452,8 @@ int _elem_get_bin_length(void * value,void * elem,void * addr)
 			}
 			else
 			{
+				if(value==NULL)
+					return 0;
 				ret=Strnlen(value,DIGEST_SIZE*32);
 				if(ret<DIGEST_SIZE*32)
 						ret+=1;

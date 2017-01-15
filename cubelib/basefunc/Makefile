@@ -12,8 +12,8 @@ test_main: test_main.c ../lib/lib$(LIBNAME).so
 	$(CC) $(FLAGS) test_main test_main.c -L../lib $(DEPENDLIB) -l$(LIBNAME)  
 basefunc.o:  basefunc.c ../include/basefunc.h
 	$(CC) $(CFLAGS) basefunc.c
-../lib/lib$(LIBNAME).so:  $(STRUCTOBJ)
-	ar cr lib$(LIBNAME).so $(STRUCTOBJ) 
-	mv    lib$(LIBNAME).so ../lib
+../lib/lib$(LIBNAME).so: $(STRUCTOBJ)
+	$(CC) -shared -o lib$(LIBNAME).so $(STRUCTOBJ)
+	mv   lib$(LIBNAME).so ../lib
 clean:
 	rm -f test_main *~ *.a *.o ../lib/lib$(LIBNAME).so

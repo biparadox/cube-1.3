@@ -2,16 +2,22 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <errno.h>
-#include <string.h>
 #include <sys/select.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/socket.h>
-#include <sys/un.h>
 
-#include "../include/list.h"
-#include "../include/data_type.h"
-#include "../include/connector.h"
+#include "data_type.h"
+#include "list.h"
+#include "string.h"
+#include "alloc.h"
+#include "json.h"
+#include "struct_deal.h"
+#include "basefunc.h"
+#include "memdb.h"
+#include "message.h"
+
+#include "connector.h"
 
 #define MAX_CHANNEL_SIZE	1024 
 
@@ -46,7 +52,7 @@ char *  connector_getname (void * connector)
 {
 
 	struct tcloud_connector * this_conn;
-	struct connector_af_unix_info * base_info;
+//	struct connector_af_unix_info * base_info;
 	int retval;
 	this_conn=(struct tcloud_connector *)connector;
 	return this_conn->conn_name;
@@ -56,7 +62,7 @@ char *  connector_getaddr (void * connector)
 {
 
 	struct tcloud_connector * this_conn;
-	struct connector_af_unix_info * base_info;
+//	struct connector_af_unix_info * base_info;
 	int retval;
 	this_conn=(struct tcloud_connector *)connector;
 	return this_conn->conn_addr;
@@ -66,7 +72,7 @@ char *  connector_getpeeraddr (void * connector)
 {
 
 	struct tcloud_connector * this_conn;
-	struct connector_af_unix_info * base_info;
+//	struct connector_af_unix_info * base_info;
 	int retval;
 	this_conn=(struct tcloud_connector *)connector;
 	return this_conn->conn_peeraddr;
@@ -95,7 +101,7 @@ int   connector_setname (void * connector,char * name)
 {
 
 	struct tcloud_connector * this_conn;
-	struct connector_af_unix_info * base_info;
+//	struct connector_af_unix_info * base_info;
 	int retval;
 
 	this_conn=(struct tcloud_connector *)connector;
@@ -114,7 +120,7 @@ int  connector_getfd (void * connector)
 {
 
 	struct tcloud_connector * this_conn;
-	struct connector_af_unix_info * base_info;
+//	struct connector_af_unix_info * base_info;
 	int retval;
 
 	this_conn=(struct tcloud_connector *)connector;
@@ -126,7 +132,7 @@ void * connector_get_server (void * connector)
 {
 
 	struct tcloud_connector * this_conn;
-	struct connector_af_unix_info * base_info;
+//	struct connector_af_unix_info * base_info;
 	int retval;
 
 	this_conn=(struct tcloud_connector *)connector;
@@ -143,7 +149,7 @@ int  connector_get_type (void * connector)
 {
 
 	struct tcloud_connector * this_conn;
-	struct connector_af_unix_info * base_info;
+//	struct connector_af_unix_info * base_info;
 	int retval;
 
 	this_conn=(struct tcloud_connector *)connector;
@@ -155,7 +161,7 @@ int  connector_get_protocol (void * connector)
 {
 
 	struct tcloud_connector * this_conn;
-	struct connector_af_unix_info * base_info;
+//	struct connector_af_unix_info * base_info;
 	int retval;
 
 	this_conn=(struct tcloud_connector *)connector;
@@ -172,7 +178,7 @@ void * get_connector(int type,int protocol)
 		return -ENOMEM;
 
 	connector_initvalue(connector);
-	
+/*	
 	if(protocol==AF_UNIX)
 	{
 			connector->conn_protocol=AF_UNIX;
@@ -197,9 +203,10 @@ void * get_connector(int type,int protocol)
 				return -EINVAL;
 		}
 	}
-	else if(protocol==AF_INET)
+	else */
+	if(protocol==AF_INET)
 	{
-			connector->conn_protocol=AF_INET;
+		connector->conn_protocol=AF_INET;
 		switch(type)
 		{
 			case CONN_CLIENT:

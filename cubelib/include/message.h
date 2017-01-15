@@ -136,6 +136,7 @@ int message_get_type(void * message);
 int message_get_subtype(void * message);
 const char * message_get_sender(void * message);
 const char * message_get_receiver(void * message);
+int message_set_sender(void * message,const char * sender_uuid);
 int message_set_receiver(void * message,const char * receiver_uuid);
 
 void * message_create(int type,int subtype,void * active_msg);

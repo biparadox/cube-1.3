@@ -548,14 +548,14 @@ int message_output_json(void * message, char * text)
 	if(buffer==NULL)
 		return -EINVAL;
 	// output head text
-	Strcpy(text,"{ \"Head\":");
+	Strcpy(text,"{ \"HEAD\":");
 	offset=Strlen(text);
 	ret=struct_2_json(msg_head,text+offset,msg_kits->head_template);
 	if(ret<0)
 		return ret;
 	offset+=ret;
 	// output record text
-	Strcpy(buffer,",\"Record\":[");
+	Strcpy(buffer,",\"RECORD\":[");
 	ret=Strlen(buffer);
 	Strcpy(text+offset,buffer);
 	offset+=ret;	
@@ -571,7 +571,7 @@ int message_output_json(void * message, char * text)
 		offset+=ret;
 	}
 	
-	Strcpy(buffer,"],\"Expand\" :[");
+	Strcpy(buffer,"],\"EXPAND\" :[");
 	Strcpy(text+offset,buffer);
 	offset+=Strlen(buffer);
 	for(i=0;i<msg_head->expand_num;i++)
@@ -985,6 +985,22 @@ const char * message_get_sender(void * message)
 }
 
 
+int message_set_sender(void * message,const char * sender_uuid)
+{
+	struct message_box * msg_box;
+	int ret;
+	int len;
+	if(message==NULL)
+		return -EINVAL;
+	msg_box=(struct message_box *)message;
+	len=strlen(sender_uuid);
+	if(len<DIGEST_SIZE)
+		Memcpy(&(msg_box->head.sender_uuid),sender_uuid,len+1);
+	else
+		Memcpy(&(msg_box->head.sender_uuid),sender_uuid,DIGEST_SIZE);
+	return 0;
+}
+
 int message_set_receiver(void * message,const char * receiver_uuid)
 {
 	struct message_box * msg_box;
@@ -994,10 +1010,10 @@ int message_set_receiver(void * message,const char * receiver_uuid)
 		return -EINVAL;
 	msg_box=(struct message_box *)message;
 	len=strlen(receiver_uuid);
-	if(len<DIGEST_SIZE*2)
+	if(len<DIGEST_SIZE)
 		Memcpy(&(msg_box->head.receiver_uuid),receiver_uuid,len+1);
 	else
-		Memcpy(&(msg_box->head.receiver_uuid),receiver_uuid,DIGEST_SIZE*2);
+		Memcpy(&(msg_box->head.receiver_uuid),receiver_uuid,DIGEST_SIZE);
 	return 0;
 }
 

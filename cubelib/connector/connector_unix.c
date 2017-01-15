@@ -10,13 +10,17 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 
-#include "../include/list.h"
-#include "../include/attrlist.h"
-#endif
+#include "data_type.h"
+#include "list.h"
+#include "string.h"
+#include "alloc.h"
+#include "json.h"
+#include "struct_deal.h"
+#include "basefunc.h"
+#include "memdb.h"
+#include "message.h"
 
-#include "../include/data_type.h"
-
-#include "../include/connector.h"
+#include "connector.h"
 
 #define MAX_CHANNEL_SIZE	1024 
 //struct connectorectod_ops connector_af_unix_info_ops;

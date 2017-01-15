@@ -11,7 +11,7 @@
 //UINT32 free_page(UINT16 page);
 
 //UINT32 salloc(int size);
-UINT32 Calloc(int size);
+void * Calloc(int size);
 //int Cgetfreecount(void);
 
 int Galloc(void ** pointer,int size);

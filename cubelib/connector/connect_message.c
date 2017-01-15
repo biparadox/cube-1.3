@@ -54,7 +54,7 @@ void * build_server_syn_message(char * service,char * local_uuid,char * proc_nam
 
 	Memset(server_syn,0,sizeof(struct connect_syn));
 	
-	Memcpy(server_syn->uuid,local_uuid,DIGEST_SIZE*2);
+	Memcpy(server_syn->uuid,local_uuid,DIGEST_SIZE);
 	server_syn->server_name=dup_str(proc_name,0);
 
 	if(service!=NULL)
@@ -68,8 +68,8 @@ void * build_server_syn_message(char * service,char * local_uuid,char * proc_nam
 		return -EINVAL;
 	retval=message_add_record(message_box,server_syn);
 
-	message_head->state=MSG_FLOW_INIT;
-//	message_set_state(message_box,MSG_FLOW_INIT);
+//	message_head->state=MSG_FLOW_INIT;
+	message_set_state(message_box,MSG_FLOW_INIT);
 	printf("init message success!\n");
 	return message_box;
 
@@ -104,13 +104,13 @@ void * build_client_ack_message(void * message_box,char * local_uuid,char * proc
 		return -EINVAL;
 	temp_conn->conn_extern_info=server_syn;
 
-	Memcpy(client_ack->uuid,local_uuid,DIGEST_SIZE*2);
+	Memcpy(client_ack->uuid,local_uuid,DIGEST_SIZE);
 //	client_ack->client_name=dup_str("unknown machine",0);
 	client_ack->client_name=dup_str(proc_name,0);
 	client_ack->client_process=dup_str(proc_name,0);
 	client_ack->client_addr=dup_str("unknown addr",0);
 
-	Memcpy(client_ack->server_uuid,server_syn->uuid,DIGEST_SIZE*2);
+	Memcpy(client_ack->server_uuid,server_syn->uuid,DIGEST_SIZE);
 	client_ack->server_name=dup_str(server_syn->server_name,0);
 	client_ack->service=dup_str(server_syn->service,0);
 	client_ack->server_addr=dup_str(server_syn->server_addr,0);
@@ -122,9 +122,9 @@ void * build_client_ack_message(void * message_box,char * local_uuid,char * proc
 		return -EINVAL;
 
 	
-	message_head=message_get_head(new_msg);
-	message_head->state=MSG_FLOW_INIT;
-//	message_set_state(new_msg,MSG_FLOW_INIT);
+//	message_head=message_get_head(new_msg);
+//	message_head->state=MSG_FLOW_INIT;
+	message_set_state(new_msg,MSG_FLOW_INIT);
 	retval=message_add_record(new_msg,client_ack);
 	return new_msg;
 }
@@ -162,7 +162,7 @@ int receive_local_client_ack(void * message_box,void * conn,void * hub)
 
 	channel_conn->conn_ops->setname(channel_conn,client_ack->client_name);
 
-	BYTE conn_uuid[DIGEST_SIZE*2];
+	BYTE conn_uuid[DIGEST_SIZE];
 
 	comp_proc_uuid(client_ack->uuid,client_ack->client_process,conn_uuid);
 
@@ -173,7 +173,7 @@ int receive_local_client_ack(void * message_box,void * conn,void * hub)
 		temp_conn->conn_ops->disconnect(temp_conn);
 	}
 	
-	Memcpy(channel_info->uuid,client_ack->uuid,DIGEST_SIZE*2);
+	Memcpy(channel_info->uuid,client_ack->uuid,DIGEST_SIZE);
 	channel_info->proc_name=dup_str(client_ack->client_process,0);
 	channel_info->channel_name=NULL;
 	channel_info->islocal=1;

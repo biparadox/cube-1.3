@@ -479,6 +479,11 @@ int proc_router_start(void * sub_proc,void * para)
 									msg_head->ljump--;
 									break;
 								}
+								else
+								{
+									msg_head->flow=MSG_FLOW_FINISH;
+									break;
+								}
 							}
 						}
 						else

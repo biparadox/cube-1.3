@@ -1,20 +1,25 @@
-
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <errno.h>
-#include <string.h>
 #include <sys/select.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 
-#include "../include/list.h"
-#include "../include/attrlist.h"
+#include "data_type.h"
+#include "list.h"
+#include "attrlist.h"
+#include "string.h"
+#include "alloc.h"
+#include "json.h"
+#include "struct_deal.h"
+#include "basefunc.h"
+#include "memdb.h"
+#include "message.h"
 
-#include "../include/data_type.h"
-#include "../include/connector.h"
+#include "connector.h"
 
 #define MAX_CHANNEL_SIZE	1024 
 //struct connectorectod_ops connector_af_inet_info_ops;

@@ -5,7 +5,7 @@ CC=gcc
 CCP=g++
 PLUGIN=websocket_port
 PLUGIN_OBJ=
-TEST_LIB= -L../lib -lexmodule -lmessage -lmemdb -lconnector -lstruct -lcrypto_func -lpthread
+TEST_LIB= -L../lib -lexmodule -lmessage -lmemdb -lconnector -lstruct -lcrypto_func -lpthread -lwebsockets
 
 main: lib$(PLUGIN).so
 lib$(PLUGIN).so:  $(PLUGIN).o $(PLUGIN_PROC_OBJ) $(INIT_DB_OBJ)

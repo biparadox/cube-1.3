@@ -405,7 +405,7 @@ int connector_read_cfg(char * filename,void * hub)
     }while(1);
     return conn_num;
 }
-
+/*
 void * build_server_syn_message(char * service,char * local_uuid,char * proc_name)
 {
 	void * message_box;
@@ -551,7 +551,7 @@ int receive_local_client_ack(void * message_box,void * conn,void * hub)
 	return 0;
 
 }
-
+*/
 
 struct connector_proc_pointer
 {

@@ -41,7 +41,7 @@ static struct websocket_server_context * ws_context;
 
 struct connect_syn
 {
-	char uuid[DIGEST_SIZE*2];
+	char uuid[DIGEST_SIZE];
 	char * server_name;
 	char * service;
 	char * server_addr;
@@ -139,8 +139,8 @@ int websocket_port_init(void * sub_proc,void * para)
 
     MSG_HEAD * msg_head;
 
-    char local_uuid[DIGEST_SIZE*2+1];
-    char proc_name[DIGEST_SIZE*2+1];
+    char local_uuid[DIGEST_SIZE];
+    char proc_name[DIGEST_SIZE];
  	
     ret=proc_share_data_getvalue("uuid",local_uuid);
     if(ret<0)
@@ -167,7 +167,7 @@ int websocket_port_init(void * sub_proc,void * para)
     // parameter deal with
     char * server_name="websocket_server";
     char * server_uuid=local_uuid;
-    char * service=sec_subject_getname(sub_proc);
+    char * service=ex_module_getname(sub_proc);
     char * server_addr=websocketserver_addr;
     char * nonce="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
 
@@ -183,7 +183,7 @@ int websocket_port_init(void * sub_proc,void * para)
     int stroffset=0;
 
     msg_box=build_server_syn_message(service,local_uuid,proc_name);  
-    stroffset=message_2_json(msg_box,buffer);
+    stroffset=message_output_json(msg_box,buffer);
     printf("websocket message size is %d\n",stroffset);
     printf("websocket message:%s\n",buffer);
 
@@ -215,8 +215,8 @@ int websocket_port_start(void * sub_proc,void * para)
     struct timeval conn_val;
     conn_val.tv_usec=time_val.tv_usec;
 
-    char local_uuid[DIGEST_SIZE*2+1];
-    char proc_name[DIGEST_SIZE*2+1];
+    char local_uuid[DIGEST_SIZE];
+    char proc_name[DIGEST_SIZE];
     char buffer[4096];
     memset(buffer,0,4096);
     int stroffset;
@@ -246,7 +246,7 @@ int websocket_port_start(void * sub_proc,void * para)
 		    	{
 				if(message_get_state(message)==0)
 					message_set_state(message,MSG_FLOW_INIT);
-				set_message_head(message,"sender_uuid",local_uuid);
+				message_set_sender(message,local_uuid);
 	    	    		ex_module_sendmsg(sub_proc,message);	
 				offset+=ret;
 				if(ws_context->readlen-offset<sizeof(MSG_HEAD))
@@ -268,7 +268,7 @@ int websocket_port_start(void * sub_proc,void * para)
 	{
 		if(message_box==NULL)
 			break;
-    		stroffset=message_2_json(message_box,buffer+LWS_SEND_BUFFER_PRE_PADDING);
+    		stroffset=message_output_json(message_box,buffer+LWS_SEND_BUFFER_PRE_PADDING);
 		if(stroffset>0)
 			libwebsocket_write(ws_context->callback_interface,
 				&buffer[LWS_SEND_BUFFER_PRE_PADDING],

@@ -72,7 +72,6 @@ int main(int argc,char **argv)
 
     char * baseconfig[] =
     {
-//		"baseflag.json",
 	"base_define/namelist.json",
 	"base_define/dispatchnamelist.json",
 	"base_define/typelist.json",
