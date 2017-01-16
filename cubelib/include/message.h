@@ -28,7 +28,7 @@ enum subtypelist_message
 
 enum subtypelist_msg_expand
 {
-	SUBTYPE_FLOW_TRACE,
+	SUBTYPE_FLOW_TRACE=0x01,
 	SUBTYPE_ASPECT_POINT,
 	SUBTYPE_ROUTE_RECORD
 };

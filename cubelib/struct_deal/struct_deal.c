@@ -988,6 +988,8 @@ int proc_compare_struct(void * src,void * destr,void * elem,void * para)
 	struct elem_template	* curr_elem=elem;
 	int ret;
 	ret = _elem_compare_value(src,destr,elem);
+	if(ret!=0)
+		return -1;
 	return ret;
 } 
 

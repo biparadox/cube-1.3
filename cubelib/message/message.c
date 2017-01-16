@@ -1359,11 +1359,54 @@ int message_add_record(void * message,void * record)
     return ret;
 }
 */
+int __message_add_expand_site(void * message,int increment)
+{
+	struct message_box * msg_box;
+	int ret;
+	MSG_HEAD * msg_head;
+	BYTE * data;
+	void * old_expandarray;
+	void * old_pexpandarray;
+	void * old_sizearray;
+	
+
+	msg_box=(struct message_box *)message;
+
+	msg_head=&(msg_box->head);
+	if(message==NULL)
+		return -EINVAL;
+	
+	int expand_no=msg_head->expand_num;
+	msg_head->expand_num+=increment;
+
+	old_expandarray=msg_box->expand;
+	old_pexpandarray=msg_box->pexpand;
+	old_sizearray=msg_box->expand_size;
+
+	// malloc a new expand_array space,and duplicate the old expand_array value
+	ret=Galloc0(&msg_box->expand,(sizeof(BYTE *)+sizeof(void *)+sizeof(int))*msg_head->expand_num);
+	if(ret<0)
+		return -ENOMEM;
+	msg_box->pexpand=msg_box->expand+msg_head->expand_num;
+	msg_box->expand_size=msg_box->pexpand+msg_head->expand_num;
+
+	if(expand_no>0)
+	{
+		memcpy(msg_box->expand,old_expandarray,expand_no*sizeof(BYTE *));
+		memcpy(msg_box->pexpand,old_pexpandarray,expand_no*sizeof(void *));
+		memcpy(msg_box->expand_size,old_sizearray,expand_no*sizeof(int));
+		// free the old record array,use new record to replace it
+		Free(old_expandarray);
+	}
+	return 0;
+}
+
 int message_add_expand(void * message,void * expand)
 {
 	struct message_box * msg_box;
 	int ret;
 	MSG_HEAD * msg_head;
+	int curr_site;
 
 	msg_box=(struct message_box *)message;
 
@@ -1372,7 +1415,12 @@ int message_add_expand(void * message,void * expand)
 		return -EINVAL;
 	if(expand==NULL)
 		return -EINVAL;
-	msg_box->pexpand[msg_head->expand_num++]=expand;
+	curr_site=msg_head->expand_num;
+	ret=__message_add_expand_site(message,1);
+	if(ret<0)
+		return -EINVAL;
+
+	msg_box->pexpand[curr_site]=expand;
         msg_box->box_state=MSG_BOX_EXPAND;
 
 	return ret;

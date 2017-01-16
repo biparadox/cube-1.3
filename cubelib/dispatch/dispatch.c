@@ -176,10 +176,10 @@ void * dispatch_read_policy(void * policy_node)
 		if(ret<0)
 			return NULL;	
 		temp_match_rule->value=value_struct;
-		ret=dispatch_policy_addmatchrule(policy,temp_match_rule);
-		if(ret<0)
-			return NULL;	
 	}
+	ret=dispatch_policy_addmatchrule(policy,temp_match_rule);
+	if(ret<0)
+		return NULL;	
 	
 //        __route_policy_add(policy->match_list,temp_match_rule);
          match_rule_node=json_get_next_child(match_policy_node);
@@ -231,6 +231,11 @@ int dispatch_policy_getfirst(void ** policy)
 {
     return _dispatch_policy_getfirst(&process_policy,policy);
 }
+int dispatch_aspect_policy_getfirst(void ** policy)
+{
+    return _dispatch_policy_getfirst(&aspect_policy,policy);
+}
+
 
 int dispatch_policy_getfirstmatchrule(void * policy,void ** rule)
 {
@@ -271,6 +276,10 @@ int _dispatch_policy_getnext(void * policy_list,void ** policy)
 int dispatch_policy_getnext(void ** policy)
 {
     return _dispatch_policy_getnext(&process_policy,policy);
+}
+int dispatch_aspect_policy_getnext(void ** policy)
+{
+    return _dispatch_policy_getnext(&aspect_policy,policy);
 }
 
 int dispatch_policy_getnextmatchrule(void * policy,void ** rule)
@@ -334,6 +343,19 @@ int dispatch_policy_add(void * policy)
       return 1;
 }
 
+int dispatch_match_sender(void * policy, char * sender)
+{
+	int ret;
+	DISPATCH_POLICY * dispatch_policy=(DISPATCH_POLICY *)policy;
+	if(policy==NULL)
+		return 0;
+	ret=Strcmp(dispatch_policy->sender,sender);
+	if(ret!=0)
+		return 0;
+	return 1;
+
+}
+
 int dispatch_match_message(void * policy,void * message)
 {
 	int ret;
@@ -351,6 +373,19 @@ int dispatch_match_message(void * policy,void * message)
 		return ret;
 	while(match_rule!=NULL)
 	{
+		if(match_rule->area==0)
+		{
+			if(match_rule->type==0)
+				return 1;
+			if(match_rule->type ==msg_head->record_type)
+			{
+				if(match_rule->subtype==0)
+					return 1;
+				if(match_rule->subtype==msg_head->record_subtype)
+					return 1;
+			}
+			return 0;
+		}
 		if(match_rule->area==MATCH_AREA_RECORD)
 		{	
 			if(match_rule->type==0)
@@ -373,10 +408,8 @@ int dispatch_match_message(void * policy,void * message)
 		{
 			return 0;
 		}
-		
 	}	
-	
-	
+	return 0;
 }
 
 int rule_get_target(void * router_rule,void * message,void **result)
@@ -628,24 +661,29 @@ int router_set_local_route(void * message,void * policy)
 	return 1;	
 }
 
-int router_find_route_policy(void * message,void **msg_policy,void * sender_proc)
+int router_find_route_policy(void * message,void **msg_policy,char * sender_proc)
 {
     void * policy;
     int ret;
     *msg_policy=NULL;
+
     ret=dispatch_policy_getfirst(&policy);
     if(ret<0)
         return ret;
     while(policy!=NULL)
     {
-        ret=dispatch_match_message(policy,message);
-        if(ret<0)
-            return ret;
-        if(ret>0)
-        {
-            *msg_policy=policy;
-            return ret;
-        }
+    	ret=dispatch_match_sender(policy,sender_proc);
+	if(ret>0)
+	{	
+       		ret=dispatch_match_message(policy,message);
+        	if(ret<0)
+            		return ret;
+        	if(ret>0)
+        	{
+            		*msg_policy=policy;
+            		return ret;
+        	}
+	}
     	ret=dispatch_policy_getnext(&policy);
     	if(ret<0)
              return ret;
@@ -1725,7 +1763,7 @@ int router_find_aspect_policy(void * message,void **msg_policy,char * sender_pro
     void * policy;
     int ret;
     *msg_policy=NULL;
-    ret=dispatch_policy_getfirst(&policy);
+    ret=dispatch_aspect_policy_getfirst(&policy);
     if(ret<0)
         return ret;
     while(policy!=NULL)
@@ -1738,7 +1776,7 @@ int router_find_aspect_policy(void * message,void **msg_policy,char * sender_pro
             *msg_policy=policy;
             return ret;
         }
-    	ret=dispatch_policy_getnext(&policy);
+    	ret=dispatch_aspect_policy_getnext(&policy);
     	if(ret<0)
              return ret;
     }
@@ -1986,8 +2024,8 @@ int router_pop_site(void * message)
 	if(flow_trace->record_num<1)
 		return 0;
 
-	int curr_offset=(--(flow_trace->record_num))*DIGEST_SIZE*2;
-	memcpy(msg_head->receiver_uuid,flow_trace->trace_record+curr_offset,DIGEST_SIZE*2);
+	int curr_offset=(--(flow_trace->record_num))*DIGEST_SIZE;
+	memcpy(msg_head->receiver_uuid,flow_trace->trace_record+curr_offset,DIGEST_SIZE);
 
 	if(flow_trace->record_num==0)
 	{

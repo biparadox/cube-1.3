@@ -343,7 +343,7 @@ int proc_router_start(void * sub_proc,void * para)
 						case MOD_TYPE_PORT:
 						{
 							// remote aspect receive
-							ret=router_find_aspect_policy(message,&aspect_policy,sub_proc);
+							ret=router_find_aspect_policy(message,&aspect_policy,origin_proc);
 							if(ret<0)
 							{
 								printf("%s check aspect policy error!\n",sub_proc); 
@@ -403,7 +403,7 @@ int proc_router_start(void * sub_proc,void * para)
 					case MOD_TYPE_PORT:
 
 					// if this message is from a port, we find a policy match it and turned it to local message
-						ret=router_find_route_policy(message,&msg_policy,sub_proc);	
+						ret=router_find_route_policy(message,&msg_policy,origin_proc);	
 						if(ret<0)
 							return ret;
 						if(msg_policy==NULL)
@@ -431,13 +431,13 @@ int proc_router_start(void * sub_proc,void * para)
 							msg_head->ljump=0;	
 							msg_head->rjump--;
 								// if this message's flow is query, we should push it into the stack
-							router_pop_site(message,"FTRE");
+							router_pop_site(message);
 							printf("begin to response query message");
 							break;
 						}
 						else
 						{
-							ret=router_find_route_policy(message,&msg_policy,sub_proc);	
+							ret=router_find_route_policy(message,&msg_policy,origin_proc);	
 							if(ret<0)
 							{	
 								printf("%s get error message!\n",sub_proc); 
@@ -473,7 +473,7 @@ int proc_router_start(void * sub_proc,void * para)
 								if(msg_head->flow==MSG_FLOW_QUERY) 
 								{
 									// if this message's flow is query, we should push it into the stack
-									router_pop_site(message,"FTRE");
+									router_pop_site(message);
 									printf("begin to response query message");
 									msg_head->flag|=MSG_FLAG_RESPONSE;
 									msg_head->ljump--;
@@ -488,7 +488,7 @@ int proc_router_start(void * sub_proc,void * para)
 						}
 						else
 						{
-							ret=router_find_route_policy(message,&msg_policy,sub_proc);	
+							ret=router_find_route_policy(message,&msg_policy,origin_proc);	
 							if(ret<0)
 							{	
 								printf("%s get error message!\n",sub_proc); 
@@ -552,7 +552,7 @@ int proc_router_start(void * sub_proc,void * para)
 							route_push_site(message,conn_uuid);
 						}
 					}
-					ret=router_find_aspect_policy(message,&aspect_policy,sub_proc);
+					ret=router_find_aspect_policy(message,&aspect_policy,origin_proc);
 					if(ret<0)
 					{
 						printf("%s check aspect policy error!\n",sub_proc); 

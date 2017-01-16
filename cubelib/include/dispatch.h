@@ -72,6 +72,7 @@ int dispatch_policy_getnext(void ** policy);
 int dispatch_policy_getfirstmatchrule(void * policy,void ** rule);
 int dispatch_policy_getfirstrouterule(void * policy,void ** rule);
 
+int dispatch_match_sender(void * policy,char * sender);
 int dispatch_match_message(void * policy,void * message);
 
 int aspect_policy_getfirst(void ** policy);

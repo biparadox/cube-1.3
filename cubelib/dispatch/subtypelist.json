@@ -30,7 +30,7 @@
 		"elem_no":3,
 		"elemlist":
 		[
-			"FLOW_TRACE",
+			"FLOW_TRACE=0x01",
 			"ASPECT_POINT",
 			"ROUTE_RECORD"
 		]
