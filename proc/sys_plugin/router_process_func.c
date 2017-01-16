@@ -171,9 +171,8 @@ int proc_router_send_msg(void * message,char * local_uuid,char * proc_name)
 	int ret;
 	MSG_HEAD * msg_head;
 	BYTE conn_uuid[DIGEST_SIZE*2];
-	switch(message_get_state(message))
+	if(message_get_flag(message) & MSG_FLAG_LOCAL)
 	{
-		case MSG_FLAG_LOCAL:
 		
 			msg_head=message_get_head(message);
 			if(msg_head==NULL)
@@ -190,12 +189,10 @@ int proc_router_send_msg(void * message,char * local_uuid,char * proc_name)
 //				}
 				send_ex_module_msg(sec_sub,message);
 			}
-			break;
-
-		case MSG_FLOW_DELIVER:
-		case MSG_FLOW_QUERY:
-		case MSG_FLOW_RESPONSE:
-		case MSG_FLOW_ASPECT:
+	}
+	else
+	{
+	
 			ret=find_ex_module("connector_proc",&sec_sub);	
 			if(sec_sub==NULL)
 			{
@@ -205,10 +202,6 @@ int proc_router_send_msg(void * message,char * local_uuid,char * proc_name)
 			send_ex_module_msg(sec_sub,message);
 			printf("send message to conn process!\n");
 				
-			break;
-		default:
-			return -EINVAL;
-
 	}
 	return 0;
 }
