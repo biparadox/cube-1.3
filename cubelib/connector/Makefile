@@ -7,7 +7,7 @@ STRUCTOBJ= connector.o connector_inet.o connector_hub.o connect_message.o
 LIBNAME=connector
 DEPENDLIB= -lmessage -lmemdb -lbasefunc -lcrypto_func -lstruct -ljson -lalloc -lstring
 
-main: ../lib/lib$(LIBNAME).so  test_srv test_client1 test_client
+main: ../lib/lib$(LIBNAME).so 
 test_main: test_main.c ../lib/lib$(LIBNAME).so 
 	$(CC) $(FLAGS) test_main test_main.c -L../lib -l$(LIBNAME) $(DEPENDLIB)   
 test_srv:  test_srv.c $(FUNC_OBJ) ../lib/libmemdb.a ../lib/libstruct.a ../lib/libconnector.a
