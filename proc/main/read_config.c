@@ -198,6 +198,8 @@ int read_main_cfg(void * lib_para_struct,void * root_node)
     if(ret<0)
 	return ret;
 
+    if(lib_para==NULL)
+	return 0;	
     ret=0;
     if(lib_para->dynamic_lib!=NULL)
     {

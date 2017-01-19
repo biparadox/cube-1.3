@@ -169,34 +169,21 @@ int main(int argc,char **argv)
     system("mkdir lib");
     // init the main proc struct
 
+    struct lib_para_struct * lib_para=NULL;
     fd=open(sys_config_file,O_RDONLY);
-    if(fd<0)
-	return -EINVAL;
-/*
-    json_offset=read(fd,buffer,4096);
-    if(json_offset<0)
-	return ret;
-    if(json_offset>4096)
+    if(fd>0)
     {
-	printf("main config file is too long!\n");
-	return -EINVAL;
-    }
-    close(fd);
-    ret=json_solve_str(&root_node,buffer);
-    if(ret<0)
-	return ret;	
-*/
 
-    ret=read_json_node(fd,&root_node);
-    if(ret<0)
-	return ret;	
-    close(fd);
+   	 ret=read_json_node(fd,&root_node);
+  	 if(ret<0)
+		return ret;	
+    	 close(fd);
 	
-    struct lib_para_struct * lib_para;
 
-    ret=read_sys_cfg(&lib_para,root_node);
-    if(ret<0)
-	return ret; 		
+    	 ret=read_sys_cfg(&lib_para,root_node);
+    	 if(ret<0)
+		return ret;
+    }	 		
     fd=open(main_config_file,O_RDONLY);
     if(fd<0)
 	return -EINVAL;
@@ -275,15 +262,16 @@ int main(int argc,char **argv)
     void * ex_module;	
 
     fd=open(plugin_config_file,O_RDONLY);
-    if(fd<0)
-	return -EINVAL;
+    if(fd>0)
+    {	
 
-    while(read_json_node(fd,&root_node)>0)
-    {  		
-	ret=read_plugin_cfg(&ex_module,root_node);
-	if(ret>=0)
-    		add_ex_module(ex_module);
-    }
+    	while(read_json_node(fd,&root_node)>0)
+    	{  		
+		ret=read_plugin_cfg(&ex_module,root_node);
+		if(ret>=0)
+    			add_ex_module(ex_module);
+    	}
+    }	
     
 /*
     }
