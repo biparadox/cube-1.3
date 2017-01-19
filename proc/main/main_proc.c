@@ -50,6 +50,7 @@ int main(int argc,char **argv)
     char namebuffer[DIGEST_SIZE*4];
     char * sys_plugin;		
     char * app_plugin;		
+    char * base_define;
 
 
     char json_buffer[4096];
@@ -72,16 +73,16 @@ int main(int argc,char **argv)
 
     char * baseconfig[] =
     {
-	"base_define/namelist.json",
-	"base_define/dispatchnamelist.json",
-	"base_define/typelist.json",
-	"base_define/subtypelist.json",
-	"base_define/msghead.json",
-	"base_define/msgrecord.json",
-	"base_define/expandrecord.json",
-	"base_define/base_msg.json",
-	"base_define/dispatchrecord.json",
-	"base_define/exmoduledefine.json",
+	"namelist.json",
+	"dispatchnamelist.json",
+	"typelist.json",
+	"subtypelist.json",
+	"msghead.json",
+	"msgrecord.json",
+	"expandrecord.json",
+	"base_msg.json",
+	"dispatchrecord.json",
+	"exmoduledefine.json",
 	 NULL
     };
 
@@ -106,12 +107,16 @@ int main(int argc,char **argv)
 	struct_deal_init();
 	memdb_init();
 
+    	base_define=getenv("CUBE_BASE_DEFINE");
 	for(i=0;baseconfig[i]!=NULL;i++)
 	{
-		ret=read_json_file(baseconfig[i]);
+		Strcpy(namebuffer,base_define);
+		Strcat(namebuffer,"/");
+		Strcat(namebuffer,baseconfig[i]);
+		ret=read_json_file(namebuffer);
 		if(ret<0)
 			return ret;
-		printf("read %d elem from file %s!\n",ret,baseconfig[i]);
+		printf("read %d elem from file %s!\n",ret,namebuffer);
 	}
 
 	msgfunc_init();
