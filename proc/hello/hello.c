@@ -18,7 +18,7 @@
 #include "memdb.h"
 #include "basetype.h"
 #include "message.h"
-#include "sec_entity.h"
+#include "ex_module.h"
 
 extern struct timeval time_val={0,50*1000};
 
@@ -31,40 +31,23 @@ int hello_init(void * sub_proc,void * para)
 
 int hello_start(void * sub_proc,void * para)
 {
-	int ret;
-	int i;
-	const char * type;
-
-
-	for(i=0;i<3000*1000;i++)
-	{
-		usleep(time_val.tv_usec);
-		if(i==1)
-			proc_hello_message(sub_proc,NULL);
-	}
-
+	proc_hello_message(sub_proc,NULL);
 	return 0;
 };
 
 int proc_hello_message(void * sub_proc,void * message)
 {
-	int type;
-	int subtype;
-	int i;
 	int ret;
 	printf("begin proc hello \n");
 
-	struct message_box * new_msg;
+	void * new_msg;
 	new_msg=message_create(DTYPE_MESSAGE,SUBTYPE_BASE_MSG,message);
-	
-	i=0;
-
 	struct basic_message * msg_info;
 	msg_info=Talloc(sizeof(*msg_info));
-
 	msg_info->message=dup_str("hello,world!",0);
-
-	message_add_record(new_msg,msg_info);
-	ex_module_sendmsg(sub_proc,new_msg);
+	ret=message_add_record(new_msg,msg_info);
+	if(ret<0)
+		return ret;
+	ret=ex_module_sendmsg(sub_proc,new_msg);
 	return ret;
 }

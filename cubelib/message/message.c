@@ -2003,3 +2003,26 @@ int message_remove_expand(void * message, int type,int subtype,void ** expand)
 	return 0;
 }
 
+char * message_get_typestr(void * message)
+{
+	int ret;
+	MSG_HEAD * msg_head;
+	char buffer[DIGEST_SIZE*2+1];
+	char * typestr;
+	char * subtypestr;
+	if(message==NULL)
+		return NULL;
+	msg_head=message_get_head(message);
+	typestr=memdb_get_typestr(msg_head->record_type);
+	if(typestr==NULL)
+		return NULL;
+	subtypestr=memdb_get_subtypestr(msg_head->record_type,msg_head->record_subtype);
+	if(subtypestr==NULL)
+	{
+		return dup_str(typestr,0);
+	}
+	Strncpy(buffer,typestr,DIGEST_SIZE);
+	Strcat(buffer," ");
+	Strncat(buffer,subtypestr,DIGEST_SIZE);
+	return dup_str(buffer,DIGEST_SIZE*2+1);	
+}

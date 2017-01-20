@@ -9,15 +9,15 @@
 #include <sys/stat.h>
 #include <sys/socket.h>
 
-#include "../include/data_type.h"
+#include "data_type.h"
 #include "alloc.h"
 #include "string.h"
 #include "basefunc.h"
-#include "../include/struct_deal.h"
-#include "../include/crypto_func.h"
-#include "../include/memdb.h"
-#include "../include/message.h"
-#include "../include/sec_entity.h"
+#include "struct_deal.h"
+#include "crypto_func.h"
+#include "memdb.h"
+#include "message.h"
+#include "ex_module.h"
 
 extern struct timeval time_val={0,50*1000};
 
@@ -47,19 +47,14 @@ int echo_plugin_start(void * sub_proc,void * para)
 			continue;
 		type=message_get_type(recv_msg);
 		subtype=message_get_subtype(recv_msg);
-		if(type==0)
+		if(!memdb_find_recordtype(type,subtype))
 		{
-			printf("message format error!\n");
+			printf("message format (%d %d) is not registered!\n",
+				message_get_type(recv_msg),message_get_subtype(recv_msg));
 			continue;
 		}
-//		if(!find_record_type(type))
-//		{
-//			printf("message format is not registered!\n");
-//			continue;
-//		}
 		proc_echo_message(sub_proc,recv_msg);
 	}
-
 	return 0;
 };
 
@@ -79,7 +74,6 @@ int proc_echo_message(void * sub_proc,void * message)
 	new_msg=message_create(type,subtype,message);
 	
 	i=0;
-
 
 	ret=message_get_record(message,&record,i++);
 	if(ret<0)

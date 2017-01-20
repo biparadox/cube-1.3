@@ -172,7 +172,7 @@ int load_all_record(void * message);
 // if all the record in message are loaded, function return 0 and the message_box's state is MSG_BOX_LOAD_FINISH
 // if load message error, function return negtive value
 
-int set_message_head(void * message,char * item_name, void * value);
+//int set_message_head(void * message,char * item_name, void * value);
 int message_set_flag(void * message, int flag);
 int message_set_state(void * message, int state);
 int message_get_state(void * message);
@@ -194,16 +194,16 @@ int message_load_record(void * message);
 int message_load_expand(void * message);
 
 int message_get_define_expand(void * message,void ** addr,int type,int subtype);
-int add_message_define_expand(void * message, void * expand, char * type);
+//int add_message_define_expand(void * message, void * expand, char * type);
 
-int add_message_expand_state(void * message,int state_machine_no,int state);
-int add_message_expand_identify(void * message,char * user_name,int type,int blob_size,BYTE * blob);
-int add_message_expand_forward(void * message,char * sender_uuid,char * sender_name,char * receiver_uuid, char * receiver_name);
+//int add_message_expand_state(void * message,int state_machine_no,int state);
+//int add_message_expand_identify(void * message,char * user_name,int type,int blob_size,BYTE * blob);
+//int add_message_expand_forward(void * message,char * sender_uuid,char * sender_name,char * receiver_uuid, char * receiver_name);
 
-int add_message_expand(void * message, int record_size, int expand_no,BYTE * expand);
+//int add_message_expand(void * message, int record_size, int expand_no,BYTE * expand);
 
-char * get_message_expand_type(void * message,int expand_no);
-int  get_message_expand(void * message, void ** msg_expand,int expand_no);
+//char * get_message_expand_type(void * message,int expand_no);
+//int  get_message_expand(void * message, void ** msg_expand,int expand_no);
 
 int message_get_blob(void * message, void ** blob);
 int message_set_blob(void * message,void * blob, int size);
@@ -215,4 +215,5 @@ int message_2_json(void * message,char * json_str);
 int json_2_message(char * json_str,void ** message);
 int message_output_record_blob(void * message, BYTE ** blob);
 
+char * message_get_typestr(void * message);
 #endif

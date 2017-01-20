@@ -1,37 +1,6 @@
 {
 	"head":
 	{
-		"name":"exmodule_type",
-		"type":"TYPELIST"
-	},
-	"record":
-	{
-		"elem_no":1,
-		"elemlist":
-		[
-			"EXMODULE=0x220"
-		]
-	}
-}
-{
-	"head":
-	{
-		"name":"exmodule_subtypelist",
-		"type":"SUBTYPELIST"
-	},
-	"record":
-	{
-		"type":"EXMODULE",
-		"elem_no":1,
-		"elemlist":
-		[
-			"LIB_PARA=0x01"
-		]
-	}
-}
-{
-	"head":
-	{
 		"name":"module_type",
 		"type":"NAMELIST"
 	},

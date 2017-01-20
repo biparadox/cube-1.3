@@ -87,6 +87,20 @@ static inline int _get_value_namelist(char * name,void * list)
 	return 0;
 }
 
+static inline char * _get_str_namelist(int value,void * list)
+{
+	struct struct_namelist * namelist=list;
+	int i;
+	for(i=0;i<namelist->elem_no;i++)
+	{
+		if(namelist->elemlist[i].value==value)
+		{
+			return namelist->elemlist[i].name;
+		}
+	}
+	return NULL;
+}
+
 void * _clone_namelist(void * list1)
 {
 	struct struct_namelist * namelist1 = list1;
@@ -1112,6 +1126,16 @@ void * memdb_find_byname(char * name,int type,int subtype)
 	return NULL;
 }
 
+int memdb_find_recordtype(int type,int subtype)
+{
+	int ret;
+	struct memdb_desc * db_list;
+	db_list=memdb_get_dblist(type,subtype);
+	if(db_list==NULL)
+		return 0;
+	return 1;
+}
+
 void * memdb_get_subtypelist(int type)
 {
 	DB_RECORD * record;
@@ -1167,7 +1191,6 @@ int memdb_get_typeno(char * typestr)
 	if(typeenumlist==NULL)
 		return -EINVAL;
 	return _get_value_namelist(typestr,typeenumlist);
-
 }
 
 int memdb_get_subtypeno(int typeno,char * typestr)
@@ -1176,7 +1199,20 @@ int memdb_get_subtypeno(int typeno,char * typestr)
 	if(subtypelist==NULL)
 		return -EINVAL;
 	return _get_value_namelist(typestr,subtypelist);
+}
+char * memdb_get_typestr(int typeno)
+{
+	if(typeenumlist==NULL)
+		return -EINVAL;
+	return _get_str_namelist(typeno,typeenumlist);
+}
 
+char * memdb_get_subtypestr(int typeno,int subtypeno)
+{
+	struct struct_subtypelist  * subtypelist=memdb_get_subtypelist(typeno);
+	if(subtypelist==NULL)
+		return -EINVAL;
+	return _get_str_namelist(subtypeno,subtypelist);
 }
 
 int memdb_comp_uuid(void * record)

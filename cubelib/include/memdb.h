@@ -64,6 +64,7 @@ int memdb_free_record(void * record);
 
 void * memdb_find(void * data,int type,int subtype);
 void * memdb_find_byname(char * name,int type,int subtype);
+int memdb_find_recordtype(int type,int subtype);
 
 
 int memdb_set_template(int type, int subtype, void * struct_template);
@@ -79,12 +80,15 @@ int memdb_is_elem_namelist(void * elem);
 void * memdb_get_subtypelist(int type);
 int  memdb_get_typeno(char * typestr);
 int  memdb_get_subtypeno(int typeno,char * typestr);
+char * memdb_get_typestr(int typeno);
+char * memdb_get_subtypestr(int typeno,int subtypeno);
 void  * memdb_get_recordtype(int type,int subtype);
 int memdb_print(void * data,char * json_str);
 
 int memdb_read_desc(void * root,BYTE * uuid);
 int memdb_comp_uuid(void * record);
 void * memdb_read_struct_template(void * node);
+
 
 #endif
 

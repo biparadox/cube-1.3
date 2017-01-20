@@ -54,3 +54,19 @@
 		]
 	}
 }
+{
+	"head":
+	{
+		"name":"exmodule_subtypelist",
+		"type":"SUBTYPELIST"
+	},
+	"record":
+	{
+		"type":"EXMODULE",
+		"elem_no":1,
+		"elemlist":
+		[
+			"LIB_PARA=0x01"
+		]
+	}
+}

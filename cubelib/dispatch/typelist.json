@@ -6,12 +6,13 @@
 	},
 	"record":
 	{
-		"elem_no":3,
+		"elem_no":4,
 		"elemlist":
 		[
 			"MESSAGE=0x200",
 			"MSG_EXPAND",
 			"DISPATCH=0x210"
+			"EXMODULE=0x220"
 		]
 	}
 }
