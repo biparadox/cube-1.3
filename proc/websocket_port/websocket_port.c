@@ -15,10 +15,10 @@
 #include "basetype.h"
 #include "message.h"
 #include "ex_module.h"
-//#include "websocket_port.h"
+#include "websocket_port.h"
 
-static char websocketserver_addr[] = "0.0.0.0";
-static int websocket_port=13888;
+static char * websocketserver_addr;
+static int websocket_port;
 extern struct timeval time_val={0,50*1000};
 
 struct websocket_server_context
@@ -142,6 +142,16 @@ int websocket_port_init(void * sub_proc,void * para)
     char local_uuid[DIGEST_SIZE];
     char proc_name[DIGEST_SIZE];
  	
+    struct websocket_init_para * init_para=para;
+    if(init_para==NULL)
+    {
+	   printf("can't find websocket port address!\n");
+	   return -EINVAL;
+    }	
+    websocketserver_addr=dup_str(init_para->ws_addr,0);				
+    websocket_port=init_para->ws_port;				
+
+
     ret=proc_share_data_getvalue("uuid",local_uuid);
     if(ret<0)
 	    return ret;
