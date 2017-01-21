@@ -693,7 +693,7 @@ int _elem_clone_deffunc(void * addr, void * clone,void * elem)
 	elem_src=_elem_get_addr(elem,addr);
 	elem_clone=_elem_get_addr(elem,clone);
 	// if this func is empty, we use default func
-	if((ret=_elem_get_bin_length(elem_src,elem,addr))<0)
+	if((ret=_elem_get_bin_length(*(char **)elem_src,elem,addr))<0)
 		return ret;
 	if(_ispointerelem(curr_elem->elem_desc->type))
 	{
@@ -766,7 +766,7 @@ int _elem_compare_deffunc(void * addr, void * dest,void * elem)
 	elem_src=_elem_get_addr(elem,addr);
 	elem_dest=_elem_get_addr(elem,dest);
 	// if this func is empty, we use default func
-	if((ret=_elem_get_bin_length(elem_src,elem,addr))<0)
+	if((ret=_elem_get_bin_length(*(char **)elem_src,elem,addr))<0)
 		return ret;
 	if(_ispointerelem(curr_elem->elem_desc->type))
 	{
@@ -858,6 +858,8 @@ int _elem_set_text_deffunc(void * addr,void * data,void * elem)
 		return ret;
 	if(_ispointerelem(curr_elem->elem_desc->type))
 	{
+//		int ret=Strnlen(text,DIGEST_SIZE*32)+1;
+		
 		int tempret=Palloc0(elem_addr,ret);
 		if(tempret<0)
 			return tempret;
