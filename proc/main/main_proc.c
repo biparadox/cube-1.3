@@ -212,8 +212,8 @@ int main(int argc,char **argv)
 
 
     // init the connect proc	
-//    strcpy(namebuffer,sys_plugin);
-    strcpy(namebuffer,"../../proc/plugin/");
+    strcpy(namebuffer,sys_plugin);
+    strcat(namebuffer,"/");
     strcat(namebuffer,connector_plugin_file);
     plugin_proc.init =main_read_func(namebuffer,"proc_conn_init");
     if(plugin_proc.init==NULL)
@@ -236,8 +236,8 @@ int main(int argc,char **argv)
     ex_module_start(conn_proc,NULL);
 
     // init the router proc	
-//    strcpy(namebuffer,sys_plugin);
-    strcpy(namebuffer,"../../proc/plugin/");
+    strcpy(namebuffer,sys_plugin);
+    strcat(namebuffer,"/");
     strcat(namebuffer,router_plugin_file);
     plugin_proc.init =main_read_func(namebuffer,"proc_router_init");
     if(plugin_proc.init==NULL)

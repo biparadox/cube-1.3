@@ -36,6 +36,7 @@
 			[
 				{"name":"libname","type":"ESTRING"},
 				{"name":"type","type":"ENUM","ref_name":"module_type"},
+				{"name":"define_file","type":"ESTRING"},
 				{"name":"dynamic_lib","type":"ESTRING"},
 				{"name":"init","type":"ESTRING"},
 				{"name":"start","type":"ESTRING"}

@@ -201,6 +201,13 @@ int read_main_cfg(void * lib_para_struct,void * root_node)
     if(lib_para==NULL)
 	return 0;	
     ret=0;
+    if(lib_para->define_file!=NULL)
+    {
+	ret=read_json_file(lib_para->define_file);
+	if(ret<0)
+		return -EINVAL;	
+	printf("read %d elem from file %s!\n",ret,lib_para->define_file);
+    }
     if(lib_para->dynamic_lib!=NULL)
     {
     	init=main_read_func(lib_para->dynamic_lib,lib_para->init_func);

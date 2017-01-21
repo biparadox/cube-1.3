@@ -1,0 +1,107 @@
+{
+	"head":
+	{
+		"name":"crypto_demo_type",
+		"type":"TYPELIST"
+	},
+	"record":
+	{
+		"elem_no":1,
+		"elemlist":
+		[
+			"CRYPTO_DEMO=0x1001"
+		]
+	}
+}
+{
+	"head":
+	{
+		"name":"crypto_demo_subtype",
+		"type":"SUBTYPELIST"
+	},
+	"record":
+	{
+		"type":"CRYPTO_DEMO",
+		"elem_no":3,
+		"elemlist":
+		[
+			"LOGIN_INFO=0x01",
+			"VERIFY_INFO",
+			"SESSION_MSG"
+		]
+	}
+}
+{
+	"head":
+	{
+		"name":"crypto_demo_login_info",
+		"type":"RECORDTYPE"
+	},
+	"record":
+	{
+		"type":"CRYPTO_DEMO",
+		"subtype":"LOGIN_INFO",
+		"struct_desc":
+		{
+			"elem_desc":
+			[
+				{"name":"user","type":"STRING","size":32},
+				{"name":"passwd","type":"STRING","size":32},
+				{"name":"nonce","type":"BINDATA","size":32}
+			]
+		},
+		"index":
+		{
+			"flag":"INDEX",
+			"elemlist":"user,passwd"
+		}
+	}	
+}
+{
+	"head":
+	{
+		"name":"crypto_demo_verify_return",
+		"type":"RECORDTYPE"
+	},
+	"record":
+	{
+		"type":"CRYPTO_DEMO",
+		"subtype":"VERIFY_RETURN",
+		"struct_desc":
+		{
+			"elem_desc":
+			[
+				{"name":"retval","type":"INT"},
+				{"name":"ret_data_size","type":"INT"},
+				{"name":"ret_data","type":"DEFSTR","def":"ret_data_size"}
+			]
+		}
+	}	
+}
+{
+	"head":
+	{
+		"name":"crypto_demo_session_msg",
+		"type":"RECORDTYPE"
+	},
+	"record":
+	{
+		"type":"CRYPTO_DEMO",
+		"subtype":"SESSION_MSG",
+		"struct_desc":
+		{
+			"elem_desc":
+			[
+				{"name":"sender","type":"STRING","size":32},
+				{"name":"receiver","type":"STRING","size":32},
+				{"name":"time","type":"LONGLONG"},
+				{"name":"msg","type":"ESTRING"}
+			]
+		},
+		"index":
+		{
+			"flag":"INDEX",
+			"elemlist":"sender,receiver,time,msg"
+		}
+	}	
+}

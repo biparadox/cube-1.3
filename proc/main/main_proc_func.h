@@ -23,6 +23,7 @@ struct lib_para_struct
 {
 	char * libname;	
 	enum module_type type;
+	char * define_file;
 	char * dynamic_lib;
 	char * init_func;
 	char * start_func;
