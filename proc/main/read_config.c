@@ -182,52 +182,6 @@ int read_sys_cfg(void ** lib_para_struct,void * root_node)
     return ret;
 }
 
-int read_main_cfg(void * lib_para_struct,void * root_node)
-{
-    struct lib_para_struct * lib_para=lib_para_struct;
-    int ret;
-    void * temp_node;
-    int (*init) (void *,void *);
-    temp_node=json_find_elem("proc_name",root_node);
-    if(temp_node==NULL)
-	return -EINVAL;
-    
-    void * init_para;
-    	
-    ret=proc_share_data_setvalue("proc_name",json_get_valuestr(temp_node));
-    if(ret<0)
-	return ret;
-
-    if(lib_para==NULL)
-	return 0;	
-    ret=0;
-    if(lib_para->define_file!=NULL)
-    {
-	ret=read_json_file(lib_para->define_file);
-	if(ret<0)
-		return -EINVAL;	
-	printf("read %d elem from file %s!\n",ret,lib_para->define_file);
-    }
-    if(lib_para->dynamic_lib!=NULL)
-    {
-    	init=main_read_func(lib_para->dynamic_lib,lib_para->init_func);
-	if(init==NULL)
-		return -EINVAL;
-	ex_module_setinitfunc(NULL,init);
-        init_para=NULL;
-	temp_node=json_find_elem("init_para",root_node);
-        if(temp_node!=NULL)
-        {
-		ret=Galloc0(&init_para,struct_size(lib_para->para_template));
-		if(init_para==NULL)
-			return -ENOMEM;
-		ret=json_2_struct(temp_node,init_para,lib_para->para_template);
-	}
-	ret=ex_module_init(NULL,init_para);
-    }
-    return ret;
-}
-
 int read_json_node(int fd, void ** node)
 {
 	int ret;
@@ -356,3 +310,139 @@ int read_plugin_cfg(void ** plugin,void * root_node)
     *plugin=ex_module;	  
     return ret;
 }
+int read_record_file(char * record_file)
+{
+	int type,subtype;
+	void * head_node;
+	void * record_node;	
+	void * elem_node;	
+	int fd;
+	int ret;
+	void * record_template;
+	int count=0;
+	fd=open(record_file,O_RDONLY);
+	if(fd<0)
+		return -EIO;
+	ret=read_json_node(fd,&head_node);
+	if(ret<0)
+		return -EINVAL;
+	if(head_node==NULL)
+		return -EINVAL;
+	elem_node=json_find_elem("type",head_node);
+	if(elem_node==NULL)
+	{
+		close(fd);
+		return -EINVAL;
+	}
+	type=memdb_get_typeno(json_get_valuestr(elem_node));
+	if(type<=0)
+	{
+		close(fd);
+		return -EINVAL;
+	} 			
+	elem_node=json_find_elem("subtype",head_node);
+	if(elem_node==NULL)
+	{
+		close(fd);
+		return -EINVAL;
+	}
+	subtype=memdb_get_subtypeno(type,json_get_valuestr(elem_node));
+	if(subtype<=0)
+	{
+		close(fd);
+		return -EINVAL;
+	} 
+	record_template=memdb_get_template(type,subtype);
+	if(record_template==NULL)
+	{
+		close(fd);
+		return -EINVAL;
+	}		
+	
+	ret=read_json_node(fd,&record_node);
+	int record_size=struct_size(record_template);	
+	void * record=NULL;
+
+	while(ret>0)
+	{
+		if(record==NULL)
+			record=Talloc(record_size);
+		if(record_node!=NULL)
+		{
+			ret=json_2_struct(record_node,record,record_template);
+			if(ret>=0)
+			{
+				ret=memdb_store(record,type,subtype,NULL);
+				if(ret>=0)
+				{
+					record=NULL;
+					count++;
+				}
+				
+			}
+		}	
+		ret=read_json_node(fd,&record_node);
+	}
+	close(fd);
+	return count; 	
+}
+int read_main_cfg(void * lib_para_struct,void * root_node)
+{
+    struct lib_para_struct * lib_para=lib_para_struct;
+    int ret;
+    void * temp_node;
+    int (*init) (void *,void *);
+    temp_node=json_find_elem("proc_name",root_node);
+    if(temp_node==NULL)
+	return -EINVAL;
+    
+    void * init_para;
+    	
+    ret=proc_share_data_setvalue("proc_name",json_get_valuestr(temp_node));
+    if(ret<0)
+	return ret;
+
+    if(lib_para==NULL)
+	return 0;	
+    ret=0;
+    if(lib_para->define_file!=NULL)
+    {
+	ret=read_json_file(lib_para->define_file);
+	if(ret<0)
+		return -EINVAL;	
+	printf("read %d elem from file %s!\n",ret,lib_para->define_file);
+    }
+
+    void * record_list=json_find_elem("record_file",root_node);
+    if(record_list!=NULL)
+    {
+	void * record_file=json_get_first_child(record_list);
+	while(record_file!=NULL)
+	{
+		ret=read_record_file(json_get_valuestr(record_file));
+		if(ret>0)
+			printf("read %d elem from file %s!\n",ret,json_get_valuestr(record_file));
+		record_file=json_get_next_child(record_list);
+	}
+    }		
+
+    if(lib_para->dynamic_lib!=NULL)
+    {
+    	init=main_read_func(lib_para->dynamic_lib,lib_para->init_func);
+	if(init==NULL)
+		return -EINVAL;
+	ex_module_setinitfunc(NULL,init);
+        init_para=NULL;
+	temp_node=json_find_elem("init_para",root_node);
+        if(temp_node!=NULL)
+        {
+		ret=Galloc0(&init_para,struct_size(lib_para->para_template));
+		if(init_para==NULL)
+			return -ENOMEM;
+		ret=json_2_struct(temp_node,init_para,lib_para->para_template);
+	}
+	ret=ex_module_init(NULL,init_para);
+    }
+    return ret;
+}
+

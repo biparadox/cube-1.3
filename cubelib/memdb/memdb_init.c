@@ -225,6 +225,8 @@ int _memdb_record_add_name(void * record,char * name)
 	char * new_name;
 	char ** new_namearray;
 	DB_RECORD * record_db=(DB_RECORD *)record;
+	if(name==NULL)
+		return 0;
 
 	// judge if this name is in the list;
 	if(_memdb_record_find_name(record,name)>0)
@@ -465,8 +467,12 @@ int _recordtype_tail_func(void * memdb,void * record)
 		if(ret<0)
 			return ret;
 	}
-	
-
+	else
+	{
+		ret=struct_set_flag(db_record->tail,CUBE_ELEM_FLAG_INDEX,index_elems);
+		if(ret<0)
+			return ret;
+	}
 	for(i=0;i<recordtype->flag_no;i++)
 	{
 		if(recordtype->index[i].flag!=CUBE_ELEM_FLAG_INDEX)

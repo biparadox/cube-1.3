@@ -231,7 +231,7 @@ int _elem_get_defvalue(void * elem,void * addr)
 	{
 		define_value=elem_ops->get_int_value(def_addr,temp_elem);
 	}
-	if((define_value<0) || (define_value >=1024))
+	if(define_value<0)
 		return -EINVAL;
 	return define_value;
 }

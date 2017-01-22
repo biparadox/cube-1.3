@@ -45,7 +45,7 @@
 		"index":
 		{
 			"flag":"INDEX",
-			"elemlist":"libname,type,dynamic_lib,init_func,start_func"
+			"elemlist":"libname,type,dynamic_lib,init,start"
 		}
 	}	
 }

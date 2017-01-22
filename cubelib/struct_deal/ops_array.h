@@ -90,6 +90,7 @@ struct namevalue  ops_array[]=
         { CUBE_TYPE_JSONSTRING,&jsonstring_estring_convert_ops},  
 	{ CUBE_TYPE_NODATA,&nodata_convert_ops},
 	{ CUBE_TYPE_DEFINE,&define_defstr_convert_ops},
+	{ CUBE_TYPE_DEFSTR,&define_defstr_convert_ops},
 	{CUBE_TYPE_DEFSTRARRAY,&defstrarray_convert_ops}
 }
 struct convert_ops string_convert_ops =

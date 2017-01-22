@@ -26,7 +26,7 @@
 		"elemlist":
 		[
 			"LOGIN_INFO=0x01",
-			"VERIFY_INFO",
+			"VERIFY_RETURN",
 			"SESSION_MSG"
 		]
 	}
@@ -73,8 +73,13 @@
 			[
 				{"name":"retval","type":"INT"},
 				{"name":"ret_data_size","type":"INT"},
-				{"name":"ret_data","type":"DEFSTR","def":"ret_data_size"}
+				{"name":"ret_data","type":"DEFINE","def":"ret_data_size"}
 			]
+		}
+		"index":
+		{
+			"flag":"INDEX",
+			"elemlist":"retval,ret_data_size,ret_data"
 		}
 	}	
 }
