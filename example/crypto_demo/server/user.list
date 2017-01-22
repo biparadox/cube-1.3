@@ -1,0 +1,20 @@
+{
+	"type":"CRYPTO_DEMO",
+	"subtype":"LOGIN_INFO"
+}
+{
+	"user":"zhaowen",
+	"passwd":"123"
+}
+{
+	"user":"zhangle",
+	"passwd":"123"
+}
+{
+	"user":"meibenshan",
+	"passwd":"123"
+}
+{
+	"user":"cuizhitong",
+	"passwd":"123"
+}
