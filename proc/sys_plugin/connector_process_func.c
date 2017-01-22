@@ -17,6 +17,7 @@
 #include "crypto_func.h"
 #include "message.h"
 #include "connector.h"
+#include "ex_module.h"
 #include "connector_value.h"
 #include "connector_process_func.h"
 
@@ -643,9 +644,9 @@ int proc_conn_start(void * sub_proc,void * para)
 	struct timeval conn_val;
 	conn_val.tv_usec=time_val.tv_usec;
 
-	sub_proc_pointer = ex_module_getpointer(sub_proc,&context);
-	if(ret<0)
-		return ret;
+	sub_proc_pointer = ex_module_getpointer(sub_proc);
+	if(sub_proc_pointer==NULL)
+		return -EINVAL;
 
 	struct tcloud_connector_hub * hub = sub_proc_pointer->hub;
 	if((hub==NULL) || IS_ERR(hub))
@@ -732,7 +733,8 @@ int proc_conn_start(void * sub_proc,void * para)
 						
 						message_head=message_get_head(message_box);
 
-						if(strncmp(message_head->record_type,"SYNI",4)==0)
+						if((message_head->record_type==DTYPE_MESSAGE)
+							&&(message_head->record_subtype==SUBTYPE_CONN_SYNI))
 						// do the handshake	
 						{
 							void * message=build_client_ack_message(message_box,local_uuid,proc_name,recv_conn);
@@ -765,7 +767,8 @@ int proc_conn_start(void * sub_proc,void * para)
 						message_head=message_get_head(message_box);
 
 						// first: finish the handshake
-						if(strncmp(message_head->record_type,"ACKI",4)==0)
+						if((message_head->record_type==DTYPE_MESSAGE)
+							&&(message_head->record_subtype==SUBTYPE_CONN_ACKI))
 						{
 							ret=receive_local_client_ack(message_box,recv_conn,hub);
 							ex_module_sendmsg(sub_proc,message_box);
@@ -802,13 +805,13 @@ int proc_conn_start(void * sub_proc,void * para)
 			switch(message_head->receiver_uuid[0])
 			{
 				case	'@':  // receiver_uuid is receiver's name
-					strncpy(buffer,message_head->receiver_uuid+1,DIGEST_SIZE*2-1);
+					strncpy(buffer,message_head->receiver_uuid+1,DIGEST_SIZE-1);
 					send_conn=hub_get_connector_byreceiver(sub_proc_pointer->hub,NULL,
 						buffer,NULL);	
 					break;
 
 				case	':':  // receiver_uuid is connector's name
-					strncpy(buffer,message_head->receiver_uuid+1,DIGEST_SIZE*2-1);
+					strncpy(buffer,message_head->receiver_uuid+1,DIGEST_SIZE-1);
 					send_conn=hub_get_connector(sub_proc_pointer->hub,buffer);	
 					break;
 				case    '\0':

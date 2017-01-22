@@ -3,7 +3,7 @@
 
 enum  crypto_demo_type
 {
-	DTYPE_CRYPTO_DEMO=0x1001;
+	DTYPE_CRYPTO_DEMO=0x1001
 };
 enum crypto_demo_subtype
 {

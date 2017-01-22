@@ -17,7 +17,7 @@
 				{"name":"service","type":"ESTRING","size":64},
 				{"name":"server_addr","type":"ESTRING","size":256},
 				{"name":"flags","type":"INT"},
-				{"name":"nonce","type":"STRING","size":32},
+				{"name":"nonce","type":"BINDATA","size":32},
 			]
 		},
 		"index":

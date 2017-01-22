@@ -65,11 +65,11 @@ int proc_echo_message(void * sub_proc,void * message)
 	int i;
 	int ret;
 	printf("begin proc echo \n");
-	struct message_box * msg_box=message;
+
 	type=message_get_type(message);
 	subtype=message_get_subtype(message);
 
-	struct message_box * new_msg;
+	void * new_msg;
 	void * record;
 	new_msg=message_create(type,subtype,message);
 	

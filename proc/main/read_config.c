@@ -445,4 +445,3 @@ int read_main_cfg(void * lib_para_struct,void * root_node)
     }
     return ret;
 }
-

@@ -90,9 +90,9 @@ void * build_client_ack_message(void * message_box,char * local_uuid,char * proc
 	client_ack=malloc(sizeof(struct connect_ack));
 	if(client_ack==NULL)
 		return -ENOMEM;
-	server_syn=malloc(sizeof(struct connect_syn));
-	if(server_syn==NULL)
-		return -ENOMEM;
+//	server_syn=malloc(sizeof(struct connect_syn));
+//	if(server_syn==NULL)
+//		return -ENOMEM;
 
 	Memset(client_ack,0,sizeof(struct connect_ack));
 		// monitor send a new image message

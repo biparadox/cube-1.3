@@ -205,7 +205,7 @@ int message_record_init(void * message)
         return 0;
 }
 
-int message_load_record_template(void * message)
+void * message_load_record_template(void * message)
 {
         struct message_box * msg_box=message;
         MSG_HEAD * message_head;
@@ -213,7 +213,8 @@ int message_load_record_template(void * message)
 	message_head=&(msg_box->head);
 	if(msg_box->record_template!=NULL)
 		return msg_box->record_template;
-	return memdb_get_template(message_head->record_type,message_head->record_subtype);
+	msg_box->record_template= memdb_get_template(message_head->record_type,message_head->record_subtype);
+	return msg_box->record_template;
 
 }
 
@@ -802,9 +803,8 @@ int message_load_record(void * message)
     // choose the record's type
     if(msg_box->record_template==NULL)
     {
-        ret= message_load_record_template(message);
-        if(ret!=0)
-            return ret;
+        if(!message_load_record_template(message))
+            return -EINVAL;
     }
 
 
@@ -1780,7 +1780,7 @@ int message_get_record(void * message,void ** msg_record, int record_no)
 	if(msg_box->precord[record_no]==NULL)
 	{
 
-		ret=Galloc0(&(msg_box->precord[record_no]),msg_box->record_template);
+		ret=Galloc0(&(msg_box->precord[record_no]),struct_size(msg_box->record_template));
 		if(ret<0)
 			return ret;
 		if(msg_box->precord[record_no]==NULL)

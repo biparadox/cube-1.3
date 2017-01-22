@@ -233,7 +233,6 @@ int main(int argc,char **argv)
 
     ex_module_init(conn_proc,connector_config_file);
     add_ex_module(conn_proc);
-    ex_module_start(conn_proc,NULL);
 
     // init the router proc	
     strcpy(namebuffer,sys_plugin);
