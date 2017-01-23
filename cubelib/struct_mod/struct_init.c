@@ -11,12 +11,12 @@
 static struct InitElemInfo_struct InitElemInfo [] =
 {
 	{CUBE_TYPE_STRING,&string_convert_ops,ELEM_ATTR_VALUE,-1},
-	{CUBE_TYPE_ESTRING,&estring_convert_ops,ELEM_ATTR_VALUE|ELEM_ATTR_POINTER,0},
+	{CUBE_TYPE_ESTRING,&estring_convert_ops,ELEM_ATTR_VALUE|ELEM_ATTR_POINTER,1},
 	{CUBE_TYPE_BINDATA,&bindata_convert_ops,0,-1},
-	{CUBE_TYPE_DEFINE,&define_convert_ops,ELEM_ATTR_POINTER|ELEM_ATTR_DEFINE,0},
+	{CUBE_TYPE_DEFINE,&define_convert_ops,ELEM_ATTR_POINTER|ELEM_ATTR_DEFINE,1},
 	{CUBE_TYPE_UUID,&uuid_convert_ops,0,DIGEST_SIZE},
-	{CUBE_TYPE_UUIDARRAY,&uuidarray_convert_ops,ELEM_ATTR_POINTER|ELEM_ATTR_ARRAY,0},
-	{CUBE_TYPE_DEFUUIDARRAY,&defuuidarray_convert_ops,ELEM_ATTR_POINTER|ELEM_ATTR_ARRAY|ELEM_ATTR_DEFINE,0},
+	{CUBE_TYPE_UUIDARRAY,&uuidarray_convert_ops,ELEM_ATTR_POINTER|ELEM_ATTR_ARRAY,DIGEST_SIZE},
+	{CUBE_TYPE_DEFUUIDARRAY,&defuuidarray_convert_ops,ELEM_ATTR_POINTER|ELEM_ATTR_ARRAY|ELEM_ATTR_DEFINE,DIGEST_SIZE},
 	{CUBE_TYPE_DEFNAMELIST,&defnamelist_convert_ops,ELEM_ATTR_POINTER|ELEM_ATTR_DEFINE|ELEM_ATTR_ARRAY,sizeof(void *)+sizeof(int)},
 	{CUBE_TYPE_INT,&int_convert_ops,ELEM_ATTR_VALUE|ELEM_ATTR_NUM,sizeof(int)},
 	{CUBE_TYPE_UCHAR,&int_convert_ops,ELEM_ATTR_VALUE|ELEM_ATTR_NUM,sizeof(char)},
@@ -681,79 +681,66 @@ int  _elem_set_bin_value(void * addr,void * data,void * elem)
 	return _elem_process_func(addr,data,elem,&myfuncs);
 }
 
-int _elem_clone_deffunc(void * addr, void * clone,void * elem)
+int _elem_clone_value(void * addr, void * clone,void * elem)
 {
 	int ret;
 	void * elem_clone;
 	void * elem_src;
 	struct elem_template * curr_elem=elem;
+	enum cube_struct_elem_type type;
+	type=curr_elem->elem_desc->type;
 	
 	// get this elem's addr
 
 	elem_src=_elem_get_addr(elem,addr);
 	elem_clone=_elem_get_addr(elem,clone);
-	// if this func is empty, we use default func
-	if((ret=_elem_get_bin_length(*(char **)elem_src,elem,addr))<0)
-		return ret;
-	if(_ispointerelem(curr_elem->elem_desc->type))
+
+	if(_ispointerelem(type))
 	{
+		int unitsize=get_fixed_elemsize(type);
+		if(unitsize<=0)
+			unitsize=1;
+		if(_isdefineelem(type))
+		{
+			int def_value=_elem_get_defvalue(curr_elem,addr);
+			if(def_value<0)
+				return def_value;
+			ret=unitsize*def_value;
+			int tempret=Palloc0(elem_clone,ret);
+			if(*(BYTE **)elem_clone==NULL)	
+				return -ENOMEM;			
+			Memcpy(*(BYTE **)elem_clone,*(BYTE **)elem_src,ret);
+			return ret;
+		}
+		else if(_isarrayelem(type))
+		{
+			ret=unitsize*curr_elem->size;
+			int tempret=Palloc0(elem_clone,ret);
+			if(*(BYTE **)elem_clone==NULL)	
+				return -ENOMEM;			
+			Memcpy(*(BYTE **)elem_clone,*(BYTE **)elem_src,ret);
+			return ret;
+		}
+		else
+		{
+			if((ret=_elem_get_bin_length(*(char **)elem_src,elem,addr))<0)
+				return ret;
+		}
 		int tempret=Palloc0(elem_clone,ret);
-		if(tempret<0)
-			return tempret;
-		
-		Strncpy(*(char **)elem_clone,*(char **)elem_src,DIGEST_SIZE*32);
+		if(*(BYTE **)elem_clone==NULL)	
+			return -ENOMEM;			
+		Memcpy(*(BYTE **)elem_clone,*(BYTE **)elem_src,ret);
 	}
 	else
-		Memcpy(elem_clone,elem_src,ret);
-	return ret;
-}
-
-int _elem_clone_defarray_init(void * addr,void * clone,void * elem,int def_value)
-{
-	int ret;
-	struct elem_template * curr_elem=elem;
-	int addroffset=get_fixed_elemsize(curr_elem->elem_desc->type);
-	if(addroffset<0)
-		return addroffset;
-	void * clone_addr= _elem_get_addr(elem,clone);
-	ret=Palloc0(clone_addr,addroffset*def_value);
-	return ret;
-}
-
-int _elem_clone_defarray(void * addr,void * clone, void * elem,void * ops,int def_value)
-{
-	int (*elem_ops)(void * addr,void * data,void * elem)=ops;		
-	int offset=0;
-	int i;
-	int ret;
-	struct elem_template * curr_elem=elem;
-	int addroffset=get_fixed_elemsize(curr_elem->elem_desc->type);
-	if(addroffset<0)
-		return addroffset;
-	void * clone_addr= _elem_get_addr(elem,clone);
-	
-	for(i=0;i<def_value;i++)
 	{
-		ret=elem_ops(*(void **)addr+addroffset*i,*(void **)clone_addr+addroffset*i,curr_elem);
-		if(ret<0)
+		// if this func is empty, we use default func
+		if((ret=_elem_get_bin_length(*(char **)elem_src,elem,addr))<0)
 			return ret;
+		Memcpy(elem_clone,elem_src,ret);
 	}
 	return ret;
 }
 
-
-int  _elem_clone_value(void * addr,void * clone,void * elem)
-{
-	struct elem_deal_ops myfuncs;
-	ELEM_OPS * elem_ops=_elem_get_ops(elem);
-	myfuncs.default_func=&_elem_clone_deffunc;
-	myfuncs.elem_ops=elem_ops->clone_elem;
-	myfuncs.def_array_init=_elem_clone_defarray_init;
-	myfuncs.def_array=_elem_clone_defarray;
-
-	return _elem_process_func(addr,clone,elem,&myfuncs);
-}
-	
 int _elem_compare_deffunc(void * addr, void * dest,void * elem)
 {
 	int ret;

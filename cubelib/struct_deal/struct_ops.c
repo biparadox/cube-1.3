@@ -244,7 +244,7 @@ int defuuidarray_get_text_value(void * addr, void * data,void * elem_template)
 	BYTE * digest=addr;
 	int offset=0;
 	_digest_to_uuid(digest,text+offset);
-	offset+=DIGEST_SIZE*2;
+	offset+=DIGEST_SIZE;
 
 	*(text+offset++)=',';
 	*(text+offset)=0;
