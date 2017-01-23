@@ -622,7 +622,7 @@ int router_set_local_route(void * message,void * policy)
 			ret=rule_get_target(rule,message,&target);
 			if(ret<0)
 				return ret;		
-			memcpy(msg_head->receiver_uuid,target,DIGEST_SIZE);
+			message_set_receiver(message,target);
 			msg_head->flag |=MSG_FLAG_LOCAL;
 			free(target);
 //			message_set_state(message,MSG_FLOW_LOCAL);
@@ -633,15 +633,7 @@ int router_set_local_route(void * message,void * policy)
 			ret=rule_get_target(rule,message,&target);
 			if(ret<0)
 				return ret;		
-//			if(Isvaliduuid(target))
-//			{
-//				memcpy(msg_head->receiver_uuid,target,DIGEST_SIZE*2);
-//			}
-//			else
-//			{
-				msg_head->receiver_uuid[0]='@';
-				strncpy(msg_head->receiver_uuid+1,target,DIGEST_SIZE);
-//			}	
+			message_set_receiver(message,target);
 			free(target);
 			message_set_state(message,MSG_FLOW_DELIVER);
 			msg_head->flag &=~MSG_FLAG_LOCAL;
@@ -651,8 +643,7 @@ int router_set_local_route(void * message,void * policy)
 			ret=rule_get_target(rule,message,&target);
 			if(ret<0)
 				return ret;		
-			msg_head->receiver_uuid[0]=':';
-			strncpy(msg_head->receiver_uuid+1,target,DIGEST_SIZE*2);
+			message_set_receiver(message,target);
 			free(target);
 			message_set_state(message,MSG_FLOW_DELIVER);
 			msg_head->flag &=~MSG_FLAG_LOCAL;
@@ -1900,7 +1891,30 @@ int router_set_next_jump(void * message)
 	}
 	return 1;	
 }
-int route_push_site(void * message,char * name)
+
+int route_push_site_str(void * message,char * name)
+{
+	int len;
+	int ret;
+	BYTE buffer[DIGEST_SIZE];
+	Memset(buffer,0,DIGEST_SIZE);
+	len=Strnlen(name,DIGEST_SIZE*2);
+	if(len==DIGEST_SIZE*2)
+	{
+		ret=digest_to_uuid(name,buffer);
+		if(ret<0)
+			return ret;
+	}
+	else
+	{
+		if(len>DIGEST_SIZE/2)
+			return -EINVAL;
+		Strncpy(buffer,name,DIGEST_SIZE/2);
+	}
+	return route_push_site(message,buffer);	
+}
+
+int route_push_site(void * message,BYTE * name)
 {
 	struct expand_flow_trace * flow_trace;
 	int ret;
@@ -1919,21 +1933,18 @@ int route_push_site(void * message,char * name)
 		flow_trace->record_num=1;
 		flow_trace->type=DTYPE_MSG_EXPAND;
 		flow_trace->subtype=SUBTYPE_FLOW_TRACE;
-		flow_trace->trace_record=dup_str(name,DIGEST_SIZE*2);
+		flow_trace->trace_record=Talloc0(DIGEST_SIZE*flow_trace->record_num);
+		Memcpy(flow_trace->trace_record,name,DIGEST_SIZE);
 		message_add_expand(message,flow_trace);	
 	}
 	else
 	{
-		int curr_offset=flow_trace->record_num*DIGEST_SIZE*2;
+		int curr_offset=flow_trace->record_num*DIGEST_SIZE;
 		flow_trace->record_num++;
-		char * buffer=malloc(curr_offset+DIGEST_SIZE*2);
-		memcpy(buffer,flow_trace->trace_record,curr_offset);
-		len=strlen(name);
-		if(len<DIGEST_SIZE*2)
-			memcpy(buffer+curr_offset,name,len+1);
-		else
-			memcpy(buffer+curr_offset,name,DIGEST_SIZE*2);
+		char * buffer=malloc(curr_offset+DIGEST_SIZE);
+		Memcpy(buffer,flow_trace->trace_record,curr_offset);
 		free(flow_trace->trace_record);
+		Memcpy(buffer+curr_offset,name,DIGEST_SIZE);
 		flow_trace->trace_record=buffer;
 		message_replace_define_expand(message,flow_trace);
 	}

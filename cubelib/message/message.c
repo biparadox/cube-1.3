@@ -986,7 +986,7 @@ const char * message_get_sender(void * message)
 }
 
 
-int message_set_sender(void * message,const char * sender_uuid)
+int message_set_sender(void * message,BYTE * sender)
 {
 	struct message_box * msg_box;
 	int ret;
@@ -994,15 +994,21 @@ int message_set_sender(void * message,const char * sender_uuid)
 	if(message==NULL)
 		return -EINVAL;
 	msg_box=(struct message_box *)message;
-	len=strlen(sender_uuid);
-	if(len<DIGEST_SIZE)
-		Memcpy(&(msg_box->head.sender_uuid),sender_uuid,len+1);
-	else
-		Memcpy(&(msg_box->head.sender_uuid),sender_uuid,DIGEST_SIZE);
+	Memset(msg_box->head.sender_uuid,0,DIGEST_SIZE);
+	len=strlen(sender);
+	if(len==DIGEST_SIZE*2)
+	{
+		ret=uuid_to_digest(sender,msg_box->head.sender_uuid);
+		if(ret<0)
+			return ret;
+	}
+	else if(len>DIGEST_SIZE/2)
+		return -EINVAL;
+	Strncpy(msg_box->head.sender_uuid,sender,DIGEST_SIZE/2);
 	return 0;
 }
 
-int message_set_receiver(void * message,const char * receiver_uuid)
+int message_set_sender_uuid(void * message,BYTE * sender_uuid)
 {
 	struct message_box * msg_box;
 	int ret;
@@ -1010,14 +1016,60 @@ int message_set_receiver(void * message,const char * receiver_uuid)
 	if(message==NULL)
 		return -EINVAL;
 	msg_box=(struct message_box *)message;
-	len=strlen(receiver_uuid);
-	if(len<DIGEST_SIZE)
-		Memcpy(&(msg_box->head.receiver_uuid),receiver_uuid,len+1);
+	Memset(msg_box->head.sender_uuid,0,DIGEST_SIZE);
+	if(Isstrinuuid(sender_uuid))
+	{
+		Strncpy(msg_box->head.sender_uuid,sender_uuid,DIGEST_SIZE/2);
+	}
 	else
-		Memcpy(&(msg_box->head.receiver_uuid),receiver_uuid,DIGEST_SIZE);
+	{
+		Memcpy(msg_box->head.sender_uuid,sender_uuid,DIGEST_SIZE);
+	}
 	return 0;
 }
 
+int message_set_receiver(void * message, BYTE * receiver)
+{
+	struct message_box * msg_box;
+	int ret;
+	int len;
+	if(message==NULL)
+		return -EINVAL;
+	msg_box=(struct message_box *)message;
+	Memset(msg_box->head.receiver_uuid,0,DIGEST_SIZE);
+	len=strlen(receiver);
+	
+	if(len==DIGEST_SIZE*2)
+	{
+		ret=uuid_to_digest(receiver,msg_box->head.receiver_uuid);
+		if(ret<0)
+			return ret;
+	}
+	else if(len>DIGEST_SIZE/2)
+		return -EINVAL;
+	Strncpy(msg_box->head.receiver_uuid,receiver,DIGEST_SIZE/2);
+	return 0;
+}
+
+int message_set_receiver_uuid(void * message, BYTE * receiver_uuid)
+{
+	struct message_box * msg_box;
+	int ret;
+	if(message==NULL)
+		return -EINVAL;
+	msg_box=(struct message_box *)message;
+	Memset(msg_box->head.receiver_uuid,0,DIGEST_SIZE);
+	
+	if(Isstrinuuid(receiver_uuid))
+	{
+		Strncpy(msg_box->head.receiver_uuid,receiver_uuid,DIGEST_SIZE/2);
+	}
+	else
+	{
+		Memcpy(msg_box->head.receiver_uuid,receiver_uuid,DIGEST_SIZE);
+	}
+	return 0;
+}
 /*
 int message_set_head(void * message,char * item_name, void * value)
 {

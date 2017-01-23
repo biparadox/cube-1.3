@@ -303,6 +303,8 @@ int proc_router_start(void * sub_proc,void * para)
 			
 			//duplicate active message's info and init policy
 			router_dup_activemsg_info(message);
+			message_set_sender(message,origin_proc);
+
 			MSG_HEAD * msg_head;
 			msg_head=message_get_head(message);
 			msg_policy=NULL;
@@ -408,7 +410,7 @@ int proc_router_start(void * sub_proc,void * para)
 						if(dispatch_policy_gettype(msg_policy)==MSG_FLOW_QUERY) 
 						{
 							// if this message's flow is query, we should push it into the stack
-							route_push_site(message,origin_proc);
+							route_push_site_str(message,origin_proc);
 						}
 						 
 						ret=router_set_local_route(message,msg_policy);

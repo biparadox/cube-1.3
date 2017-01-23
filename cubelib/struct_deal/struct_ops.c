@@ -164,14 +164,31 @@ int _uuid_to_digest(char * uuid,BYTE * digest)
 
 int uuid_get_text_value(void * addr, void * data,void * elem_template)
 {
+
+	if(Isstrinuuid(addr))
+	// Now it is a name
+	{
+		Memset(data,0,DIGEST_SIZE);
+		Strncpy(data,addr,DIGEST_SIZE/2);	
+		return Strlen(data);
+	}
+	
 	return _digest_to_uuid(addr,data);
 }
 
-
 int uuid_set_text_value(void * addr, char * text,void * elem_template)
 {
+	if(Strnlen(text,DIGEST_SIZE*2)<DIGEST_SIZE/2)
+	{
+		// Now it is a name
+		Memset(addr,0,DIGEST_SIZE);
+		Strncpy(addr,text,DIGEST_SIZE/2);	
+		return DIGEST_SIZE;
+		
+	}
 	return _uuid_to_digest(text,addr);
 }
+
 int uuidarray_get_text_value(void * addr, void * data,void * elem_template)
 {
 	int i,j,retval;

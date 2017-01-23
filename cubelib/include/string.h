@@ -33,6 +33,7 @@ static inline int  Ischarinset(BYTE char_value,char * set)
 }
 
 int   Isvaliduuid(char * uuid);
+int   Isstrinuuid(BYTE * uuid);
 
 int bitmap_set(char * bitmap,int site);
 int bitmap_clear(char * bitmap,int site);

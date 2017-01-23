@@ -368,6 +368,20 @@ int Isvaliduuid(char * uuid)
 	}	
 	return 1;
 }
+
+// if a DIGEST_SIZE's bin array's last half are all zero, then it should be a string
+int Isstrinuuid(BYTE * uuid)
+{
+
+	BYTE compvalue[DIGEST_SIZE/2];
+	Memset(compvalue,0,DIGEST_SIZE/2);
+	
+	if(Memcmp(compvalue,uuid+DIGEST_SIZE/2,DIGEST_SIZE/2)==0)
+		return 1;
+	return 0;
+}
+
+
 int bitmap_set(char * bitmap, int site)
 {
 	unsigned char c=1;
