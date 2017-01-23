@@ -687,13 +687,14 @@ int  message_read_data(void * message,void * blob,int data_size)
 		msg_box->current_offset=0;
                 current_offset=msg_box->head.record_size;
 		int i;
+                __message_alloc_record_site(msg_box);
+                __message_alloc_expand_site(msg_box);
 		for(i=0;i<msg_box->head.expand_num;i++)
 		{
 			msg_box->expand[i]=data+current_offset;
 			msg_box->expand_size[i]=*(int *)(data+current_offset);
 			current_offset+=msg_box->expand_size[i];
 		}
-                __message_alloc_record_site(msg_box);
                 msg_box->current_offset=0;
                 msg_box->box_state=MSG_BOX_REBUILDING;
 		return new_size;

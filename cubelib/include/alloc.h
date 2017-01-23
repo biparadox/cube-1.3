@@ -19,6 +19,7 @@ int Galloc0(void ** pointer,int size);
 //int Ggetfreecount(void);
 
 void * Talloc(int size);
+void * Talloc0(int size);
 //void Treset(void);
 //void Tclear(void);
 //int  Tisinmem(void *);

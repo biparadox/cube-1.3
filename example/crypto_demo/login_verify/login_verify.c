@@ -115,6 +115,7 @@ int proc_verify(void * sub_proc,void * message)
 			return_data->retval=1;
 		}
 	}
+	return_data->ret_data_size=Strlen(return_data->ret_data)+1;
 	message_add_record(new_msg,return_data);
 	ex_module_sendmsg(sub_proc,new_msg);
 	return ret;

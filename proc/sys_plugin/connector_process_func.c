@@ -637,8 +637,8 @@ int proc_conn_start(void * sub_proc,void * para)
 	char proc_name[DIGEST_SIZE*2+1];
 	struct connector_proc_pointer * sub_proc_pointer;
 	
-//	ret=proc_share_data_getvalue("uuid",local_uuid);
-//	ret=proc_share_data_getvalue("proc_name",proc_name);
+	ret=proc_share_data_getvalue("uuid",local_uuid);
+	ret=proc_share_data_getvalue("proc_name",proc_name);
 
 
 	struct timeval conn_val;
@@ -776,9 +776,11 @@ int proc_conn_start(void * sub_proc,void * para)
 							continue;
 						}
 						// check if this message is for you or for others
-						printf("channel receive %4s message from conn %s!\n",message_head->record_type,connector_getname(recv_conn));
+						printf("channel receive (%d %d) message from conn %s!\n",message_head->record_type,
+							message_head->record_subtype,connector_getname(recv_conn));
 						ex_module_sendmsg(sub_proc,message_box);
-						printf("client forward %s message to main proc!\n",message_head->record_type);
+						printf("client forward (%d %d) message to main proc!\n",message_head->record_type,
+							message_head->record_subtype);
 						continue;		
 
 					}	
@@ -825,10 +827,11 @@ int proc_conn_start(void * sub_proc,void * para)
 			if(send_conn!=NULL)
 			{
 				ret=message_send(message_box,send_conn);
-				printf("send %4s message %d to conn %s!\n",message_head->record_type,ret,connector_getname(send_conn));
+				printf("send (%d  %d)message %d to conn %s!\n",message_head->record_type,message_head->record_subtype,
+					ret,connector_getname(send_conn));
 			}
 			else
-				printf("send %4s message failed: no conn!\n",message_head->record_type);
+				printf("send (%d %d) message failed: no conn!\n",message_head->record_type,message_head->record_subtype);
 
 		}	
 

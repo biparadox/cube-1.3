@@ -494,10 +494,30 @@ int int_get_text_value(void * elem,char * text,void * elem_attr)
 	long long value=0;
 	int len;
 	char buffer[DIGEST_SIZE];
+	char *pch=text;
+
 	Memcpy(&value,elem,curr_elem->size);
+	if(curr_elem->size==8)
+	{
+		if(value<0)
+		{
+			*pch++='-';
+			value=-value;
+		}
+	}
+	else
+	{
+		long long comp_value=((long long)1)<<(curr_elem->size*8-1);
+		if(value>comp_value)
+		{
+			comp_value<<=1;
+			value=comp_value-value;
+			*pch++='-';
+		}
+	}	
+
 	i=1;
 	len=2;
-	char *pch=text;
 	while(value/i)
 	{
 		i*=10;
