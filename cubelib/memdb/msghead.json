@@ -39,7 +39,7 @@
 			{"name":"data_size","type":"INT","size":4},
 			{"name":"type","type":"TYPE"},
 			{"name":"subtype","type":"SUBTYPE","def":"record_type"},
-			{"name":"BIN_DATA","type":"DEFINE","def":"data_size"},
+			{"name":"BIN_DATA","type":"DEFINE","def":"data_size"}
 		]
 	}
 }
@@ -48,7 +48,7 @@
 	"head":
 	{
 		"name":"msg_head",
-		"type":"RECORDTYPE",
+		"type":"RECORDTYPE"
 	},
 	"record":
 	{
@@ -66,7 +66,7 @@
 	"head":
 	{
 		"name":"msg_expand",
-		"type":"RECORDTYPE",
+		"type":"RECORDTYPE"
 	},
 	"record":
 	{

@@ -1,4 +1,4 @@
-dirs= string alloc basefunc json crypto struct_deal memdb message dispatch ex_module connector
+dirs= string alloc basefunc json crypto struct_mod memdb message dispatch ex_module connector
 all:
 	$(foreach N,$(dirs),make -C $(N);)
 clean:

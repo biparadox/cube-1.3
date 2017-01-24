@@ -818,6 +818,7 @@ int _elem_get_text_deffunc(void * addr,void * data,void * elem)
 	return ret;
 
 }
+/*
 int  _elem_get_text_value(void * addr,char * text,void * elem)
 {
 	struct elem_deal_ops myfuncs;
@@ -828,6 +829,119 @@ int  _elem_get_text_value(void * addr,char * text,void * elem)
 	myfuncs.def_array=_elem_to_text_defarray;
 
 	return _elem_process_func(addr,text,elem,&myfuncs);
+}
+*/
+
+int _elem_get_text_value(void * addr,char * text,void * elem)
+{
+	ELEM_OPS * elem_ops=_elem_get_ops(elem);
+	int ret;
+	void * elem_src;
+	struct elem_template * curr_elem=elem;
+	enum cube_struct_elem_type type;
+	int repeat_num;
+	type=curr_elem->elem_desc->type;
+	int offset=0;
+	int i;	
+	int def_value;
+
+	// get this elem's addr
+
+	elem_src=_elem_get_addr(elem,addr);
+
+	if(_ispointerelem(type))
+	{
+		int unitsize=get_fixed_elemsize(type);
+		if(unitsize<=0)
+			unitsize=1;
+		if(_isdefineelem(type))
+		{
+			repeat_num=_elem_get_defvalue(curr_elem,addr);
+			if(repeat_num<0)
+				return repeat_num;
+		}
+		else
+		{
+			repeat_num=curr_elem->size;
+		}
+		if(_isarrayelem(type))
+		{
+			curr_elem->index=0;	
+			if(elem_ops->get_text_value!=NULL)
+			{
+				for(i=0;i<repeat_num;i++)
+				{
+					ret=elem_ops->get_text_value(*(BYTE **)elem_src+unitsize*i,text+offset,elem);
+					offset+=ret;
+					text[offset]=',';
+					offset++;
+				}
+				if(i>0)
+				{
+					text[--offset]='\0';
+				}
+				ret=offset;
+			}
+			else
+			{
+				for(i=0;i<repeat_num;i++)
+				{
+					ret=Strnlen(*(BYTE **)elem_src+unitsize*i,unitsize);
+					Strncpy(text+offset,*(BYTE **)elem_src+unitsize*i,unitsize);
+					offset+=ret;
+					text[offset]=',';
+					offset++;
+				}
+				if(i>0)
+				{
+					text[--offset]='\0';
+				}
+				ret=offset;
+			}
+		}
+		else 
+		{
+			if(elem_ops->get_text_value==NULL)
+			{
+				if(elem_ops->elem_get_length!=NULL)
+				{
+					ret=elem_ops->elem_get_length(*(BYTE **)elem_src,elem);
+					if(ret<0)
+						return ret;
+				}
+				else
+					ret=unitsize*repeat_num;
+				if(ret!=0)
+					Strncpy(text,*(BYTE **)elem_src,ret);
+				text[ret]='\0';
+				ret++;
+			}
+			else
+			{
+				ret=elem_ops->get_text_value(*(BYTE **)elem_src,text,elem);
+			}	
+		}
+	}
+	else
+	{
+		if(_isdefineelem(type))
+		{
+			def_value=_elem_get_defvalue(curr_elem,addr);
+			if(def_value<0)
+				return def_value;
+			curr_elem->index=def_value;
+		}
+		if(elem_ops->get_text_value!=NULL)
+			ret=elem_ops->get_text_value(elem_src,text,elem);
+		else
+		{
+			// if this func is empty, we use default func
+			if((ret=_elem_get_bin_length(*(char **)elem_src,elem,addr))<0)
+				return ret;
+			Memcpy(text,elem_src,ret);
+		}
+	}
+	return ret;
 }
 
 int _elem_set_text_deffunc(void * addr,void * data,void * elem)

@@ -54,14 +54,14 @@ struct proc_context
 	char *proc_name;
 	char *host_name;
 	int  state;
-};
+}__attribute__((packed));
 
 static struct struct_elem_attr proc_context_desc[]=
 {
 	{"uuid",CUBE_TYPE_UUID,DIGEST_SIZE,NULL,NULL},
-	{"proc_name",CUBE_TYPE_ESTRING,DIGEST_SIZE*2,NULL},
-	{"host_name",CUBE_TYPE_ESTRING,DIGEST_SIZE*2,NULL},
-	{"state",CUBE_TYPE_ENUM,0,NULL,NULL},
+	{"proc_name",CUBE_TYPE_ESTRING,DIGEST_SIZE,NULL},
+	{"host_name",CUBE_TYPE_ESTRING,DIGEST_SIZE,NULL},
+	{"state",CUBE_TYPE_INT,0,NULL,NULL},
 	{NULL,CUBE_TYPE_ENDDATA,0,NULL}
 };
 

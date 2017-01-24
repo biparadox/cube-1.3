@@ -59,6 +59,8 @@ int main() {
 
 	void * ex_module;
 	int ret;
+	struct_deal_init();
+	memdb_init();
 	ex_module_list_init();
 	ex_module_create("test",0,NULL,&ex_module);
 
