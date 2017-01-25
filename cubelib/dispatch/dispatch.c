@@ -414,7 +414,7 @@ int dispatch_match_message(void * policy,void * message)
 
 int rule_get_target(void * router_rule,void * message,void **result)
 {
-    char * target;
+    BYTE * target;
     int ret;
     ROUTE_RULE * rule= (ROUTE_RULE *)router_rule;
     *result=NULL;
@@ -422,13 +422,33 @@ int rule_get_target(void * router_rule,void * message,void **result)
 	    case ROUTE_TARGET_NAME:
 	    case ROUTE_TARGET_PORT:
 	    case ROUTE_TARGET_LOCAL:
-		    target=dup_str(rule->target_name,DIGEST_SIZE*2);
+		    target=dup_str(rule->target_name,DIGEST_SIZE);
 		    break;
 	    case ROUTE_TARGET_UUID:
-		    target=dup_str(rule->target_name,DIGEST_SIZE*2);
+		    ret=Strnlen(rule->target_name,DIGEST_SIZE*2);
+		    target=Talloc0(DIGEST_SIZE);
+		    if(ret ==DIGEST_SIZE*2)
+		    {
+			if(target==NULL)
+				return -ENOMEM;
+			ret=uuid_to_digest(rule->target_name,target);
+			if(ret<0)
+				return ret;
+		    }		
+		    else if(ret<DIGEST_SIZE/2)
+		    {
+		    	Memcpy(target,rule->target_name,ret);
+		    }
 		    break;
 	    case ROUTE_TARGET_CONN:
-		    target=dup_str(rule->target_name,DIGEST_SIZE*2);
+		    target=Talloc0(DIGEST_SIZE);
+		    if(target==NULL)
+			return -ENOMEM;	
+		    ret=Strnlen(rule->target_name,DIGEST_SIZE*2);
+		    if(ret>DIGEST_SIZE/2-1)
+			return -EINVAL;
+		    target[0]=':';
+		    Memcpy(target+1,rule->target_name,ret);
 		    break;
 	    case ROUTE_TARGET_RECORD:
 		   {

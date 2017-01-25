@@ -126,6 +126,13 @@ int main() {
 	printf("%s \n",text);
 	printf("%s \n",text1);
 
+	ret=struct_2_blob(&test_trace,buffer,struct_template);
+	printf ("blob size is %d \n",ret);
+	dup2=Talloc0(struct_size(struct_template));
+	ret=blob_2_struct(buffer,dup2,struct_template);
+	ret=struct_2_json(dup2,text,struct_template);
+	printf("%s \n",text);
+
 
     	free_struct_template(struct_template);
 	return 0;

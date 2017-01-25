@@ -403,8 +403,7 @@ int proc_router_start(void * sub_proc,void * para)
 							return ret;
 						if(msg_policy==NULL)
 						{
-							proc_audit_log(message);
-							printf("message (%s) is discarded in FINISH state!\n",message_get_typestr(message));
+							msg_head->flow=MSG_FLOW_FINISH;
 							break;
 						}
 						if(dispatch_policy_gettype(msg_policy)==MSG_FLOW_QUERY) 
@@ -440,8 +439,6 @@ int proc_router_start(void * sub_proc,void * para)
 							}
 							if(msg_policy==NULL)
 							{
-								proc_audit_log(message);
-								printf("message (%s) is discarded in FINISH state!\n",message_get_typestr(message));
 								msg_head->flow=MSG_FLOW_FINISH;
 								break;
 							}
@@ -491,8 +488,6 @@ int proc_router_start(void * sub_proc,void * para)
 							}
 							if(msg_policy==NULL)
 							{
-								proc_audit_log(message);
-								printf("message (%s) is discarded in FINISH state!\n",message_get_typestr(message));
 								msg_head->flow=MSG_FLOW_FINISH;
 								break;
 							}
@@ -511,7 +506,11 @@ int proc_router_start(void * sub_proc,void * para)
 
 
 				if(msg_head->flow==MSG_FLOW_FINISH)
+				{
+					proc_audit_log(message);
+					printf("message (%s) is discarded in FINISH state!\n",message_get_typestr(message));
 					continue;
+				}
 
 				if(msg_policy!=NULL)
 				{
