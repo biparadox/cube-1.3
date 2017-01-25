@@ -57,6 +57,8 @@ void * memdb_store(void * data,int type,int subtype,char * name);
 int  memdb_store_record(void * record);
 void * memdb_get_first(int type,int subtype);
 void * memdb_get_next(int type,int subtype);
+void * memdb_get_first_record(int type,int subtype);
+void * memdb_get_next_record(int type,int subtype);
 void * memdb_remove(void * uuid,int type,int subtype);
 int memdb_remove_byname(char * name,int type,int subtype);
 int memdb_remove_record(void * record);

@@ -468,6 +468,7 @@ int proc_router_start(void * sub_proc,void * para)
 									router_pop_site(message);
 									printf("begin to response query message");
 									msg_head->flag|=MSG_FLAG_RESPONSE;
+									msg_head->flag&=~MSG_FLAG_LOCAL;
 									msg_head->ljump--;
 									break;
 								}
@@ -543,7 +544,8 @@ int proc_router_start(void * sub_proc,void * para)
 						msg_head->rjump++;
 						if(msg_head->flow==MSG_FLOW_QUERY)
 						{
-							route_push_site(message,conn_uuid);
+							if(!(msg_head->flag &MSG_FLAG_LOCAL))
+								route_push_site(message,conn_uuid);
 						}
 					}
 					ret=router_find_aspect_policy(message,&aspect_policy,origin_proc);

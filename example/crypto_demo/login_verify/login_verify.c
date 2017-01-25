@@ -90,12 +90,12 @@ int proc_verify(void * sub_proc,void * message)
 	if(ret<0)
 		return ret;
 
-	lib_data=memdb_get_first(type,subtype);
+	lib_data=memdb_get_first_record(type,subtype);
 	while(lib_data!=NULL)
 	{
 		if(Strncmp(lib_data->user,login_data->user,DIGEST_SIZE)==0)
 			break;
-		lib_data=memdb_get_next(type,subtype);
+		lib_data=memdb_get_next_record(type,subtype);
 	}
 	if(lib_data==NULL)
 	{

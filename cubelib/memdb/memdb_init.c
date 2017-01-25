@@ -612,6 +612,15 @@ void * memdb_get_first(int type,int subtype)
 	return hashlist_get_first(db_list->record_db);
 }
 
+void * memdb_get_first_record (int type,int subtype)
+{
+	int ret;
+	DB_RECORD * dbrecord;
+	dbrecord=memdb_get_first(type,subtype);
+	if(dbrecord==NULL)
+		return NULL;
+	return dbrecord->record;
+}
 void * memdb_get_next(int type,int subtype)
 {
 	int ret;
@@ -622,6 +631,15 @@ void * memdb_get_next(int type,int subtype)
 	return hashlist_get_next(db_list->record_db);
 }
 
+void * memdb_get_next_record (int type,int subtype)
+{
+	int ret;
+	DB_RECORD * dbrecord;
+	dbrecord=memdb_get_next(type,subtype);
+	if(dbrecord==NULL)
+		return NULL;
+	return dbrecord->record;
+}
 
 
 void *  _get_dynamic_db_bytype(int type,int subtype)

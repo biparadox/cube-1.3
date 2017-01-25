@@ -675,56 +675,6 @@ int _elem_get_bin_value(void * addr,void * data,void * elem)
 	return ret;
 }
 
-int _elem_set_bin_deffunc(void * addr,void * data,void * elem)
-{
-	int ret;
-	void * elem_addr;
-	struct elem_template * curr_elem=elem;
-	
-	// get this elem's addr
-
-	elem_addr=_elem_get_addr(elem,addr);
-	// if this func is empty, we use default func
-	if((ret=_elem_get_bin_length(data,elem,addr))<0)
-		return ret;
-	if(_ispointerelem(curr_elem->elem_desc->type))
-	{
-		int tempret=Palloc0(elem_addr,ret);
-		if(tempret<0)
-			return tempret;
-		Memcpy(*(char **)elem_addr,data,ret);
-	}
-	else
-		Memcpy(elem_addr,data,ret);
-	return ret;
-
-}
-
-int _elem_set_bin_defarray(void * addr,void * text,void * elem,int def_value)
-{
-	int ret;
-	struct elem_template * curr_elem=elem;
-	int addroffset=get_fixed_elemsize(curr_elem->elem_desc->type);
-	if(addroffset<0)
-		return addroffset;
-	ret=Palloc0(addr,addroffset*def_value);
-	return ret;
-	
-}
-/*
-int  _elem_set_bin_value(void * addr,void * data,void * elem)
-{
-	struct elem_deal_ops myfuncs;
-	ELEM_OPS * elem_ops=_elem_get_ops(elem);
-	myfuncs.default_func=&_elem_set_bin_deffunc;
-	myfuncs.elem_ops=elem_ops->set_bin_value;
-	myfuncs.def_array_init=_elem_set_bin_defarray;
-	myfuncs.def_array=NULL;
-
-	return _elem_process_func(addr,data,elem,&myfuncs);
-}
-*/
-
 int _elem_set_bin_value(void * addr,void * data,void * elem)
 {
 	ELEM_OPS * elem_ops=_elem_get_ops(elem);

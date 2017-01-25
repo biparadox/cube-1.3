@@ -130,6 +130,7 @@ int find_ex_module(char * name,void ** ex_mod)
 	Record_List * record_list;
 	record_list=&(ex_module_list->head);
 	int ret;
+	*ex_mod=NULL;
 
 	pthread_rwlock_rdlock(&(ex_module_list->rwlock));
 	curr_head = find_elem_with_tag(record_list,
