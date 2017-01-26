@@ -146,7 +146,7 @@ int user_addr_store(void * sub_proc,void * message)
 	if(flow_trace->record_num<=0)
 		return -EINVAL;
 	trace_offset=DIGEST_SIZE*(flow_trace->record_num-1);
-
+/*
 	db_record=memdb_get_first(DTYPE_CRYPTO_DEMO,SUBTYPE_USER_ADDR);
 	while(db_record!=NULL)
 	{
@@ -155,8 +155,11 @@ int user_addr_store(void * sub_proc,void * message)
 			break;
 		db_record=memdb_get_next(DTYPE_CRYPTO_DEMO,SUBTYPE_USER_ADDR);
 	}
+*/
+	db_record=memdb_find_byname(login_data->user,DTYPE_CRYPTO_DEMO,SUBTYPE_USER_ADDR);
 	if(db_record!=NULL)
 	{
+		user_addr=(struct user_address *)db_record->record;
 		if(Memcmp(user_addr->addr,flow_trace->trace_record+trace_offset,DIGEST_SIZE)==0)
 			return 0;	
 		memdb_remove_record(db_record);
@@ -166,6 +169,6 @@ int user_addr_store(void * sub_proc,void * message)
 		return -ENOMEM;
 	Strncpy(user_addr->user,login_data->user,DIGEST_SIZE);
 	Memcpy(user_addr->addr,flow_trace->trace_record+trace_offset,DIGEST_SIZE);
-	memdb_store(user_addr,DTYPE_CRYPTO_DEMO,SUBTYPE_USER_ADDR,NULL);
+	memdb_store(user_addr,DTYPE_CRYPTO_DEMO,SUBTYPE_USER_ADDR,login_data->user);
 	return 1;
 }
