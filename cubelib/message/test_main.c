@@ -201,7 +201,7 @@ int main() {
 	if(ret<0)
 		return ret;
 
-	printf ("read % from json_buffer\n",ret);
+	printf ("read %d from json_buffer\n",ret);
 
 	ret=message_output_json(message,json_buffer);
 	if(ret<0)
@@ -211,6 +211,7 @@ int main() {
 	}
 
 	printf("%s\n",json_buffer);
+	
 	return 0;
 
 }

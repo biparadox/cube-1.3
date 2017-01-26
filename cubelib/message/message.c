@@ -28,6 +28,10 @@ void * message_get_expand_template()
 {
 	return msg_kits->expand_head_template;
 }
+void * message_get_expand_bin_template()
+{
+	return msg_kits->expand_bin_template;
+}
 
 void * message_get_head(void * message)
 {
@@ -613,7 +617,7 @@ int message_output_json(void * message, char * text)
 			if(ret<0)
 				return ret;
 			offset+=ret;
-			text[offset++]="}";
+			text[offset++]='}';
 			text[offset]='\0';
 		}
 	}

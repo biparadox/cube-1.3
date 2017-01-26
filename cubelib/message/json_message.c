@@ -133,26 +133,34 @@ int json_2_message(char * json_str,void ** message)
     	{
         	if(curr_expand==NULL)
             		return -EINVAL;
-		ret=Galloc0(&msg_expand,struct_size(message_get_expand_template()));
+		ret=Galloc0(&msg_expand,sizeof(*msg_expand));
 		if(ret<0)
 			return -ENOMEM;
 
-		ret=json_2_struct(curr_expand,&msg_expand,message_get_expand_template());
+		ret=json_2_struct(curr_expand,msg_expand,message_get_expand_template());
 		if(ret<0)
 			return ret;
 
 		void * tempnode;
-		if((tempnode=json_find_elem(curr_expand,"expand"))==NULL)
+		if((tempnode=json_find_elem(curr_expand,"expand"))!=NULL)
 		{
 			curr_expand_template=memdb_get_template(msg_expand->type,msg_expand->subtype);
 			if(curr_expand_template==NULL)
 				return -EINVAL;
+			msg_expand->data_size=0;
 			ret=Galloc(&msg_expand->expand,struct_size(curr_expand_template));
 			if(ret<0)
 				return -ENOMEM;
-			ret=json_2_struct(curr_expand,msg_expand->expand,curr_expand_template);
+			ret=json_2_struct(tempnode,msg_expand->expand,curr_expand_template);
 			if(ret<0)
 				return ret;
+		}
+		else
+		{
+			ret=json_2_struct(curr_expand,msg_expand,message_get_expand_bin_template());
+			if(ret<0)
+				return ret;
+			
 		}
 		
         	message_add_expand(msg_box,msg_expand);
