@@ -22,12 +22,13 @@
 	"record":
 	{
 		"type":"CRYPTO_DEMO",
-		"elem_no":3,
+		"elem_no":4,
 		"elemlist":
 		[
 			"LOGIN_INFO=0x01",
 			"VERIFY_RETURN",
-			"SESSION_MSG"
+			"SESSION_MSG",
+			"USER_ADDR=0x10"
 		]
 	}
 }
@@ -107,6 +108,31 @@
 		{
 			"flag":"INDEX",
 			"elemlist":"sender,receiver,time,msg"
+		}
+	}	
+}
+{
+	"head":
+	{
+		"name":"server_user_addr_info",
+		"type":"RECORDTYPE"
+	},
+	"record":
+	{
+		"type":"CRYPTO_DEMO",
+		"subtype":"USER_ADDR",
+		"struct_desc":
+		{
+			"elem_desc":
+			[
+				{"name":"user","type":"STRING","size":32},
+				{"name":"addr","type":"UUID"}
+			]
+		},
+		"index":
+		{
+			"flag":"INDEX",
+			"elemlist":"user,addr"
 		}
 	}	
 }

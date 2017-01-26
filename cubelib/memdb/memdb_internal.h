@@ -1,14 +1,6 @@
 #ifndef _MEMDB_INTERNAL_H
 #define _MEMDB_INTERNAL_H
 
-typedef struct db_record
-{
-	UUID_HEAD head;
-	int name_no;
-	char ** names;
-	void * record;
-	void * tail;
-}DB_RECORD;
 
 struct elem_attr_octet
 {

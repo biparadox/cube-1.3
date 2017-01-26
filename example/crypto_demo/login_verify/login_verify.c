@@ -19,10 +19,12 @@
 #include "message.h"
 #include "ex_module.h"
 #include "../include/app_struct.h"
+#include "../include/server_struct.h"
 
 struct timeval time_val={0,50*1000};
 
 int proc_verify(void * sub_proc,void * message);
+int user_addr_store(void * sub_proc,void * message);
 
 int login_verify_init(void * sub_proc,void * para)
 {
@@ -113,10 +115,57 @@ int proc_verify(void * sub_proc,void * message)
 		{
 			return_data->ret_data=dup_str("login_succeed!",0);
 			return_data->retval=1;
+			ret=user_addr_store(sub_proc,message);
+			if(ret<0)
+				return ret;
 		}
 	}
 	return_data->ret_data_size=Strlen(return_data->ret_data)+1;
 	message_add_record(new_msg,return_data);
 	ex_module_sendmsg(sub_proc,new_msg);
 	return ret;
+}
+
+int user_addr_store(void * sub_proc,void * message)
+{
+	
+	int ret;
+	struct user_address * user_addr;
+	struct expand_flow_trace * flow_trace;
+	struct login_info * login_data;
+	DB_RECORD * db_record;
+	int trace_offset;
+	
+	ret=message_get_record(message,&login_data,0);
+	if(ret<0)
+		return ret;
+	ret=message_get_define_expand(message,&flow_trace,DTYPE_MSG_EXPAND,SUBTYPE_FLOW_TRACE);
+	if(ret<0)
+		return ret;
+
+	if(flow_trace->record_num<=0)
+		return -EINVAL;
+	trace_offset=DIGEST_SIZE*(flow_trace->record_num-1);
+
+	db_record=memdb_get_first(DTYPE_CRYPTO_DEMO,SUBTYPE_USER_ADDR);
+	while(db_record!=NULL)
+	{
+		user_addr=(struct user_address *)db_record->record;
+		if(Strncmp(user_addr->user,login_data->user,DIGEST_SIZE)==0)
+			break;
+		db_record=memdb_get_next(DTYPE_CRYPTO_DEMO,SUBTYPE_USER_ADDR);
+	}
+	if(db_record!=NULL)
+	{
+		if(Memcmp(user_addr->addr,flow_trace->trace_record+trace_offset,DIGEST_SIZE)==0)
+			return 0;	
+		memdb_remove_record(db_record);
+	}
+	user_addr=Talloc0(sizeof(struct user_address));
+	if(user_addr==NULL)
+		return -ENOMEM;
+	Strncpy(user_addr->user,login_data->user,DIGEST_SIZE);
+	Memcpy(user_addr->addr,flow_trace->trace_record+trace_offset,DIGEST_SIZE);
+	memdb_store(user_addr,DTYPE_CRYPTO_DEMO,SUBTYPE_USER_ADDR,NULL);
+	return 1;
 }

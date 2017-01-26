@@ -967,7 +967,11 @@ void *  memdb_store(void * data,int type,int subtype,char * name)
 	DB_RECORD * oldrecord;
 	db_list=memdb_get_dblist(type,subtype);
 	if(db_list==NULL)
-		return NULL;
+	{
+		ret=memdb_register_dynamicdb(type,subtype);
+		if(ret<0)
+			return NULL;
+	}
 	ret=Galloc0(&record,sizeof(DB_RECORD));
 	if(ret<0)
 		return -EINVAL;
@@ -1085,6 +1089,14 @@ void * memdb_remove(void * uuid,int type,int subtype)
 	record=hashlist_remove_elem(db_list->record_db,uuid);
 
 	return record;
+}
+
+void * memdb_remove_record(void * record)
+{
+	DB_RECORD * db_record=record;
+	if(record==NULL)
+		return NULL;
+	return memdb_remove(record,db_record->head.type,db_record->head.subtype); 	
 }
 
 int memdb_remove_byname(char * name,int type,int subtype)

@@ -43,6 +43,15 @@ enum base_cube_db
 	DB_DTYPE_START=0x100,
 };
 
+typedef struct db_record
+{
+	UUID_HEAD head;
+	int name_no;
+	char ** names;
+	void * record;
+	void * tail;
+}DB_RECORD;
+
 typedef struct index_elem
 {
 	UUID_HEAD head;
@@ -61,7 +70,7 @@ void * memdb_get_first_record(int type,int subtype);
 void * memdb_get_next_record(int type,int subtype);
 void * memdb_remove(void * uuid,int type,int subtype);
 int memdb_remove_byname(char * name,int type,int subtype);
-int memdb_remove_record(void * record);
+void * memdb_remove_record(void * record);
 int memdb_free_record(void * record);
 
 void * memdb_find(void * data,int type,int subtype);
