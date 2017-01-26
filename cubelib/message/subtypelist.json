@@ -7,18 +7,37 @@
 	"record":
 	{
 		"type":"MESSAGE",
-		"elem_no":4,
+		"elem_no":6,
 		"elemlist":
 		[
 			"HEAD=0x01",
 			"EXPAND",
-			"FLOW_TRACE",
-			"ASPECT_POINT"
+			"EXPAND_HEAD",
+			"CONN_SYNI",
+			"CONN_ACKI",
+			"BASE_MSG"
 		]
 	}
 }
 {
-	"info-type":"subtypelist",
+	"head":
+	{
+		"name":"message_expand_subtypelist",
+		"type":"SUBTYPELIST"
+	},
+	"record":
+	{
+		"type":"MSG_EXPAND",
+		"elem_no":3,
+		"elemlist":
+		[
+			"FLOW_TRACE=0x01",
+			"ASPECT_POINT",
+			"ROUTE_RECORD"
+		]
+	}
+}
+{
 	"head":
 	{
 		"name":"tube_subtypelist",
@@ -26,32 +45,29 @@
 	},
 	"record":
 	{
-		"type":"TUBE",
-		"elem_no":4,
+		"type":"DISPATCH",
+		"elem_no":3,
 		"elemlist":
 		[
-			"BASEINFO=0x01",
-			"SERVER",
-			"CLIENT",
-			"CHANNEL"
+			"POLICY_HEAD=0x01",
+			"MATCH_HEAD",
+			"ROUTE_RULE"
 		]
 	}
 }
 {
 	"head":
 	{
-		"name":"block_struct",
+		"name":"exmodule_subtypelist",
 		"type":"SUBTYPELIST"
 	},
 	"record":
 	{
-		"type":"BLOCK",
-		"elem_no":3,
+		"type":"EXMODULE",
+		"elem_no":1,
 		"elemlist":
 		[
-			"BASEINFO=0x01",
-			"SUBJECT",
-			"CONTEXT"
+			"LIB_PARA=0x01"
 		]
 	}
 }

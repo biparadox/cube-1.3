@@ -108,7 +108,10 @@ int msgfunc_init()
 	msg_kits->head_template =_msg_load_template("HEAD");
 	if(msg_kits->head_template == NULL)
 		return -EINVAL;
-	msg_kits->expand_head_template =_msg_load_template("EXPAND");
+	msg_kits->expand_bin_template =_msg_load_template("EXPAND");
+	if(msg_kits->expand_bin_template ==NULL)
+		return -EINVAL;
+	msg_kits->expand_head_template =_msg_load_template("EXPAND_HEAD");
 	if(msg_kits->expand_head_template ==NULL)
 		return -EINVAL;
 	return 0;	
@@ -383,7 +386,9 @@ int message_expand_struct2blob(void * message)
 	BYTE * buffer;
 	const int bufsize=4096;
 	MSG_HEAD * msg_head;
+	MSG_EXPAND * msg_expand;
 	int expand_size;
+	int offset;
 
 	msg_box=(struct message_box *)message;
 
@@ -411,16 +416,23 @@ int message_expand_struct2blob(void * message)
 		void * struct_template=memdb_get_template(curr_expand->type,curr_expand->subtype);
 		if(struct_template==NULL)
 			return -EINVAL;
-		ret=struct_2_blob(msg_box->pexpand[i],buffer,struct_template);
+		
+		offset=struct_2_blob(curr_expand,buffer,msg_kits->expand_head_template);
+		if(offset<0)
+		{
+			Free(buffer);
+			return offset;
+		}
+		ret=struct_2_blob(curr_expand->expand,buffer+offset,struct_template);
 		if(ret<0)
 		{
 			Free(buffer);
 			return ret;
 		}
 
-		msg_box->expand_size[i]=ret;
-		curr_expand->data_size=ret;
-		ret=Galloc0(&msg_box->expand[i],ret);
+		msg_box->expand_size[i]=ret+offset;
+		curr_expand->data_size=ret+offset;
+		ret=Galloc0(&msg_box->expand[i],ret+offset);
 		if(msg_box->expand[i]==NULL)
 		{
 			Free(buffer);
@@ -530,6 +542,7 @@ int message_output_json(void * message, char * text)
 	struct message_box * msg_box;
 	int ret;
 	MSG_HEAD * msg_head;
+	MSG_EXPAND * msg_expand;
 	BYTE * data;
 	BYTE * buffer;
 	int i,j;
@@ -545,7 +558,7 @@ int message_output_json(void * message, char * text)
 		return -EINVAL;
 	msg_head=&msg_box->head;
 	
-	buffer=Talloc(512);
+	buffer=Talloc(4096);
 	if(buffer==NULL)
 		return -EINVAL;
 	// output head text
@@ -582,11 +595,27 @@ int message_output_json(void * message, char * text)
 		void * expand_template=memdb_get_template(expand->type,
 			expand->subtype);
 		if(expand_template==NULL)
-			return -EINVAL;
-		ret=struct_2_json(msg_box->pexpand[i],text+offset,expand_template);
-		if(ret<0)
-			return ret;
-		offset+=ret;
+		{
+			ret=struct_2_json(msg_box->pexpand[i],text+offset,msg_kits->expand_bin_template);
+			
+		}
+		else
+		{
+			ret=struct_2_json(msg_box->pexpand[i],text+offset,msg_kits->expand_head_template);
+			if(ret<0)
+				return ret;
+			offset+=ret-1;
+			Strcpy(buffer,",\"expand\":");
+			Strcpy(text+offset,buffer);
+			offset+=Strlen(buffer);
+			msg_expand=(MSG_EXPAND *)msg_box->pexpand[i];
+			ret=struct_2_json(msg_expand->expand,text+offset,expand_template);
+			if(ret<0)
+				return ret;
+			offset+=ret;
+			text[offset++]="}";
+			text[offset]='\0';
+		}
 	}
 	Strcpy(buffer,"]}");
 	Strcpy(text+offset,buffer);
@@ -1460,23 +1489,45 @@ int message_add_expand(void * message,void * expand)
 	int ret;
 	MSG_HEAD * msg_head;
 	int curr_site;
-
-	msg_box=(struct message_box *)message;
-
-	msg_head=&(msg_box->head);
+	MSG_EXPAND * msg_expand=expand;
 	if(message==NULL)
 		return -EINVAL;
 	if(expand==NULL)
 		return -EINVAL;
+
+	msg_box=(struct message_box *)message;
+
+	msg_head=&msg_box->head;
 	curr_site=msg_head->expand_num;
 	ret=__message_add_expand_site(message,1);
 	if(ret<0)
 		return -EINVAL;
-
-	msg_box->pexpand[curr_site]=expand;
+	msg_box->pexpand[curr_site]=msg_expand;
         msg_box->box_state=MSG_BOX_EXPAND;
 
 	return ret;
+}
+int message_add_expand_data(void * message,int type,int subtype,void * expand)
+{
+	struct message_box * msg_box;
+	int ret;
+	MSG_HEAD * msg_head;
+	int curr_site;
+	MSG_EXPAND * msg_expand;
+
+	if(message==NULL)
+		return -EINVAL;
+	if(expand==NULL)
+		return -EINVAL;
+
+	ret=Galloc0(&msg_expand,sizeof(MSG_EXPAND));
+	if(msg_expand==NULL)
+		return -ENOMEM;
+	msg_expand->type=type;
+	msg_expand->subtype=subtype;
+
+	msg_expand->expand=expand;
+	return message_add_expand(message,msg_expand);
 }
 /*
 int message_add_expand_blob(void * message,void * expand)

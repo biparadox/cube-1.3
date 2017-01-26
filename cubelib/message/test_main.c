@@ -59,7 +59,6 @@ int read_json_file(char * file_name)
 	if(readlen<0)
 		return -EIO;
 	json_buffer[readlen]=0;
-	printf("%s\n",json_buffer);
 	close(fd);
 
 	json_offset=0;
@@ -106,7 +105,8 @@ int main() {
 		"typelist.json",
 		"subtypelist.json",
 		"msghead.json",
-		"headrecord.json",
+		"base_msg.json",
+		"expandrecord.json",
 		NULL
 	};
 
@@ -149,22 +149,30 @@ int main() {
 	msgfunc_init();
 	
 	void * message;
+	struct basic_message base_msg;
+	struct expand_flow_trace flow_trace;
 
-	message=message_create(512,1,NULL);	
+	message=message_create(DTYPE_MESSAGE,SUBTYPE_BASE_MSG,NULL);	
 
-	ret=Galloc0(&msg_head,sizeof(MSG_HEAD));
-	if(msg_head==NULL)
-		return -EINVAL;
-	Strcpy(msg_head->sender_uuid,"Test sender");	
-	Strcpy(msg_head->receiver_uuid,"Test receiver");
-	msg_head->flow=MSG_FLOW_QUERY;
-	msg_head->flag=MSG_FLAG_LOCAL|MSG_FLAG_CRYPT;
-	ret=message_add_record(message,msg_head);
+	base_msg.message=dup_str("Hello,World!",0);
+	
+	flow_trace.record_num=1;
+	flow_trace.trace_record=Talloc0(DIGEST_SIZE*flow_trace.record_num);
+	Strncpy(flow_trace.trace_record,"test_port",DIGEST_SIZE/2);
+
+	ret=message_add_record(message,&base_msg);
 	if(ret<0)
 	{
-		printf("add message head record failed!\n");
+		printf("add message record failed!\n");
 		return ret;
 	}	
+
+	ret=message_add_expand_data(message,DTYPE_MSG_EXPAND,SUBTYPE_FLOW_TRACE,&flow_trace);
+	if(ret<0)
+	{
+		printf("add message expand failed!\n");
+		return ret;
+	}
 
 	ret=message_record_struct2blob(message);
 	if(ret<0)
@@ -203,9 +211,6 @@ int main() {
 	}
 
 	printf("%s\n",json_buffer);
-	
-
-	
 	return 0;
 
 }

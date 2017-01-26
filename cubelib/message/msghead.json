@@ -6,6 +6,7 @@
 	},
 	"record":
 	{
+		"elem_no":17,
 		"elem_desc":
 		[
 			{"name":"tag","type":"STRING","size":4},
@@ -16,6 +17,8 @@
 			{"name":"flow","type":"ENUM","ref_name":"message_flow_type"},
 			{"name":"state","type":"ENUM","ref_name":"message_flow_type"},
 			{"name":"flag","type":"FLAG","ref_name":"message_flag_type"},
+			{"name":"ljump","type":"INT"},
+			{"name":"rjump","type":"INT"},
 			{"name":"record_type","type":"TYPE"},
 			{"name":"record_subtype","type":"SUBTYPE","def":"record_type"},
 			{"name":"record_num","type":"INT"},
@@ -26,7 +29,6 @@
 		]
 	}
 }
-
 {
 	"head":
 	{
@@ -39,8 +41,25 @@
 		[
 			{"name":"data_size","type":"INT","size":4},
 			{"name":"type","type":"TYPE"},
-			{"name":"subtype","type":"SUBTYPE","def":"record_type"},
+			{"name":"subtype","type":"SUBTYPE","def":"type"},
 			{"name":"BIN_DATA","type":"DEFINE","def":"data_size"},
+		]
+	}
+}
+
+{
+	"head":
+	{
+		"name":"msg_expand_head",
+		"type":"STRUCT"
+	},
+	"record":
+	{
+		"elem_desc":
+		[
+			{"name":"data_size","type":"INT","size":4},
+			{"name":"type","type":"TYPE"},
+			{"name":"subtype","type":"SUBTYPE","def":"type"},
 		]
 	}
 }
@@ -74,6 +93,24 @@
 		"type":"MESSAGE",
 		"subtype":"EXPAND",
 		"uuid":"msg_expand",
+		"index":
+		{
+			"flag":"INDEX",
+			"elemlist":"data_size,type,subtype"
+		}
+	}	
+}
+{
+	"head":
+	{
+		"name":"msg_expand_head",
+		"type":"RECORDTYPE",
+	},
+	"record":
+	{
+		"type":"MESSAGE",
+		"subtype":"EXPAND_HEAD",
+		"uuid":"msg_expand_head",
 		"index":
 		{
 			"flag":"INDEX",

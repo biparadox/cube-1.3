@@ -46,9 +46,7 @@ struct tag_msg_kits
 	int type;
 	void * head_template;
 	void * expand_head_template;
-	void * expand_uuid_template;
-	void * flow_trace_template;
-	void * aspect_point_template;
+	void * expand_bin_template;
 };
 
 #endif

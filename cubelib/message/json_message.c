@@ -142,24 +142,19 @@ int json_2_message(char * json_str,void ** message)
 			return ret;
 
 		void * tempnode;
-		if((tempnode=json_find_elem(curr_expand,"BIN_DATA"))==NULL)
+		if((tempnode=json_find_elem(curr_expand,"expand"))==NULL)
 		{
-
-				
 			curr_expand_template=memdb_get_template(msg_expand->type,msg_expand->subtype);
 			if(curr_expand_template==NULL)
 				return -EINVAL;
-			struct_free(msg_expand,message_get_expand_template());			
-			ret=Galloc(&msg_expand,struct_size(curr_expand_template));
+			ret=Galloc(&msg_expand->expand,struct_size(curr_expand_template));
 			if(ret<0)
 				return -ENOMEM;
-			ret=json_2_struct(curr_expand,msg_expand,curr_expand_template);
+			ret=json_2_struct(curr_expand,msg_expand->expand,curr_expand_template);
 			if(ret<0)
 				return ret;
 		}
 		
-
-	
         	message_add_expand(msg_box,msg_expand);
         	curr_expand=json_get_next_child(expand_node);
 

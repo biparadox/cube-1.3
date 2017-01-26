@@ -1,7 +1,7 @@
 {
 	"head":
 	{
-		"name":"internal_type",
+		"name":"dispatch_type",
 		"type":"TYPELIST"
 	},
 	"record":
@@ -10,9 +10,9 @@
 		"elemlist":
 		[
 			"MESSAGE=0x200",
-			"TUBE",
-			"BLOCK",
-			"ROUTER"
+			"MSG_EXPAND",
+			"DISPATCH=0x210"
+			"EXMODULE=0x220"
 		]
 	}
 }

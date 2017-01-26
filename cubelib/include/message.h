@@ -21,6 +21,7 @@ enum subtypelist_message
 {
 	SUBTYPE_HEAD=0x01,
 	SUBTYPE_EXPAND,
+	SUBTYPE_EXPAND_HEAD,
 	SUBTYPE_CONN_SYNI,
 	SUBTYPE_CONN_ACKI,
 	SUBTYPE_BASE_MSG
@@ -84,12 +85,19 @@ typedef struct tagMessage_Head  //强制访问控制标记
    BYTE nonce[DIGEST_SIZE];
 } __attribute__((packed)) MSG_HEAD;
 
+typedef struct tagMessage_Expand_Data_Head //general expand 's head struct
+{
+   int  data_size;   //this expand data's size
+   int  type;
+   int  subtype;      //expand data's type
+} __attribute__((packed)) MSG_EXPAND_HEAD;
+
 typedef struct tagMessage_Expand_Data  //general expand data struct
 {
    int  data_size;   //this expand data's size
    int  type;
    int  subtype;      //expand data's type
-   BYTE * BIN_DATA;
+   void * expand;
 } __attribute__((packed)) MSG_EXPAND;
 
 typedef struct expand_extra_info  //expand data struct to store one or more DIGEST_SIZE info
@@ -106,25 +114,23 @@ struct basic_message
 	char * message;
 }__attribute__((packed));
 
+struct uuid_record
+{
+	BYTE * uuid;
+}__attribute__((packed));
+
 struct expand_flow_trace
 {
-    int  data_size;
-    int  type;		      // this should be "MSG_EXPAND"
-    int  subtype;	      // this should be "FLOW_TRACE"	
     int  record_num;
     char *trace_record;
 } __attribute__((packed));
 
 struct expand_aspect_point
 {
-    int  data_size;
-    int  type;		      // this should be "MSG_EXPAND"
-    int  subtype;	      // this should be "ASPECT_POINT"	
     int  record_num;
     char * aspect_proc;
     char * aspect_point;
 } __attribute__((packed));
-
 
 void * message_init();
 int message_record_init(void * message);
@@ -148,7 +154,8 @@ int  message_add_record_blob(void * message,int record_size, BYTE * record);
 
 
 int  message_add_expand(void * message,void * expand);
-int  message_add_expand_blob(void * message,void * expand);
+int  message_add_expand_data(void * message,int type,int subtype,void * expand);
+int  message_add_expand_blob(void * message,int type,int subtype,void * expand);
 
 int  message_remove_expand(void * message,int type,int subtype,void ** expand);
 int  message_remove_indexed_expand(void * message,int index,void ** expand) ;
