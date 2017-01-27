@@ -142,7 +142,7 @@ int json_2_message(char * json_str,void ** message)
 			return ret;
 
 		void * tempnode;
-		if((tempnode=json_find_elem(curr_expand,"expand"))!=NULL)
+		if((tempnode=json_find_elem("expand",curr_expand))!=NULL)
 		{
 			curr_expand_template=memdb_get_template(msg_expand->type,msg_expand->subtype);
 			if(curr_expand_template==NULL)

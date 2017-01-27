@@ -89,6 +89,7 @@ int main() {
   	static unsigned char alloc_buffer[4096*(1+1+4+1+16+1+256)];	
 	char json_buffer[4096];
 	char print_buffer[4096];
+	BYTE bin_buffer[4096];
 	int ret;
 	int readlen;
 	int json_offset;
@@ -193,6 +194,9 @@ int main() {
 
 	printf("%s\n",json_buffer);
 	
+	ret=message_output_blob(message,bin_buffer);
+	if(ret<0)
+		return ret;
 	
 	void * new_msg;
 
@@ -203,7 +207,7 @@ int main() {
 
 	printf ("read %d from json_buffer\n",ret);
 
-	ret=message_output_json(message,json_buffer);
+	ret=message_output_json(new_msg,json_buffer);
 	if(ret<0)
 	{
 		printf("message output json failed!\n");
@@ -212,6 +216,8 @@ int main() {
 
 	printf("%s\n",json_buffer);
 	
+	ret=message_output_blob(message,bin_buffer);
+
 	return 0;
 
 }
