@@ -165,7 +165,7 @@ int  message_get_expand(void * message, void ** msg_expand,int expand_no);
 
 void * load_record_template(char * type);
 void * load_record_desc(char * type);
-int read_message_from_blob(void * message,void * blob,int blob_size);
+int message_read_from_blob(void ** message,void * blob,int blob_size);
 int read_message_head(void * message,void * blob,int blob_size);
 int read_message_data(void * message,void * blob,int data_size);
 int read_message_from_src(void * message,void * src,

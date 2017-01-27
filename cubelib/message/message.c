@@ -393,6 +393,7 @@ int message_expand_struct2blob(void * message)
 	MSG_EXPAND * msg_expand;
 	int expand_size;
 	int offset;
+	int tempsize;
 
 	msg_box=(struct message_box *)message;
 
@@ -435,7 +436,7 @@ int message_expand_struct2blob(void * message)
 		}
 
 		msg_box->expand_size[i]=ret+offset;
-		curr_expand->data_size=ret+offset;
+		tempsize=ret;
 		ret=Galloc0(&msg_box->expand[i],ret+offset);
 		if(msg_box->expand[i]==NULL)
 		{
@@ -443,7 +444,7 @@ int message_expand_struct2blob(void * message)
 			return -ENOMEM;
 		}
 		Memcpy(msg_box->expand[i],buffer,msg_box->expand_size[i]);
-		Memcpy(msg_box->expand[i],&ret,sizeof(int));
+		Memcpy(msg_box->expand[i],&tempsize,sizeof(int));
 		expand_size+=msg_box->expand_size[i];
 	}
 	Free(buffer);
@@ -882,6 +883,7 @@ int message_load_expand(void * message)
     int ret;
     MSG_HEAD * msg_head;
     MSG_EXPAND * expand;
+    MSG_EXPAND * pexpand;
     BYTE * data;
     BYTE * buffer;
     int i,j;
@@ -896,9 +898,6 @@ int message_load_expand(void * message)
 
     if(message==NULL)
         return -EINVAL;
-
-//    if(msg_box->box_state!=MSG_BOX_REBUILDING)
-//        return -EINVAL;
 
     // choose the record's type
 
@@ -925,14 +924,18 @@ int message_load_expand(void * message)
 	buffer=Talloc(struct_size(struct_template));
 	if(buffer==NULL)
 		return -EINVAL;
-	ret=blob_2_struct(data,buffer,struct_template);
+	ret=blob_2_struct(data+sizeof(MSG_EXPAND_HEAD),buffer,struct_template);
 	if(ret!=expand->data_size)
 	{
 		struct_free(buffer,struct_template);
 		return -EINVAL;
 	}
-	msg_box->pexpand[no]=buffer;
-	data+=expand->data_size;
+	msg_box->pexpand[no]=Calloc0(sizeof(MSG_EXPAND));
+	if(msg_box->pexpand[no]==NULL)
+		return -EINVAL;
+	expand=(MSG_EXPAND *)msg_box->pexpand[no];
+	expand->expand=buffer;
+	data+=expand->data_size+sizeof(MSG_EXPAND_HEAD);
 
     }
     return offset;
@@ -1527,6 +1530,7 @@ int message_add_expand_data(void * message,int type,int subtype,void * expand)
 	ret=Galloc0(&msg_expand,sizeof(MSG_EXPAND));
 	if(msg_expand==NULL)
 		return -ENOMEM;
+	msg_expand->data_size=0;
 	msg_expand->type=type;
 	msg_expand->subtype=subtype;
 

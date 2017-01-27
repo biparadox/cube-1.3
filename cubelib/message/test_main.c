@@ -184,7 +184,6 @@ int main() {
 
 	BYTE * blob;
 	
-	message_output_blob(message,&blob);
 	ret=message_output_json(message,json_buffer);
 	if(ret<0)
 	{
@@ -194,12 +193,32 @@ int main() {
 
 	printf("%s\n",json_buffer);
 	
-	ret=message_output_blob(message,bin_buffer);
+	ret=message_output_blob(message,&blob);
 	if(ret<0)
 		return ret;
-	
+	printf ("output %d data to bin_buffer\n",ret);
+
 	void * new_msg;
 
+	ret=message_read_from_blob(&new_msg,blob,ret);	
+	printf ("read %d from bin_buffer\n",ret);
+
+	ret=message_load_record(new_msg);
+	if(ret<0)
+	{
+		printf("load record failed!\n");
+		return ret;
+	}
+	ret=message_load_expand(new_msg);
+	if(ret<0)
+	{
+		printf("load expand failed!\n");
+		return ret;
+	}
+
+
+	printf("%s\n",json_buffer);
+	
 	ret=json_2_message(json_buffer,&new_msg);
 
 	if(ret<0)
