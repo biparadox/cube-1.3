@@ -50,6 +50,23 @@
 {
 	"head":
 	{
+		"name":"msg_expand_head",
+		"type":"STRUCT"
+	},
+	"record":
+	{
+		"elem_desc":
+		[
+			{"name":"data_size","type":"INT","size":4},
+			{"name":"type","type":"TYPE"},
+			{"name":"subtype","type":"SUBTYPE","def":"type"},
+		]
+	}
+}
+
+{
+	"head":
+	{
 		"name":"msg_head",
 		"type":"RECORDTYPE",
 	},
@@ -76,6 +93,24 @@
 		"type":"MESSAGE",
 		"subtype":"EXPAND",
 		"uuid":"msg_expand",
+		"index":
+		{
+			"flag":"INDEX",
+			"elemlist":"data_size,type,subtype"
+		}
+	}	
+}
+{
+	"head":
+	{
+		"name":"msg_expand_head",
+		"type":"RECORDTYPE",
+	},
+	"record":
+	{
+		"type":"MESSAGE",
+		"subtype":"EXPAND_HEAD",
+		"uuid":"msg_expand_head",
 		"index":
 		{
 			"flag":"INDEX",

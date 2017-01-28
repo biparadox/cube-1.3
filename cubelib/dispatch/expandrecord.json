@@ -12,9 +12,6 @@
 		{
 			"elem_desc":
 			[
-				{"name":"data_size","type":"INT"},
-				{"name":"type","type":"TYPE"},
-				{"name":"subtype","type":"SUBTYPE","def":"type"},
 				{"name":"record_num","type":"INT"},
 				{"name":"trace_record","type":"DEFUUIDARRAY","def":"record_num"}
 			]
@@ -35,9 +32,6 @@
 		{
 			"elem_desc":
 			[
-				{"name":"data_size","type":"INT"},
-				{"name":"type","type":"TYPE"},
-				{"name":"subtype","type":"SUBTYPE","def":"type"},
 				{"name":"record_num","type":"INT"},
 				{"name":"aspect_proc","type":"DEFUUIDARRAY","def":"record_num"},
 				{"name":"aspect_point","type":"DEFUUIDARRAY","def":"record_num"}

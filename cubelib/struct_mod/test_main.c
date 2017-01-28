@@ -97,8 +97,9 @@ int main() {
 	char text1[4096];
 	void * root;
 	int ret;
-	void * dup1;
-	void * dup2;
+	struct expand_flow_trace * dup1;
+	struct expand_flow_trace * dup2;
+	struct expand_flow_trace * dup3;
 
 	struct_deal_init();
 	test_trace.name=dup_str("Hello",0);
@@ -132,7 +133,14 @@ int main() {
 	ret=blob_2_struct(buffer,dup2,struct_template);
 	ret=struct_2_json(dup2,text,struct_template);
 	printf("%s \n",text);
+	dup3=Talloc0(struct_size(struct_template));
 
+	ret=json_solve_str(&root,text);
+
+	ret=json_2_struct(root,dup3,struct_template);
+
+	ret=struct_2_json(dup3,text,struct_template);
+	printf("%s \n",text);
 
     	free_struct_template(struct_template);
 	return 0;

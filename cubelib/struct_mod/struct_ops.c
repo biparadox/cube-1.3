@@ -675,7 +675,7 @@ ELEM_OPS defuuidarray_convert_ops =
 //	.get_text_value = defuuidarray_get_text_value,
 //	.set_text_value = defuuidarray_set_text_value,
 	.get_text_value = uuid_get_text_value,
-	.set_text_value = defuuidarray_set_text_value,
+	.set_text_value = uuid_set_text_value,
 };
 ELEM_OPS estring_convert_ops =
 {

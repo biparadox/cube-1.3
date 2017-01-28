@@ -779,6 +779,7 @@ int _elem_set_bin_value(void * addr,void * data,void * elem)
 	}
 	return ret;
 }
+
 int _elem_clone_value(void * addr, void * clone,void * elem)
 {
 	int ret;
@@ -1010,68 +1011,125 @@ int _elem_get_text_value(void * addr,char * text,void * elem)
 	return ret;
 }
 
-int _elem_set_text_deffunc(void * addr,void * data,void * elem)
+int _elem_set_text_value(void * addr,char * text,void * elem)
 {
+	ELEM_OPS * elem_ops=_elem_get_ops(elem);
 	int ret;
-	void * elem_addr;
+	void * elem_src;
 	struct elem_template * curr_elem=elem;
-	char * text=(char *)data;
-	
+	enum cube_struct_elem_type type;
+	int repeat_num;
+	type=curr_elem->elem_desc->type;
+	int offset=0;
+	int i;	
+	int def_value;
+	int strlen;
+	char buf[DIGEST_SIZE*32];
+
 	// get this elem's addr
 
-	elem_addr=_elem_get_addr(elem,addr);
-	// if this func is empty, we use default func
-	if((ret=_elem_get_bin_length(text,elem,addr))<0)
-		return ret;
-	if(_ispointerelem(curr_elem->elem_desc->type))
+	elem_src=_elem_get_addr(elem,addr);
+
+	if(_ispointerelem(type))
 	{
-//		int ret=Strnlen(text,DIGEST_SIZE*32)+1;
-		
-		int tempret=Palloc0(elem_addr,ret);
-		if(tempret<0)
-			return tempret;
-		Memcpy(*(char **)elem_addr,text,ret);
-	}
-	else
-	{
-		int str_len=Strlen(text);
-		if(str_len>=ret)
+		int unitsize=get_fixed_elemsize(type);
+		if(unitsize<=0)
+			unitsize=1;
+		if(_isdefineelem(type))
 		{
-			Memcpy(elem_addr,text,ret);
+			repeat_num=_elem_get_defvalue(curr_elem,addr);
+			if(repeat_num<0)
+				return repeat_num;
 		}
 		else
 		{
-			Memcpy(elem_addr,text,str_len);
-			Memset(elem_addr+str_len,0,ret-str_len);	
+			repeat_num=curr_elem->size;
+		}
+		if(_isarrayelem(type))
+		{
+			int tempret=Palloc0(elem_src,repeat_num*unitsize);
+			if(tempret<0)
+				return tempret;
+			curr_elem->index=0;	
+			if(elem_ops->set_text_value!=NULL)
+			{
+				for(i=0;i<repeat_num;i++)
+				{
+					strlen=Getfiledfromstr(buf,text+offset,',',DIGEST_SIZE*32);
+					if(strlen<0)
+						return -EINVAL;
+					ret=elem_ops->set_text_value(*(BYTE **)elem_src+unitsize*i,buf,elem);
+					offset+=strlen;
+					if(text[offset]==',')
+						offset++;
+					else if(text[offset]=='\0')
+						return -EINVAL;
+				}
+				ret=offset;
+			}
+			else
+			{
+				for(i=0;i<repeat_num;i++)
+				{
+					strlen=Getfiledfromstr(buf,text+offset,',',DIGEST_SIZE*32);
+					if(strlen<0)
+						return -EINVAL;
+					Strncpy(*(BYTE **)elem_src+unitsize*i,buf,unitsize);
+					offset+=strlen;
+					if(text[offset]==',')
+						offset++;
+					else if(text[offset]=='\0')
+						return -EINVAL;
+				}
+				ret=offset;
+			}
+		}
+		else 
+		{
+			if(elem_ops->set_text_value==NULL)
+			{
+				if(elem_ops->elem_get_length!=NULL)
+				{
+					ret=elem_ops->elem_get_length(text,elem);
+					if(ret<0)
+						return ret;
+				}
+				else
+					ret=unitsize*repeat_num;
+				if(ret!=0)
+				{
+					int tempret=Palloc0(elem_src,ret);
+					if(tempret<0)
+						return tempret;
+					Memcpy(*(BYTE **)elem_src,text,ret);
+				}
+			}
+			else
+			{
+				ret=elem_ops->set_text_value(*(BYTE **)elem_src,text,elem);
+			}	
+		}
+	}
+	else
+	{
+		if(_isdefineelem(type))
+		{
+			def_value=_elem_get_defvalue(curr_elem,addr);
+			if(def_value<0)
+				return def_value;
+			curr_elem->index=def_value;
+		}
+		if(elem_ops->set_text_value!=NULL)
+			ret=elem_ops->set_text_value(elem_src,text,elem);
+		else
+		{
+			// if this func is empty, we use default func
+			if((ret=_elem_get_bin_length(*(char **)elem_src,elem,addr))<0)
+				return ret;
+			Memcpy(elem_src,text,ret);
 		}
 	}
 	return ret;
-
-}
-
-int _elem_set_text_defarray(void * addr,void * text,void * elem,int def_value)
-{
-	int ret;
-	struct elem_template * curr_elem=elem;
-	int addroffset=get_fixed_elemsize(curr_elem->elem_desc->type);
-	if(addroffset<0)
-		return addroffset;
-	ret=Palloc0(addr,addroffset*def_value);
-	return ret;
-	
-}
-
-int    _elem_set_text_value(void * addr,char * text,void * elem)
-{
-	struct elem_deal_ops myfuncs;
-	ELEM_OPS * elem_ops=_elem_get_ops(elem);
-	myfuncs.default_func=&_elem_set_text_deffunc;
-	myfuncs.elem_ops=elem_ops->set_text_value;
-	myfuncs.def_array_init=&_elem_set_text_defarray;
-	myfuncs.def_array=NULL;
-
-	return _elem_process_func(addr,text,elem,&myfuncs);
-
 }
 
 int _getelemjsontype(int type)
