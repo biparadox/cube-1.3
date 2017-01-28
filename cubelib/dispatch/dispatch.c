@@ -1936,148 +1936,179 @@ int route_push_site_str(void * message,char * name)
 
 int route_push_site(void * message,BYTE * name)
 {
+	MSG_EXPAND * expand;
 	struct expand_flow_trace * flow_trace;
 	int ret;
 	int len;
 	int index;
 
-
-	index=message_get_define_expand(message,&flow_trace,DTYPE_MSG_EXPAND,SUBTYPE_FLOW_TRACE);
+	index=message_get_define_expand(message,&expand,DTYPE_MSG_EXPAND,SUBTYPE_FLOW_TRACE);
 	if(index<0)
 		return -EINVAL;
-	if(flow_trace==NULL)
+	if(expand==NULL)
 	{
-		// build a new flow_trace
-		flow_trace=malloc(sizeof(struct expand_flow_trace));
-		flow_trace->data_size=0;
-		flow_trace->record_num=1;
-		flow_trace->type=DTYPE_MSG_EXPAND;
-		flow_trace->subtype=SUBTYPE_FLOW_TRACE;
-		flow_trace->trace_record=Talloc0(DIGEST_SIZE*flow_trace->record_num);
+		expand=Calloc0(sizeof(MSG_EXPAND));
+		if(expand==NULL)
+			return -ENOMEM;	
+		expand->type=DTYPE_MSG_EXPAND;
+		expand->subtype=SUBTYPE_FLOW_TRACE;
+		ret=Galloc0(&flow_trace,sizeof(*flow_trace));
+		if(flow_trace==NULL)
+			return -ENOMEM;	
+		expand->expand=flow_trace;
+	}
+	else
+	{
+		flow_trace=expand->expand;
+	}
+		
+	if(flow_trace->record_num==0)
+	{
+		flow_trace->record_num++;
+		ret=Galloc0(&flow_trace->trace_record,DIGEST_SIZE);
 		Memcpy(flow_trace->trace_record,name,DIGEST_SIZE);
-		message_add_expand(message,flow_trace);	
+		message_add_expand(message,expand);	
 	}
 	else
 	{
 		int curr_offset=flow_trace->record_num*DIGEST_SIZE;
 		flow_trace->record_num++;
-		char * buffer=malloc(curr_offset+DIGEST_SIZE);
+		char * buffer;
+		ret=Galloc0(&buffer,curr_offset+DIGEST_SIZE);
+		if(buffer==NULL)
+			return -ENOMEM;
 		Memcpy(buffer,flow_trace->trace_record,curr_offset);
 		free(flow_trace->trace_record);
 		Memcpy(buffer+curr_offset,name,DIGEST_SIZE);
 		flow_trace->trace_record=buffer;
-		message_replace_define_expand(message,flow_trace);
+		message_replace_define_expand(message,expand);
 	}
 	return 0;
 }
 
 int route_push_aspect_site(void * message,char * proc,char * point)
 {
+	MSG_EXPAND * expand;
 	struct expand_aspect_point * aspect_point;
 	int ret;
 	int len;
 	int index;
 
-	index=message_get_define_expand(message,&aspect_point,DTYPE_MSG_EXPAND,SUBTYPE_ASPECT_POINT);
+	index=message_get_define_expand(message,&expand,DTYPE_MSG_EXPAND,SUBTYPE_ASPECT_POINT);
 	if(index<0)
 		return -EINVAL;
-	if(aspect_point==NULL)
+	if(expand==NULL)
 	{
-		// build a new flow_trace
-		aspect_point=malloc(sizeof(struct expand_aspect_point));
-		aspect_point->data_size=0;
-		aspect_point->record_num=1;
-		aspect_point->type=DTYPE_MSG_EXPAND;
-		aspect_point->subtype=SUBTYPE_ASPECT_POINT;
-		aspect_point->aspect_proc=dup_str(proc,DIGEST_SIZE*2);
-		aspect_point->aspect_point=dup_str(point,DIGEST_SIZE*2);
-		message_add_expand(message,aspect_point);	
+		expand=Calloc0(sizeof(MSG_EXPAND));
+		if(expand==NULL)
+			return -ENOMEM;	
+		expand->type=DTYPE_MSG_EXPAND;
+		expand->subtype=SUBTYPE_ASPECT_POINT;
+		ret=Galloc0(&aspect_point,sizeof(*aspect_point));
+		if(aspect_point==NULL)
+			return -ENOMEM;	
+		expand->expand=aspect_point;
 	}
 	else
 	{
-		int curr_offset=aspect_point->record_num*DIGEST_SIZE*2;
-		char * buffer=malloc(curr_offset+DIGEST_SIZE*2);
-		memcpy(buffer,aspect_point->aspect_proc,curr_offset);
-		len=strlen(proc);
-		if(len<DIGEST_SIZE*2)
-			memcpy(buffer+curr_offset,proc,len+1);
-		else
-			memcpy(buffer+curr_offset,proc,DIGEST_SIZE*2);
-		free(aspect_point->aspect_proc);
+		aspect_point=expand->expand;
+	}
+		
+	if(aspect_point->record_num==0)
+	{
+		aspect_point->record_num++;
+		ret=Galloc0(&aspect_point->aspect_proc,DIGEST_SIZE);
+		if(aspect_point->aspect_proc==NULL)
+			return -ENOMEM;
+		Memcpy(aspect_point->aspect_proc,proc,DIGEST_SIZE);
+		ret=Galloc0(&aspect_point->aspect_point,DIGEST_SIZE);
+		if(aspect_point->aspect_point==NULL)
+			return -ENOMEM;
+		Memcpy(aspect_point->aspect_point,point,DIGEST_SIZE);
+		message_add_expand(message,expand);	
+	}
+	else
+	{
+		int curr_offset=aspect_point->record_num*DIGEST_SIZE;
+		aspect_point->record_num++;
+		char * buffer;
+		ret=Galloc0(&buffer,curr_offset+DIGEST_SIZE);
+		if(buffer==NULL)
+			return -ENOMEM;
+		Memcpy(buffer,aspect_point->aspect_proc,curr_offset);
+		Free(aspect_point->aspect_proc);
+		Memcpy(buffer+curr_offset,proc,DIGEST_SIZE);
 		aspect_point->aspect_proc=buffer;
 
-		curr_offset=aspect_point->record_num*DIGEST_SIZE*2;
-		buffer=malloc(curr_offset+DIGEST_SIZE*2);
-		memcpy(buffer,aspect_point->aspect_point,curr_offset);
-		len=strlen(point);
-		if(len<DIGEST_SIZE*2)
-			memcpy(buffer+curr_offset,point,len+1);
-		else
-			memcpy(buffer+curr_offset,point,DIGEST_SIZE*2);
-		free(aspect_point->aspect_point);
+		ret=Galloc0(&buffer,curr_offset+DIGEST_SIZE);
+		if(buffer==NULL)
+			return -ENOMEM;
+		Memcpy(buffer,aspect_point->aspect_point,curr_offset);
+		Free(aspect_point->aspect_point);
+		Memcpy(buffer+curr_offset,point,DIGEST_SIZE);
 		aspect_point->aspect_point=buffer;
-
-		aspect_point->record_num++;
-
-		message_replace_define_expand(message,aspect_point,"APRE");
+		message_replace_define_expand(message,expand);
 	}
 	return 0;
 }
 
 int route_check_sitestack(void * message)
 {
+	MSG_EXPAND * expand;
 	struct expand_flow_trace * flow_trace;
 	int ret;
-	ret=message_get_define_expand(message,&flow_trace,DTYPE_MSG_EXPAND,SUBTYPE_FLOW_TRACE);
+	ret=message_get_define_expand(message,&expand,DTYPE_MSG_EXPAND,SUBTYPE_FLOW_TRACE);
 	if(ret<0)
 		return -EINVAL;
-	if(flow_trace==NULL)
+	if(expand==NULL)
 		return 0;
+	flow_trace=expand->expand;
 	return flow_trace->record_num;
 }
 int route_check_aspectstack(void * message)
 {
-	struct expand_aspect_point * flow_trace;
+	MSG_EXPAND * expand;
+	struct expand_aspect_point * aspect_point;
 	int ret;
-	ret=message_get_define_expand(message,&flow_trace,DTYPE_MSG_EXPAND,SUBTYPE_ASPECT_POINT);
+	ret=message_get_define_expand(message,&expand,DTYPE_MSG_EXPAND,SUBTYPE_ASPECT_POINT);
 	if(ret<0)
 		return -EINVAL;
-	if(flow_trace==NULL)
+	if(expand==NULL)
 		return 0;
-	return flow_trace->record_num;
+	aspect_point=expand->expand;
+	if(aspect_point==NULL)
+		return 0;
+	return aspect_point->record_num;
 }
+
 int router_pop_site(void * message)
 {
+	MSG_EXPAND * expand;
 	struct expand_flow_trace * flow_trace;
 	int ret;
 	int len;
 
 	MSG_HEAD * msg_head =message_get_head(message);
 
-	ret=message_get_define_expand(message,&flow_trace,DTYPE_MSG_EXPAND,SUBTYPE_FLOW_TRACE);
+	ret=message_get_define_expand(message,&expand,DTYPE_MSG_EXPAND,SUBTYPE_FLOW_TRACE);
 	if(ret<0)
 		return -EINVAL;
-	if(flow_trace==NULL)
+	if(expand==NULL)
 		return 0;
+	flow_trace=expand->expand;
 	if(flow_trace->record_num<1)
 		return 0;
 
 	int curr_offset=(--(flow_trace->record_num))*DIGEST_SIZE;
-	memcpy(msg_head->receiver_uuid,flow_trace->trace_record+curr_offset,DIGEST_SIZE);
+	Memcpy(msg_head->receiver_uuid,flow_trace->trace_record+curr_offset,DIGEST_SIZE);
 
 	if(flow_trace->record_num==0)
 	{
 		free(flow_trace->trace_record);
+		flow_trace->trace_record=NULL;
 //		message_remove_expand(message,type,&flow_trace);
 	}
 		
-/*
-	if(Isvaliduuid(msg_head->receiver_uuid))
-	{
-		msg_head->state=MSG_FLOW_DELIVER;	
-	}
-	else
-*/
 	{
 		msg_head->state=MSG_FLOW_DELIVER;
 		msg_head->flag |= MSG_FLAG_LOCAL;
@@ -2088,17 +2119,19 @@ int router_pop_site(void * message)
 
 int router_pop_aspect_site(void * message, char * proc)
 {
+	MSG_EXPAND * expand;
 	struct expand_aspect_point * aspect_point;
 	int ret;
 	int len;
 
 	MSG_HEAD * msg_head =message_get_head(message);
 
-	ret=message_get_define_expand(message,&aspect_point,DTYPE_MSG_EXPAND,SUBTYPE_ASPECT_POINT);
+	ret=message_get_define_expand(message,&expand,DTYPE_MSG_EXPAND,SUBTYPE_ASPECT_POINT);
 	if(ret<0)
 		return -EINVAL;
-	if(aspect_point==NULL)
+	if(expand==NULL)
 		return 0;
+	aspect_point=expand->expand;
 	if(aspect_point->record_num<1)
 		return 0;
 
