@@ -7,11 +7,12 @@
 	"record":
 	{
 		"type":"MESSAGE",
-		"elem_no":5,
+		"elem_no":6,
 		"elemlist":
 		[
 			"HEAD=0x01",
 			"EXPAND",
+			"EXPAND_HEAD",
 			"CONN_SYNI",
 			"CONN_ACKI",
 			"BASE_MSG"
