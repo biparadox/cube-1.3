@@ -726,29 +726,41 @@ int router_dup_activemsg_info (void * message)
 	new_msg_head->ljump=msg_head->ljump;	
 	new_msg_head->rjump=msg_head->rjump;	
 
+	MSG_EXPAND * old_expand;
+	MSG_EXPAND * new_expand;
 	void * flow_expand;
-	ret=message_get_define_expand(active_msg,&flow_expand,DTYPE_MSG_EXPAND,SUBTYPE_FLOW_TRACE);
-	if(flow_expand!=NULL) 
+	ret=message_get_define_expand(active_msg,&old_expand,DTYPE_MSG_EXPAND,SUBTYPE_FLOW_TRACE);
+	if(old_expand!=NULL) 
 	{
+		new_expand=Calloc0(sizeof(MSG_EXPAND));
+		if(new_expand==NULL)
+			return -ENOMEM;
+		Memcpy(new_expand,old_expand,sizeof(MSG_EXPAND_HEAD));
 		void * struct_template =memdb_get_template(DTYPE_MSG_EXPAND,SUBTYPE_FLOW_TRACE);
-		void * new_expand = clone_struct(flow_expand,struct_template);
-
+		new_expand->expand = clone_struct(old_expand->expand,struct_template);
 		message_add_expand(message,new_expand);
 	}
-	ret=message_get_define_expand(active_msg,&flow_expand,DTYPE_MSG_EXPAND,SUBTYPE_ASPECT_POINT);
-	if(flow_expand!=NULL) 
+	ret=message_get_define_expand(active_msg,&old_expand,DTYPE_MSG_EXPAND,SUBTYPE_ASPECT_POINT);
+	if(old_expand!=NULL) 
+
 	{
+		new_expand=Calloc0(sizeof(MSG_EXPAND));
+		if(new_expand==NULL)
+			return -ENOMEM;
+		Memcpy(new_expand,old_expand,sizeof(MSG_EXPAND_HEAD));
 		void * struct_template =memdb_get_template(DTYPE_MSG_EXPAND,SUBTYPE_ASPECT_POINT);
-		void * new_expand = clone_struct(flow_expand,struct_template);
-
+		new_expand->expand = clone_struct(old_expand->expand,struct_template);
 		message_add_expand(message,new_expand);
 	}
-	ret=message_get_define_expand(active_msg,&flow_expand,DTYPE_MSG_EXPAND,SUBTYPE_ROUTE_RECORD);
-	if(flow_expand!=NULL) 
+	ret=message_get_define_expand(active_msg,&old_expand,DTYPE_MSG_EXPAND,SUBTYPE_ROUTE_RECORD);
+	if(old_expand!=NULL) 
 	{
+		new_expand=Calloc0(sizeof(MSG_EXPAND));
+		if(new_expand==NULL)
+			return -ENOMEM;
+		Memcpy(new_expand,old_expand,sizeof(MSG_EXPAND_HEAD));
 		void * struct_template =memdb_get_template(DTYPE_MSG_EXPAND,SUBTYPE_ROUTE_RECORD);
-		void * new_expand = clone_struct(flow_expand,struct_template);
-
+		new_expand->expand = clone_struct(old_expand->expand,struct_template);
 		message_add_expand(message,new_expand);
 	}
 	return 1;

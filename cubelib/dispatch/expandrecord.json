@@ -53,9 +53,6 @@
 		{
 			"elem_desc":
 			[
-				{"name":"data_size","type":"INT"},
-				{"name":"type","type":"TYPE"},
-				{"name":"subtype","type":"SUBTYPE","def":"type"},
 				{"name":"sender_uuid","type":"UUID"},
 				{"name":"receiver_uuid","type":"UUID"},
 				{"name":"route","type":"STRING","size":32},

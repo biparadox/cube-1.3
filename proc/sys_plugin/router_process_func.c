@@ -468,7 +468,10 @@ int proc_router_start(void * sub_proc,void * para)
 									router_pop_site(message);
 									printf("begin to response query message");
 									msg_head->flag|=MSG_FLAG_RESPONSE;
-									msg_head->flag&=~MSG_FLAG_LOCAL;
+									// if the receiver uuid is a str in response mode, it should be a port module
+									// else, it should be a remote proc
+									if(!Isstrinuuid(msg_head->receiver_uuid))
+										msg_head->flag&=~MSG_FLAG_LOCAL;
 									msg_head->ljump--;
 									break;
 								}
