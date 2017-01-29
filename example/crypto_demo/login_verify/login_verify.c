@@ -131,6 +131,7 @@ int user_addr_store(void * sub_proc,void * message)
 	
 	int ret;
 	struct user_address * user_addr;
+	MSG_EXPAND * expand;
 	struct expand_flow_trace * flow_trace;
 	struct login_info * login_data;
 	DB_RECORD * db_record;
@@ -139,9 +140,12 @@ int user_addr_store(void * sub_proc,void * message)
 	ret=message_get_record(message,&login_data,0);
 	if(ret<0)
 		return ret;
-	ret=message_get_define_expand(message,&flow_trace,DTYPE_MSG_EXPAND,SUBTYPE_FLOW_TRACE);
+	ret=message_get_define_expand(message,&expand,DTYPE_MSG_EXPAND,SUBTYPE_FLOW_TRACE);
 	if(ret<0)
 		return ret;
+	if(expand==NULL)
+		return -EINVAL;
+	flow_trace=expand->expand;
 
 	if(flow_trace->record_num<=0)
 		return -EINVAL;

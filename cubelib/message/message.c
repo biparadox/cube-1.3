@@ -914,14 +914,14 @@ int message_load_expand(void * message)
 	expand=(MSG_EXPAND *)data;
 	if(expand->data_size<0)
 		return -EINVAL;
-	offset+=expand->data_size;
+	offset+=expand->data_size+sizeof(MSG_EXPAND_HEAD);
 	struct_template=memdb_get_template(expand->type,expand->subtype);
 	if(struct_template==NULL)
 	{
 		data+=expand->data_size;
 		continue;
 	}
-	buffer=Talloc(struct_size(struct_template));
+	ret=Galloc0(&buffer,struct_size(struct_template));
 	if(buffer==NULL)
 		return -EINVAL;
 	ret=blob_2_struct(data+sizeof(MSG_EXPAND_HEAD),buffer,struct_template);
@@ -933,9 +933,10 @@ int message_load_expand(void * message)
 	msg_box->pexpand[no]=Calloc0(sizeof(MSG_EXPAND));
 	if(msg_box->pexpand[no]==NULL)
 		return -EINVAL;
-	expand=(MSG_EXPAND *)msg_box->pexpand[no];
-	expand->expand=buffer;
-	data+=expand->data_size+sizeof(MSG_EXPAND_HEAD);
+	pexpand=(MSG_EXPAND *)msg_box->pexpand[no];
+	pexpand->expand=buffer;
+	pexpand->type=expand->type;
+	pexpand->subtype=expand->subtype;
 
     }
     return offset;
