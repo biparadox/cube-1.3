@@ -416,6 +416,7 @@ int rule_get_target(void * router_rule,void * message,void **result)
 {
     BYTE * target;
     int ret;
+    char buffer[DIGEST_SIZE*2];
     ROUTE_RULE * rule= (ROUTE_RULE *)router_rule;
     *result=NULL;
     switch(rule->target_type){
@@ -459,26 +460,41 @@ int rule_get_target(void * router_rule,void * message,void **result)
 				return -EINVAL;
 			break;
 		   }
-/*
+
 	    case ROUTE_TARGET_EXPAND:
 		   {
-			char expand_type[5];
-			void * struct_template;
-			void * expand;
-			if(rule->target_name[4]!=':')
+			int expand_type;
+			int expand_subtype;
+			MSG_EXPAND * expand;
+			void * expand_template;
+			void * expand_data;
+			int len;
+		
+			len=Strlen(rule->target_name);
+			if(len>DIGEST_SIZE*3)
 				return -EINVAL;
-			memcpy(expand_type,rule->target_name,4);
-		        ret = message_get_define_expand(message,&expand,expand_type);
+			
+			int i=0;
+			int offset=0;
+			offset=message_read_typestr(rule->target_name,&expand_type,&expand_subtype);
+			if(offset<0)
+				return offset;
+			while(rule->target_name[offset++]!=':')
+			{
+				if(offset>=len)
+					return -EINVAL;
+			}
+
+		        ret = message_get_define_expand(message,&expand,expand_type,expand_subtype);
 			if(ret<0)
 				return -EINVAL;
 			if(expand==NULL)
 				return -EINVAL;
-			struct_template=load_record_template(expand_type);
-			if(struct_template==NULL)
-				return -EINVAL;
+			expand_template=memdb_get_template(expand_type,expand_subtype);
+			if(expand_template==NULL)
+				return -EINVAL;		
 			target=malloc(DIGEST_SIZE*2+1);
-			ret=struct_read_elem(rule->target_name+5,expand,target,struct_template);		
-			free_struct_template(struct_template);
+			ret=struct_read_elem(rule->target_name+offset,expand->expand,target,expand_template);		
 			if(ret<0)
 				return ret;
 		   	if(target==NULL)
@@ -486,10 +502,10 @@ int rule_get_target(void * router_rule,void * message,void **result)
 		   	break;
 		   }
 
-
+/*
 	    case ROUTE_TARGET_SPLIT:
 		    return -EINVAL;
-*/
+
 	    case ROUTE_TARGET_MIXUUID:
 		    {
 			    void * json_root;
@@ -562,7 +578,7 @@ int rule_get_target(void * router_rule,void * message,void **result)
 						Memcpy(mixvalue[i],name,DIGEST_SIZE*2);
 					}
 				}
-/*
+
 			    	else if(strncmp(tag,"EXPAND",6)==0)
 			    	{
 					char * type=tag+7;
@@ -584,7 +600,7 @@ int rule_get_target(void * router_rule,void * message,void **result)
 					if(ret<0)
 						return ret;
 			    	}
-*/
+
 		    		else
 			    	{
 			    		return -EINVAL;
@@ -603,7 +619,7 @@ int rule_get_target(void * router_rule,void * message,void **result)
 		 	 Memcpy(target,uuid,DIGEST_SIZE*2);
 		   	 break;
 		   }
-		    
+*/		    
 	    case ROUTE_TARGET_ERROR:
 	    default:
 		    return -EINVAL;

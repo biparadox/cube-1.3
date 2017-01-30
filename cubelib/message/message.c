@@ -1923,6 +1923,62 @@ char * message_get_typestr(void * message)
 	return dup_str(buffer,DIGEST_SIZE*2+1);	
 }
 
+int message_read_typestr(char * str, int  * type, int * subtype)
+{
+	int ret;
+	char buffer[DIGEST_SIZE*2+1];
+	int i;
+	int offset;
+	int len;
+
+	if(str==NULL)
+		return -EINVAL;
+	offset=0;
+	len=Strnlen(str,DIGEST_SIZE*2+1);
+	if(len>=DIGEST_SIZE*2)
+		return -EINVAL;
+	while(offset!='(')
+	{
+		offset++;
+		if(offset>=len)
+			return -EINVAL;
+	}	
+		
+	// get typestr 
+	while((str[offset]!=',')&&(str[offset]!=')'))
+	{
+		buffer[i++]=str[offset++];
+		if(offset>=len)
+			return -EINVAL;
+	}	
+	buffer[i]=0;
+	*type=memdb_get_typeno(buffer);
+	if(*type<0)
+		return *type;
+	*subtype=0;
+	if(str[offset]==')')
+		return offset++;
+	while(str[++offset]==' ')
+	{
+		if(offset>=len)
+			return -EINVAL;	
+	}
+	i=0;
+	while(str[offset]!=')')
+	{
+		buffer[i++]=str[offset++];
+		if(offset>=len)
+			return -EINVAL;
+	}
+	if(i==0)
+		return offset++;
+	buffer[i]=0;
+	*subtype=memdb_get_subtypeno(*type,buffer);
+	if(*subtype<0)
+		return *subtype;
+	return offset++;
+}
+
 void * message_clone(void * message)
 {
 	struct message_box * src_msg;

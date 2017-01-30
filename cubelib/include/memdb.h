@@ -94,6 +94,7 @@ int  memdb_get_subtypeno(int typeno,char * typestr);
 char * memdb_get_typestr(int typeno);
 char * memdb_get_subtypestr(int typeno,int subtypeno);
 void  * memdb_get_recordtype(int type,int subtype);
+int memdb_read_typestr(char * str,int * type, int * subtype);
 int memdb_print(void * data,char * json_str);
 
 int memdb_read_desc(void * root,BYTE * uuid);
