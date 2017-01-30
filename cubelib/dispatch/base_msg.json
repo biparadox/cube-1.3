@@ -22,3 +22,22 @@
 		}
 	}
 }
+{
+	"head":
+	{
+		"name":"uuid_record",
+		"type":"RECORDTYPE"
+	},
+	"record":
+	{
+		"type":"MESSAGE",
+		"subtype":"UUID_RECORD",
+		"struct_desc":
+		{
+			"elem_desc":
+			[
+				{"name":"uuid","type":"UUID"}
+			]
+		}
+	}
+}

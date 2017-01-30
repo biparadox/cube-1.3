@@ -1280,96 +1280,9 @@ int message_get_flow(void * message)
 	return msg_box->head.flow;
 }
 
-/*
-int __message_alloc_record_site(void * message)
-{
-	struct message_box * msg_box;
-	int ret;
-	MSG_HEAD * msg_head;
-
-	msg_box=(struct message_box *)message;
-
-	msg_head=&(msg_box->head);
-	if(message==NULL)
-		return -EINVAL;
-	
-	// malloc a new record_array space,and duplicate the old record_array value
-	msg_box->record=kmalloc((sizeof(BYTE *)+sizeof(void *)+sizeof(int))*msg_head->record_num,GFP_KERNEL);
-	if(msg_box->record==NULL)
-		return -ENOMEM;
-	memset(msg_box->record,0,(sizeof(BYTE *)+sizeof(void *)+sizeof(int))*msg_box->head.record_num);
-	msg_box->precord=msg_box->record+msg_head->record_num;
-	msg_box->record_size=msg_box->precord+msg_head->record_num;
-	return 0;
-}
-
-int message_record_init(void * message)
-{
-        struct message_box * msg_box=message;
-        MSG_HEAD * message_head;
-        void * template;
-        int record_size;
-        int readbuf[1024];
-
-        if((msg_box==NULL) || IS_ERR(msg_box))
-            return -EINVAL;
-
-        message_head=&(msg_box->head);
-        msg_box->record_template=load_record_template(message_head->record_type);
-        if(msg_box->record_template == NULL)
-            return -EINVAL;
-        if(IS_ERR(msg_box->record_template))
-            return msg_box->record_template;
-
-        __message_alloc_record_site(message);
-        return 0;
-}
-
-int __message_add_record_site(void * message,int increment)
-{
-	struct message_box * msg_box;
-	int ret;
-	MSG_HEAD * msg_head;
-	BYTE * data;
-	void * old_recordarray;
-	void * old_precordarray;
-	void * old_sizearray;
-	
-
-	msg_box=(struct message_box *)message;
-
-	msg_head=&(msg_box->head);
-	if(message==NULL)
-		return -EINVAL;
-	
-	int record_no=msg_head->record_num;
-	msg_head->record_num+=increment;
-
-	old_recordarray=msg_box->record;
-	old_precordarray=msg_box->precord;
-	old_sizearray=msg_box->record_size;
-
-	// malloc a new record_array space,and duplicate the old record_array value
-	msg_box->record=kmalloc((sizeof(BYTE *)+sizeof(void *)+sizeof(int))*msg_head->record_num,GFP_KERNEL);
-	if(msg_box->record==NULL)
-		return -ENOMEM;
-	memset(msg_box->record,0,(sizeof(BYTE *)+sizeof(void *)+sizeof(int))*msg_box->head.record_num);
-	msg_box->precord=msg_box->record+msg_head->record_num;
-	msg_box->record_size=msg_box->precord+msg_head->record_num;
-
-	if(record_no>0)
-	{
-		memcpy(msg_box->record,old_recordarray,record_no*sizeof(BYTE *));
-		memcpy(msg_box->precord,old_precordarray,record_no*sizeof(void *));
-		memcpy(msg_box->record_size,old_sizearray,record_no*sizeof(int));
-		// free the old record array,use new record to replace it
-		kfree(old_recordarray);
-	}
-	return 0;
-}
-
 // message add functions
 
+/*
 int message_add_record_blob(void * message,int record_size, BYTE * record)
 {
 	struct message_box * msg_box;
@@ -1411,42 +1324,6 @@ int message_add_record_blob(void * message,int record_size, BYTE * record)
 	msg_box->head.record_size+=record_size;
     msg_box->box_state=MSG_BOX_ADD;
 	return ret;
-}
-
-
-
-int message_add_record(void * message,void * record)
-{
-	struct message_box * msg_box;
-	int ret;
-	MSG_HEAD * msg_head;
-        int curr_site;
-
-	msg_box=(struct message_box *)message;
-
-	msg_head=&(msg_box->head);
-	if(message==NULL)
-		return -EINVAL;
-	if(record==NULL)
-		return -EINVAL;
-	
-    int record_no=msg_head->record_num;
-
-    for(curr_site=0;curr_site<record_no;curr_site++)
-    {
-        if((msg_box->precord[curr_site]==NULL)
-                    &&(msg_box->record[curr_site]==NULL))
-        break;
-    }
-    if(curr_site==record_no)
-        ret=__message_add_record_site(message,1);
-    if(ret<0)
-	    return ret;
-
-	// assign the record's value 
-    msg_box->precord[curr_site]=record;
-    msg_box->box_state=MSG_BOX_ADD;
-    return ret;
 }
 */
 int __message_add_expand_site(void * message,int increment)
@@ -1702,100 +1579,6 @@ int message_expand_struct2blob(void * message)
 	kfree(buffer);
 	msg_box->head.expand_size=expand_size;
 	return expand_size;
-}
-
-
-int message_output_blob(void * message, BYTE ** blob)
-{
-	struct message_box * msg_box;
-	int ret;
-	MSG_HEAD * msg_head;
-	BYTE * data;
-	BYTE * buffer;
-	int i,j;
-	int record_size,expand_size;
-	int head_size;
-	int blob_size,offset;
-	
-
-	msg_box=(struct message_box *)message;
-
-	if(message==NULL)
-		return -EINVAL;
-	if(blob==NULL)
-		return -EINVAL;
-	
-	record_size=0;
-	expand_size=0;
-	buffer=kmalloc(4096,GFP_KERNEL);
-	if(buffer==NULL)
-		return -ENOMEM;
-
-	int flag=message_get_flag(message);
-	if(flag &MSG_FLAG_CRYPT)
-	{
-		if(msg_box->blob == NULL)
-			return -EINVAL;
-	}
-	if(msg_box->record_template == NULL)
-	{
-		if(msg_box->blob == NULL)
-			return -EINVAL;
-	}
-
-	if(msg_box->head.record_num<0)
-		return -EINVAL;
-	if(msg_box->head.expand_num<0)
-		return -EINVAL;
-	if(msg_box->head.expand_num>MAX_EXPAND_NUM)
-		return -EINVAL;
-
-	offset=sizeof(MSG_HEAD);
-
-	// duplicate record blob
-	if(msg_box->blob != NULL)
-	{
-		Memcpy(buffer+offset,msg_box->blob,msg_box->head.record_size);
-		offset+=msg_box->head.record_size;
-	}	
-	else 
-	{
-		ret=message_record_struct2blob(message);
-		if(ret<0)
-		{
-			free(buffer);
-			return ret;
-		}
-		for(i=0;i<msg_box->head.record_num;i++)
-		{
-			memcpy(buffer+offset,msg_box->record[i],msg_box->record_size[i]);
-			offset+=msg_box->record_size[i];
-		}
-	}
-
-	// duplicate expand blob
-	ret=message_expand_struct2blob(message);
-	if(ret<0)
-		return ret;
-
-
-
-	for(i=0;i<msg_box->head.expand_num;i++)
-	{
-		memcpy(buffer+offset,msg_box->expand[i],msg_box->expand_size[i]);
-		offset+=msg_box->expand_size[i];
-	}
-
-	head_size=struct_2_blob(&(msg_box->head),buffer,msg_box->head_template);
-	if(head_size!=sizeof(MSG_HEAD))
-	{
-		free(buffer);
-		return -EINVAL;
-	}
-	blob_size=head_size+msg_box->head.record_size+msg_box->head.expand_size;
-	msg_box->blob=buffer;
-	*blob=msg_box->blob;
-	return blob_size;
 }
 
 int message_output_record_blob(void * message, BYTE ** blob)
@@ -2138,4 +1921,117 @@ char * message_get_typestr(void * message)
 	Strcat(buffer," ");
 	Strncat(buffer,subtypestr,DIGEST_SIZE);
 	return dup_str(buffer,DIGEST_SIZE*2+1);	
+}
+
+void * message_clone(void * message)
+{
+	struct message_box * src_msg;
+	struct message_box * new_msg;
+	MSG_HEAD * message_head;
+	MSG_EXPAND * old_expand;
+	MSG_EXPAND * new_expand;
+	void * template;
+	void * clone;
+	int record_size;
+	int ret;
+	int readbuf[1024];
+	int i;
+
+	src_msg=(struct message_box *)message;
+
+	if((src_msg==NULL) || IS_ERR(src_msg))
+		return -EINVAL;
+
+	new_msg=message_init();
+	if(new_msg==NULL)
+		return -EINVAL;
+
+	Memcpy(&(new_msg->head),&(src_msg->head),sizeof(MSG_HEAD));
+
+   	new_msg->box_state=MSG_BOX_INIT;
+	new_msg->head.record_num=0;
+	new_msg->head.expand_num=0;
+	new_msg->head.expand_size=0;
+
+	ret=message_record_init(new_msg);
+	if(ret<0)
+	{
+		message_free(new_msg);
+		return NULL;	
+	}
+
+	
+	int flag=message_get_flag(src_msg);
+	if(flag &MSG_FLAG_CRYPT)
+	{
+		if(src_msg->blob == NULL)
+			return NULL;
+		void * blob = malloc(src_msg->head.record_size);
+		if(blob==NULL)
+			return NULL;
+		Memcpy(blob,src_msg->blob,src_msg->head.record_size);
+		new_msg->blob=blob;
+	}
+	else
+	{
+		new_msg->head.record_num=0;
+		new_msg->head.record_size=0;
+
+		for(i=0;i<src_msg->head.record_num;i++)
+		{
+			if(src_msg->precord[i]!=NULL)
+			{
+				void * record=clone_struct(src_msg->precord[i],src_msg->record_template);
+				if(record==NULL)
+				{
+					printf("duplicate message's record error!\n");
+					message_free(new_msg);
+					return NULL;	
+				}
+				message_add_record(new_msg,record);
+			}
+			else
+			{
+				message_free(new_msg);
+				return NULL;
+			}
+		}
+	}
+	for(i=0;i<src_msg->head.expand_num;i++)
+	{
+		old_expand = (MSG_EXPAND *)src_msg->pexpand[i];
+		if(old_expand!=NULL)
+		{
+			void * expand_template;
+			if(old_expand->type==DTYPE_MSG_EXPAND)
+			{
+				if((old_expand->subtype==SUBTYPE_FLOW_TRACE)
+					||(old_expand->subtype==SUBTYPE_ASPECT_POINT)
+					||(old_expand->subtype==SUBTYPE_ROUTE_RECORD))
+					continue;
+					
+			}
+
+			ret=message_add_expand_data(new_msg,old_expand->type,old_expand->subtype,old_expand->expand);
+			if(ret<0)
+			{
+				printf("duplicate message's expand error!\n");
+				message_free(new_msg);
+				return NULL;	
+			}
+		
+		}
+		else if(old_expand=(MSG_EXPAND *)src_msg->expand[i])
+		{
+			printf("need to duplicate the bin expand value!,not finished!\n");
+		}
+		else
+		{
+			message_free(new_msg);
+			return NULL;
+		}
+	}
+
+	new_msg->active_msg=message;
+	return new_msg;
 }
