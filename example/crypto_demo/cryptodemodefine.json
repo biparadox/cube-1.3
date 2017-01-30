@@ -27,7 +27,7 @@
 		[
 			"LOGIN_INFO=0x01",
 			"VERIFY_RETURN",
-			"SESSION_MSG",
+			"CHAT_MSG",
 			"USER_ADDR=0x10"
 		]
 	}
@@ -93,7 +93,7 @@
 	"record":
 	{
 		"type":"CRYPTO_DEMO",
-		"subtype":"SESSION_MSG",
+		"subtype":"CHAT_MSG",
 		"struct_desc":
 		{
 			"elem_desc":

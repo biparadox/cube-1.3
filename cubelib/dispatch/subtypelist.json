@@ -15,7 +15,7 @@
 			"EXPAND_HEAD",
 			"CONN_SYNI",
 			"CONN_ACKI",
-			"BASE_MSG"
+			"BASE_MSG",
 			"UUID_RECORD"
 		]
 	}
