@@ -1908,15 +1908,14 @@ int router_set_next_jump(void * message)
 			ret=rule_get_target(rule,message,&target);
 			if(ret<0)
 				return ret;		
-			if(Isvaliduuid(target))
+			if(Isstrinuuid(target))
 			{
-				Memcpy(msg_head->receiver_uuid,target,DIGEST_SIZE);
-				
+				msg_head->receiver_uuid[0]='@';
+				Strncpy(msg_head->receiver_uuid+1,target,DIGEST_SIZE/2);
 			}
 			else
 			{
-				msg_head->receiver_uuid[0]='@';
-				Strncpy(msg_head->receiver_uuid+1,target,DIGEST_SIZE-1);
+				Memcpy(msg_head->receiver_uuid,target,DIGEST_SIZE);
 			}	
 			free(target);
 			message_set_state(message,MSG_FLOW_DELIVER);

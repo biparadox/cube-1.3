@@ -111,7 +111,7 @@ int proc_dispatch(void * sub_proc,void * message)
 		new_msg=message_clone(message);
 		if(new_msg==NULL)
 			return -EINVAL;
-		ret=message_add_expand_data(new_msg,DTYPE_CRYPTO_DEMO,SUBTYPE_USER_ADDR,user_addr);
+		ret=message_add_expand_data(new_msg,DTYPE_MESSAGE,SUBTYPE_UUID_RECORD,receiver_addr);
 		if(ret<0)
 			return ret;
 		ex_module_sendmsg(sub_proc,new_msg);

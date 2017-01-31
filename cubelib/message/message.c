@@ -1937,7 +1937,7 @@ int message_read_typestr(char * str, int  * type, int * subtype)
 	len=Strnlen(str,DIGEST_SIZE*2+1);
 	if(len>=DIGEST_SIZE*2)
 		return -EINVAL;
-	while(offset!='(')
+	while(str[offset++]!='(')
 	{
 		offset++;
 		if(offset>=len)
