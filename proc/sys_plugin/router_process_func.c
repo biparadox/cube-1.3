@@ -23,7 +23,7 @@
 //#include "router_value.h"
 #include "router_process_func.h"
 
-int read_dispatch_file(char * file_name)
+int read_dispatch_file(char * file_name,int is_aspect)
 {
 	int ret;
 
@@ -69,12 +69,16 @@ int read_dispatch_file(char * file_name)
 			printf("read %d file error!\n",count);
 			break;
 		}
-		dispatch_policy_add(policy);
+		if(is_aspect)
+			dispatch_aspect_policy_add(policy);
+		else
+			dispatch_policy_add(policy);
 		count++;
 	}
 	printf("read %d policy succeed!\n",count);
 	return count;
 }
+
 int proc_router_hit_target(void * message,char * local_uuid,char * proc_name)
 {
 	int ret;
@@ -215,17 +219,13 @@ int proc_router_init(void * sub_proc,void * para)
         config_filename= para;
 
  // router_policy_init();
-    ret=read_dispatch_file(config_filename);	
+    ret=read_dispatch_file(config_filename,0);	
     if(ret<=0)
     {
 	    printf("read router policy error %d!\n",ret);
 //	    return ret;
     }
 
-//    void * context;
-//    ret=ex_module_getcontext(sub_proc,&context);
-//    if(ret<0)
-//	return ret;
     proc_audit_init();
     return 0;
 }

@@ -64,6 +64,7 @@ int dispatch_add_route_policy(void * list,void * policy);
 
 void * dispatch_read_policy(void * policy_node);
 int dispatch_policy_add(void * policy);
+int dispatch_aspect_policy_add(void * policy);
 
 
 
