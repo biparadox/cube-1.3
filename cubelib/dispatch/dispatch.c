@@ -1779,7 +1779,8 @@ int router_set_aspect_flow(void * message,void * policy)
 	}
 	return 1;	
 }
-int router_find_policy_byname(void **msg_policy,char * name)
+
+int router_find_policy_byname(void **msg_policy,char * name,int rjump)
 {
     DISPATCH_POLICY * policy;
     int ret;
@@ -1793,8 +1794,11 @@ int router_find_policy_byname(void **msg_policy,char * name)
 	ret=Strncmp(name,policy->name,DIGEST_SIZE);
 	if(ret==0)
 	{
-		*msg_policy=policy;		
-		break;
+		if((policy->jump==0) || (policy->jump==rjump))
+		{
+			*msg_policy=policy;		
+			break;
+		}
 	}
     	ret=dispatch_policy_getnext(&policy);
     }
@@ -1867,7 +1871,7 @@ int router_set_next_jump(void * message)
 		
 	if(msg_head->flow!=MSG_FLOW_ASPECT)
 	{
-		ret=router_find_policy_byname(&msg_policy,msg_head->route);
+		ret=router_find_policy_byname(&msg_policy,msg_head->route,msg_head->rjump);
 	}
 //	else
 //	{
