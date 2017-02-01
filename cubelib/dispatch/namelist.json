@@ -13,7 +13,8 @@
 			"DELIVER=0x04",
 			"QUERY=0x08",
 			"RESPONSE=0x10",
-			"ASPECT=0x20",
+			"DUP=0x20",
+			"ASPECT=0x40",
 			"FINISH=0x8000",
 			"ERROR=0xFFFF"
 		]

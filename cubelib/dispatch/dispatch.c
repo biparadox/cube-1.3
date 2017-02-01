@@ -1512,24 +1512,22 @@ int router_store_route(void * message)
 	if(message==NULL)
 		return  -EINVAL;
 	msg_head=(MSG_HEAD *)message_get_head(message);	
-	route_record=malloc(sizeof(*route_record)); 	
+	ret=Galloc0(&route_record,sizeof(*route_record));
+	if(ret<0)
+		return ret;
 	if(route_record==NULL)
-		return -ENOMEM;
+		return -ENOMEM;	
 
-	memset(route_record,0,sizeof(*route_record));
-	route_record->type=DTYPE_MESSAGE;
-	route_record->subtype=SUBTYPE_ROUTE_RECORD;
-	route_record->data_size=sizeof(*route_record);
-	memcpy(route_record->sender_uuid,msg_head->sender_uuid,DIGEST_SIZE*2);
-	memcpy(route_record->receiver_uuid,msg_head->receiver_uuid,DIGEST_SIZE*2);
-	memcpy(route_record->route,msg_head->route,DIGEST_SIZE);
+	Memcpy(route_record->sender_uuid,msg_head->sender_uuid,DIGEST_SIZE);
+	Memcpy(route_record->receiver_uuid,msg_head->receiver_uuid,DIGEST_SIZE);
+	Memcpy(route_record->route,msg_head->route,DIGEST_SIZE);
 	route_record->flow=msg_head->flow;
 	route_record->state=msg_head->state;
 	route_record->flag=msg_head->flag;
 	route_record->ljump=msg_head->ljump;
 	route_record->rjump=msg_head->rjump;
 		
-	ret=message_add_expand(message,route_record);
+	ret=message_add_expand_data(message,DTYPE_MESSAGE,SUBTYPE_ROUTE_RECORD,route_record);
 	return ret;
 }
 int route_recover_route(void * message)

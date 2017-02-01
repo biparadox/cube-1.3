@@ -41,29 +41,9 @@ typedef struct tagdispatch_policy
 static POLICY_LIST local_router_policy;
 static POLICY_LIST main_router_policy;
 static POLICY_LIST aspect_router_policy;
-/*
-struct expand_flow_trace
-{
-    int  data_size;
-    char tag[4];                 // this should be "FTRE" and "APRE"
-    int  record_num;
-    char *trace_record;
-} __attribute__((packed));
 
-struct expand_aspect_point
-{
-    int  data_size;
-    char tag[4];                 // this should be "APRE"
-    int  record_num;
-    char * aspect_proc;
-    char * aspect_point;
-} __attribute__((packed));
-*/
 struct expand_route_record
 {
-	int data_size;
-	int type;
-	int subtype;
 	char sender_uuid[DIGEST_SIZE*2];
 	char receiver_uuid[DIGEST_SIZE*2];
 	char route[DIGEST_SIZE];
