@@ -320,8 +320,12 @@ int proc_router_start(void * sub_proc,void * para)
 			switch(ex_module_gettype(sub_proc))
 			{
 				case MOD_TYPE_CONN:
-				case MOD_TYPE_PORT:
+					msg_head->ljump=1;	
 					msg_head->rjump++;
+					break;
+				case MOD_TYPE_PORT:
+					msg_head->ljump=1;	
+					msg_head->rjump=1;
 					break;
 				default:
 					msg_head->ljump++;	
