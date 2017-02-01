@@ -1134,7 +1134,7 @@ int router_set_dup_flow(void * message,void * policy)
 	return 1;
 }
 
-int router_find_policy_byname(void **msg_policy,char * name,int rjump)
+int router_find_policy_byname(void **msg_policy,char * name,int rjump,int ljump)
 {
     DISPATCH_POLICY * policy;
     int ret;
@@ -1150,8 +1150,11 @@ int router_find_policy_byname(void **msg_policy,char * name,int rjump)
 	{
 		if((policy->rjump==0) || (policy->rjump==rjump))
 		{
-			*msg_policy=policy;		
-			break;
+			if((policy->ljump==0) || (policy->ljump==ljump))
+			{
+				*msg_policy=policy;		
+				break;
+			}
 		}
 	}
     	ret=dispatch_policy_getnext(&policy);
@@ -1172,8 +1175,11 @@ int router_find_policy_byname(void **msg_policy,char * name,int rjump)
 	{
 		if((policy->rjump==0) || (policy->rjump==rjump))
 		{
-			*msg_policy=policy;		
-			break;
+			if((policy->ljump==0) || (policy->ljump==ljump))
+			{
+				*msg_policy=policy;		
+				break;
+			}
 		}
 	}
     	ret=dispatch_aspect_policy_getnext(&policy);
@@ -1248,7 +1254,7 @@ int router_set_next_jump(void * message)
 		
 	if(msg_head->flow!=MSG_FLOW_ASPECT)
 	{
-		ret=router_find_policy_byname(&msg_policy,msg_head->route,msg_head->rjump);
+		ret=router_find_policy_byname(&msg_policy,msg_head->route,msg_head->rjump,0);
 	}
 //	else
 //	{
