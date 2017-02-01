@@ -29,6 +29,7 @@ typedef struct proc_init_parameter
 
 static char connector_config_file[DIGEST_SIZE*2]="./connector_config.cfg";
 static char router_config_file[DIGEST_SIZE*2]="./router_policy.cfg";
+static char aspect_config_file[DIGEST_SIZE*2]="./aspect_policy.cfg";
 static char plugin_config_file[DIGEST_SIZE*2]="./plugin_config.cfg";
 static char main_config_file[DIGEST_SIZE*2]="./main_config.cfg";
 static char sys_config_file[DIGEST_SIZE*2]="./sys_config.cfg";
@@ -98,7 +99,7 @@ int main(int argc,char **argv)
 	if(argc%2!=1)
 	{
 		printf("error format! should be %s [-m main_cfgfile] [-p plugin_cfgfile]"
-			"[-c connect_cfgfile] [-r router_cfgfile] [-a audit_file]!\n",argv[0]);
+			"[-c connect_cfgfile] [-r router_cfgfile] [-s aspect_cfgfile] [-a audit_file]!\n",argv[0]);
 		return -EINVAL;
 	}
     }
@@ -129,35 +130,40 @@ int main(int argc,char **argv)
 		&&(strlen(argv[argv_offset])!=2))
 	{
 		printf("error format! should be %s [-m main_cfgfile] [-p plugin_cfgfile]"
-			"[-c connect_cfgfile] [-r router_cfgfile] [-a audit_file]!\n",argv[0]);
+			"[-c connect_cfgfile] [-r router_cfgfile] [-s aspect_cfgfile] [-a audit_file]!\n",argv[0]);
 		return -EINVAL;
 	}
 	switch(argv[argv_offset][1])
 	{
 		case 'm':
-			if(strlen(argv[argv_offset+1])>=DIGEST_SIZE*2)
+			if(Strlen(argv[argv_offset+1])>=DIGEST_SIZE*2)
 				return -EINVAL;
-			strncpy(main_config_file,argv[argv_offset+1],DIGEST_SIZE*2);
+			Strncpy(main_config_file,argv[argv_offset+1],DIGEST_SIZE*2);
 			break;			
 		case 'p':
-			if(strlen(argv[argv_offset+1])>=DIGEST_SIZE*2)
+			if(Strlen(argv[argv_offset+1])>=DIGEST_SIZE*2)
 				return -EINVAL;
-			strncpy(plugin_config_file,argv[argv_offset+1],DIGEST_SIZE*2);
+			Strncpy(plugin_config_file,argv[argv_offset+1],DIGEST_SIZE*2);
 			break;			
 		case 'c':
-			if(strlen(argv[argv_offset+1])>=DIGEST_SIZE*2)
+			if(Strlen(argv[argv_offset+1])>=DIGEST_SIZE*2)
 				return -EINVAL;
-			strncpy(connector_config_file,argv[argv_offset+1],DIGEST_SIZE*2);
+			Strncpy(connector_config_file,argv[argv_offset+1],DIGEST_SIZE*2);
 			break;			
 		case 'r':
-			if(strlen(argv[argv_offset+1])>=DIGEST_SIZE*2)
+			if(Strlen(argv[argv_offset+1])>=DIGEST_SIZE*2)
 				return -EINVAL;
-			strncpy(router_config_file,argv[argv_offset+1],DIGEST_SIZE*2);
+			Strncpy(router_config_file,argv[argv_offset+1],DIGEST_SIZE*2);
+			break;			
+		case 's':
+			if(Strlen(argv[argv_offset+1])>=DIGEST_SIZE*2)
+				return -EINVAL;
+			Strncpy(aspect_config_file,argv[argv_offset+1],DIGEST_SIZE*2);
 			break;			
 		case 'a':
-			if(strlen(argv[argv_offset+1])>=DIGEST_SIZE*2)
+			if(Strlen(argv[argv_offset+1])>=DIGEST_SIZE*2)
 				return -EINVAL;
-			strncpy(audit_file,argv[argv_offset+1],DIGEST_SIZE*2);
+			Strncpy(audit_file,argv[argv_offset+1],DIGEST_SIZE*2);
 			break;			
 		default:
 			printf("error format! should be %s [-m main_cfgfile] [-p plugin_cfgfile]"
@@ -254,7 +260,16 @@ int main(int argc,char **argv)
     ex_module_setinitfunc(router_proc,plugin_proc.init);
     ex_module_setstartfunc(router_proc,plugin_proc.start);
 
-    ex_module_init(router_proc,router_config_file);
+    struct router_init_para
+    {
+		char * router_file;
+		char * aspect_file;
+    } router_init;
+    router_init.router_file=router_config_file;
+    router_init.aspect_file=aspect_config_file;
+   	
+
+    ex_module_init(router_proc,&router_init);
 	
     printf("prepare the router proc\n");
     ret=add_ex_module(router_proc);

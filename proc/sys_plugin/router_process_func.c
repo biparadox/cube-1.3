@@ -20,7 +20,6 @@
 #include "dispatch.h"
 #include "ex_module.h"
 
-//#include "router_value.h"
 #include "router_process_func.h"
 
 int read_dispatch_file(char * file_name,int is_aspect)
@@ -212,17 +211,29 @@ int proc_router_send_msg(void * message,char * local_uuid,char * proc_name)
 
 int proc_router_init(void * sub_proc,void * para)
 {
+
     int ret;
     // main proc: read router config	
     char * config_filename= "./dispatch_policy.json";
+    char * aspect_filename=NULL;
    if(para!=NULL)
-        config_filename= para;
+   {
+	struct router_init_para * init_para=para;
+        config_filename= init_para->router_file;
+        aspect_filename= init_para->aspect_file;
+    }	
 
  // router_policy_init();
     ret=read_dispatch_file(config_filename,0);	
     if(ret<=0)
     {
 	    printf("read router policy error %d!\n",ret);
+//	    return ret;
+    }
+    ret=read_dispatch_file(aspect_filename,1);	
+    if(ret<=0)
+    {
+	    printf("read aspect policy error %d!\n",ret);
 //	    return ret;
     }
 
