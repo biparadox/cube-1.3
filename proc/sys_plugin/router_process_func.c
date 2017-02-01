@@ -607,12 +607,19 @@ int proc_router_start(void * sub_proc,void * para)
 					{
 						void * new_msg=message_clone(message);
 						ret=router_set_dup_flow(new_msg,aspect_policy);
-						proc_audit_log(new_msg);
-						printf("message (%s) is send to %s!\n",message_get_typestr(new_msg),message_get_receiver(new_msg));
-						ret=proc_router_send_msg(new_msg,local_uuid,proc_name);
-						if(ret<0)
+						if(ret>=0)
 						{
-							printf("send dup message failed!\n");
+							ret=router_set_next_jump(new_msg);
+							if(ret>=0)
+							{
+								proc_audit_log(new_msg);
+								printf("message (%s) is send to %s!\n",message_get_typestr(new_msg),message_get_receiver(new_msg));
+								ret=proc_router_send_msg(new_msg,local_uuid,proc_name);
+								if(ret<0)
+								{
+									printf("send dup message failed!\n");
+								}
+							}		
 						}
 						
 					}

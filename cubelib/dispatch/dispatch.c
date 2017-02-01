@@ -1167,7 +1167,7 @@ int router_find_policy_byname(void **msg_policy,char * name,int rjump)
         return ret;
     while(policy!=NULL)
     {
-	ret=Strncmp(name,policy->name,DIGEST_SIZE);
+	ret=Strncmp(name,policy->newname,DIGEST_SIZE);
 	if(ret==0)
 	{
 		if((policy->rjump==0) || (policy->rjump==rjump))
