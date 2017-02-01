@@ -311,6 +311,8 @@ int proc_router_start(void * sub_proc,void * para)
 			origin_proc=ex_module_getname(sub_proc);
 
 			printf("router get proc %.64s's message!\n",origin_proc); 
+
+			router_dup_activemsg_info(message);
 			
 			MSG_HEAD * msg_head;
 			msg_head=message_get_head(message);
@@ -322,12 +324,12 @@ int proc_router_start(void * sub_proc,void * para)
 					msg_head->rjump++;
 					break;
 				default:
+					msg_head->ljump++;	
 					break;
 			}
 		
 
 			//duplicate active message's info and init policy
-			router_dup_activemsg_info(message);
 			message_set_sender(message,origin_proc);
 
 			msg_policy=NULL;
@@ -339,7 +341,6 @@ int proc_router_start(void * sub_proc,void * para)
 				// enter the ASPECT route process
 				if( msg_head->flag & MSG_FLAG_RESPONSE)	
 				{
-					msg_head->ljump=0;	
 						// if this message's flow is query, we should push it into the stack
 
 					if(msg_head->rjump==0)
@@ -391,7 +392,6 @@ int proc_router_start(void * sub_proc,void * para)
 								router_pop_aspect_site(message,aspect_proc);
 								printf("begin to response aspect message");
 								msg_head->flag|=MSG_FLAG_RESPONSE;
-								msg_head->ljump--;
 								break;
 							}
 							else if((msg_head->state ==MSG_FLOW_DELIVER)
@@ -448,8 +448,6 @@ int proc_router_start(void * sub_proc,void * para)
 							&&(msg_head->flow ==MSG_FLOW_QUERY)
 							&&(msg_head->flag &MSG_FLAG_RESPONSE))
 						{
-							msg_head->ljump=0;	
-							msg_head->rjump--;
 								// if this message's flow is query, we should push it into the stack
 							router_pop_site(message);
 							printf("begin to response query message");
@@ -484,7 +482,6 @@ int proc_router_start(void * sub_proc,void * para)
 						if(msg_head->route[0]!=0)
 						{
 							// this is a message in local dispatch
-							msg_head->ljump++;	
 							ret=router_set_next_jump(message);
 							if(ret<0)
 								break;
@@ -501,7 +498,6 @@ int proc_router_start(void * sub_proc,void * para)
 									// else, it should be a remote proc
 									if(!Isstrinuuid(msg_head->receiver_uuid))
 										msg_head->flag&=~MSG_FLAG_LOCAL;
-									msg_head->ljump--;
 									break;
 								}
 								else
