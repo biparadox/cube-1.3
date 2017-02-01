@@ -74,6 +74,29 @@ int message_get_flag(void * message)
 
 	return msg_box->head.flag;
 }
+
+void * message_get_policy(void * message)
+{
+	struct message_box * msg_box;
+	int ret;
+
+	msg_box=(struct message_box *)message;
+
+	return msg_box->policy;
+}
+int message_set_policy(void * message,void * policy)
+{
+	struct message_box * msg_box;
+	int ret;
+
+	msg_box=(struct message_box *)message;
+	if(msg_box==NULL)
+		return -EINVAL;
+	msg_box->policy=policy;
+	
+	return 0;
+}
+
 void * _msg_load_template(char * subtypename)
 {
 	int subtype;
