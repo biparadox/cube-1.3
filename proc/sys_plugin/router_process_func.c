@@ -312,12 +312,24 @@ int proc_router_start(void * sub_proc,void * para)
 
 			printf("router get proc %.64s's message!\n",origin_proc); 
 			
+			MSG_HEAD * msg_head;
+			msg_head=message_get_head(message);
+			// set rjump's value
+			switch(ex_module_gettype(sub_proc))
+			{
+				case MOD_TYPE_CONN:
+				case MOD_TYPE_PORT:
+					msg_head->rjump++;
+					break;
+				default:
+					break;
+			}
+		
+
 			//duplicate active message's info and init policy
 			router_dup_activemsg_info(message);
 			message_set_sender(message,origin_proc);
 
-			MSG_HEAD * msg_head;
-			msg_head=message_get_head(message);
 			msg_policy=NULL;
 			aspect_policy=NULL;
 
@@ -359,7 +371,7 @@ int proc_router_start(void * sub_proc,void * para)
 							if((msg_head->state ==MSG_FLOW_DELIVER)
 								&&!(msg_head->flag & MSG_FLAG_RESPONSE))	
 							{
-								msg_head->rjump++;
+						//		msg_head->rjump++;
 								route_push_aspect_site(message,origin_proc,conn_uuid);
 							}
 							msg_head->ljump=1;
@@ -385,7 +397,7 @@ int proc_router_start(void * sub_proc,void * para)
 							else if((msg_head->state ==MSG_FLOW_DELIVER)
 								&&!(msg_head->flag & MSG_FLAG_RESPONSE))	
 							{
-								msg_head->rjump++;
+//								msg_head->rjump++;
 								route_push_aspect_site(message,origin_proc,conn_uuid);
 								break;
 							}
@@ -426,6 +438,9 @@ int proc_router_start(void * sub_proc,void * para)
 						ret=router_set_local_route(message,msg_policy);
 						if(ret<0)
 							return ret;
+						ret=router_set_next_jump(message);
+						if(ret<0)
+							return ret;
 						break;
 					case MOD_TYPE_CONN:
 						// if it is in response route
@@ -454,6 +469,9 @@ int proc_router_start(void * sub_proc,void * para)
 								break;
 							}
 							ret=router_set_local_route(message,msg_policy);
+							if(ret<0)
+								return ret;
+							ret=router_set_next_jump(message);
 							if(ret<0)
 								return ret;
 
@@ -509,7 +527,9 @@ int proc_router_start(void * sub_proc,void * para)
 							ret=router_set_local_route(message,msg_policy);
 							if(ret<0)
 								return ret;
-
+							ret=router_set_next_jump(message);
+							if(ret<0)
+								return ret;
 							break;
 							// this is a source message
 						}
@@ -518,7 +538,6 @@ int proc_router_start(void * sub_proc,void * para)
 					default:
 						break;
 				}
-
 
 				if(msg_head->flow==MSG_FLOW_FINISH)
 				{
@@ -547,6 +566,8 @@ int proc_router_start(void * sub_proc,void * para)
 					}
 				*/
 				}
+				
+
 				if((msg_head->state==MSG_FLOW_DELIVER)
 					||(curr_proc_type==MOD_TYPE_CONN))
 				{
@@ -555,20 +576,24 @@ int proc_router_start(void * sub_proc,void * para)
 					if((msg_head->state==MSG_FLOW_DELIVER)
 						&&!(msg_head->flag &MSG_FLAG_RESPONSE))
 					{
-						msg_head->rjump++;
+//						msg_head->rjump++;
 						if(msg_head->flow==MSG_FLOW_QUERY)
 						{
 							if(!(msg_head->flag &MSG_FLAG_LOCAL))
 								route_push_site(message,conn_uuid);
 						}
 					}
-					ret=router_find_aspect_policy(message,&aspect_policy,origin_proc);
-					if(ret<0)
-					{
-						printf("%s check aspect policy error!\n",sub_proc); 
-						return ret;
-					}
-					if(aspect_policy!=NULL)
+				}
+
+				ret=router_find_aspect_policy(message,&aspect_policy,origin_proc);
+				if(ret<0)
+				{
+					printf("%s check aspect policy error!\n",sub_proc); 
+					return ret;
+				}
+				if(aspect_policy!=NULL)
+				{
+					if(dispatch_policy_gettype(aspect_policy)&MSG_FLOW_ASPECT)
 					{
 						ret=router_store_route(message);
 						if(ret<0)
@@ -576,15 +601,30 @@ int proc_router_start(void * sub_proc,void * para)
 							printf("router store route for aspect error!\n");
 						}
 						ret=router_set_aspect_flow(message,aspect_policy);
-						msg_head->rjump=0;
 						route_push_aspect_site(message,origin_proc,conn_uuid);
-					}	
-				}
+					}
+					else if(dispatch_policy_gettype(aspect_policy)&MSG_FLOW_DUP)
+					{
+						void * new_msg=message_clone(message);
+						ret=router_set_dup_flow(new_msg,aspect_policy);
+						proc_audit_log(new_msg);
+						printf("message (%s) is send to %s!\n",message_get_typestr(new_msg),message_get_receiver(new_msg));
+						ret=proc_router_send_msg(new_msg,local_uuid,proc_name);
+						if(ret<0)
+						{
+							printf("send dup message failed!\n");
+						}
+						
+					}
+				}	
 				proc_audit_log(message);
 				printf("message (%s) is send to %s!\n",message_get_typestr(message),message_get_receiver(message));
 				ret=proc_router_send_msg(message,local_uuid,proc_name);
 				if(ret<0)
-					return ret;
+				{
+					printf("send message failed!\n");
+					continue;
+				}
 			}
 
 			continue;

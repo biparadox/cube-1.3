@@ -90,6 +90,8 @@ int route_check_sitestack(void * message);
 int route_pop_site(void * message, char * type);
 int route_pop_aspect_site(void * message, char * proc);
 int router_set_local_route(void * message,void * policy);
+int router_set_aspect_route(void * message,void * policy);
+int router_set_dup_route(void * message,void * policy);
 int route_dup_activemsg_info (void * message);
 
 

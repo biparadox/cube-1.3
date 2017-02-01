@@ -639,11 +639,12 @@ int router_set_local_route(void * message,void * policy)
         	return -EINVAL;
     	msg_head=message_get_head(message);
 		
-	memset(msg_head->route,0,DIGEST_SIZE);
-	memcpy(msg_head->route,msg_policy->name,DIGEST_SIZE);
+	Memset(msg_head->route,0,DIGEST_SIZE);
+	Strncpy(msg_head->route,msg_policy->name,DIGEST_SIZE);
 	msg_head->ljump=0;
 	msg_head->flow=msg_policy->type;
 //	msg_head->flag=msg_policy->flag;
+/*
 	ret=dispatch_policy_getfirstrouterule(policy,&rule);
 	if(rule==NULL)
 		return 0;
@@ -685,6 +686,7 @@ int router_set_local_route(void * message,void * policy)
 		default:
 			return -EINVAL;
 	}
+*/
 	return 1;	
 }
 
@@ -1048,15 +1050,17 @@ int router_set_aspect_flow(void * message,void * policy)
         	return -EINVAL;
     	msg_head=message_get_head(message);
 		
-//	memset(msg_head->route,0,DIGEST_SIZE);
-//	memcpy(msg_head->route,msg_policy->name,DIGEST_SIZE);
+	Memset(msg_head->route,0,DIGEST_SIZE);
+	Strncpy(msg_head->route,msg_policy->newname,DIGEST_SIZE);
 	msg_head->ljump=0;
+	msg_head->rjump=0;
 	msg_head->flow=msg_policy->type;
 //	msg_head->flag=msg_policy->flag;
 	ret=dispatch_policy_getfirstrouterule(policy,&rule);
 	if(rule==NULL)
 		return 0;
-	Memset(msg_head->receiver_uuid,0,DIGEST_SIZE*2);
+	Memset(msg_head->receiver_uuid,0,DIGEST_SIZE);
+/*
 	switch(rule->target_type)
 	{
 		case ROUTE_TARGET_LOCAL:
@@ -1102,7 +1106,32 @@ int router_set_aspect_flow(void * message,void * policy)
 		default:
 			return -EINVAL;
 	}
+*/
 	return 1;	
+}
+
+int router_set_dup_flow(void * message,void * policy)
+{
+	int ret;
+    	MSG_HEAD * msg_head;	
+   	DISPATCH_POLICY * msg_policy=(DISPATCH_POLICY *)policy;
+	ROUTE_RULE * rule;
+	char * target;
+
+    	if(policy==NULL)
+        	return -EINVAL;
+    	if(message==NULL)
+        	return -EINVAL;
+    	msg_head=message_get_head(message);
+		
+	Memset(msg_head->route,0,DIGEST_SIZE);
+	Strncpy(msg_head->route,msg_policy->newname,DIGEST_SIZE);
+	msg_head->ljump=0;
+	msg_head->rjump=0;
+	msg_head->flow=MSG_FLOW_DELIVER;
+//	msg_head->flag=msg_policy->flag;
+	Memset(msg_head->receiver_uuid,0,DIGEST_SIZE);
+	return 1;
 }
 
 int router_find_policy_byname(void **msg_policy,char * name,int rjump)
@@ -1127,6 +1156,29 @@ int router_find_policy_byname(void **msg_policy,char * name,int rjump)
 	}
     	ret=dispatch_policy_getnext(&policy);
     }
+    
+    // find policy in router policy list;
+    if(policy!=NULL)
+	return ret;
+
+    // if can't find policy in router policy list, look up it in aspect policy list	
+    ret=dispatch_aspect_policy_getfirst(&policy);
+    if(ret<0)
+        return ret;
+    while(policy!=NULL)
+    {
+	ret=Strncmp(name,policy->name,DIGEST_SIZE);
+	if(ret==0)
+	{
+		if((policy->rjump==0) || (policy->rjump==rjump))
+		{
+			*msg_policy=policy;		
+			break;
+		}
+	}
+    	ret=dispatch_aspect_policy_getnext(&policy);
+    }
+
     return ret;
 }
 
@@ -1249,18 +1301,17 @@ int router_set_next_jump(void * message)
 			free(target);
 			message_set_state(message,MSG_FLOW_DELIVER);
 			msg_head->flag&=~MSG_FLAG_LOCAL;
-			msg_head->rjump++;
+//			msg_head->rjump++;
 			break;
 		case ROUTE_TARGET_CONN:
 			ret=rule_get_target(rule,message,&target);
 			if(ret<0)
 				return ret;		
-			msg_head->receiver_uuid[0]=':';
-			Strncpy(msg_head->receiver_uuid+1,target,DIGEST_SIZE-1);
+			Strncpy(msg_head->receiver_uuid,target,DIGEST_SIZE-1);
 			free(target);
 			message_set_state(message,MSG_FLOW_DELIVER);
 			msg_head->flag&=~MSG_FLAG_LOCAL;
-			msg_head->rjump++;
+//			msg_head->rjump++;
 			break;
 		default:
 			return -EINVAL;
