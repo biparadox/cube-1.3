@@ -15,13 +15,15 @@
 				{"name":"name","type":"ESTRING"},
 				{"name":"type","type":"ENUM","ref_name":"message_flow_type"},
 				{"name":"sender","type":"STRING","size":32},
-				{"name":"jump","type":"INT"}
+				{"name":"newname","type":"ESTRING"},
+				{"name":"ljump","type":"INT"},
+				{"name":"rjump","type":"INT"}
 			]
 		},
 		"index":
 		{
 			"flag":"INDEX",
-			"elemlist":"name,type,sender,jump"
+			"elemlist":"name,type,sender,newname,ljump,rjump"
 		}
 	}	
 }

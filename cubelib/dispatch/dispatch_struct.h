@@ -33,7 +33,9 @@ typedef struct tagdispatch_policy
 	char * name;
 	int type;
 	char sender[DIGEST_SIZE];
-	int jump;
+	char * newname; 
+	int ljump;
+	int rjump;
 	POLICY_LIST match_list;
 	POLICY_LIST route_list;
 }__attribute__((packed))  DISPATCH_POLICY;
