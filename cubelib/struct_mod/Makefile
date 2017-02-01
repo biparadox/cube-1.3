@@ -5,7 +5,7 @@ LD=ld
 CCP=g++
 STRUCTOBJ= struct_ops.o enum_flag_ops.o struct_deal.o struct_init.o
 LIBNAME=struct
-DEPENDLIB= -ljson -lalloc -lstring
+DEPENDLIB= -ljson -lalloc -lstring -lcrypto_func
 
 main: ../lib/lib$(LIBNAME).so  test_main 
 test_main: test_main.c ../lib/lib$(LIBNAME).so

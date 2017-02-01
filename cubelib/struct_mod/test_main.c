@@ -26,28 +26,33 @@
 #include "../include/alloc.h"
 #include "../include/json.h"
 #include "../include/struct_deal.h"
+#include "../include/crypto_func.h"
 
-typedef struct uuid_head
+NAME2VALUE user_type[] =
+{
+	{"ADMIN",1},
+	{"TEACHER",2},
+	{"STUDENT",3},
+	{NULL,0}
+};
+
+struct test_struct
 {
 	BYTE uuid[DIGEST_SIZE];
-	char name[DIGEST_SIZE];
+	char user[32];
 	int type;
-	int subtype;
-}__attribute__((packed)) UUID_HEAD;
+	int data_len;
+	BYTE * data;	
+};
 
-struct connect_login
+struct struct_elem_attr test_struct_desc[] =
 {
-    char user[DIGEST_SIZE];
-    char * passwd;
-    char nonce[DIGEST_SIZE];
-} __attribute__((packed));
-
-static struct struct_elem_attr connect_login_desc[]=
-{
-    {"user",CUBE_TYPE_STRING,DIGEST_SIZE,NULL,NULL},
-    {"passwd",CUBE_TYPE_ESTRING,sizeof(char *),NULL,NULL},
-    {"nonce",CUBE_TYPE_STRING,DIGEST_SIZE,NULL,NULL},
-    {NULL,CUBE_TYPE_ENDDATA,0,NULL}
+	{"uuid",CUBE_TYPE_UUID,DIGEST_SIZE,NULL},
+	{"user",CUBE_TYPE_STRING,DIGEST_SIZE,NULL},
+   	{"type",CUBE_TYPE_ENUM,0,&user_type,NULL},
+    	{"data_len",CUBE_TYPE_INT,0,NULL,NULL},
+	{"data",CUBE_TYPE_DEFINE,0,NULL,"data_len"},
+	{NULL,CUBE_TYPE_ENDDATA,0,NULL}
 };
 
 struct struct_elem_attr uuid_head_desc[] =
@@ -143,5 +148,33 @@ int main() {
 	printf("%s \n",text);
 
     	free_struct_template(struct_template);
+
+	struct_template=create_struct_template(&test_struct_desc);
+	if(struct_template==NULL)
+		return NULL;
+	
+	struct test_struct * test_mem_struct;
+	test_mem_struct=Talloc0(sizeof(*test_mem_struct));
+	
+	Strcpy(test_mem_struct->user,"zhangsan");
+	test_mem_struct->type=2;
+	test_mem_struct->data_len=16;
+	
+	test_mem_struct->data=Talloc0(test_mem_struct->data_len);
+	Memset(test_mem_struct->data,'a',test_mem_struct->data_len);
+	
+	struct_set_flag(struct_template,1,"user,type,data_len,data");
+	ret=struct_2_part_blob(test_mem_struct,buffer,struct_template,1);
+	if(ret<0)
+	{
+		printf("struct to part blob failed!\n");
+		return ret;
+	}
+	
+	ret=calculate_context_sm3(buffer,ret,test_mem_struct->uuid);
+
+	ret=struct_2_json(test_mem_struct,text,struct_template);
+	printf("%s \n",text);
+
 	return 0;
 }
