@@ -1,4 +1,0 @@
-{
-	{"name":"name","type":"ESTRING","size":"64","attr":"INDEX"},
-	{"name":"passwd","type":"STRING","size":"64"},
-}
