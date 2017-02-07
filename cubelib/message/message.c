@@ -644,7 +644,10 @@ int message_output_json(void * message, char * text)
 			text[offset++]='}';
 			text[offset]='\0';
 		}
+		text[offset++]=',';
 	}
+	if(i!=0)
+		offset--;
 	Strcpy(buffer,"]}");
 	Strcpy(text+offset,buffer);
 	offset+=Strlen(buffer);
@@ -749,7 +752,7 @@ int  message_read_data(void * message,void * blob,int data_size)
 		for(i=0;i<msg_box->head.expand_num;i++)
 		{
 			msg_box->expand[i]=data+current_offset;
-			msg_box->expand_size[i]=*(int *)(data+current_offset);
+			msg_box->expand_size[i]=*(int *)(data+current_offset)+sizeof(MSG_EXPAND_HEAD);
 			current_offset+=msg_box->expand_size[i];
 		}
                 msg_box->current_offset=0;
@@ -925,29 +928,26 @@ int message_load_expand(void * message)
     // choose the record's type
 
     no=0;
-    offset=msg_box->head.record_size;
-
-    data=msg_box->blob+offset;
     offset=0;
     for(;no<msg_box->head.expand_num;no++)
     {
 	if(offset>=msg_box->head.expand_size)
 		return -EINVAL;
 	    
-	expand=(MSG_EXPAND *)data;
+	expand=(MSG_EXPAND *)msg_box->expand[no];
+	if(expand==NULL)
+		return -EINVAL;
 	if(expand->data_size<0)
 		return -EINVAL;
-	offset+=expand->data_size+sizeof(MSG_EXPAND_HEAD);
 	struct_template=memdb_get_template(expand->type,expand->subtype);
 	if(struct_template==NULL)
 	{
-		data+=expand->data_size;
 		continue;
 	}
 	ret=Galloc0(&buffer,struct_size(struct_template));
 	if(buffer==NULL)
 		return -EINVAL;
-	ret=blob_2_struct(data+sizeof(MSG_EXPAND_HEAD),buffer,struct_template);
+	ret=blob_2_struct(msg_box->expand[no]+sizeof(MSG_EXPAND_HEAD),buffer,struct_template);
 	if(ret!=expand->data_size)
 	{
 		struct_free(buffer,struct_template);
@@ -960,6 +960,7 @@ int message_load_expand(void * message)
 	pexpand->expand=buffer;
 	pexpand->type=expand->type;
 	pexpand->subtype=expand->subtype;
+	offset+=expand->data_size+sizeof(MSG_EXPAND_HEAD);
 
     }
     return offset;

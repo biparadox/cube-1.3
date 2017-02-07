@@ -379,9 +379,12 @@ int proc_router_start(void * sub_proc,void * para)
 								&&!(msg_head->flag & MSG_FLAG_RESPONSE))	
 							{
 						//		msg_head->rjump++;
-								route_push_aspect_site(message,origin_proc,conn_uuid);
+						//		route_push_aspect_site(message,origin_proc,conn_uuid);
 							}
 							msg_head->ljump=1;
+							ret=router_set_next_jump(message);
+							if(ret<0)
+								continue;
 							break;
 						}
 						case MOD_TYPE_MONITOR:
@@ -390,7 +393,7 @@ int proc_router_start(void * sub_proc,void * para)
 						{
 							ret=router_set_next_jump(message);
 							if(ret<0)
-								return ret;
+								continue;
 							if(ret==0)
 							{
 							// we met the aspect's end, we should pop the src from stack
@@ -403,7 +406,6 @@ int proc_router_start(void * sub_proc,void * para)
 							else if((msg_head->state ==MSG_FLOW_DELIVER)
 								&&!(msg_head->flag & MSG_FLAG_RESPONSE))	
 							{
-//								msg_head->rjump++;
 								route_push_aspect_site(message,origin_proc,conn_uuid);
 								break;
 							}
@@ -583,8 +585,11 @@ int proc_router_start(void * sub_proc,void * para)
 						ret=router_set_aspect_flow(message,aspect_policy);
 						if(ret>=0)
 						{
-							route_push_aspect_site(message,origin_proc,conn_uuid);
 							ret=router_set_next_jump(message);
+							if(msg_head->state==MSG_FLOW_DELIVER)
+							{
+								route_push_aspect_site(message,origin_proc,conn_uuid);
+							}
 							if(ret>=0)
 							{
 								proc_audit_log(message);

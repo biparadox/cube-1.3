@@ -1032,12 +1032,14 @@ int router_set_aspect_flow(void * message,void * policy)
         	return -EINVAL;
     	msg_head=message_get_head(message);
 		
-	Memset(msg_head->route,0,DIGEST_SIZE);
-	Strncpy(msg_head->route,msg_policy->newname,DIGEST_SIZE);
-	msg_head->ljump=1;
-	msg_head->rjump=1;
-	msg_head->flow=msg_policy->type;
-//	msg_head->flag=msg_policy->flag;
+	if(!(msg_head->flow&MSG_FLOW_ASPECT))
+	{
+		Memset(msg_head->route,0,DIGEST_SIZE);
+		Strncpy(msg_head->route,msg_policy->newname,DIGEST_SIZE);
+		msg_head->ljump=1;
+		msg_head->rjump=1;
+		msg_head->flow=msg_policy->type;
+	}
 	Memset(msg_head->receiver_uuid,0,DIGEST_SIZE);
 	message_set_policy(message,policy);
 
