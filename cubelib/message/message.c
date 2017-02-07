@@ -602,16 +602,41 @@ int message_output_json(void * message, char * text)
 	Strcpy(text+offset,buffer);
 	offset+=ret;	
 
-	for(i=0;i<msg_head->record_num;i++)
-	{
-		if(i>0)
-			text[offset++]=',';
-		
-		ret=struct_2_json(msg_box->precord[i],text+offset,msg_box->record_template);
-		if(ret<0)
-			return ret;
-		offset+=ret;
+   	if((message_get_flag(message) & MSG_FLAG_CRYPT)
+		||(msg_box->record_template==NULL))
+   	{
+		if(msg_box->blob==NULL)
+		{
+    			Strcpy(buffer,"{\"EMPTY\":\"\"");
+    			Strcpy(text+offset,buffer);
+    			offset+=Strlen(buffer);
+    			text[offset++]='}';
+		}
+		else
+		{	
+    			Strcpy(buffer,"{\"BIN_FORMAT\":");
+    			Strcpy(text+offset,buffer);
+    			offset+=Strlen(buffer);
+    			text[offset++]='\"';
+			ret=bin_to_radix64(text+offset,msg_head->record_size,msg_box->blob);
+			offset+=ret;	
+    			text[offset++]='\"';
+    			text[offset++]='}';
+		}
 	}
+    	else 
+    	{   
+		for(i=0;i<msg_head->record_num;i++)
+		{
+			if(i>0)
+				text[offset++]=',';
+		
+			ret=struct_2_json(msg_box->precord[i],text+offset,msg_box->record_template);
+			if(ret<0)
+				return ret;
+			offset+=ret;
+		}
+    	}
 	
 	Strcpy(buffer,"],\"EXPAND\" :[");
 	Strcpy(text+offset,buffer);
