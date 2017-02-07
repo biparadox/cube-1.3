@@ -348,18 +348,13 @@ int proc_router_start(void * sub_proc,void * para)
 				if( msg_head->flag & MSG_FLAG_RESPONSE)	
 				{
 						// if this message's flow is query, we should push it into the stack
-
-					if(msg_head->rjump==0)
+					ret=router_pop_aspect_site(message,origin_proc);
+					if(ret==0)
 					{
+
 						route_recover_route(message);
 						printf("recover from aspect\n");
 					}	
-					else
-					{
-						msg_head->rjump--;
-						router_pop_aspect_site(message,origin_proc);
-						printf("begin to response aspect message\n");
-					}
 				}
 				else
 				{

@@ -1877,10 +1877,11 @@ int message_remove_expand(void * message, int type,int subtype,void ** expand)
 
 	for(i=0;i<msg_box->head.expand_num;i++)
 	{
-		retval=message_get_expand(message,&expand_data,i);
-		if(retval<0)
-			continue;
-		if(expand_data==NULL)
+		if(msg_box->pexpand[i]!=NULL)
+			expand=msg_box->pexpand[i];
+		else if(msg_box->expand[i]!=NULL)
+			expand=msg_box->expand[i];
+		else
 			return 0;
 		if((expand_data->type==type) &&
 			(expand_data->subtype==subtype))

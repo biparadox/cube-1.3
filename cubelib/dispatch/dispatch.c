@@ -1527,12 +1527,16 @@ int route_recover_route(void * message)
 {
 	int ret;
 	MSG_HEAD * msg_head;
+	MSG_EXPAND * expand;
 	struct expand_route_record * route_record=NULL;
 	if(message==NULL)
 		return  -EINVAL;
-	ret=message_get_define_expand(message,&route_record,DTYPE_MSG_EXPAND,SUBTYPE_ROUTE_RECORD);
+	ret=message_get_define_expand(message,&expand,DTYPE_MSG_EXPAND,SUBTYPE_ROUTE_RECORD);
 	if(ret<0)
 		return ret;
+	if(expand==NULL)
+		return -EINVAL;
+	route_record=expand->expand;
 	if(route_record==NULL)
 		return -EINVAL;	
 
