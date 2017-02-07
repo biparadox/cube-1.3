@@ -10,5 +10,7 @@ int calculate_context_sm3(char* context, int context_size, UINT32 *SM3_hash);
 int calculate_context_sha1(char* context,int context_size,UINT32 *SM3_hash);
 int extend_pcr_sm3digest(BYTE * pcr_value,BYTE * sm3digest);
 int is_valid_uuidstr(char * uuidstr);
+int sm4_context_crypt( BYTE * input, BYTE ** output, int size,char * passwd);
+int sm4_context_decrypt( BYTE * input, BYTE ** output, int size,char * passwd);
 
 #endif

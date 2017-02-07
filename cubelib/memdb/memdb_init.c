@@ -9,7 +9,7 @@
 #include "../include/struct_deal.h"
 #include "../include/basefunc.h"
 #include "../include/memdb.h"
-#include "../struct_deal/struct_ops.h"
+#include "../struct_mod/struct_ops.h"
 #include "../include/crypto_func.h"
 
 #include "valuelist.h"

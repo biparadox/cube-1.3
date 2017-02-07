@@ -12,6 +12,7 @@
 //#include "../list.h"
 #include "sm3.h"
 #include "sha1.h"
+#include "sm4.h"
 #include "../include/crypto_func.h"
 
 //int file_to_hash(int argc, char *argv[])
@@ -99,3 +100,63 @@ int comp_proc_uuid(BYTE * dev_uuid,char * name,BYTE * conn_uuid)
 	return 0;
 }
 
+static unsigned char iv[16] = {0x01,0x23,0x45,0x67,0x89,0xab,0xcd,0xef,0xfe,0xdc,0xba,0x98,0x76,0x54,0x32,0x10};
+int sm4_context_crypt( BYTE * input, BYTE ** output, int size,char * passwd)
+{
+	int i;
+	int out_size;
+        sm4_context ctx;
+	char keypass[DIGEST_SIZE];
+	
+	BYTE * out_blob;
+        if(size<=0)
+                return -EINVAL;
+
+	out_size=size;
+
+	out_blob=malloc(out_size);
+	if(out_blob==NULL)
+		return -ENOMEM;
+	memset(keypass,0,DIGEST_SIZE);
+	strncpy(keypass,passwd,DIGEST_SIZE);
+
+	sm4_setkey_enc(&ctx,keypass);
+	for(i=0;i<=out_size-16;i+=16)
+	{
+		sm4_crypt_ecb(&ctx,1,16,input+i,out_blob+i);
+	}	
+	for(;i<out_size;i++)
+		out_blob[i]=input[i]^iv[i%16];		
+	*output=out_blob;
+	return out_size;
+}
+
+int sm4_context_decrypt( BYTE * input, BYTE ** output, int size,char * passwd)
+{
+	int i;
+	int out_size;
+        sm4_context ctx;
+	char keypass[DIGEST_SIZE];
+	
+	BYTE * out_blob;
+        if(size<=0)
+                return -EINVAL;
+
+	out_size=size;
+
+	out_blob=malloc(out_size);
+	if(out_blob==NULL)
+		return -ENOMEM;
+	memset(keypass,0,DIGEST_SIZE);
+	strncpy(keypass,passwd,DIGEST_SIZE);
+
+	sm4_setkey_dec(&ctx,keypass);
+	for(i=0;i<=out_size-16;i+=16)
+	{
+		sm4_crypt_ecb(&ctx,1,16,input+i,out_blob+i);
+	}	
+	for(;i<out_size;i++)
+		out_blob[i]=input[i]^iv[i%16];		
+	*output=out_blob;
+	return out_size;
+}

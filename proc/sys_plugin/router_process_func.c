@@ -329,6 +329,8 @@ int proc_router_start(void * sub_proc,void * para)
 					break;
 				default:
 					msg_head->ljump++;	
+					if(msg_head->rjump==0)
+						msg_head->rjump=1;
 					break;
 			}
 		

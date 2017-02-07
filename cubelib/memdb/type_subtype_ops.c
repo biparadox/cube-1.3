@@ -7,7 +7,7 @@
 #include "../include/memdb.h"
 #include "../include/list.h"
 #include "../include/attrlist.h"
-#include "../struct_deal/struct_ops.h"
+#include "../struct_mod/struct_ops.h"
 #include "memdb_internal.h"
 
 int enumtype_get_text_value(void * addr,char * text,void * elem_template)

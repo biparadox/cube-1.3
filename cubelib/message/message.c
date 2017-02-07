@@ -1130,62 +1130,7 @@ int message_set_receiver_uuid(void * message, BYTE * receiver_uuid)
 	}
 	return 0;
 }
-/*
-int message_set_head(void * message,char * item_name, void * value)
-{
-	struct message_box * msg_box;
-	int ret;
 
-	msg_box=(struct message_box *)message;
-
-//	msg_box->box_state=MSG_BOX_DEAL;
-	if(message==NULL)
-		return -EINVAL;
-	if(value==NULL)
-		return -EINVAL;
-	if(msg_box->head_template ==NULL)
-		return -EINVAL;
-
-	ret=struct_write_elem(item_name,&(msg_box->head),value,msg_box->head_template);
-	return ret;
-}
-
-int read_message_head_elem(void * message,char * item_name, void * value)
-{
-    struct message_box * msg_box;
-    int ret;
-
-    msg_box=(struct message_box *)message;
-
-    if(message==NULL)
-        return -EINVAL;
-    if(value==NULL)
-        return -EINVAL;
-    if(msg_box->head_template ==NULL)
-        return -EINVAL;
-
-    ret=struct_read_elem(item_name,&(msg_box->head),value,msg_box->head_template);
-    ((char *)value)[ret]=0;
-    return ret;
-}
-int message_comp_head_elem_text(void * message,char * item_name, char * text)
-{
-    struct message_box * msg_box;
-    int ret;
-
-    msg_box=(struct message_box *)message;
-
-    if(message==NULL)
-        return -EINVAL;
-    if(text==NULL)
-        return -EINVAL;
-    if(msg_box->head_template ==NULL)
-        return -EINVAL;
-
-    ret=struct_comp_elem_text(item_name,&(msg_box->head),text,msg_box->head_template);
-    return ret;
-}
-*/
 int message_read_elem(void * message,char * item_name, int index, void ** value)
 {
     struct message_box * msg_box;
@@ -2113,4 +2058,33 @@ void * message_clone(void * message)
 
 	new_msg->active_msg=message;
 	return new_msg;
+}
+
+int message_get_blob(void * message,void ** blob)
+{
+	struct message_box * msg_box;
+
+	msg_box=(struct message_box *)message;
+
+	if((message==NULL) || IS_ERR(message))
+		return -EINVAL;
+    	if(msg_box->blob==NULL)
+	{
+		return 0;
+	}
+	*blob=msg_box->blob;
+	return msg_box->head.record_size;
+}
+
+int message_set_blob(void * message, void * blob, int size)
+{
+	struct message_box * msg_box;
+
+	msg_box=(struct message_box *)message;
+
+	if((message==NULL) || IS_ERR(message))
+		return NULL;
+	msg_box->blob=blob;
+	msg_box->head.record_size=size;
+	return size;
 }

@@ -19,7 +19,6 @@
 #include "message.h"
 #include "ex_module.h"
 
-#include "sm4.h"
 #include "symm_crypt.h"
 
 static struct timeval time_val={0,50*1000};
@@ -69,7 +68,6 @@ int proc_crypt_message(void * sub_proc,void * message)
 {
         int i;
         int ret;
-        sm4_context ctx;
 
         BYTE * blob;
         int blob_size;
@@ -88,7 +86,7 @@ int proc_crypt_message(void * sub_proc,void * message)
         message_set_blob(message,bind_blob,bind_blob_size);
         message_set_flag(message,MSG_FLAG_CRYPT);
 
-        sec_subject_sendmsg(sub_proc,message);
+        ex_module_sendmsg(sub_proc,message);
         return ret;
 }
 
@@ -96,7 +94,6 @@ int proc_uncrypt_message(void * sub_proc,void * message)
 {
         int i;
         int ret;
-        sm4_context ctx;
 
         BYTE * blob;
         int blob_size;
@@ -117,6 +114,6 @@ int proc_uncrypt_message(void * sub_proc,void * message)
 
 	message_load_record(message);
 
-        sec_subject_sendmsg(sub_proc,message);
+        ex_module_sendmsg(sub_proc,message);
         return ret;
 }

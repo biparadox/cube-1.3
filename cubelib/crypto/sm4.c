@@ -53,8 +53,8 @@
 // cypher: 59 52 98 c7 c6 fd 27 1f 04 02 f8 04 c3 3d 3f 66
 
 #include "sm4.h"
-#include "data_type.h"
-#include "string.h"
+#include "../include/data_type.h"
+#include "../include/string.h"
 #include <stdio.h>
 
 /*
@@ -234,7 +234,7 @@ static void sm4_one_round( unsigned long sk[32],
     unsigned long i = 0;
     unsigned long ulbuf[36];
 
-    memset(ulbuf, 0, sizeof(ulbuf));
+    Memset(ulbuf, 0, sizeof(ulbuf));
     GET_ULONG_BE( ulbuf[0], input, 0 )
     GET_ULONG_BE( ulbuf[1], input, 4 )
     GET_ULONG_BE( ulbuf[2], input, 8 )

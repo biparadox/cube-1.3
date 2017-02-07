@@ -57,13 +57,13 @@ int msg_broadcast_start(void * sub_proc,void * para)
 				message_get_type(recv_msg),message_get_subtype(recv_msg));
 			continue;
 		}
-		proc_dispatch(sub_proc,recv_msg);
+		proc_broadcast(sub_proc,recv_msg);
 	}
 
 	return 0;
 };
 
-int proc_dispatch(void * sub_proc,void * message)
+int proc_broadcast(void * sub_proc,void * message)
 {
 	int type;
 	int subtype;
@@ -91,8 +91,6 @@ int proc_dispatch(void * sub_proc,void * message)
 	if(chat_msg==NULL)
 		return -EINVAL;	
 	
-	new_msg=message_create(DTYPE_CRYPTO_DEMO,SUBTYPE_VERIFY_RETURN,message);
-
 	db_record=memdb_find_byname(chat_msg->sender,DTYPE_CRYPTO_DEMO,SUBTYPE_USER_ADDR);
 	if(db_record==NULL)
 	{
