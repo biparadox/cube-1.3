@@ -43,7 +43,7 @@
 	"head":
 	{
 		"name":"expand_route_record",
-		"type":"RECORDTYPE",
+		"type":"RECORDTYPE"
 	},
 	"record":
 	{

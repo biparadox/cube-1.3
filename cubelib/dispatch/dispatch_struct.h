@@ -46,8 +46,8 @@ static POLICY_LIST aspect_router_policy;
 
 struct expand_route_record
 {
-	char sender_uuid[DIGEST_SIZE*2];
-	char receiver_uuid[DIGEST_SIZE*2];
+	char sender_uuid[DIGEST_SIZE];
+	char receiver_uuid[DIGEST_SIZE];
 	char route[DIGEST_SIZE];
 	int  flow;
 	int  state;

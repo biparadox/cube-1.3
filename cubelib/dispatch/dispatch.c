@@ -663,50 +663,6 @@ int router_set_local_route(void * message,void * policy)
 	msg_head->ljump=1;
 	msg_head->flow=msg_policy->type;
 	message_set_policy(message,policy);
-//	msg_head->flag=msg_policy->flag;
-/*
-	ret=dispatch_policy_getfirstrouterule(policy,&rule);
-	if(rule==NULL)
-		return 0;
-	memset(msg_head->receiver_uuid,0,DIGEST_SIZE);
-	switch(rule->target_type)
-	{
-		case ROUTE_TARGET_LOCAL:
-		case ROUTE_TARGET_PORT:
-			ret=rule_get_target(rule,message,&target);
-			if(ret<0)
-				return ret;		
-			message_set_receiver(message,target);
-			msg_head->flag |=MSG_FLAG_LOCAL;
-			free(target);
-//			message_set_state(message,MSG_FLOW_LOCAL);
-			break;
-		case ROUTE_TARGET_NAME:
-		case ROUTE_TARGET_RECORD:
-		case ROUTE_TARGET_EXPAND:
-			ret=rule_get_target(rule,message,&target);
-			if(ret<0)
-				return ret;		
-			message_set_receiver(message,target);
-			free(target);
-			message_set_state(message,MSG_FLOW_DELIVER);
-			msg_head->flag &=~MSG_FLAG_LOCAL;
-			msg_head->rjump++;
-			break;
-		case ROUTE_TARGET_CONN:
-			ret=rule_get_target(rule,message,&target);
-			if(ret<0)
-				return ret;		
-			message_set_receiver(message,target);
-			free(target);
-			message_set_state(message,MSG_FLOW_DELIVER);
-			msg_head->flag &=~MSG_FLAG_LOCAL;
-			msg_head->rjump++;
-			break;
-		default:
-			return -EINVAL;
-	}
-*/
 	return 1;	
 }
 
@@ -1079,7 +1035,7 @@ int router_set_aspect_flow(void * message,void * policy)
 	Memset(msg_head->route,0,DIGEST_SIZE);
 	Strncpy(msg_head->route,msg_policy->newname,DIGEST_SIZE);
 	msg_head->ljump=1;
-	msg_head->rjump=0;
+	msg_head->rjump=1;
 	msg_head->flow=msg_policy->type;
 //	msg_head->flag=msg_policy->flag;
 	Memset(msg_head->receiver_uuid,0,DIGEST_SIZE);
@@ -1562,7 +1518,7 @@ int router_store_route(void * message)
 	route_record->ljump=msg_head->ljump;
 	route_record->rjump=msg_head->rjump;
 		
-	ret=message_add_expand_data(message,DTYPE_MESSAGE,SUBTYPE_ROUTE_RECORD,route_record);
+	ret=message_add_expand_data(message,DTYPE_MSG_EXPAND,SUBTYPE_ROUTE_RECORD,route_record);
 	return ret;
 }
 int route_recover_route(void * message)

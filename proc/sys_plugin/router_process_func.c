@@ -548,28 +548,6 @@ int proc_router_start(void * sub_proc,void * para)
 					continue;
 				}
 
-				if(msg_policy!=NULL)
-				{
-				/*
-					// duplicate message send process
-					router_rule=router_get_first_duprule(msg_policy);
-					while(router_rule!=NULL)
-					{
-						void * dup_msg;
-						ret=router_set_dup_flow(message,router_rule,&dup_msg);
-						if(ret<0)
-							break;
-						if(dup_msg!=NULL)
-						{
-							proc_audit_log(dup_msg);
-							proc_router_send_msg(dup_msg,local_uuid,proc_name);
-						}
-						router_rule=router_get_next_duprule(msg_policy);
-					}
-				*/
-				}
-				
-
 				if((msg_head->state==MSG_FLOW_DELIVER)
 					||(curr_proc_type==MOD_TYPE_CONN))
 				{
@@ -603,7 +581,23 @@ int proc_router_start(void * sub_proc,void * para)
 							printf("router store route for aspect error!\n");
 						}
 						ret=router_set_aspect_flow(message,aspect_policy);
-						route_push_aspect_site(message,origin_proc,conn_uuid);
+						if(ret>=0)
+						{
+							route_push_aspect_site(message,origin_proc,conn_uuid);
+							ret=router_set_next_jump(message);
+							if(ret>=0)
+							{
+								proc_audit_log(message);
+								printf("message (%s) is send to %s!\n",message_get_typestr(message),message_get_receiver(message));
+								ret=proc_router_send_msg(message,local_uuid,proc_name);
+								if(ret<0)
+								{
+									printf("send aspect message failed!\n");
+								}
+								continue;
+
+							}	
+						}
 					}
 					else if(dispatch_policy_gettype(aspect_policy)&MSG_FLOW_DUP)
 					{
