@@ -85,6 +85,8 @@ int proc_broadcast(void * sub_proc,void * message)
 	struct user_address * user_addr;
 	struct DB_RECORD * db_record;
 
+/*	
+
 	ret=message_get_record(message,&chat_msg,0);
 	if(ret<0)
 		return ret;
@@ -97,6 +99,7 @@ int proc_broadcast(void * sub_proc,void * message)
 		printf("user %s has not logined yet!\n",chat_msg->sender);
 		return -EINVAL;
 	}
+*/
 
 	user_addr=memdb_get_first_record(DTYPE_CRYPTO_DEMO,SUBTYPE_USER_ADDR);
 	while(user_addr!=NULL)

@@ -716,7 +716,7 @@ int message_read_head(void ** message,void * blob,int blob_size)
         msg_box->current_offset=0;
 
 	// check the head value
-	if(msg_box->head.record_num<=0)
+	if(msg_box->head.record_num<0)
 		return -EINVAL;
 	if(msg_box->head.expand_num<0)
 		return -EINVAL;
@@ -1878,9 +1878,9 @@ int message_remove_expand(void * message, int type,int subtype,void ** expand)
 	for(i=0;i<msg_box->head.expand_num;i++)
 	{
 		if(msg_box->pexpand[i]!=NULL)
-			expand=msg_box->pexpand[i];
+			expand_data=msg_box->pexpand[i];
 		else if(msg_box->expand[i]!=NULL)
-			expand=msg_box->expand[i];
+			expand_data=msg_box->expand[i];
 		else
 			return 0;
 		if((expand_data->type==type) &&
@@ -2020,6 +2020,7 @@ void * message_clone(void * message)
 		void * blob = malloc(src_msg->head.record_size);
 		if(blob==NULL)
 			return NULL;
+		new_msg->head.record_num=src_msg->head.record_num;
 		Memcpy(blob,src_msg->blob,src_msg->head.record_size);
 		new_msg->blob=blob;
 	}

@@ -1453,9 +1453,10 @@ int router_pop_site(void * message)
 
 	if(flow_trace->record_num==0)
 	{
-		free(flow_trace->trace_record);
+		Free(flow_trace->trace_record);
 		flow_trace->trace_record=NULL;
-//		message_remove_expand(message,type,&flow_trace);
+		message_remove_expand(message,DTYPE_MSG_EXPAND,SUBTYPE_FLOW_TRACE,&expand);
+		Free(expand);
 	}
 		
 	{
@@ -1490,9 +1491,10 @@ int router_pop_aspect_site(void * message, char * proc)
 
 	if(aspect_point->record_num==0)
 	{
+		message_remove_expand(message,DTYPE_MSG_EXPAND,SUBTYPE_ASPECT_POINT,&expand);
+		Free(expand);
 		free(aspect_point->aspect_proc);
 		free(aspect_point->aspect_point);
-//		message_remove_expand(message,"APRE",&aspect_point);
 	}
 	return 1;
 }
