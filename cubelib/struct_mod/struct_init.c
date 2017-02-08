@@ -1126,7 +1126,8 @@ int _elem_set_text_value(void * addr,char * text,void * elem)
 			// if this func is empty, we use default func
 			if((ret=_elem_get_bin_length(*(char **)elem_src,elem,addr))<0)
 				return ret;
-			Memcpy(elem_src,text,ret);
+			Memset(elem_src,0,ret);
+			Strncpy(elem_src,text,ret);
 		}
 	}
 	return ret;
