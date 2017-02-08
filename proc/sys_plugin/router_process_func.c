@@ -349,6 +349,7 @@ int proc_router_start(void * sub_proc,void * para)
 				{
 						// if this message's flow is query, we should push it into the stack
 					ret=router_pop_aspect_site(message,origin_proc);
+					msg_head->flag&=~MSG_FLAG_LOCAL;
 					if(ret==0)
 					{
 
@@ -396,6 +397,7 @@ int proc_router_start(void * sub_proc,void * para)
 								router_pop_aspect_site(message,aspect_proc);
 								printf("begin to response aspect message");
 								msg_head->flag|=MSG_FLAG_RESPONSE;
+								msg_head->flag&=~MSG_FLAG_LOCAL;
 								break;
 							}
 							else if((msg_head->state ==MSG_FLOW_DELIVER)
