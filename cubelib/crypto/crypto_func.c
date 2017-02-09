@@ -6,6 +6,12 @@
 #include <unistd.h>
 */
 //#include "common.h"
+#include <stdlib.h>
+#include <fcntl.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
 #include "../include/data_type.h"
 #include "../include/string.h"
 #include "../include/errno.h"
@@ -160,3 +166,75 @@ int sm4_context_decrypt( BYTE * input, BYTE ** output, int size,char * passwd)
 	*output=out_blob;
 	return out_size;
 }
+int calculate_sm3(char* filename, UINT32 *SM3_hash)
+{
+    int fd1;
+    int result;
+    int bytes_to_copy = 0;
+    int filesize = 0;
+    struct stat attribute;
+    SM3_context index;
+    char *sm3buffer;
+    sm3buffer = (char*) malloc(4096);
+
+    /* Open the input file */
+    fd1 = open(filename,O_RDONLY);
+
+    if (fd1 < 0)
+    {
+        printf("Error opening file\n");
+        return -1;
+    }
+    stat(filename,&attribute);
+    filesize = attribute.st_size;
+        //printf("filesize:%d\n",filesize);
+
+    /* Initialise sm3-Context */
+    result = SM3_init(&index);
+    if (result)
+    {
+        close (fd1);
+        free(sm3buffer);
+        return -1;
+    }
+
+
+	 bytes_to_copy = filesize;
+	    while (bytes_to_copy > 4096)
+	    {
+
+		read(fd1,sm3buffer,4096);
+    		result = SM3_update(&index,sm3buffer,4096);
+		if (result)
+	        {
+		    close (fd1);
+		    free(sm3buffer);
+    		    return -1;
+		}
+    		bytes_to_copy = bytes_to_copy - 4096;
+		
+	    }
+
+	
+
+
+
+            // And the last one
+            memset(sm3buffer,0,4096);
+            read(fd1,sm3buffer,bytes_to_copy);
+            result = SM3_update(&index,sm3buffer,bytes_to_copy);
+            if (result)
+            {
+                close (fd1);
+                free(sm3buffer);
+                return -1;
+            }
+
+    close (fd1);
+    free(sm3buffer);
+    result = SM3_final(&index,SM3_hash);
+    if (result)
+        return -1;
+    return 0;
+}
+

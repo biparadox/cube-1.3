@@ -85,7 +85,6 @@ int proc_hack_message(void * sub_proc,void * message)
 {
         int i;
         int ret;
-	struct message_box * new_msg;
 	int type;
 	int subtype;
 
