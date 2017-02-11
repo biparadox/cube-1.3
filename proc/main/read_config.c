@@ -10,6 +10,7 @@
 
 #include "data_type.h"
 #include "alloc.h"
+#include "json.h"
 #include "string.h"
 #include "struct_deal.h"
 #include "crypto_func.h"
@@ -386,6 +387,7 @@ int read_record_file(char * record_file)
 	close(fd);
 	return count; 	
 }
+
 int read_main_cfg(void * lib_para_struct,void * root_node)
 {
     struct lib_para_struct * lib_para=lib_para_struct;
@@ -416,14 +418,23 @@ int read_main_cfg(void * lib_para_struct,void * root_node)
     void * record_list=json_find_elem("record_file",root_node);
     if(record_list!=NULL)
     {
-	void * record_file=json_get_first_child(record_list);
-	while(record_file!=NULL)
+	if(json_get_type(record_list)==JSON_ELEM_STRING)
 	{
-		ret=read_record_file(json_get_valuestr(record_file));
+		ret=read_record_file(json_get_valuestr(record_list));
 		if(ret>0)
-			printf("read %d elem from file %s!\n",ret,json_get_valuestr(record_file));
-		record_file=json_get_next_child(record_list);
+			printf("read %d elem from file %s!\n",ret,json_get_valuestr(record_list));
 	}
+	else if(json_get_type(record_list)==JSON_ELEM_ARRAY)
+	{
+		void * record_file=json_get_first_child(record_list);
+		while(record_file!=NULL)
+		{
+			ret=read_record_file(json_get_valuestr(record_file));
+			if(ret>0)
+				printf("read %d elem from file %s!\n",ret,json_get_valuestr(record_file));
+			record_file=json_get_next_child(record_list);
+		}
+	}	
     }		
 
     if(lib_para->dynamic_lib!=NULL)
