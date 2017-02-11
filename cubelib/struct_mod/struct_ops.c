@@ -191,85 +191,6 @@ int uuid_set_text_value(void * addr, char * text,void * elem_template)
 	return _uuid_to_digest(text,addr);
 }
 
-int uuidarray_get_text_value(void * addr, void * data,void * elem_template)
-{
-	int i,j,retval;
-	char * text=data;
-	struct elem_template * curr_elem=elem_template;
-	BYTE * digest=*(BYTE **)addr;
-	int offset=0;
-	int array_num=(int)curr_elem->elem_desc->ref;
-	
-	if((array_num<0)|| (array_num>DIGEST_SIZE*2))
-		return -EINVAL;
-	for(i=0;i<array_num;i++)
-	{
-		if(i!=0)
-			*(text+offset++)=',';
-		_digest_to_uuid(digest+i*DIGEST_SIZE,text+offset);
-		offset+=DIGEST_SIZE*2;
-	}	
-
-	*(text+offset)=0;
-	return offset+1;
-}
-
-int uuidarray_set_text_value(void * addr, char * text,void * elem_template)
-{
-	int i,j,retval;
-	struct elem_template * curr_elem=elem_template;
-	int offset=0;
-	int array_num=(int)curr_elem->elem_desc->ref;
-	
-	if((array_num<0)|| (array_num>DIGEST_SIZE*2))
-		return -EINVAL;
-	retval=Palloc0(addr,DIGEST_SIZE*array_num);
-	if(retval<0)
-		return retval;
-	BYTE * digest=*(BYTE **)addr;
-	for(i=0;i<array_num;i++)
-	{
-		while((*(text+offset)==',')||(*(text+offset)==' '))
-			offset++;
-		retval=_uuid_to_digest(text+offset,digest+i*DIGEST_SIZE);
-		if(retval<0)
-			return retval;
-		offset+=DIGEST_SIZE*2;
-	}	
-	return offset;
-}
-
-int defuuidarray_get_text_value(void * addr, void * data,void * elem_template)
-{
-	char * text=data;
-	struct elem_template * curr_elem=elem_template;
-	BYTE * digest=addr;
-	int offset=0;
-	_digest_to_uuid(digest,text+offset);
-	offset+=DIGEST_SIZE;
-
-	*(text+offset++)=',';
-	*(text+offset)=0;
-	return offset+1;
-}
-
-int defuuidarray_set_text_value(void * addr, char * text,void * elem_template)
-{
-	int retval;
-	struct elem_template * curr_elem=elem_template;
-	int offset=0;
-
-	BYTE * digest=addr;
-
-	while((*(text+offset)==',')||(*(text+offset)==' '))
-		offset++;
-	retval=_uuid_to_digest(text+offset,digest);
-	if(retval<0)
-		return retval;
-	offset+=DIGEST_SIZE*2;
-	return offset;
-}
-
 int namelist_get_bin_value(void * addr, void * data,void * elem_template)
 {
 	NAME2VALUE * namelist=addr;
@@ -665,11 +586,13 @@ ELEM_OPS uuid_convert_ops =
 	.get_text_value = uuid_get_text_value,
 	.set_text_value = uuid_set_text_value,
 };
+
 ELEM_OPS uuidarray_convert_ops =
 {
-	.get_text_value = uuidarray_get_text_value,
-	.set_text_value = uuidarray_set_text_value,
+	.get_text_value = uuid_get_text_value,
+	.set_text_value = uuid_set_text_value,
 };
+
 ELEM_OPS defuuidarray_convert_ops =
 {
 //	.get_text_value = defuuidarray_get_text_value,
