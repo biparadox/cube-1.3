@@ -1,11 +1,11 @@
 FLAGS= -g -shared -o
-INCLUDE= -I../include/ 
+INCLUDE= -I$(CUBELIBPATH)/include/ 
 CFLAGS= -g -c -fPIC -DUSER_MODE $(INCLUDE)
 CC=gcc
 CCP=g++
 PLUGIN=symm_crypt
 PLUGIN_OBJ= 
-TEST_LIB= -L../lib -lexmodule -lmessage -lmemdb -lconnector -lstruct -lcrypto_func -lpthread 
+TEST_LIB= -L$(CUBELIBPATH)/lib -lexmodule -lmessage -lmemdb -lconnector -lstruct -lcrypto_func -lpthread 
 
 main: lib$(PLUGIN).so 
 lib$(PLUGIN).so:  $(PLUGIN).o $(PLUGIN_OBJ) 
