@@ -21,6 +21,11 @@
 #include "file_dealer.h"
 #include "file_struct.h"
 
+
+static struct timeval time_val={0,50*1000};
+static int block_size=256;
+
+
 int file_dealer_init(void * sub_proc,void * para)
 {
 	int ret=0;
@@ -80,7 +85,6 @@ int _is_samefile_exists(void * record)
 {
 	struct policyfile_data * pfdata=record;
 	char digest[DIGEST_SIZE];
-        char uuid[DIGEST_SIZE*2];
 	int fd;
 	int ret;
 	fd=open(pfdata->filename,O_RDONLY);
@@ -90,8 +94,7 @@ int _is_samefile_exists(void * record)
 		ret=calculate_sm3(pfdata->filename,digest);
 		if(ret<0)
 			return ret;
-		digest_to_uuid(digest,uuid);
-		if(Strncmp(pfdata->uuid,uuid,DIGEST_SIZE*2)!=0)
+		if(Memcmp(pfdata->uuid,digest,DIGEST_SIZE)!=0)
 		{
 			return 1;
 		}
@@ -107,8 +110,7 @@ int get_filedata_from_message(void * message)
 	int retval;
 	MSG_HEAD * message_head;
 	int fd;
-        char digest[DIGEST_SIZE];
-        char uuid[DIGEST_SIZE*2];
+        BYTE digest[DIGEST_SIZE];
 	int type;
 	int subtype;
 
@@ -145,8 +147,7 @@ int proc_file_receive(void * sub_proc,void * message)
 
 	printf("begin file receive!\n");
 	char buffer[4096];
-	char digest[DIGEST_SIZE];
-        char uuid[DIGEST_SIZE*2];
+	BYTE digest[DIGEST_SIZE];
 	int blobsize=0;
 	int fd;
 
@@ -173,7 +174,7 @@ int proc_file_receive(void * sub_proc,void * message)
 				pfnotice=Talloc0(sizeof(struct policyfile_notice));
 				if(pfnotice==NULL)
 					return -ENOMEM;
-				Memcpy(pfnotice->uuid,pfdata->uuid,DIGEST_SIZE*2);
+				Memcpy(pfnotice->uuid,pfdata->uuid,DIGEST_SIZE);
 				pfnotice->filename=dup_str(pfdata->filename,0);
 				if(_is_samefile_exists(pfdata)==0)
 				{
@@ -224,11 +225,11 @@ int proc_file_receive(void * sub_proc,void * message)
 			storedata=malloc(sizeof(struct policyfile_store));
 			if(storedata==NULL)
 				return -ENOMEM;
-			memcpy(storedata->uuid,pfdata->uuid,DIGEST_SIZE*2);				
+			Memcpy(storedata->uuid,pfdata->uuid,DIGEST_SIZE);				
 			storedata->filename=dup_str(pfdata->filename,0);
 			storedata->file_size=pfdata->total_size;
-			storedata->block_size=256;
-			storedata->block_num=(pfdata->total_size+(256-1))/256;
+			storedata->block_size=block_size;
+			storedata->block_num=(pfdata->total_size+(storedata->block_size-1))/storedata->block_size;
 			storedata->mark_len=(storedata->block_num+7)/8;
 			storedata->marks=malloc(storedata->mark_len);
 			if(storedata->marks==NULL)
@@ -247,10 +248,10 @@ int proc_file_receive(void * sub_proc,void * message)
 		{
 			printf("get file %s succeed!\n",pfdata->filename);
 			struct policyfile_notice * pfnotice;
-			pfnotice=malloc(sizeof(struct policyfile_notice));
+			pfnotice=Talloc0(sizeof(struct policyfile_notice));
 			if(pfnotice==NULL)
 				return -ENOMEM;
-			memcpy(pfnotice->uuid,pfdata->uuid,DIGEST_SIZE*2);
+			Memcpy(pfnotice->uuid,pfdata->uuid,DIGEST_SIZE);
 			pfnotice->filename=dup_str(pfdata->filename,0);
 			if(_is_samefile_exists(pfdata)==0)
 			{
@@ -271,6 +272,7 @@ int proc_file_receive(void * sub_proc,void * message)
 
 	return 0;
 }
+
 int proc_file_send(void * sub_proc,void * message)
 {
 
@@ -278,11 +280,9 @@ int proc_file_send(void * sub_proc,void * message)
 	struct policyfile_req  * reqdata;
 	int ret;
 	int fd;
-	int block_size=512;
 	int data_size;
 	int total_size;
-	char digest[DIGEST_SIZE];
-	char uuid[DIGEST_SIZE*2];
+	BYTE digest[DIGEST_SIZE];
         struct stat statbuf;
 	void * send_msg;
 	printf("begin file send!\n");
@@ -305,7 +305,6 @@ int proc_file_send(void * sub_proc,void * message)
 	close(fd);
 
 	calculate_sm3(reqdata->filename,digest);
-	digest_to_uuid(digest,uuid);
 
 	int i;
 		
@@ -316,48 +315,49 @@ int proc_file_send(void * sub_proc,void * message)
 	for(i=0;i<total_size/block_size;i++)
 	{
 		
-        	pfdata=malloc(sizeof(struct policyfile_data));
+        	pfdata=Talloc0(sizeof(struct policyfile_data));
 		if(pfdata==NULL)
 		{
 			return NULL;
 		}
-        	Memset(pfdata,0,sizeof(struct policyfile_data));
-        	Strncpy(pfdata->uuid,uuid,DIGEST_SIZE);
+        	Memcpy(pfdata->uuid,digest,DIGEST_SIZE);
         	pfdata->filename=dup_str(reqdata->filename,0);
         	pfdata->record_no=i;
         	pfdata->offset=i*block_size;
         	pfdata->total_size=total_size;
         	pfdata->data_size=block_size;
-		pfdata->policy_data=(char *)malloc(sizeof(char)*data_size);
+		pfdata->policy_data=(BYTE *)Talloc0(sizeof(char)*pfdata->data_size);
 
-        	if(read(fd,pfdata->policy_data,block_size)!=block_size)
+        	if(read(fd,pfdata->policy_data,pfdata->data_size)!=pfdata->data_size)
         	{
                 	printf("read vm list error! \n");
                 	return NULL;
         	}
+
 		send_msg=message_create(DTYPE_FILE_TRANS,SUBTYPE_FILE_DATA,message);
 		if(send_msg==NULL)
 			return -EINVAL;
 		message_add_record(send_msg,pfdata);
+
 		ex_module_sendmsg(sub_proc,send_msg);
 			
 	}
 
+
 	if((data_size=total_size%block_size)!=0)
 	{
-        	pfdata=malloc(sizeof(struct policyfile_data));
+        	pfdata=Talloc0(sizeof(struct policyfile_data));
 		if(pfdata==NULL)
 		{
 			return NULL;
 		}
-        	memset(pfdata,0,sizeof(struct policyfile_data));
-        	strncpy(pfdata->uuid,uuid,64);
+        	Memcpy(pfdata->uuid,digest,DIGEST_SIZE);
         	pfdata->filename=dup_str(reqdata->filename,0);
         	pfdata->record_no=i;
         	pfdata->offset=i*block_size;
         	pfdata->total_size=total_size;
         	pfdata->data_size=data_size;
-		pfdata->policy_data=(char *)malloc(sizeof(char)*data_size);
+		pfdata->policy_data=(BYTE *)Talloc(sizeof(char)*data_size);
 
         	if(read(fd,pfdata->policy_data,data_size)!=data_size)
         	{
@@ -370,6 +370,7 @@ int proc_file_send(void * sub_proc,void * message)
 		message_add_record(send_msg,pfdata);
 		ex_module_sendmsg(sub_proc,send_msg);
 	}
+
 	close(fd);
 	printf("send file %s succeed!\n",reqdata->filename);
 	return i;

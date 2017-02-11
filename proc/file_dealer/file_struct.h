@@ -35,7 +35,7 @@ struct policyfile_data
 	int record_no;
 	int offset;
 	int data_size;
-	char * policy_data; //the file data
+	BYTE * policy_data; //the file data
 }__attribute__((packed));
 
 struct policyfile_req
