@@ -170,7 +170,29 @@ int read_sys_cfg(void ** lib_para_struct,void * root_node)
 	printf("sys config file format error!\n");
 	return -EINVAL;
      }
-     
+ 
+    void * define_node=json_find_elem("define_file",root_node);	    
+    if(define_node!=NULL)
+    {
+	if(json_get_type(define_node)==JSON_ELEM_STRING)
+	{
+		ret=read_json_file(json_get_valuestr(define_node));
+		if(ret>0)
+			printf("read %d elem from file %s!\n",ret,json_get_valuestr(define_node));
+	}
+	else if(json_get_type(define_node)==JSON_ELEM_ARRAY)
+	{
+		void * define_file=json_get_first_child(define_node);
+		while(define_file!=NULL)
+		{
+			ret=read_json_file(json_get_valuestr(define_file));
+			if(ret>0)
+				printf("read %d elem from file %s!\n",ret,json_get_valuestr(define_file));
+			define_file=json_get_next_child(define_node);
+		}
+	}	
+    }
+
     void * para_node=json_find_elem("init_para_desc",root_node);
      
     if(para_node!=NULL)
@@ -407,13 +429,6 @@ int read_main_cfg(void * lib_para_struct,void * root_node)
     if(lib_para==NULL)
 	return 0;	
     ret=0;
-    if(lib_para->define_file!=NULL)
-    {
-	ret=read_json_file(lib_para->define_file);
-	if(ret<0)
-		return -EINVAL;	
-	printf("read %d elem from file %s!\n",ret,lib_para->define_file);
-    }
 
     void * record_list=json_find_elem("record_file",root_node);
     if(record_list!=NULL)
