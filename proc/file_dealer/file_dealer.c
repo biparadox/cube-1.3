@@ -239,7 +239,14 @@ int proc_file_receive(void * sub_proc,void * message)
 
 		int site= pfdata->offset/256;
 		bitmap_set(storedata->marks,site);
-		memdb_store_record(record);	
+		if(record==NULL)
+		{
+			memdb_store(storedata,DTYPE_FILE_TRANS,SUBTYPE_FILE_STORE,NULL);	
+		}
+		else
+		{
+			memdb_store_record(record);	
+		}
 		ret=get_filedata_from_message(message);
 		if(ret<0)
 			return ret;

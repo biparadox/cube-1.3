@@ -995,14 +995,15 @@ int struct_comp_elem_value(char * name,void * addr, void * elem_value,void * tem
 {
 	struct elem_template * elem;
 	void * elem_addr;
-	elem=(struct elem_template *)_get_elem_by_name(template,name);
-	if((elem == NULL)||IS_ERR(elem))
-		return -EINVAL;
+	BYTE value[DIGEST_SIZE*32];
+	int ret;
 
-	elem_addr=_elem_get_addr(elem,addr);
-	if(elem_addr==NULL)
-		return -EINVAL;
-	return _elem_compare_value(elem_addr,elem_value,elem);
+	ret=struct_read_elem(name,addr,value,template);
+	if(ret<0)
+		return ret;
+	if(Memcmp(value,elem_value,ret)==0)
+		return 1;
+	return 0;
 }
 
 int struct_compare(void * src, void * destr, void * struct_template)
