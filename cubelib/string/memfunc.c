@@ -382,14 +382,14 @@ int Isstrinuuid(BYTE * uuid)
 }
 
 
-int bitmap_set(char * bitmap, int site)
+int bitmap_set(BYTE * bitmap, int site)
 {
 	unsigned char c=1;
 	c<<=site%8;
         bitmap[site/8] |=c;
 	return 0;
 }
-int bitmap_clear(char * bitmap, int site)
+int bitmap_clear(BYTE * bitmap, int site)
 {
 	unsigned char c=1;
 	c<<=site%8;
@@ -397,14 +397,14 @@ int bitmap_clear(char * bitmap, int site)
 	return 0;
 }
 
-int bitmap_get(char * bitmap,int site)
+int bitmap_get(BYTE * bitmap,int site)
 {
 	unsigned char c=1;
 	c<<=site%8;
         return bitmap[site/8+1] &c;
 }
 
-int bitmap_is_allset(char * bitmap,int size)
+int bitmap_is_allset(BYTE * bitmap,int size)
 {
 	unsigned char c=0x7f;
 
@@ -420,5 +420,4 @@ int bitmap_is_allset(char * bitmap,int size)
 	if(bitmap[i]!=c)
 		return 0;
 	return 1;
-
 }

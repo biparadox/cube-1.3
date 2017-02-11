@@ -23,7 +23,7 @@
 
 
 static struct timeval time_val={0,50*1000};
-static int block_size=256;
+static int block_size=512;
 
 
 int file_dealer_init(void * sub_proc,void * para)
@@ -222,7 +222,7 @@ int proc_file_receive(void * sub_proc,void * message)
 				default:
 					return ret;
 			}
-			storedata=malloc(sizeof(struct policyfile_store));
+			storedata=Talloc0(sizeof(struct policyfile_store));
 			if(storedata==NULL)
 				return -ENOMEM;
 			Memcpy(storedata->uuid,pfdata->uuid,DIGEST_SIZE);				
@@ -237,7 +237,7 @@ int proc_file_receive(void * sub_proc,void * message)
 			memset(storedata->marks,0,storedata->mark_len);
 		}
 
-		int site= pfdata->offset/256;
+		int site= pfdata->offset/block_size;
 		bitmap_set(storedata->marks,site);
 		if(record==NULL)
 		{
