@@ -143,12 +143,11 @@ int text_2_struct(char * string, void * blob, void * struct_template);
 
 int struct_clone(void * src, void * destr, void * struct_template);
 int struct_part_clone(void * src, void * destr, void * struct_template,int flag);
+int struct_comp_elem_value(char * name,void * src, void * value, void * struct_template);
 int struct_compare(void * src, void * destr, void * struct_template);
 int struct_part_compare(void * src, void * destr, void * struct_template,int flag);
 
 
-int struct_comp_elem(char * name, void * src, void * dest, void * struct_template);
-int struct_comp_elem_text(char * name, void * addr, char * text, void * struct_template);
 int struct_read_elem(char * name, void * addr, void * elem_data, void * struct_template);
 int struct_write_elem(char * name, void * addr, void * elem_data, void * struct_template);
 int struct_read_elem_text(char * name, void * addr, char * text, void * struct_template);

@@ -1162,6 +1162,30 @@ void * memdb_find_byname(char * name,int type,int subtype)
 	return NULL;
 }
 
+void * memdb_find_first(int type,int subtype,char * elem_name,void * value)
+{
+	int ret;
+	struct memdb_desc * db_list;
+	DB_RECORD * record;
+	void * record_template;
+
+	record_template=memdb_get_template(type,subtype);
+	if(record_template==NULL)
+		return -EINVAL;
+
+	record=memdb_get_first(type,subtype);	
+	while(record!=NULL)
+	{
+		ret=struct_comp_elem_value(elem_name,record->record,value,record_template);
+		if(ret<0)
+			return NULL;
+		if(ret>0)
+			return record;
+		record=memdb_get_next(type,subtype);
+	}
+	return NULL;
+}
+
 int memdb_find_recordtype(int type,int subtype)
 {
 	int ret;

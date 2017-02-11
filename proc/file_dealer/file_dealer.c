@@ -66,7 +66,7 @@ int file_dealer_start(void * sub_proc,void * para)
 			{
 				proc_file_receive(sub_proc,recv_msg);
 			}
-			else if(subtype==SUBTYPE_FILE_QUEST)
+			else if(subtype==SUBTYPE_FILE_REQUEST)
 			{
 				proc_file_send(sub_proc,recv_msg);
 			}
@@ -91,7 +91,7 @@ int _is_samefile_exists(void * record)
 		if(ret<0)
 			return ret;
 		digest_to_uuid(digest,uuid);
-		if(strncmp(pfdata->uuid,uuid,DIGEST_SIZE*2)!=0)
+		if(Strncmp(pfdata->uuid,uuid,DIGEST_SIZE*2)!=0)
 		{
 			return 1;
 		}
@@ -101,6 +101,41 @@ int _is_samefile_exists(void * record)
 
 }
 
+int get_filedata_from_message(void * message)
+{
+	struct policyfile_data * pfdata;
+	int retval;
+	MSG_HEAD * message_head;
+	int fd;
+        char digest[DIGEST_SIZE];
+        char uuid[DIGEST_SIZE*2];
+	int type;
+	int subtype;
+
+
+	pfdata= malloc(sizeof(struct policyfile_data));
+        if(pfdata==NULL)
+       		return -ENOMEM;	       
+	message_head=message_get_head(message);
+	if(message_head==NULL)
+		return -EINVAL;
+	
+	type=message_get_type(message);
+	subtype=message_get_subtype(message);
+	if((type!=DTYPE_FILE_TRANS) && (subtype!=SUBTYPE_FILE_DATA))
+	{
+		return -EINVAL;
+	}
+	retval=message_get_record(message,&pfdata,0);
+
+	fd=open(pfdata->filename,O_CREAT|O_WRONLY,0666);
+	if(fd<0)
+		return fd;
+	lseek(fd,pfdata->offset,SEEK_SET);
+	write(fd,pfdata->policy_data,pfdata->data_size);
+	close(fd);
+	return 0;
+}
 
 int proc_file_receive(void * sub_proc,void * message)
 {
@@ -109,7 +144,7 @@ int proc_file_receive(void * sub_proc,void * message)
 	int ret;
 
 	printf("begin file receive!\n");
-	char buffer[1024];
+	char buffer[4096];
 	char digest[DIGEST_SIZE];
         char uuid[DIGEST_SIZE*2];
 	int blobsize=0;
@@ -135,10 +170,10 @@ int proc_file_receive(void * sub_proc,void * message)
 			{
 				ret=get_filedata_from_message(message);
 				struct policyfile_notice * pfnotice;
-				pfnotice=malloc(sizeof(struct policyfile_notice));
+				pfnotice=Talloc0(sizeof(struct policyfile_notice));
 				if(pfnotice==NULL)
 					return -ENOMEM;
-				memcpy(pfnotice->uuid,pfdata->uuid,DIGEST_SIZE*2);
+				Memcpy(pfnotice->uuid,pfdata->uuid,DIGEST_SIZE*2);
 				pfnotice->filename=dup_str(pfdata->filename,0);
 				if(_is_samefile_exists(pfdata)==0)
 				{
@@ -161,9 +196,12 @@ int proc_file_receive(void * sub_proc,void * message)
 	}
 	else
 	{
-		ret=FindPolicy(pfdata->uuid,"FILS",&storedata);
-		if(ret<0)
-			return ret;
+		DB_RECORD * record;
+		record=memdb_find_first(DTYPE_FILE_TRANS,SUBTYPE_FILE_STORE,"uuid",pfdata->uuid);
+		if(record==NULL)
+			storedata=NULL;
+		else
+			storedata=record->record;
 		if(storedata==NULL)
 		{
 			switch(ret=_is_samefile_exists(pfdata))
@@ -198,10 +236,9 @@ int proc_file_receive(void * sub_proc,void * message)
 			memset(storedata->marks,0,storedata->mark_len);
 		}
 
-
 		int site= pfdata->offset/256;
 		bitmap_set(storedata->marks,site);
-		AddPolicy(storedata,"FILS");	
+		memdb_store_record(record);	
 		ret=get_filedata_from_message(message);
 		if(ret<0)
 			return ret;
@@ -241,7 +278,7 @@ int proc_file_send(void * sub_proc,void * message)
 	struct policyfile_req  * reqdata;
 	int ret;
 	int fd;
-	int block_size=256;
+	int block_size=512;
 	int data_size;
 	int total_size;
 	char digest[DIGEST_SIZE];
@@ -284,8 +321,8 @@ int proc_file_send(void * sub_proc,void * message)
 		{
 			return NULL;
 		}
-        	memset(pfdata,0,sizeof(struct policyfile_data));
-        	strncpy(pfdata->uuid,uuid,64);
+        	Memset(pfdata,0,sizeof(struct policyfile_data));
+        	Strncpy(pfdata->uuid,uuid,DIGEST_SIZE);
         	pfdata->filename=dup_str(reqdata->filename,0);
         	pfdata->record_no=i;
         	pfdata->offset=i*block_size;

@@ -991,6 +991,20 @@ int proc_compare_struct(void * src,void * destr,void * elem,void * para)
 	return ret;
 } 
 
+int struct_comp_elem_value(char * name,void * addr, void * elem_value,void * template)
+{
+	struct elem_template * elem;
+	void * elem_addr;
+	elem=(struct elem_template *)_get_elem_by_name(template,name);
+	if((elem == NULL)||IS_ERR(elem))
+		return -EINVAL;
+
+	elem_addr=_elem_get_addr(elem,addr);
+	if(elem_addr==NULL)
+		return -EINVAL;
+	return _elem_compare_value(elem_addr,elem_value,elem);
+}
+
 int struct_compare(void * src, void * destr, void * struct_template)
 {
 	int ret;
