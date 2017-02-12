@@ -67,6 +67,35 @@ int get_local_uuid(char * uuid)
 	return len;
 }
 
+int read_json_node(int fd, void ** node)
+{
+	int ret;
+
+	int readlen;
+	int leftlen;
+	int json_offset;
+
+	void * root_node;
+	char json_buffer[1025];
+
+	readlen=read(fd,json_buffer,1024);
+	if(readlen<0)
+		return -EIO;
+	json_buffer[readlen]=0;
+
+	ret=json_solve_str(&root_node,json_buffer);
+	if(ret<0)
+	{
+		printf("solve json str error!\n");
+		return -EINVAL;
+	}
+	leftlen=readlen-ret;
+
+	lseek(fd,-leftlen,SEEK_CUR);	
+	*node=root_node;
+	return ret;
+}
+
 int read_json_file(char * file_name)
 {
 	int ret;
@@ -87,43 +116,28 @@ int read_json_file(char * file_name)
 	if(fd<0)
 		return fd;
 
-	readlen=read(fd,json_buffer,1024);
-	if(readlen<0)
-		return -EIO;
-	leftlen=readlen;
-	json_buffer[readlen]=0;
-
-	json_offset=0;
-	while(leftlen>32)
+	ret=read_json_node(fd,&root_node);
+	if(ret>0)
 	{
-		ret=json_solve_str(&root_node,json_buffer+json_offset);
-		if(ret<0)
+		while(root_node!=NULL)
 		{
-			printf("solve json str error!\n");
-			break;
+			ret=memdb_read_desc(root_node,uuid);
+			if(ret<0)
+			{	
+				printf("read %d record format failed!\n",struct_no);
+				break;
+			}
+			struct_no++;
+			ret=read_json_node(fd,&root_node);
+			if(ret<0)
+			{
+				printf("read %d record json node failed!\n",struct_no);
+				break;
+			}
+			if(ret<32)
+				break;
 		}
-
-		leftlen-=ret;
-		json_offset+=ret;
-
-		if(ret<32)
-			continue;
-		if(leftlen+json_offset==1024)
-		{
-			Memcpy(json_buffer,json_buffer+json_offset,leftlen);
-			readlen=read(fd,json_buffer+leftlen,1024-leftlen);
-			if(readlen<0)
-				return readlen;
-			leftlen+=readlen;
-			json_offset=0;
-		}
-
-		ret=memdb_read_desc(root_node,uuid);
-		if(ret<0)
-			break;
-		struct_no++;
 	}
-
 	close(fd);
 	return struct_no;
 }
@@ -153,6 +167,7 @@ int read_sys_cfg(void ** lib_para_struct,void * root_node)
     struct lib_para_struct * lib_para;
     int json_offset;	
     int ret;
+    char filename[DIGEST_SIZE*4];
 	
     ret=Galloc0(&lib_para,sizeof(*lib_para));
     if(lib_para==NULL)
@@ -171,13 +186,26 @@ int read_sys_cfg(void ** lib_para_struct,void * root_node)
 	return -EINVAL;
      }
  
+    char * define_path=getenv("CUBE_DEFINE_PATH");	
+
     void * define_node=json_find_elem("define_file",root_node);	    
     if(define_node!=NULL)
     {
 	if(json_get_type(define_node)==JSON_ELEM_STRING)
 	{
 		ret=read_json_file(json_get_valuestr(define_node));
-		if(ret>0)
+		if(ret<0)
+		{
+			Strcpy(filename,define_path);
+			Strcat(filename,"/");
+			Strcat(filename,json_get_valuestr(define_node));					
+			ret=read_json_file(filename);
+			if(ret<0)
+			{
+				printf("read define file  %s failed!\n",json_get_valuestr(define_node));
+			}
+		}
+		if(ret>=0)
 			printf("read %d elem from file %s!\n",ret,json_get_valuestr(define_node));
 	}
 	else if(json_get_type(define_node)==JSON_ELEM_ARRAY)
@@ -186,7 +214,18 @@ int read_sys_cfg(void ** lib_para_struct,void * root_node)
 		while(define_file!=NULL)
 		{
 			ret=read_json_file(json_get_valuestr(define_file));
-			if(ret>0)
+			if(ret<0)
+			{
+				Strcpy(filename,define_path);
+				Strcat(filename,"/");
+				Strcat(filename,json_get_valuestr(define_node));					
+				ret=read_json_file(filename);
+				if(ret<0)
+				{
+					printf("read define file  %s failed!\n",json_get_valuestr(define_node));
+				}
+			}
+			if(ret>=0)
 				printf("read %d elem from file %s!\n",ret,json_get_valuestr(define_file));
 			define_file=json_get_next_child(define_node);
 		}
@@ -205,34 +244,6 @@ int read_sys_cfg(void ** lib_para_struct,void * root_node)
     return ret;
 }
 
-int read_json_node(int fd, void ** node)
-{
-	int ret;
-
-	int readlen;
-	int leftlen;
-	int json_offset;
-
-	void * root_node;
-	char json_buffer[1025];
-
-	readlen=read(fd,json_buffer,1024);
-	if(readlen<0)
-		return -EIO;
-	json_buffer[readlen]=0;
-
-	ret=json_solve_str(&root_node,json_buffer);
-	if(ret<0)
-	{
-		printf("solve json str error!\n");
-		return -EINVAL;
-	}
-	leftlen=readlen-ret;
-
-	lseek(fd,-leftlen,SEEK_CUR);	
-	*node=root_node;
-	return ret;
-}
 
 int read_plugin_cfg(void ** plugin,void * root_node)
 {
