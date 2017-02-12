@@ -218,11 +218,11 @@ int read_sys_cfg(void ** lib_para_struct,void * root_node)
 			{
 				Strcpy(filename,define_path);
 				Strcat(filename,"/");
-				Strcat(filename,json_get_valuestr(define_node));					
+				Strcat(filename,json_get_valuestr(define_file));					
 				ret=read_json_file(filename);
 				if(ret<0)
 				{
-					printf("read define file  %s failed!\n",json_get_valuestr(define_node));
+					printf("read define file  %s failed!\n",json_get_valuestr(define_file));
 				}
 			}
 			if(ret>=0)
