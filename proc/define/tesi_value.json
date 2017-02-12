@@ -1,0 +1,111 @@
+{
+	"head":
+	{
+		"name":"tpm_key_usage",
+		"type":"NAMELIST"
+	},
+	"record":
+	{
+		"elem_no":7,
+		"elemlist":
+		[
+			"SIGNING=0x10",
+			"STORAGE",
+			"IDENTITY",
+			"AUTHCHANGE",
+			"BIND",
+			"LEGACY",
+			"MIGRATE"
+		]
+	}
+}
+{
+	"head":
+	{
+		"name":"tpm_key_flags",
+		"type":"NAMELIST"
+	},
+	"record":
+	{
+		"elem_no":5,
+		"elemlist":
+		[
+			"REDIRECTION=0x01",
+			"MIGRATABLE=0x02",
+			"VOLATILE=0x04",
+			"PCRIGNOREDONREAD=0x08",
+			"MIGRATEAUTHORITY=0x10"
+		]
+	}
+}
+{
+	"head":
+	{
+		"name":"dtype_tesi_struct",
+		"type":"TYPELIST"
+	},
+	"record":
+	{
+		"elem_no":3,
+		"elemlist":
+		[
+			"TESI_STRUCT=0x601",
+			"TESI_KEY_STRUCT",
+			"TESI_AIK_STRUCT"
+		]
+	}
+}
+{
+	"head":
+	{
+		"name":"subtype_tesi_struct",
+		"type":"SUBTYPELIST"
+	},
+	"record":
+	{
+		"type":"TESI_STRUCT",
+		"elem_no":3,
+		"elemlist":
+		[
+			"SIGN_DATA=0x01",
+			"TPM_KEY_PARMS",
+			"TPM_IDENTITY_REQ"
+		]
+	}
+}
+{
+	"head":
+	{
+		"name":"subtype_key_struct",
+		"type":"SUBTYPELIST"
+	},
+	"record":
+	{
+		"type":"TESI_KEY_STRUCT",
+		"elem_no":3,
+		"elemlist":
+		[
+			"WRAPPED_KEY=0x01",
+			"PUBLIC_KEY",
+			"KEY_CERTIFY"
+		]
+	}
+}
+{
+	"head":
+	{
+		"name":"subtype_aik_struct",
+		"type":"SUBTYPELIST"
+	},
+	"record":
+	{
+		"type":"TESI_AIK_STRUCT",
+		"elem_no":3,
+		"elemlist":
+		[
+			"USER_INFO=0x01",
+			"CERT_INFO",
+			"CA_CERT"
+		]
+	}
+}

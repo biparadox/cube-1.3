@@ -1,0 +1,77 @@
+{
+	"head":
+	{
+		"name":"tesi_sign_data",
+		"type":"RECORDTYPE"
+	},
+	"record":
+	{
+		"type":"TESI_STRUCT",
+		"subtype":"SIGN_DATA",
+		"struct_desc":
+		{
+			"elem_desc":
+			[
+				{"name":"datalen","type":"INT"},
+				{"name":"data","type":"DEFINE","def":"datalen"},
+				{"name":"signlen","type":"INT"},
+				{"name":"sign","type":"DEFINE","def":"signlen"}
+			]
+		}
+	}	
+}
+{
+	"head":
+	{
+		"name":"tpm_key_parms",
+		"type":"STRUCT"
+	},
+	"record":
+	{
+		"elem_desc":
+		[
+			{"name":"algorithmID","type":"INT"},
+			{"name":"encScheme","type":"UINT16"},
+			{"name":"sigScheme","type":"UINT16"},
+			{"name":"parmSize","type":"INT"},
+			{"name":"parms","type":"DEFINE","def":"parmSize"}
+		]
+	}	
+}
+{
+	"head":
+	{
+		"name":"tpm_key_parms",
+		"type":"RECORDTYPE"
+	},
+	"record":
+	{
+		"type":"TESI_STRUCT",
+		"subtype":"TPM_KEY_PARMS",
+		"uuid":"tpm_key_parms"
+	}	
+}
+{
+	"head":
+	{
+		"name":"tpm_identity_req",
+		"type":"RECORDTYPE"
+	},
+	"record":
+	{
+		"type":"TESI_STRUCT",
+		"subtype":"TPM_IDENTITY_REQ",
+		"struct_desc":
+		{
+			"elem_desc":
+			[
+				{"name":"asymSize","type":"INT"},
+				{"name":"symSize","type":"INT"},
+				{"name":"asymAlgorithm","type":"SUBSTRUCT","ref":"tpm_key_parms"},
+				{"name":"symAlgorithm","type":"SUBSTRUCT","ref":"tpm_key_parms"},
+				{"name":"asymBlob","type":"DEFINE","def":"asymSize"},
+				{"name":"asymBlob","type":"DEFINE","def":"symSize"}
+			]
+		}
+	}	
+}
