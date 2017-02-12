@@ -454,7 +454,26 @@ int proc_router_start(void * sub_proc,void * para)
 							&&(msg_head->flag &MSG_FLAG_RESPONSE))
 						{
 								// if this message's flow is query, we should push it into the stack
-							router_pop_site(message);
+							ret=router_pop_site(message);
+							if(ret==0)
+							{
+								ret=router_find_policy_byname(&msg_policy,msg_head->route,0,0);
+								if(ret<0)
+								{
+									printf("can't find response message's route!\n");
+									continue;
+								}
+								ret=router_set_query_end(message,msg_policy);
+								if(ret<0)
+								{
+									printf("can't set response message!\n");
+									continue;
+								}	
+								ret=router_set_next_jump(message);
+								if(ret<0)
+									return ret;
+								break;
+							}	
 							printf("begin to response query message");
 							break;
 						}

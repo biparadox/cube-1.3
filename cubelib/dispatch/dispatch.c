@@ -666,6 +666,47 @@ int router_set_local_route(void * message,void * policy)
 	return 1;	
 }
 
+int router_set_query_end(void * message,void * policy)
+{
+	int ret;
+    	MSG_HEAD * msg_head;	
+   	DISPATCH_POLICY * msg_policy=(DISPATCH_POLICY *)policy;
+	ROUTE_RULE * rule;
+	char * target;
+	int jumpcount=1;
+
+    	if(policy==NULL)
+        	return -EINVAL;
+    	if(message==NULL)
+        	return -EINVAL;
+    	msg_head=message_get_head(message);
+	message_set_policy(message,policy);
+	ret=dispatch_policy_getfirstrouterule(policy,&rule);
+	if(ret<0)
+		return ret;
+	while(rule!=NULL)
+	{
+		jumpcount++;
+		if(rule->target_type!=ROUTE_TARGET_LOCAL)	
+			break;
+		ret=dispatch_policy_getnextrouterule(policy,&rule);
+		if(ret<0)
+			return ret;
+	}
+	msg_head->ljump=jumpcount;
+	if(rule!=NULL)
+	{
+		ret=dispatch_policy_getnextrouterule(policy,&rule);
+		if(ret<0)
+			return ret;
+	}
+	if(rule==NULL)	
+	{
+		msg_head->flow=MSG_FLOW_FINISH;
+	}
+	return 1;	
+}
+
 int router_find_route_policy(void * message,void **msg_policy,char * sender_proc)
 {
     void * policy;

@@ -40,7 +40,41 @@ int request_init(void * sub_proc,void * para)
 
 int request_start(void * sub_proc,void * para)
 {
+	int ret;
+	void * recv_msg;
+	int i;
+	int type;
+	int subtype;
+
+	// send init message
+	usleep(10*1000);
 	proc_request_message(sub_proc,NULL);
+
+	for(i=0;i<3000*1000;i++)
+	{
+		usleep(time_val.tv_usec);
+		ret=ex_module_recvmsg(sub_proc,&recv_msg);
+		if(ret<0)
+			continue;
+		if(recv_msg==NULL)
+			continue;
+		type=message_get_type(recv_msg);
+		subtype=message_get_subtype(recv_msg);
+		if(!memdb_find_recordtype(type,subtype))
+		{
+			printf("message format (%d %d) is not registered!\n",
+				message_get_type(recv_msg),message_get_subtype(recv_msg));
+			continue;
+		}
+		if((type ==DTYPE_FILE_TRANS) &&
+			(subtype ==SUBTYPE_FILE_NOTICE))
+		{
+			proc_notice_message(sub_proc,recv_msg);
+		}
+		else
+			printf("file_request receive error message!\n");
+	}
+
 	return 0;
 };
 
@@ -59,4 +93,25 @@ int proc_request_message(void * sub_proc,void * message)
 		return ret;
 	ret=ex_module_sendmsg(sub_proc,new_msg);
 	return ret;
+}
+
+
+int proc_notice_message(void * sub_proc,void * message)
+{
+	int ret;
+	struct policyfile_notice * notice;
+	char uuidname[DIGEST_SIZE*2+1];
+	printf("receive proc notice \n");
+
+	ret=message_get_record(message,&notice,0);
+	if(ret<0)
+		return ret;		
+	digest_to_uuid(notice->uuid,uuidname);
+	uuidname[DIGEST_SIZE*2]=0;
+	if(notice->result==1)
+		printf("send file %s succeed,digest is %s!\n",notice->filename,uuidname);
+	else
+		printf("send file %s failed!\n",notice->filename);
+	
+	return notice->result;
 }
