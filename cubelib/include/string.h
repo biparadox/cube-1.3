@@ -23,7 +23,7 @@ int    Atoi(char * str,int maxlen);
 int    Getlowestbit(BYTE * addr,int size,int bit); 
 static inline int  Ischarinset(BYTE char_value,char * set)
 {
-	int i;
+	int i=0;
 	while(set[i]!=0)
 	{
 		if(char_value==set[i++])
