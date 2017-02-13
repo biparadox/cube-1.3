@@ -1520,6 +1520,8 @@ int _jsonto_enterstruct(void * addr,void * data, void * elem,void * para)
 	if(curr_elem->limit==0)
 	{
 		temp_json_node=json_find_elem(curr_elem->elem_desc->name,my_para->json_node);
+		if(temp_json_node==NULL)
+			return 0;
 		if((json_get_type(temp_json_node) != JSON_ELEM_MAP)
 			&&(json_get_type(temp_json_node) != JSON_ELEM_ARRAY))
 			return -EINVAL;

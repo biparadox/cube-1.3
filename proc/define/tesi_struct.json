@@ -31,8 +31,8 @@
 		"elem_desc":
 		[
 			{"name":"algorithmID","type":"INT"},
-			{"name":"encScheme","type":"UINT16"},
-			{"name":"sigScheme","type":"UINT16"},
+			{"name":"encScheme","type":"TPM16"},
+			{"name":"sigScheme","type":"TPM16"},
 			{"name":"parmSize","type":"INT"},
 			{"name":"parms","type":"DEFINE","def":"parmSize"}
 		]
@@ -67,8 +67,8 @@
 			[
 				{"name":"asymSize","type":"INT"},
 				{"name":"symSize","type":"INT"},
-				{"name":"asymAlgorithm","type":"SUBSTRUCT","ref":"tpm_key_parms"},
-				{"name":"symAlgorithm","type":"SUBSTRUCT","ref":"tpm_key_parms"},
+				{"name":"asymAlgorithm","type":"SUBSTRUCT","ref_name":"tpm_key_parms"},
+				{"name":"symAlgorithm","type":"SUBSTRUCT","ref_name":"tpm_key_parms"},
 				{"name":"asymBlob","type":"DEFINE","def":"asymSize"},
 				{"name":"asymBlob","type":"DEFINE","def":"symSize"}
 			]
