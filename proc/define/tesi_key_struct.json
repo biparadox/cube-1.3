@@ -1,190 +1,28 @@
 {
 	"head":
 	{
-		"name":"tpm_key_usage",
-		"type":"NAMELIST"
-	},
-	"record":
-	{
-		"elem_no":7,
-		"elemlist":
-		[
-			"SIGNING=0x10",
-			"STORAGE",
-			"IDENTITY",
-			"AUTHCHANGE",
-			"BIND",
-			"LEGACY",
-			"MIGRATE"
-		]
-	}
-}
-{
-	"head":
-	{
-		"name":"tpm_key_flags",
-		"type":"NAMELIST"
-	},
-	"record":
-	{
-		"elem_no":5,
-		"elemlist":
-		[
-			"REDIRECTION=0x10",
-			"MIGRATABLE",
-			"VOLATILE",
-			"PCRIGNOREDONREAD",
-			"MIGRATEAUTHORITY"
-		]
-	}
-}
-{
-	"head":
-	{
-		"name":"dtype_tesi_struct",
-		"type":"TYPELIST"
-	},
-	"record":
-	{
-		"elem_no":3,
-		"elemlist":
-		[
-			"TESI_STRUCT=0x301",
-			"TESI_KEY_STRUCT",
-			"TESI_AIK_STRUCT"
-		]
-	}
-}
-{
-	"head":
-	{
-		"name":"subtype_tesi_struct",
-		"type":"SUBTYPELIST"
-	},
-	"record":
-	{
-		"type":"TESI_STRUCT",
-		"elem_no":3,
-		"elemlist":
-		[
-			"SIGN_DATA=0x01",
-			"TPM_KEY_PARMS",
-			"TPM_IDENTITY_REQ"
-		]
-	}
-}
-{
-	"head":
-	{
-		"name":"subtype_key_struct",
-		"type":"SUBTYPELIST"
+		"name":"vTPM_wrappedkey",
+		"type":"RECORDTYPE"
 	},
 	"record":
 	{
 		"type":"TESI_KEY_STRUCT",
-		"elem_no":3,
-		"elemlist":
-		[
-			"WRAPPED_KEY=0x01",
-			"PUBLIC_KEY",
-			"KEY_CERTIFY"
-		]
-	}
-}
-{
-	"head":
-	{
-		"name":"tesi_sign_data",
-		"type":"RECORDTYPE"
-	},
-	"record":
-	{
-		"type":"TESI_STRUCT",
-		"subtype":"SIGN_DATA",
-		"struct_desc":
-		{
-			"elem_desc":
-			[
-				{"name":"datalen","type":"INT"},
-				{"name":"data","type":"DEFINE","def":"datalen"},
-				{"name":"signlen","type":"INT"},
-				{"name":"sign","type":"DEFINE","size":"signlen"},
-			]
-		}
-	}	
-}
-{
-	"head":
-	{
-		"name":"tpm_key_parms",
-		"type":"STRUCT"
-	},
-	"record":
-	{
-		"elem_desc":
-		[
-			{"name":"algorithmID","type":"INT"},
-			{"name":"encScheme","type":"UINT16"},
-			{"name":"sigScheme","type":"UINT16"},
-			{"name":"parmSize","type":"INT"},
-			{"name":"parms","type":"DEFINE","def":"parmSize"}
-		]
-	}	
-}
-{
-	"head":
-	{
-		"name":"tpm_key_parms",
-		"type":"RECORDTYPE"
-	},
-	"record":
-	{
-		"type":"TESI_STRUCT",
-		"subtype":"TPM_KEY_PARMS",
-		"uuid":"tpm_key_parms"
-	}	
-}
-{
-	"head":
-	{
-		"name":"tpm_identity_req",
-		"type":"RECORDTYPE"
-	},
-	"record":
-	{
-		"type":"TESI_STRUCT",
-		"subtype":"TPM_IDENTITY_REQ",
-		"struct_desc":
-		{
-			"elem_desc":
-			[
-				{"name":"asymSize","type":"INT"},
-				{"name":"symSize","type":"INT"},
-				{"name":"asymAlgorithm","type":"SUBSTRUCT","ref":"tpm_key_parms"},
-				{"name":"symAlgorithm","type":"SUBSTRUCT","ref":"tpm_key_parms"},
-				{"name":"asymBlob","type":"DEFINE","def":"asymSize"},
-				{"name":"asymBlob","type":"DEFINE","def":"symSize"}
-			]
-		}
-	}	
-}
-{
-	"head":
-	{
-		"name":"policyfile_req",
-		"type":"RECORDTYPE"
-	},
-	"record":
-	{
-		"type":"FILE_TRANS",
-		"subtype":"REQUEST",
+		"subtype":"WRAPPED_KEY",
 		"struct_desc":
 		{
 			"elem_desc":
 			[
 				{"name":"uuid","type":"UUID"},
-				{"name":"filename","type":"ESTRING"},
-				{"name":"requestor","type":"ESTRING"}
+				{"name":"vtpm_uuid","type":"UUID"},
+				{"name":"issrkwrapped","type":"INT"},
+				{"name":"key_type","type":"INT"},
+				{"name":"key_alg","type":"INT"},
+				{"name":"key_size","type":"INT"},
+				{"name":"binding_policy_uuid","type":"UUID"},
+				{"name":"wrapkey_uuid","type":"UUID"},
+				{"name":"pubkey_uuid","type":"UUID"},
+				{"name":"keypass","type":"ESTRING"},
+				{"name":"key_filename","type":"ESTRING"}
 			]
 		}
 	}	
@@ -192,20 +30,58 @@
 {
 	"head":
 	{
-		"name":"policyfile_notice",
+		"name":"vTPM_publickey",
 		"type":"RECORDTYPE"
 	},
 	"record":
 	{
-		"type":"FILE_TRANS",
-		"subtype":"NOTICE",
+		"type":"TESI_KEY_STRUCT",
+		"subtype":"PUBLIC_KEY",
 		"struct_desc":
 		{
 			"elem_desc":
 			[
 				{"name":"uuid","type":"UUID"},
-				{"name":"filename","type":"ESTRING"},
-				{"name":"result","type":"INT"}
+				{"name":"vtpm_uuid","type":"UUID"},
+				{"name":"ispubkey","type":"INT"},
+				{"name":"key_type","type":"INT"},
+				{"name":"key_alg","type":"INT"},
+				{"name":"key_size","type":"INT"},
+				{"name":"binding_policy_uuid","type":"UUID"},
+				{"name":"privatekey_uuid","type":"UUID"},
+				{"name":"pubkey_uuid","type":"UUID"},
+				{"name":"keypass","type":"ESTRING"},
+				{"name":"key_filename","type":"ESTRING"}
+			]
+		}
+	}	
+}
+{
+	"head":
+	{
+		"name":"vTPM_key_certify_info",
+		"type":"RECORDTYPE"
+	},
+	"record":
+	{
+		"type":"TESI_KEY_STRUCT",
+		"subtype":"KEY_CERTIFY",
+		"struct_desc":
+		{
+			"elem_desc":
+			[
+				{"name":"uuid","type":"UUID"},
+				{"name":"keyuuid","type":"UUID"},
+				{"name":"aikuuid","type":"UUID"},
+				{"name":"keyusage","type":"TPM16"},
+				{"name":"keyflags","type":"TPM16"},
+				{"name":"authdatausage","type":"UCHAR"},
+				{"name":"keydigestsize","type":"INT"},
+				{"name":"pubkeydigest","type":"DEFINE","def":"keydigestsize"},
+				{"name":"PCRinfosize","type":"INT"},
+				{"name":"PCRinfos","type":"DEFINE","def":"PCRinfosize"},
+				{"name":"keypass","type":"ESTRING"},
+				{"name":"filename","type":"ESTRING"}
 			]
 		}
 	}	
