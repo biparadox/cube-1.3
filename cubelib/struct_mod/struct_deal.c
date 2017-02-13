@@ -274,7 +274,17 @@ int _create_template_proc_func(void * addr,void * data,void * elem, void * para)
 	if(_isdefineelem(curr_elem->elem_desc->type))
 	{
 		struct elem_template * temp_elem;
-		temp_elem= _get_elem_by_name(curr_node,curr_elem->elem_desc->def);
+		STRUCT_NODE * father_node;
+		if(my_para->parent_elem==NULL)
+		{
+			father_node=curr_node;
+		}
+		else
+		{
+			father_node=my_para->parent_elem->ref;
+		}
+		
+		temp_elem= _get_elem_by_name(father_node,curr_elem->elem_desc->def);
 		if(temp_elem==NULL)
 			return -EINVAL;
 		if(!_isvalidvalue(temp_elem->elem_desc->type))

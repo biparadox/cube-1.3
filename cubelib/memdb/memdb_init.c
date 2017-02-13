@@ -355,10 +355,9 @@ void * _struct_octet_to_attr(void * octet_array,int elem_no)
 		// if their is no valid ref
 		if(_issubsetelem(elem_desc_octet->type))
 		{
-			if(Memcmp(ref_comp,elem_desc_octet->ref,DIGEST_SIZE/2)==0)
+			if(elem_desc_octet->ref_name!=NULL)
 			{
-				// invalid ref uuid, we should find ref by ref_name
-				child_desc_record=memdb_find_byname(elem_desc_octet->ref,DB_STRUCT_DESC,0);
+				child_desc_record=memdb_find_byname(elem_desc_octet->ref_name,DB_STRUCT_DESC,0);
 			}
 			else
 			{
