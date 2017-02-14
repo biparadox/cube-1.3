@@ -40,7 +40,7 @@ struct aik_proc_pointer
 	TESI_SIGN_DATA * aik_cert;
 };
 
-int proc_aikclient_init(void * sub_proc,void * para)
+int aik_client_init(void * sub_proc,void * para)
 {
 	int ret;
 	TSS_RESULT result;	
@@ -66,13 +66,13 @@ int proc_aikclient_init(void * sub_proc,void * para)
 		printf("get pubek error %d!\n",result);
 		return -EIO;
 	}
-	ret=ex_module_setpointer(context,aik_pointer);
+	ret=ex_module_setpointer(sub_proc,aik_pointer);
 	if(ret<0)
 		return ret;
 	return 0;
 }
 
-int proc_aikclient_start(void * sub_proc,void * para)
+int aik_client_start(void * sub_proc,void * para)
 {
 	int ret;
 	int retval;
@@ -128,7 +128,7 @@ int proc_aik_request(void * sub_proc,void * message)
 	struct aik_user_info * user_info;
 	BYTE buf[1024];
 
-	ret=GetFirstPolicy(&user_info,"USRI");
+	user_info=memdb_get_first_record(DTYPE_AIK_STRUCT,SUBTYPE_AIK_USER_INFO);
 	if(ret<0)
 		return -EINVAL;
 
@@ -152,9 +152,8 @@ int proc_aik_request(void * sub_proc,void * message)
 	// create a signkey and write its key in localsignkey.key, write its pubkey in localsignkey.pem
 	result=TESI_Local_ReloadWithAuth("ooo","sss");
 
-	calculate_sm3("pubkey/pubek.pem",digest);
-	digest_to_uuid(digest,reqinfo.pubkey_uuid);
-	get_local_uuid(reqinfo.machine_uuid);
+	calculate_sm3("pubkey/pubek.pem",reqinfo.pubkey_uuid);
+	Memcpy(reqinfo.machine_uuid,local_uuid,DIGEST_SIZE);
 	
 	// create info blob
 	void * struct_template=memdb_get_template(DTYPE_AIK_STRUCT,SUBTYPE_AIK_CERT_INFO);
@@ -190,7 +189,7 @@ int proc_aik_request(void * sub_proc,void * message)
 	if(send_msg!=NULL)
 	{
 		message_add_record(send_msg,reqdata);
-		sec_subject_sendmsg(sub_proc,send_msg);
+		ex_module_sendmsg(sub_proc,send_msg);
 	}
 */
 	return 0;
