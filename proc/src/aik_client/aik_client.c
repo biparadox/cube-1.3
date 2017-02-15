@@ -117,7 +117,7 @@ int aik_client_start(void * sub_proc,void * para)
 };
 
 
-int proc_aik_request(void * sub_proc,void * message)
+int proc_aik_request(void * sub_proc,void * recv_msg)
 {
 	TSS_RESULT result;
 	TSS_HKEY 	hSignKey;
@@ -128,7 +128,7 @@ int proc_aik_request(void * sub_proc,void * message)
 	struct aik_user_info * user_info;
 
 	user_info=memdb_get_first_record(DTYPE_AIK_STRUCT,SUBTYPE_AIK_USER_INFO);
-	if(ret<0)
+	if(user_info==NULL)
 		return -EINVAL;
 
 	memcpy(&reqinfo.user_info,user_info,sizeof(struct aik_user_info));
@@ -137,7 +137,7 @@ int proc_aik_request(void * sub_proc,void * message)
 	BYTE		*labelString = "UserA";
 	UINT32		labelLen = strlen(labelString) + 1;
 */
-	char filename[DIGEST_SIZE*3];
+	char filename[DIGEST_SIZE*5];
 	char local_uuid[DIGEST_SIZE];
 	char proc_name[DIGEST_SIZE];
 	
@@ -181,17 +181,10 @@ int proc_aik_request(void * sub_proc,void * message)
 	}
 	TESI_Local_WriteKeyBlob(hAIKey,"privkey/AIK");
 
-	calculate_sm3("cert/aik.req",digest);
-	digest_to_uuid(digest,buffer);
-	
-	
-	Strcpy(filename,"cert/");
-	Strncat(filename,buffer,DIGEST_SIZE*2);
-	Strcat(filename,".req");
-	
-	ret=rename("cert/aik.req",filename);
+	ret=convert_uuidname("cert/aik",".req",digest,filename);
+
 	if(ret<0)
-		return -EIO;
+		return ret;
 
 	struct policyfile_req * aikfile_req = Talloc0(sizeof(*aikfile_req));
 	if(aikfile_req==NULL)
@@ -211,7 +204,7 @@ int proc_aik_request(void * sub_proc,void * message)
 	return 0;
 }
 
-int proc_aik_activate(void * sub_proc,void * message)
+int proc_aik_activate(void * sub_proc,void * recv_msg)
 {
 	printf("begin aik activate!\n");
 	TSS_RESULT	result;
@@ -220,11 +213,21 @@ int proc_aik_activate(void * sub_proc,void * message)
 	TESI_SIGN_DATA signdata;
 
 	int fd;
+	int ret;
 	int retval;
 	int blobsize=0;
-	struct policyfile_data * reqdata;
+	BYTE digest[DIGEST_SIZE];
+	char buffer[DIGEST_SIZE*5];
+	struct policyfile_notice * file_notice;
 	struct aik_cert_info cert_info;
 
+	ret = message_get_record(recv_msg,&file_notice,0);
+	if(ret<0)
+		return -EINVAL;
+	if(file_notice==NULL)
+		return 0;
+	Strcpy(buffer,file_notice->filename);
+	buffer[Strlen(file_notice->filename)-4]=0;
 
 	result=TESI_Local_ReadKeyBlob(&hAIKey,"privkey/AIK");
 	if ( result != TSS_SUCCESS )
@@ -240,12 +243,7 @@ int proc_aik_activate(void * sub_proc,void * message)
 		return result;
 	}
 
-//	retval=get_filedata_from_message(message);
-//	if(retval<0)
-//		return -EINVAL;
-//	printf("get file succeed!\n");
-//
-	result=TESI_AIK_Activate(hAIKey,"cert/active",&signdata);
+	result=TESI_AIK_Activate(hAIKey,buffer,&signdata);
 	if (result != TSS_SUCCESS) {
 		print_error("Tspi_Context_CreateObject", result);
 		exit(result);
@@ -264,11 +262,19 @@ int proc_aik_activate(void * sub_proc,void * message)
 		print_error("store aik data error!\n", result);
 		exit(result);
 	}
+	ret=convert_uuidname("privkey/AIK",".key",digest,buffer);
+	if(ret>0)
+		printf("Generate AIK private key blob %s!\n",buffer);
+
+
 	result=TESI_Local_WritePubKey(hAIKey,"pubkey/AIK");
 	if (result != TSS_SUCCESS) {
 		print_error("store aik data error!\n", result);
 		exit(result);
 	}
+	ret=convert_uuidname("pubkey/AIK",".pem",digest,buffer);
+	if(ret>0)
+		printf("Generate AIK public key blob %s!\n",buffer);
 
 	// verify the CA signed cert
 	result=TESI_AIK_VerifySignData(&signdata,"cert/CA");
@@ -288,5 +294,8 @@ int proc_aik_activate(void * sub_proc,void * message)
 		return -EINVAL;
 
 	WriteSignDataToFile(&signdata,"cert/AIK");
+	ret=convert_uuidname("cert/AIK",".sda",digest,buffer);
+	if(ret>0)
+		printf("Generate AIK sign data %s!\n",buffer);
 	return 0;
 }

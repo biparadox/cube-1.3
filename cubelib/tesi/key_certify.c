@@ -224,3 +224,43 @@ int create_pubkey_struct(struct vTPM_publickey * pubkey,char * privatekey_uuid,c
 	pubkey->key_filename=dup_str(keyfile,0);
 	return 0;
 }
+
+int convert_uuidname(char * name, char * suffix, BYTE * digest,char * newfilename)
+{
+	int i;
+	int lastsplit;
+	int offset;
+	int ret;
+	char uuidstr[DIGEST_SIZE*2];
+	char filename[DIGEST_SIZE*4];
+
+	lastsplit=0;
+	for(i=0;name[i]!=0;i++)
+	{
+		if(name[i]=='/')
+			lastsplit=i;	
+	}
+	
+	Strncpy(filename,name,DIGEST_SIZE*3);
+	Strncat(filename,suffix,DIGEST_SIZE/2);
+	
+	ret=calculate_sm3(filename,digest);
+	if(ret<0)
+		return ret;
+	digest_to_uuid(digest,uuidstr);
+
+	offset=lastsplit;
+	if(offset!=0)
+	{
+		Memcpy(newfilename,name,offset+1);
+		offset++;
+	}
+	Memcpy(newfilename+offset,uuidstr,DIGEST_SIZE*2);
+	offset+=DIGEST_SIZE*2;
+	Strncpy(newfilename+offset,suffix,DIGEST_SIZE/2);
+	
+	ret=rename(filename,newfilename);
+	if(ret<0)
+		return ret;
+	return 1;	
+} 
