@@ -12,9 +12,9 @@
 		{
 			"elem_desc":
 			[
-				{"name":"datalen","type":"INT"},
+				{"name":"datalen","type":"TPM32"},
 				{"name":"data","type":"DEFINE","def":"datalen"},
-				{"name":"signlen","type":"INT"},
+				{"name":"signlen","type":"TPM32"},
 				{"name":"sign","type":"DEFINE","def":"signlen"}
 			]
 		}
@@ -30,10 +30,10 @@
 	{
 		"elem_desc":
 		[
-			{"name":"algorithmID","type":"INT"},
+			{"name":"algorithmID","type":"TPM32"},
 			{"name":"encScheme","type":"TPM16"},
 			{"name":"sigScheme","type":"TPM16"},
-			{"name":"parmSize","type":"INT"},
+			{"name":"parmSize","type":"TPM32"},
 			{"name":"parms","type":"DEFINE","def":"parmSize"}
 		]
 	}	
@@ -65,8 +65,8 @@
 		{
 			"elem_desc":
 			[
-				{"name":"asymSize","type":"INT"},
-				{"name":"symSize","type":"INT"},
+				{"name":"asymSize","type":"TPM32"},
+				{"name":"symSize","type":"TPM32"},
 				{"name":"asymAlgorithm","type":"SUBSTRUCT","ref_name":"tpm_key_parms"},
 				{"name":"symAlgorithm","type":"SUBSTRUCT","ref_name":"tpm_key_parms"},
 				{"name":"asymBlob","type":"DEFINE","def":"asymSize"},

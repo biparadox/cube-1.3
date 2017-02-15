@@ -539,7 +539,7 @@ int int_set_text_value(void * addr,char * text,void * elem_attr)
 
 int tpm64_get_bin_value(void * elem,void * addr,void * elem_attr)
 {
-	UINT64ToArray(*(int *)addr,elem);
+	UINT64ToArray(*(int *)elem,addr);
 	return sizeof(UINT64);
 }
 
@@ -551,7 +551,7 @@ int tpm64_set_bin_value(void * elem,void * addr,void * elem_attr)
 
 int tpm32_get_bin_value(void * elem,void * addr,void * elem_attr)
 {
-	UINT32ToArray(*(int *)addr,elem);
+	UINT32ToArray(*(int *)elem,addr);
 	return sizeof(UINT32);
 }
 
@@ -563,7 +563,7 @@ int tpm32_set_bin_value(void * elem,void * addr,void * elem_attr)
 
 int tpm16_get_bin_value(void * elem,void * addr,void * elem_attr)
 {
-	UINT16ToArray(*(int *)addr,elem);
+	UINT16ToArray(*(int *)elem,addr);
 	return sizeof(UINT16);
 }
 
