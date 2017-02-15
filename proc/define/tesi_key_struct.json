@@ -49,7 +49,6 @@
 				{"name":"key_size","type":"INT"},
 				{"name":"binding_policy_uuid","type":"UUID"},
 				{"name":"privatekey_uuid","type":"UUID"},
-				{"name":"pubkey_uuid","type":"UUID"},
 				{"name":"keypass","type":"ESTRING"},
 				{"name":"key_filename","type":"ESTRING"}
 			]

@@ -23,10 +23,10 @@ static struct struct_elem_attr tpm_key_parms_desc[] =
 
 static struct struct_elem_attr tpm_identity_req_desc[] = 
 {
-	{"asymBlobSize",TPM_TYPE_UINT32,sizeof(UINT32),NULL,NULL},
-	{"symBlobSize",TPM_TYPE_UINT32,sizeof(UINT32),NULL,NULL},
-	{"asymAlgorithm",CUBE_TYPE_SUBSTRUCT,0,NULL,tpm_key_parms_desc},
-	{"symAlgorithm",CUBE_TYPE_SUBSTRUCT,0,NULL,tpm_key_parms_desc},
+	{"asymBlobSize",TPM_TYPE_UINT32,0,NULL,NULL},
+	{"symBlobSize",TPM_TYPE_UINT32,0,NULL,NULL},
+	{"asymAlgorithm",CUBE_TYPE_SUBSTRUCT,0,&tpm_key_parms_desc,NULL},
+	{"symAlgorithm",CUBE_TYPE_SUBSTRUCT,0,&tpm_key_parms_desc,NULL},
 	{"asymBlob",CUBE_TYPE_DEFINE,1,NULL,"asymBlobSize"},
 	{"symBlob",CUBE_TYPE_DEFINE,1,NULL,"symBlobSize"},
 	{NULL,CUBE_TYPE_ENDDATA,0,NULL,NULL}
