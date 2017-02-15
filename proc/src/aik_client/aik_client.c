@@ -126,7 +126,6 @@ int proc_aik_request(void * sub_proc,void * message)
 	struct policyfile_data * reqdata;
 	int ret;
 	struct aik_user_info * user_info;
-	BYTE buf[1024];
 
 	user_info=memdb_get_first_record(DTYPE_AIK_STRUCT,SUBTYPE_AIK_USER_INFO);
 	if(ret<0)
@@ -138,8 +137,9 @@ int proc_aik_request(void * sub_proc,void * message)
 	BYTE		*labelString = "UserA";
 	UINT32		labelLen = strlen(labelString) + 1;
 */
-	char local_uuid[DIGEST_SIZE*2+1];
-	char proc_name[DIGEST_SIZE*2+1];
+	char filename[DIGEST_SIZE*3];
+	char local_uuid[DIGEST_SIZE];
+	char proc_name[DIGEST_SIZE];
 	
 	ret=proc_share_data_getvalue("uuid",local_uuid);
 	ret=proc_share_data_getvalue("proc_name",proc_name);
@@ -181,17 +181,33 @@ int proc_aik_request(void * sub_proc,void * message)
 	}
 	TESI_Local_WriteKeyBlob(hAIKey,"privkey/AIK");
 
-/*
-	ret=build_filedata_struct(&reqdata,"cert/aik.req");
+	calculate_sm3("cert/aik.req",digest);
+	digest_to_uuid(digest,buffer);
+	
+	
+	Strcpy(filename,"cert/");
+	Strncat(filename,buffer,DIGEST_SIZE*2);
+	Strcat(filename,".req");
+	
+	ret=rename("cert/aik.req",filename);
+	if(ret<0)
+		return -EIO;
 
+	struct policyfile_req * aikfile_req = Talloc0(sizeof(*aikfile_req));
+	if(aikfile_req==NULL)
+		return -EINVAL;
+	Memcpy(aikfile_req->uuid,digest,DIGEST_SIZE);
+	Strcat(buffer,".req");
+	aikfile_req->filename=dup_str(filename,0);
+	aikfile_req->requestor=dup_str(user_info->user_name,0);
+		
 	void * send_msg;
-	send_msg=message_create("FILD",message);
-	if(send_msg!=NULL)
-	{
-		message_add_record(send_msg,reqdata);
-		ex_module_sendmsg(sub_proc,send_msg);
-	}
-*/
+	send_msg=message_create(DTYPE_FILE_TRANS,SUBTYPE_FILE_REQUEST,NULL);
+	if(send_msg==NULL)
+		return -EINVAL;
+	message_add_record(send_msg,aikfile_req);
+	ex_module_sendmsg(sub_proc,send_msg);
+
 	return 0;
 }
 
