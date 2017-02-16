@@ -1,5 +1,6 @@
 FLAGS= -g -o
-CFLAGS= -g -c -fPIC -Wall -DUSER_MODE 
+INCLUDE= $(CUBELIBPATH)/include/ 
+CFLAGS= -g -c -fPIC -Wall -DUSER_MODE -I$(INCLUDE)
 CC=gcc
 LD=ld
 CCP=g++
@@ -9,7 +10,7 @@ DEPENDLIB= -ljson -lalloc -lstring -lcrypto_func
 
 main: ../lib/lib$(LIBNAME).so  test_main 
 test_main: test_main.c ../lib/lib$(LIBNAME).so
-	$(CC) $(FLAGS) test_main test_main.c -L../lib -l$(LIBNAME) $(DEPENDLIB) 
+	$(CC) $(FLAGS) test_main test_main.c -I$(INCLUDE) -L../lib -l$(LIBNAME) $(DEPENDLIB) 
 ../lib/lib$(LIBNAME).so: $(STRUCTOBJ)
 	$(CC) -shared -o lib$(LIBNAME).so $(STRUCTOBJ)
 	mv   lib$(LIBNAME).so ../lib

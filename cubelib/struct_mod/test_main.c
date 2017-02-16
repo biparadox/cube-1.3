@@ -21,12 +21,12 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include "../include/data_type.h"
-#include "../include/alloc.h"
-#include "../include/json.h"
-#include "../include/struct_deal.h"
-#include "../include/crypto_func.h"
+#include "data_type.h"
+#include "string.h"
+#include "alloc.h"
+#include "json.h"
+#include "struct_deal.h"
+#include "crypto_func.h"
 
 NAME2VALUE user_type[] =
 {
