@@ -41,3 +41,23 @@
 		}
 	}
 }
+{
+	"head":
+	{
+		"name":"types",
+		"type":"RECORDTYPE"
+	},
+	"record":
+	{
+		"type":"MESSAGE",
+		"subtype":"TYPES",
+		"struct_desc":
+		{
+			"elem_desc":
+			[
+				{"name":"type","type":"TYPE"},
+				{"name":"subtype","type":"SUBTYPE","def":"type"}
+			]
+		}
+	}
+}

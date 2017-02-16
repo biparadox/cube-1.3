@@ -25,7 +25,8 @@ enum subtypelist_message
 	SUBTYPE_CONN_SYNI,
 	SUBTYPE_CONN_ACKI,
 	SUBTYPE_BASE_MSG,
-	SUBTYPE_UUID_RECORD
+	SUBTYPE_UUID_RECORD,
+	SUBTYPE_TYPES
 };
 
 enum subtypelist_msg_expand
@@ -121,6 +122,13 @@ struct uuid_record
 	BYTE uuid[DIGEST_SIZE];
 
 }__attribute__((packed));
+
+struct types_pair
+{
+	int type;
+	int subtype;
+}__attribute__((packed));
+
 
 struct expand_flow_trace
 {

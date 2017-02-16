@@ -16,7 +16,8 @@
 			"CONN_SYNI",
 			"CONN_ACKI",
 			"BASE_MSG",
-			"UUID_RECORD"
+			"UUID_RECORD",
+			"TYPES"
 		]
 	}
 }
