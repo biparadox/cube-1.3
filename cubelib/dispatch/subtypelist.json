@@ -7,7 +7,7 @@
 	"record":
 	{
 		"type":"MESSAGE",
-		"elem_no":7,
+		"elem_no":8,
 		"elemlist":
 		[
 			"HEAD=0x01",

@@ -124,7 +124,7 @@ int proc_store_message(void * sub_proc,void * message)
 		if(subtype_str==NULL)
 			return -EINVAL;
 		sprintf(filename,"lib/%s_%s.lib",type_str,subtype_str);
-		fd=open(filename,O_WRONLY|O_CREAT|O_TRUNC);
+		fd=open(filename,O_WRONLY|O_CREAT|O_TRUNC,0666);
 		if(fd<0)
 			return fd;
 		

@@ -720,59 +720,56 @@ TSS_RESULT Local_CreateKeyWithFlags(TSS_HKEY * hKey,TSS_HKEY hWrapKey,TSS_FLAG i
 	
 	if(hWrapKey==NULL)
 		hWrapKey=hSRK;
-	result =
-	    Tspi_GetPolicyObject(hWrapKey, TSS_POLICY_USAGE, &WrapkeyUsagePolicy);
-	if (result != TSS_SUCCESS) {
-		print_error("Tspi_GetPolicyObject", result);
-		return result;
-	}
 
-	pwd_len=strlen(pwdw);
-	//Set Secret
-	if(hWrapKey==hSRK)
+	//Set Wrapkey Secret
+	if(pwdw!=NULL)
 	{
-		if(pwdw!=NULL)
-			TSS_sha1((unsigned char *)pwdw,strlen(pwdw),wpass);
-		else
-			return TSS_E_TSP_AUTHFAIL;
-		result =   Tspi_Policy_SetSecret(WrapkeyUsagePolicy,
-			TSS_SECRET_MODE_SHA1,
-			sizeof(wpass),wpass);
+		result = Tspi_GetPolicyObject(hWrapKey, TSS_POLICY_USAGE, &WrapkeyUsagePolicy);
 		if (result != TSS_SUCCESS) {
-			print_error("Tspi_Policy_SetSecret", result);
+			print_error("Tspi_GetPolicyObject", result);
 			return result;
 		}
-	}else
-	{
+		pwd_len=strlen(pwdw);
 		TSS_sha1((unsigned char *)pwdw,strlen(pwdw),wpass);
-		result =  Tspi_Policy_SetSecret(keyUsagePolicy,
-			  TSS_SECRET_MODE_SHA1,
-			  sizeof(wpass),pwdw);
+		if(hWrapKey==hSRK)
+		{
+			{
+				result =   Tspi_Policy_SetSecret(WrapkeyUsagePolicy,
+					TSS_SECRET_MODE_SHA1,
+					sizeof(wpass),wpass);
+				if (result != TSS_SUCCESS) {
+					print_error("Tspi_Policy_SetSecret", result);
+					return result;
+				}
+			}
+		}
+		else
+		{
+			result =  Tspi_Policy_SetSecret(keyUsagePolicy,
+				TSS_SECRET_MODE_SHA1,
+			  	sizeof(wpass),pwdw);
 
-		if (result != TSS_SUCCESS) {
-			print_error("Tspi_Policy_SetSecret", result);
-			return result;
+			if (result != TSS_SUCCESS) {
+				print_error("Tspi_Policy_SetSecret", result);
+				return result;
+			}
 		}
 	}
 
-	result =
-	    Tspi_Context_CreateObject(hContext, TSS_OBJECT_TYPE_RSAKEY,
-				      initFlags, hKey);
+	result = Tspi_Context_CreateObject(hContext, TSS_OBJECT_TYPE_RSAKEY,
+		initFlags, hKey);
 	if (result != TSS_SUCCESS) {
 		print_error("Tspi_Context_CreateObject", result);
 		return result;
 	}
 	//Create Policy Object
-	result =
-	    Tspi_Context_CreateObject(hContext, TSS_OBJECT_TYPE_POLICY, TSS_POLICY_USAGE,
-				      &keyUsagePolicy);
+	result = Tspi_Context_CreateObject(hContext, TSS_OBJECT_TYPE_POLICY, TSS_POLICY_USAGE,
+		&keyUsagePolicy);
 	if (result != TSS_SUCCESS) {
 		print_error("Tspi_Context_CreateObject", result);
 		return result;
 	}
 	//Set Secret
-	
-	
 
 	TSS_sha1((unsigned char *)pwdk,strlen(pwdk),kpass);
 	result =  Tspi_Policy_SetSecret(keyUsagePolicy,
@@ -898,7 +895,7 @@ TSS_RESULT TESI_Local_CreateSignKey(TSS_HKEY * hKey,TSS_HKEY hWrapKey,char * pwd
 	TSS_FLAG initFlags;
 
 	initFlags = TSS_KEY_TYPE_SIGNING | TSS_KEY_SIZE_2048 |
-	    TSS_KEY_VOLATILE | TSS_KEY_AUTHORIZATION |
+	    TSS_KEY_VOLATILE | TSS_KEY_NO_AUTHORIZATION |
 	    TSS_KEY_NOT_MIGRATABLE;
 	return Local_CreateKeyWithFlags(hKey,hWrapKey,initFlags,pwdw,pwdk);
 }
@@ -918,7 +915,8 @@ TSS_RESULT TESI_Local_CreateStorageKey(TSS_HKEY * hKey,TSS_HKEY hWrapKey,char * 
 	TSS_FLAG initFlags;
 
 	initFlags = TSS_KEY_TYPE_STORAGE | TSS_KEY_SIZE_2048 |
-	    TSS_KEY_NO_AUTHORIZATION ;
+	   	 		TSS_KEY_VOLATILE | TSS_KEY_NO_AUTHORIZATION |
+				TSS_KEY_NOT_MIGRATABLE;
 	return Local_CreateKeyWithFlags(hKey,hWrapKey,initFlags,pwdw,pwdk);
 }
 

@@ -58,8 +58,9 @@
  */
 
 #include <stdio.h>
-#include "../tesi/common.h"
-#include "../include/tesi.h"
+#include "../../include/data_type.h"
+#include "../common.h"
+#include "../../include/tesi.h"
 #include "sha1.h"
 
 void TSS_sha1(void *input, unsigned int len, unsigned char *output)

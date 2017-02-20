@@ -34,6 +34,8 @@ TESI_AIK_Activate: TESI_AIK_Activate.c
 	$(CC) $(FLAGS) TESI_AIK_Activate TESI_AIK_Activate.c $(INCLUDE) $(TEST_LIB)
 Tspi_Data_Unbind05: Tspi_Data_Unbind05.c 
 	$(CC) $(FLAGS) Tspi_Data_Unbind05 Tspi_Data_Unbind05.c $(INCLUDE) $(TEST_LIB)
+Tspi_Key_CreateKey05: Tspi_Key_CreateKey05.c 
+	$(CC) $(FLAGS) Tspi_Key_CreateKey05 Tspi_Key_CreateKey05.c $(INCLUDE) $(TEST_LIB)
 Tspi_Key_CertifyKey01: Tspi_Key_CertifyKey01.c 
 	$(CC) $(FLAGS) Tspi_Key_CertifyKey01 Tspi_Key_CertifyKey01.c $(INCLUDE) $(TEST_LIB)
 clean:

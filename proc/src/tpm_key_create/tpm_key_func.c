@@ -27,11 +27,6 @@
 #include "tesi_aik_struct.h"
 #include "tpm_key_create.h"
 
-int print_error(char * str, int result)
-{
-	printf("%s %s",str,tss_err_string(result));
-}
-
 
 #define MAX_WRAPPED_LAYER 10
 TSS_RESULT _load_tpm_key(BYTE * wrapkey_uuid, TSS_HKEY * hKey)
@@ -42,29 +37,36 @@ TSS_RESULT _load_tpm_key(BYTE * wrapkey_uuid, TSS_HKEY * hKey)
 	struct vTPM_wrappedkey * temp_frame;
 	BYTE digest[DIGEST_SIZE];
 	TSS_HKEY hWrapKey;
+	TSS_HKEY hTempKey;
 	TSS_RESULT result;
 	
 	Memset(digest,0,DIGEST_SIZE);
-	db_record[0]=memdb_find_first(DTYPE_TESI_KEY_STRUCT,SUBTYPE_WRAPPED_KEY,"uuid",wrapkey_uuid);
-	wrapkey_frame[0]=db_record[0]->record;
+	if(Memcmp(digest,wrapkey_uuid,DIGEST_SIZE)==0)
+	{
+		*hKey=NULL;
+		return TSS_SUCCESS;
+	}
+
 	Memset(db_record,0,sizeof(db_record));
-	Memset(&wrapkey_frame[1],0,sizeof(wrapkey_frame)-sizeof(void *));
+	Memset(wrapkey_frame,0,sizeof(wrapkey_frame));
+	db_record[0]=memdb_find_first(DTYPE_TESI_KEY_STRUCT,SUBTYPE_WRAPPED_KEY,"uuid",wrapkey_uuid);
+	if(db_record[0]==NULL)
+		return -EINVAL;
+	wrapkey_frame[0]=db_record[0]->record;
 
 	for(i=0;i<MAX_WRAPPED_LAYER;i++)
 	{
-		if(db_record[i]->tail!=NULL)
+		if(Memcmp(digest,wrapkey_frame[i]->wrapkey_uuid,DIGEST_SIZE)==0)
 			break;
-		if(Memcpy(digest,wrapkey_frame[i]->wrappedkey_uuid,DIGEST_SIZE)==0)
-			break;
-		db_record[i+1]=memdb_find_first(DTYPE_TESI_KEY_STRUCT,SUBTYPE_WRAPPED_KEY,"uuid",wrapkey_frame[i]->wrappedkey_uuid);
+		db_record[i+1]=memdb_find_first(DTYPE_TESI_KEY_STRUCT,SUBTYPE_WRAPPED_KEY,"uuid",wrapkey_frame[i]->wrapkey_uuid);
 		wrapkey_frame[i+1]=db_record[i+1]->record;
 	}
 	if(i>=MAX_WRAPPED_LAYER)
 		return -EINVAL;	
 
 	// get hWrapKey
-	hWrapkey=NULL;
-	for(;i<=0;i--)
+	hWrapKey=NULL;
+	for(;i>=0;i--)
 	{
 		if(db_record[i]->tail==NULL)
 		{
@@ -78,9 +80,19 @@ TSS_RESULT _load_tpm_key(BYTE * wrapkey_uuid, TSS_HKEY * hKey)
 			{
 				return result;	
 			}
-			hWrapKey=kTempKey;
+			hWrapKey=hTempKey;
 			db_record[i]->tail=hTempKey;	
 		}	
+		else
+		{
+			hTempKey=db_record[i]->tail;
+			result=TESI_Local_LoadKey(hTempKey,hWrapKey,wrapkey_frame[i]->keypass);
+			if(result!=TSS_SUCCESS)
+			{
+				return result;	
+			}
+			hWrapKey=hTempKey;
+		}
 	}
 	// get hkey
 	if(result!=TSS_SUCCESS)
@@ -121,7 +133,7 @@ int create_tpm_key(struct vTPM_wrappedkey * key_frame)
 
 	key_frame->key_size=1024;	
 		
-	switch(key_type)
+	switch(key_frame->key_type)
 	{
 		case TPM_KEY_SIGNING:
 			result=TESI_Local_CreateSignKey(&hKey,hWrapKey,NULL,key_frame->keypass);
@@ -131,14 +143,13 @@ int create_tpm_key(struct vTPM_wrappedkey * key_frame)
 			result=TESI_Local_CreateStorageKey(&hKey,hWrapKey,NULL,key_frame->keypass);
 			break;	
 		case TPM_KEY_IDENTITY:
-			result=TESI_AIK_CreateIdentityKey(&hKey,hWrapKey,NULL,key_frame->keypass);
+			result=TESI_AIK_CreateIdentKey(&hKey,hWrapKey,NULL,key_frame->keypass);
 			break;	
 		case TPM_KEY_BIND:			
 			result=TESI_Local_CreateBindKey(&hKey,hWrapKey,NULL,key_frame->keypass);
 			break;	
 		default:
 			return -EINVAL;
-		}
 	}
 
 	if (result != TSS_SUCCESS) {

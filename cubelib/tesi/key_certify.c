@@ -242,7 +242,7 @@ int convert_uuidname(char * name, char * suffix, BYTE * digest,char * newfilenam
 	}
 	
 	Strncpy(filename,name,DIGEST_SIZE*3);
-	Strncat(filename,suffix,DIGEST_SIZE/2);
+	Strncat(filename,suffix,DIGEST_SIZE*4);
 	
 	ret=calculate_sm3(filename,digest);
 	if(ret<0)
