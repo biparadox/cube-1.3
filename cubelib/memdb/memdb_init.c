@@ -691,43 +691,6 @@ void * _alloc_dynamic_db(int type,int subtype)
 
 
 }
-/*
-{
-	int ret;
-	DB_DESC * memdb;
-	struct struct_recordtype * record_type=record_def; 
-	void * db_list=init_hash_list(8,type,subtype);
-	if(db_list==NULL)
-		return NULL;
-
-	ret=Galloc0(&memdb,sizeof(DB_DESC));
-	if(ret<0)
-		return NULL;
-	Memcpy(memdb->head.uuid,record_type->head.uuid,DIGEST_SIZE);
-	Strncpy(memdb->head.name,record_type->head.name,DIGEST_SIZE);
-	memdb->head.type=record_type->type;
-	memdb->head.subtype=record_type->subtype;
-	hashlist_set_desc(db_list,memdb);
-	hashlist_add_elem(dynamic_db_list,db_list);
-	return db_list;
-
-}
-
-
-int memdb_set_template(int type, int subtype,void * struct_template)
-{
-	DB_DESC * db_desc = Calloc0(sizeof(DB_DESC));
-	if(db_desc == NULL)
-		return -ENOMEM;
-	void * db_list = memdb_get_dblist(type,subtype);
-	if(db_list == NULL)
-		return NULL;
-	db_desc->head.type=type;
-	db_desc->head.subtype=subtype;
-	db_desc->struct_template = struct_template;
-	return hashlist_set_desc(db_list,db_desc);
-}
-*/
 void * memdb_get_template(int type, int subtype)
 {
 	struct memdb_desc * db_list;

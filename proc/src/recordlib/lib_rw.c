@@ -22,6 +22,7 @@ int lib_read(int fd,int type,int subtype,void ** record)
 	int ret;
 	int offset;
 	void * struct_template;
+	DB_RECORD * db_record;
 	BYTE buffer[2048];
 	ret=read(fd,buffer,2048);
 	if(ret<0)
