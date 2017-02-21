@@ -34,7 +34,7 @@ const int subdb_order=8;
 const int hash_subnum=256;
 
 //#if db_order>8
-inline unsigned int get_hash_index(char * uuid)
+static inline unsigned int get_hash_index(char * uuid)
 {
 	int ret = *((unsigned int *)uuid);
 	return ret&(0xffff>>(16-db_order));
@@ -52,7 +52,7 @@ inline unsigned int get_hash_index(char * uuid)
 //	return ((unsigned char)uuid[0])<<(subdb_order-8)+uuid[1]>>(16-subdb_order);
 //}
 //#elif subdb_order<=8
-inline unsigned int get_hash_subindex(char * uuid)
+static inline unsigned int get_hash_subindex(char * uuid)
 {
 	int ret= *((unsigned char *)uuid);
 	return ret &(0xff>>(8-subdb_order));
