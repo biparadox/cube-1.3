@@ -1,0 +1,97 @@
+{
+	"head":
+	{
+		"name":"visual_sort_type",
+		"type":"TYPELIST"
+	},
+	"record":
+	{
+		"elem_no":1,
+		"elemlist":
+		[
+			"VISUAL_SORT=0x1101"
+		]
+	}
+}
+{
+	"head":
+	{
+		"name":"visual_sort_subtype",
+		"type":"SUBTYPELIST"
+	},
+	"record":
+	{
+		"type":"VISUAL_SORT",
+		"elem_no":2,
+		"elemlist":
+		[
+			"VISUAL_DATA=0x01",
+			"VISUAL_REQ"
+		]
+	}
+}
+{
+	"head":
+	{
+		"name":"visual_sort_datatype",
+		"type":"NAMELIST"
+	},
+	"record":
+	{
+		"elem_no":7,
+		"elemlist":
+		[
+			"INIT=0x01",
+			"ADD",
+			"DEL",
+			"INSERT",
+			"SWAP",
+			"RESULT",
+			"ERROR"
+		]
+
+	}
+}
+{
+	"head":
+	{
+		"name":"visual_sort_data",
+		"type":"RECORDTYPE"
+	},
+	"record":
+	{
+		"type":"VISUAL_SORT",
+		"subtype":"VISUAL_DATA",
+		"struct_desc":
+		{
+			"elem_desc":
+			[
+				{"name":"type","type":"ENUM","ref_name":"visual_sort_datatype"},
+				{"name":"index","type":"INT"},
+				{"name":"name","type":"ESTRING"},
+				{"name":"value","type":"INT"}
+			]
+		}
+	}	
+}
+{
+	"head":
+	{
+		"name":"visual_sort_req",
+		"type":"RECORDTYPE"
+	},
+	"record":
+	{
+		"type":"VISUAL_SORT",
+		"subtype":"VISUAL_REQ",
+		"struct_desc":
+		{
+			"elem_desc":
+			[
+				{"name":"size","type":"INT"},
+				{"name":"name","type":"ESTRING"},
+				{"name":"interval","type":"INT"}
+			]
+		}
+	}	
+}
