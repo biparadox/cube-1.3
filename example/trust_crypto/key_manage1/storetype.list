@@ -1,0 +1,12 @@
+{
+	"type":"MESSAGE",
+	"subtype":"TYPES"
+}
+{
+	"type":"TESI_KEY_STRUCT",
+	"subtype":"WRAPPED_KEY"
+},
+{
+	"type":"TESI_KEY_STRUCT",
+	"subtype":"PUBLIC_KEY"
+}
