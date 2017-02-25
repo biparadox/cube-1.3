@@ -41,7 +41,7 @@ int lib_read(int fd,int type,int subtype,void ** record)
 	offset=blob_2_struct(buffer,*record,struct_template);
 	if(offset<0)
 		return -EINVAL;
-	lseek(fd,SEEK_CUR,ret-offset);
+	lseek(fd,ret-offset,SEEK_CUR);
 	return 1;
 }
 

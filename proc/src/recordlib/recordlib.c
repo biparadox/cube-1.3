@@ -42,18 +42,21 @@ int recordlib_init(void * sub_proc,void * para)
 		subtype_str=memdb_get_subtypestr(types->type,types->subtype);
 		if(subtype_str==NULL)
 			return -EINVAL;
-		sprintf(filename,"lib/%s_%s.lib",type_str,subtype_str);
-		types=memdb_get_next_record(DTYPE_MESSAGE,SUBTYPE_TYPES);
+		sprintf(filename,"lib/%s-%s.lib",type_str,subtype_str);
 		if((fd=open(filename,O_RDONLY))<0)
+		{
+			types=memdb_get_next_record(DTYPE_MESSAGE,SUBTYPE_TYPES);
 			continue;
+		}
 
-		while((record=lib_read(fd,types->type,types->subtype,&record))!=NULL)	
+		while((ret=lib_read(fd,types->type,types->subtype,&record))>0)	
 		{
 			ret=memdb_store(record,types->type,types->subtype,NULL);
 			if(ret<0)
 				break;
 		}
 		close(fd);
+		types=memdb_get_next_record(DTYPE_MESSAGE,SUBTYPE_TYPES);
 	}	
 	return 0;
 }
@@ -123,7 +126,7 @@ int proc_store_message(void * sub_proc,void * message)
 		subtype_str=memdb_get_subtypestr(types->type,types->subtype);
 		if(subtype_str==NULL)
 			return -EINVAL;
-		sprintf(filename,"lib/%s_%s.lib",type_str,subtype_str);
+		sprintf(filename,"lib/%s-%s.lib",type_str,subtype_str);
 		fd=open(filename,O_WRONLY|O_CREAT|O_TRUNC,0666);
 		if(fd<0)
 			return fd;
