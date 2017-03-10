@@ -73,8 +73,9 @@
  *	None.
  */
 
-#include "../tesi/common.h"
-#include "../include/tesi.h"
+#include "data_type.h"
+#include "../common.h"
+#include "tesi.h"
 #include "sha1.h"
 
 

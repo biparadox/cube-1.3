@@ -3,7 +3,7 @@ CFLAGS= -g -c -DUSER_MODE
 INCLUDE= -I$(CUBELIBPATH)/include/ 
 CC=gcc
 CCP=g++
-TESI_PROC=TESI_test TESI_getpubek TESI_init TESI_bind_genkey TESI_bind_binddata TESI_bind_unbinddata TESI_report_certifykey TESI_clear TESI_AIK_CASign TESI_AIK_GenerateReq TESI_AIK_Activate 
+TESI_PROC=TESI_test TESI_getpubek TESI_init TESI_bind_genkey TESI_bind_binddata TESI_bind_unbinddata TESI_report_certifykey TESI_clear  
 Tspi_PROC=Tspi_Data_Unbind05 Tspi_Key_CertifyKey01
 TEST_LIB= -L$(CUBELIBPATH)/lib -ltesi -ltspi -lcrypto -lstruct -lcrypto_func -ljson -lstring -lalloc
 
@@ -26,12 +26,14 @@ TESI_bind_unbinddata: TESI_bind_unbinddata.c
 	$(CC) $(FLAGS) TESI_bind_unbinddata TESI_bind_unbinddata.c $(INCLUDE) $(TEST_LIB)
 TESI_clear: TESI_clear.c 
 	$(CC) $(FLAGS) TESI_clear TESI_clear.c -L/usr/local/lib $(INCLUDE) $(TEST_LIB)
-TESI_AIK_GenerateReq: TESI_AIK_GenerateReq.c 
-	$(CC) $(FLAGS) TESI_AIK_GenerateReq TESI_AIK_GenerateReq.c $(INCLUDE) $(TEST_LIB)
-TESI_AIK_CASign: TESI_AIK_CASign.c 
-	$(CC) $(FLAGS) TESI_AIK_CASign TESI_AIK_CASign.c $(INCLUDE) $(TEST_LIB)
-TESI_AIK_Activate: TESI_AIK_Activate.c 
-	$(CC) $(FLAGS) TESI_AIK_Activate TESI_AIK_Activate.c $(INCLUDE) $(TEST_LIB)
+TESI_PCR: TESI_PCR.c 
+	$(CC) $(FLAGS) TESI_PCR TESI_PCR.c -L/usr/local/lib $(INCLUDE) $(TEST_LIB)
+#TESI_AIK_GenerateReq: TESI_AIK_GenerateReq.c 
+#	$(CC) $(FLAGS) TESI_AIK_GenerateReq TESI_AIK_GenerateReq.c $(INCLUDE) $(TEST_LIB)
+#TESI_AIK_CASign: TESI_AIK_CASign.c 
+#	$(CC) $(FLAGS) TESI_AIK_CASign TESI_AIK_CASign.c $(INCLUDE) $(TEST_LIB)
+#TESI_AIK_Activate: TESI_AIK_Activate.c 
+#	$(CC) $(FLAGS) TESI_AIK_Activate TESI_AIK_Activate.c $(INCLUDE) $(TEST_LIB)
 Tspi_Data_Unbind05: Tspi_Data_Unbind05.c 
 	$(CC) $(FLAGS) Tspi_Data_Unbind05 Tspi_Data_Unbind05.c $(INCLUDE) $(TEST_LIB)
 Tspi_Key_CreateKey05: Tspi_Key_CreateKey05.c 

@@ -71,7 +71,7 @@ int TESI_Report_GetKeyDigest(TSS_HKEY * hKey,BYTE * digest )
 	return TSS_SUCCESS;
 }
 
-void * create_key_certify_struct(void * key_cert_file,char * keyuuid,char * aikuuid)
+void * create_key_certify_struct(void * key_cert_file,BYTE * keyuuid,BYTE * aikuuid)
 {
 
 	TSS_RESULT result;	
@@ -83,8 +83,6 @@ void * create_key_certify_struct(void * key_cert_file,char * keyuuid,char * aiku
 	TSS_VALIDATION valData;
 	TPM_CERTIFY_INFO key_info;
 	
-
-	
 	void * struct_template;
 	KEY_CERT * key_cert;
 	key_cert = malloc(sizeof(KEY_CERT));
@@ -94,9 +92,9 @@ void * create_key_certify_struct(void * key_cert_file,char * keyuuid,char * aiku
 	memset(key_cert,0,sizeof(KEY_CERT));
 
 	if((keyuuid!=NULL))
-		memcpy(key_cert->keyuuid,keyuuid,DIGEST_SIZE*2);
+		memcpy(key_cert->keyuuid,keyuuid,DIGEST_SIZE);
 	if((aikuuid!=NULL))
-		memcpy(key_cert->aikuuid,aikuuid,DIGEST_SIZE*2);
+		memcpy(key_cert->aikuuid,aikuuid,DIGEST_SIZE);
 
 
 	sprintf(filename,"%s.val",key_cert_file);

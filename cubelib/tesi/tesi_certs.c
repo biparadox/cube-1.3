@@ -1714,6 +1714,39 @@ TSS_RESULT TESI_Local_SelectPcrEx(TSS_HPCRS hPcr,UINT32 Index)
         return TSS_SUCCESS;
 
 }
+
+TSS_RESULT TESI_Local_PcrExtend(UINT32 index,BYTE * Data) 
+{
+	BYTE * pRgbValue;
+	int Rgblen;
+	TSS_RESULT result;
+	
+	result=Tspi_TPM_PcrExtend(hTPM,index,PCR_SIZE,Data,NULL,&Rgblen,&pRgbValue);
+        if (result != TSS_SUCCESS) {
+                print_error("TESI_Local_PcrExtend", result);
+                return result;
+        }
+	
+	return result;
+}
+
+
+TSS_RESULT TESI_Local_PcrRead(UINT32 index,BYTE * Data) 
+{
+	int Rgblen;
+	TSS_RESULT result;
+	BYTE * pRgbValue;
+	result=Tspi_TPM_PcrRead(hTPM,index,&Rgblen,&pRgbValue);
+        if (result != TSS_SUCCESS) {
+                print_error("TESI_Local_PcrRead", result);
+                return result;
+        }
+	if(Rgblen!=PCR_SIZE)
+		return -EINVAL;	
+	Memcpy(Data,pRgbValue,PCR_SIZE);
+	return result;
+}
+
 TSS_RESULT TESI_Local_SetPcrLocality(TSS_HPCRS hPcr)
 {
 	TSS_RESULT result;
