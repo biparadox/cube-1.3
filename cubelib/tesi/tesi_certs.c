@@ -1812,7 +1812,7 @@ TSS_RESULT TESI_Local_Quote2(TSS_HKEY hIdentKey,TSS_HPCRS hPcr,char *name)
         result = Tspi_TPM_Quote2(hTPM, hIdentKey,fAddversion, hPcr, &valData,&versionInfoSize,&versionInfo);
 
         if (result != TSS_SUCCESS) {
-                print_error("Tspi_TPM_Quote", result);
+                print_error("Tspi_TPM_Quote2", result);
                 return result;
         }
         result=WriteValidation(&valData,name);
@@ -1944,8 +1944,8 @@ TSS_RESULT TESI_Mig_CreateTicket(TSS_HKEY hMigKey,char * ticketname,char * pwdo)
 	}
 
 	//Authorize Migration Ticket
-	result =    Tspi_TPM_AuthorizeMigrationTicket(hTPM, hMigKey,
-		TSS_MS_REWRAP, &blobLength, &blob);
+//	result =    Tspi_TPM_AuthorizeMigrationTicket(hTPM, hMigKey,
+//		TSS_MS_REWRAP, &blobLength, &blob);
 	//Authorize Migration Ticket
 	result =    Tspi_TPM_AuthorizeMigrationTicket(hTPM, hMigKey,
 		TSS_MS_MIGRATE, &blobLength, &blob);

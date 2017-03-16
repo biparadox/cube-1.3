@@ -282,6 +282,7 @@ int read_recordtype_json_desc(void * root,void * record)
 		if(ret<0)
 			return ret;
 		struct_record->head.type=DB_STRUCT_DESC;
+		Memcpy(struct_record->head.name,db_record->head.name,DIGEST_SIZE);
 		ret=read_default_json_desc(temp_node,struct_record);
 		if(ret<0)
 			return ret;	

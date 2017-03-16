@@ -2,47 +2,23 @@
 	"head":
 	{
 		"name":"aik_user_info",
-		"type":"STRUCT"
-	},
-	"record":
-	{
-		"elem_desc":
-		[
-			{"name":"uuid","type":"UUID"},
-			{"name":"org","type":"ESTRING"},
-			{"name":"user_id","type":"STRING","size":32},
-			{"name":"user_name","type":"ESTRING"},
-			{"name":"role","type":"ESTRING"}
-		]
-	}
-}
-{
-	"head":
-	{
-		"name":"aik_user_info",
 		"type":"RECORDTYPE"
-	}
+	},
 	"record":
 	{
 		"type":"TESI_AIK_STRUCT",
 		"subtype":"USER_INFO",
-		"uuid":"aik_user_info"
-	}	
-}
-{
-	"head":
-	{
-		"name":"aik_cert_info",
-		"type":"STRUCT"
-	},
-	"record":
-	{
-		"elem_desc":
-		[
-			{"name":"machine_uuid","type":"UUID"},
-			{"name":"aik_user_info","type":"SUBSTRUCT","ref_name":"aik_user_info"},
-			{"name":"pubkey_uuid","type":"UUID"}
-		]
+		"struct_desc":
+		{
+			"elem_desc":
+			[
+				{"name":"uuid","type":"UUID"},
+				{"name":"org","type":"ESTRING"},
+				{"name":"user_id","type":"STRING","size":32},
+				{"name":"user_name","type":"ESTRING"},
+				{"name":"role","type":"ESTRING"}
+			]
+		}
 	}
 }
 {
@@ -50,13 +26,21 @@
 	{
 		"name":"aik_cert_info",
 		"type":"RECORDTYPE"
-	}
+	},
 	"record":
 	{
 		"type":"TESI_AIK_STRUCT",
 		"subtype":"CERT_INFO",
-		"uuid":"aik_cert_info"
-	}	
+		"struct_desc":
+		{
+			"elem_desc":
+			[
+				{"name":"machine_uuid","type":"UUID"},
+				{"name":"aik_user_info","type":"SUBSTRUCT","ref_name":"aik_user_info"},
+				{"name":"pubkey_uuid","type":"UUID"}
+			]
+		}
+	}
 }
 {
 	"head":

@@ -46,12 +46,13 @@
 	},
 	"record":
 	{
-		"elem_no":3,
+		"elem_no":4,
 		"elemlist":
 		[
 			"TESI_STRUCT=0x601",
 			"TESI_KEY_STRUCT",
-			"TESI_AIK_STRUCT"
+			"TESI_AIK_STRUCT",
+			"TESI_REPORT"
 		]
 	}
 }
@@ -106,6 +107,26 @@
 			"USER_INFO=0x01",
 			"CERT_INFO",
 			"CA_CERT"
+		]
+	}
+}
+{
+	"head":
+	{
+		"name":"subtype_tesi_report",
+		"type":"SUBTYPELIST"
+	},
+	"record":
+	{
+		"type":"TESI_REPORT",
+		"elem_no":5,
+		"elemlist":
+		[
+			"PCR_SELECTION=0x01",
+			"PCR_COMPOSITE",
+			"QUOTE_INFO",
+			"TSS_VALIDATION",
+			"PCR_SET"
 		]
 	}
 }
