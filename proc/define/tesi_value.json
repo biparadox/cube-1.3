@@ -125,7 +125,7 @@
 			"PCR_SELECTION=0x01",
 			"PCR_COMPOSITE",
 			"QUOTE_INFO",
-			"TSS_VALIDATION",
+			"TPM_VALIDATION",
 			"PCR_SET"
 		]
 	}

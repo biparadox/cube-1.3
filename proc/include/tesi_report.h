@@ -42,7 +42,7 @@ struct tpm_quote_info{
 	BYTE externalData[20];
 }__attribute((packed));
 
-typedef struct TPM_VALIDATION
+struct tpm_validation
 {
 	BYTE version[4];   // TSS版本号
 	UINT32 ulExternalDataLength;  //外部数据长度
