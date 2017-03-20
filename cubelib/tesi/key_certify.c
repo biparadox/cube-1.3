@@ -11,8 +11,8 @@
 #include "../include/tesi.h"
 #include "../include/struct_deal.h"
 #include "../include/crypto_func.h"
-#include "../include/tesi_key.h"
-#include "../include/tesi_key_desc.h"
+//#include "../include/tesi_key.h"
+//#include "../include/tesi_key_desc.h"
 
 extern TSS_HCONTEXT hContext;
 extern TSS_HTPM hTPM;
@@ -70,7 +70,7 @@ int TESI_Report_GetKeyDigest(TSS_HKEY * hKey,BYTE * digest )
 	calculate_context_sha1(pubkey.pubKey.key,pubkey.pubKey.keyLength,digest);
 	return TSS_SUCCESS;
 }
-
+/*
 void * create_key_certify_struct(void * key_cert_file,BYTE * keyuuid,BYTE * aikuuid)
 {
 
@@ -209,19 +209,10 @@ int create_pubkey_struct(struct vTPM_publickey * pubkey,char * privatekey_uuid,c
 			memcpy(pubkey->privatekey_uuid,privatekey_uuid,len);
 
 	}
-	/*
-	if(keypass!=NULL)
-	{
-		len=strlen(publickey->keypass)+1;
-		publickey->keypass=kmalloc(len,GFP_KERNEL);
-		if(publickey->keypass==NULL)
-			return -ENOMEM;
-		memcpy(publickey->keypass,keypass,len);
-	}
-	*/
 	pubkey->key_filename=dup_str(keyfile,0);
 	return 0;
 }
+*/
 
 int convert_uuidname(char * name, char * suffix, BYTE * digest,char * newfilename)
 {
