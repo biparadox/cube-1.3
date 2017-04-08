@@ -1,0 +1,55 @@
+{
+	"head":
+	{
+		"name":"dtype_trust_demo",
+		"type":"TYPELIST"
+	},
+	"record":
+	{
+		"elem_no":1,
+		"elemlist":
+		[
+			"TRUST_DEMO=0x1010"
+		]
+	}
+}
+{
+	"head":
+	{
+		"name":"subtype_trust_demo",
+		"type":"SUBTYPELIST"
+	},
+	"record":
+	{
+		"type":"TRUST_DEMO",
+		"elem_no":1,
+		"elemlist":
+		[
+			"KEY_INFO=0x01"
+		]
+	}
+}
+{
+	"head":
+	{
+		"name":"trust_demo_keyinfo",
+		"type":"RECORDTYPE"
+	},
+	"record":
+	{
+		"type":"TRUST_DEMO",
+		"subtype":"KEY_INFO",
+		"struct_desc":
+		{
+			"elem_desc":
+			[
+				{"name":"uuid","type":"UUID"},
+				{"name":"vtpm_uuid","type":"UUID"},
+				{"name":"owner","type":"ESTRING","size":32},
+				{"name":"peer","type":"ESTRING","size":32},
+				{"name":"usage","type":"ESTRING","size":32},
+				{"name":"key_type","type":"ENUM","ref_name":"tpm_key_usage"}
+			]
+		}
+	}	
+}
