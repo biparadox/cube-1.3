@@ -265,7 +265,6 @@ void * message_create(int type,int subtype,void * active_msg)
 	message_head->record_type=type;
 	message_head->record_subtype=subtype;
 
-
    	msg_box->box_state=MSG_BOX_INIT;
 	msg_box->head.state=MSG_BOX_INIT;
 
@@ -276,6 +275,17 @@ void * message_create(int type,int subtype,void * active_msg)
 		return NULL;	
 	}
 	msg_box->active_msg=active_msg;
+	if(active_msg==NULL)
+	{
+		ret=get_random_uuid(message_head->nonce);
+		if(ret<=0)
+			return -EINVAL;
+	}
+	else
+	{
+		MSG_HEAD * active_msghead=message_get_head(active_msg);
+		Memcpy(message_head->nonce,active_msghead->nonce,DIGEST_SIZE);
+	}
 	return msg_box;
 }
 
@@ -1274,6 +1284,17 @@ int message_get_flow(void * message)
 	return msg_box->head.flow;
 }
 
+int message_get_uuid(void * message,BYTE * uuid)
+{
+	struct message_box * msg_box;
+
+	msg_box=(struct message_box *)message;
+
+	if(message==NULL)
+		return -EINVAL;
+	Memcpy(uuid,msg_box->head.nonce,DIGEST_SIZE);
+	return DIGEST_SIZE;
+}
 // message add functions
 
 /*

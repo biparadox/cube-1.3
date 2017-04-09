@@ -17,6 +17,7 @@ struct trust_demo_keyinfo
         char * owner;   
 	char * peer;
 	char * usage;
+	char * passwd;
 	int  key_type;
 } __attribute__((packed));
 

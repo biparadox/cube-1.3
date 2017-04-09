@@ -48,6 +48,7 @@
 				{"name":"owner","type":"ESTRING","size":32},
 				{"name":"peer","type":"ESTRING","size":32},
 				{"name":"usage","type":"ESTRING","size":32},
+				{"name":"passwd","type":"ESTRING","size":32},
 				{"name":"key_type","type":"ENUM","ref_name":"tpm_key_usage"}
 			]
 		}

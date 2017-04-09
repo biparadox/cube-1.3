@@ -21,6 +21,7 @@ struct memdb_desc
 	void * struct_template;
 	int (* tail_func)(void * memdb,void * record);
 	void * record_db;
+	int record_no;
 };
 
 

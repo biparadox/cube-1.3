@@ -238,3 +238,16 @@ int calculate_sm3(char* filename, UINT32 *SM3_hash)
     return 0;
 }
 
+int get_random_uuid(BYTE * uuid)
+{
+	int fd;
+	int ret;
+	fd=open("/dev/urandom",O_RDONLY);
+	if(fd<0)
+		return fd;
+	ret=read(fd,uuid,DIGEST_SIZE);	
+	if(ret!=DIGEST_SIZE)
+		return 0;
+	close(fd);
+	return ret;
+}

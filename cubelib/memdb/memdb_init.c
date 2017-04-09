@@ -983,6 +983,7 @@ void *  memdb_store(void * data,int type,int subtype,char * name)
 			return NULL;
 		return oldrecord;				
 	}
+	db_list->record_no++;
 	return record;
 }
 
@@ -1026,6 +1027,7 @@ int memdb_store_record(void * record)
 		ret=hashlist_add_elem(db_list->record_db,record);
 		if(ret<0)
 			return -EINVAL;
+		db_list->record_no++;
 	}
 	else
 	{
@@ -1049,7 +1051,8 @@ void * memdb_remove(void * uuid,int type,int subtype)
 		return NULL;
 
 	record=hashlist_remove_elem(db_list->record_db,uuid);
-
+	if(record!=NULL)
+		db_list->record_no--;
 	return record;
 }
 

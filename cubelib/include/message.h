@@ -151,6 +151,7 @@ int message_free_blob(void * message);
 void * message_get_activemsg(void * message);
 int message_get_type(void * message);
 int message_get_subtype(void * message);
+int message_get_uuid(void * message,BYTE * uuid);
 const char * message_get_sender(void * message);
 const char * message_get_receiver(void * message);
 int message_set_sender(void * message,BYTE * sender);

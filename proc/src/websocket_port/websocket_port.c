@@ -251,11 +251,19 @@ int websocket_port_start(void * sub_proc,void * para)
 		int offset=0;
 		do {
 	    	 	void * message;
+			MSG_HEAD * msg_head;
 			ret=json_2_message(ws_context->read_buf+offset,&message);
 		   	if(ret>=0)
 		    	{
 				if(message_get_state(message)==0)
 					message_set_state(message,MSG_FLOW_INIT);
+				msg_head=message_get_head(message);
+				if(Isstrinuuid(msg_head->nonce))
+				{
+					ret=get_random_uuid(msg_head->nonce);
+					if(ret<0)
+						break; 
+				}	
 				message_set_sender(message,local_uuid);
 	    	    		ex_module_sendmsg(sub_proc,message);	
 				offset+=ret;
