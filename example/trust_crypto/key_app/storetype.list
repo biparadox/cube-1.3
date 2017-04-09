@@ -1,0 +1,17 @@
+{
+	"type":"TRUST_DEMO",
+	"subtype":"KEY_INFO"
+}
+{
+	"owner":"zhaowen",
+	"usage":"store",
+	"passwd":"store",	
+	"key_type":"STORAGE"
+}
+{
+	"owner":"zhaowen",
+	"peer":"meibenshan",
+	"usage":"session",
+	"passwd":"bind",	
+	"key_type":"BIND"
+}
