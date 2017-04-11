@@ -38,6 +38,46 @@ struct connect_syn
 	char nonce[DIGEST_SIZE];
 }__attribute__((packed));
 
+void * hub_get_connector_bypeeruuid(void * hub,char * uuid)
+{
+	int ret;
+	int i;
+	TCLOUD_CONN * conn;
+	BYTE conn_uuid[DIGEST_SIZE];
+
+	conn=hub_get_first_connector(hub);
+	
+	while(conn!=NULL)
+	{	
+
+		if(connector_get_type(conn)==CONN_CLIENT)
+		{
+			struct connect_syn * syn_info=(struct connect_syn *)(conn->conn_extern_info);
+			if(syn_info!=NULL)
+			{
+				comp_proc_uuid(syn_info->uuid,syn_info->server_name,conn_uuid);
+				if(strncmp(conn_uuid,uuid,DIGEST_SIZE)==0)
+					break;
+			}
+
+		}
+		else if(connector_get_type(conn)==CONN_CHANNEL)
+		{
+			struct connect_proc_info * channel_info=(struct connect_ack *)(conn->conn_extern_info);
+			if(channel_info!=NULL)
+			{
+				comp_proc_uuid(channel_info->uuid,channel_info->proc_name,conn_uuid);
+				if(strncmp(conn_uuid,uuid,DIGEST_SIZE)==0)
+					break;
+			}
+
+		}
+		conn=hub_get_next_connector(hub);
+	}
+	return conn;
+
+}
+
 void * build_server_syn_message(char * service,char * local_uuid,char * proc_name)
 {
 	void * message_box;

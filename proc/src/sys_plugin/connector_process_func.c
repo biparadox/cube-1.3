@@ -190,6 +190,7 @@ struct tcloud_connector * hub_get_connector_byreceiver(void * hub, char * uuid, 
 	return NULL;
 }
 
+/*
 void * hub_get_connector_bypeeruuid(void * hub,char * uuid)
 {
 	int ret;
@@ -229,7 +230,7 @@ void * hub_get_connector_bypeeruuid(void * hub,char * uuid)
 	return conn;
 
 }
-
+*/
 #define MAX_LINE_LEN 1024
 int read_conn_cfg_buffer(FILE * stream, char * buf, int size)
     /*  Read text data from config file,

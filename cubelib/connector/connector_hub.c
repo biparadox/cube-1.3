@@ -362,6 +362,7 @@ void * hub_get_next_connector(void * hub)
 	return this_conn;
 }
 
+#define MAX_LINE_LEN 1024
 
 struct connector_hub_ops general_hub_ops = 
 {
