@@ -38,6 +38,62 @@ struct connect_syn
 	char nonce[DIGEST_SIZE];
 }__attribute__((packed));
 
+
+void * hub_get_connector_byreceiver(void * hub, char * uuid, char * name, char * service)
+{
+	struct tcloud_connector * this_conn, *temp_conn;
+	
+	int new_fd;
+
+	temp_conn=hub_get_first_connector(hub);
+
+	while(temp_conn!=NULL)
+	{
+		this_conn=temp_conn;
+		temp_conn=hub_get_next_connector(hub);
+		
+		if(this_conn->conn_type==CONN_CHANNEL)
+		{
+			struct connect_proc_info * connect_extern_info;
+			connect_extern_info=(struct connect_proc_info *)(this_conn->conn_extern_info);
+			if(connect_extern_info==NULL)
+				continue;
+			if(uuid!=NULL)
+			{
+				if(strncmp(uuid,connect_extern_info->uuid,64)!=0)
+					continue;
+			}
+			if(name==NULL)
+				return this_conn;
+			if(strcmp(this_conn->conn_name,name)==0)
+				return this_conn;		
+		}
+		else if(this_conn->conn_type==CONN_CLIENT)
+		{
+			struct connect_syn * connect_extern_info;
+			connect_extern_info=(struct connect_syn *)(this_conn->conn_extern_info);
+			if(connect_extern_info==NULL)
+				continue;
+			if(uuid!=NULL)
+			{
+				if(strncmp(uuid,connect_extern_info->uuid,64)!=0)
+					continue;
+			}
+			if(name!=NULL)
+			{
+				if(strncmp(name,connect_extern_info->server_name,64)!=0)
+					continue;
+			}
+			if(service==NULL)
+				return this_conn;
+			if(strcmp(connect_extern_info->service,service)==0)
+				return this_conn;		
+
+		}
+	}
+	return NULL;
+}
+
 void * hub_get_connector_bypeeruuid(void * hub,char * uuid)
 {
 	int ret;
