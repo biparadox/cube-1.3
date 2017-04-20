@@ -70,8 +70,37 @@ int main() {
 
 	ex_module_init(ex_module,NULL);
 
+	void * slot_list;
+	void * slot_port;
+	void * slot_pin;
+	void * slot_sock;
+
+	void * slot_port1;
+
+	BYTE uuid[32];
+	void * record;
+	void * record1;
+
+	slot_port=slot_port_init("test_port",0);
+	slot_port_addpin(slot_port,1,7,0);
+	slot_port_addpin(slot_port,2,8,0);
+	ex_module_addslot(ex_module,slot_port);	
+	
+	slot_port1=ex_module_findport(ex_module,"test_port");
+
+	Memset(uuid,'a',DIGEST_SIZE);
+
+	slot_sock=slot_create_sock(slot_port1,uuid);
+
+	record=NULL;
+
+	ret=slot_sock_addrecorddata(slot_sock,7,0,record);
+/*
+	record1=slot_sock_removerecord(slot_sock,8,0);
+*/	
 	ex_module_start(ex_module,NULL);
 	ex_module_join(ex_module,&ret);
+	
 	return ret;
 
 }

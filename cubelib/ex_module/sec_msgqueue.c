@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include <fcntl.h>
 #include <errno.h>
-#include <string.h>
 #include <sys/types.h>
 #include <sys/time.h>
 #include <sys/stat.h>
@@ -11,12 +10,13 @@
 #include <sys/wait.h>
 #include <pthread.h>
 
-#include "../include/data_type.h"
+#include "data_type.h"
 #include "../include/kernel_comp.h"
-#include "../include/list.h"
-#include "../include/attrlist.h"
-#include "../include/struct_deal.h"
-#include "../include/message.h"
+#include "list.h"
+#include "attrlist.h"
+#include "string.h"
+#include "struct_deal.h"
+#include "message.h"
 
 typedef struct message_queue//审计信息结构体
 {	
@@ -33,13 +33,13 @@ int message_queue_init(void ** msg_queue)
 	queue=(MESSAGE_QUEUE *)kmalloc(sizeof(MESSAGE_QUEUE),GFP_KERNEL);
 	if(queue==NULL)
 		return -ENOMEM;
-	memset(queue,0,sizeof(MESSAGE_QUEUE));
+	Memset(queue,0,sizeof(MESSAGE_QUEUE));
 	INIT_LIST_HEAD(&(queue->head.list));
 	queue->head.record=NULL;
 	ret=pthread_rwlock_init(&(queue->rwlock),NULL);
 	if(ret<0)
 	{
-		kfree(queue);
+		free(queue);
 		return -EINVAL;
 	}
 	*msg_queue=queue;
@@ -101,7 +101,7 @@ int __message_queue_getmsg(void * msg_queue,void ** msg)
 	List_del(&(newrecord->list));
 	pthread_rwlock_unlock(&(queue->rwlock));
 	*msg=newrecord->record;
-	kfree(newrecord);
+	free(newrecord);
 	return 0;
 }
 
@@ -147,7 +147,7 @@ int message_queue_destroy(void * msg_queue)
 	ret=pthread_rwlock_destroy(&(queue->rwlock));
 	if(ret<0)
 		return ret;
-	kfree(queue);
+	free(queue);
 	return 0;
 }
 

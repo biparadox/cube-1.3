@@ -28,7 +28,7 @@
 #include <openssl/sha.h>
 #include <openssl/rand.h>
 #include <openssl/pem.h>
-#include "../../include/tesi.h"
+#include "tesi.h"
 #include "cube_cafunc.h"
 #define DIGEST_SIZE 32
 #define PADDING_MODE RSA_PKCS1_PADDING

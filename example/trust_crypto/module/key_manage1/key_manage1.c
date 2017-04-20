@@ -47,6 +47,12 @@ int key_manage1_init(void * sub_proc,void * para)
 		printf("open tpm error %d!\n",result);
 		return -ENFILE;
 	}
+
+	// prepare the slot sock
+	void * slot_port=slot_port_init("key_request",2);
+	slot_port_addrecordpin(slot_port,DTYPE_TRUST_DEMO,SUBTYPE_KEY_INFO);
+	slot_port_addmessagepin(slot_port,DTYPE_TESI_KEY_STRUCT,SUBTYPE_WRAPPED_KEY);
+	ex_module_addslot(sub_proc,slot_port);
 	return 0;
 }
 
@@ -103,15 +109,28 @@ int proc_key_check(void * sub_proc,void * recv_msg)
 	struct trust_demo_keyinfo * comp_keyinfo;
 	struct vTPM_wrappedkey    * key_record;	
 	void * send_msg;
+	BYTE uuid[DIGEST_SIZE];
 
 	ret=message_get_record(recv_msg,&keyinfo,0);
 	if(keyinfo!=NULL)
 	{
-		comp_keyinfo=memdb_get_first_record(DTYPE_TRUST_DEMO,SUBTYPE_KEY_INFO);
-		ret=message_get_uuid(recv_msg,keyinfo->uuid);						
+//		comp_keyinfo=memdb_get_first_record(DTYPE_TRUST_DEMO,SUBTYPE_KEY_INFO);
+
+		// build a slot sock to store the (DTYPE_TRUST_DEMO,SUBTYPE_KEY_INFO) keyinfo record and wait for the
+		// (DTYPE_TESI_KEY_STRUCT,SUBTYPE_WRAPPED_KEY) message
+		void * slot_port=ex_module_findport(sub_proc,"key_request");
+		if(slot_port==NULL)
+			return -EINVAL;
+		ret=message_get_uuid(recv_msg,uuid);						
 		if(ret<0)
 			return ret;
-		memdb_store(keyinfo,DTYPE_TRUST_DEMO,SUBTYPE_KEY_INFO,"wait_for_key_generate");
+		void * sock=slot_create_sock(slot_port,uuid);
+		ret=slot_sock_addrecorddata(sock,DTYPE_TRUST_DEMO,SUBTYPE_KEY_INFO,keyinfo);
+		if(ret<0)
+			return ret;
+		ex_module_addsock(sub_proc,sock);		
+
+		// build (DTYPE_TESI_KEY_STRUCT,SUBTYPE_WRAPPED_KEY) message and send it
 		key_record=Talloc0(sizeof(*key_record));
 		if(key_record==NULL)
 			return -ENOMEM;
@@ -131,5 +150,26 @@ int proc_key_check(void * sub_proc,void * recv_msg)
 int proc_key_store(void * sub_proc,void * recv_msg)
 {
 	int ret=0;
-	return ret;
+	BYTE uuid[DIGEST_SIZE];
+	void * sock;	
+	struct vTPM_wrappedkey    * key_record;	
+	struct trust_demo_keyinfo * keyinfo;
+
+	ret=message_get_uuid(recv_msg,keyinfo->uuid);						
+	if(ret<0)
+		return ret;
+	sock=ex_module_findsock(sub_proc,uuid);
+	if(sock==NULL)
+		return -EINVAL;	
+	ret=slot_sock_addmsg(sock,recv_msg);
+	
+	if(ret<=0)	
+		return ret;
+
+	keyinfo= slot_sock_removerecord(sock,DTYPE_TRUST_DEMO,SUBTYPE_KEY_INFO);
+	if(keyinfo==NULL)
+		return -EINVAL;
+	ret=message_get_record(recv_msg,&key_record,0);
+	if(key_record==NULL)
+		return -EINVAL;				
 }

@@ -15,10 +15,11 @@
 
 #define MAX_RECORD_NUM 65536
 
-//NAME2VALUE * elem_type_valuelist;
-//NAME2VALUE * elem_attr_flaglist;
-
-//struct struct_elem_attr * elem_attr_desc; 
+struct types
+{
+	int type;
+	int subtype;
+}__attribute__((packed));
 
 int memdb_init(void);
 int read_json_desc(void * root, BYTE * uuid);

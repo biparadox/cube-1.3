@@ -47,6 +47,9 @@ int key_request_init(void * sub_proc,void * para)
 		printf("open tpm error %d!\n",result);
 		return -ENFILE;
 	}
+	void * slot_port=slot_port_init("key_request",1);
+	slot_port_addrecordpin(slot_port,DTYPE_TRUST_DEMO,SUBTYPE_KEY_INFO);	
+	ex_module_addslot(sub_proc,slot_port);
 	return 0;
 }
 
@@ -106,6 +109,7 @@ int proc_key_request(void * sub_proc,void * recv_msg)
 	struct types_pair *pubkey_types;
 	int i;
 	int ret;
+	BYTE uuid[DIGEST_SIZE];
 
 	printf("begin to generate key request!\n");
 
@@ -120,20 +124,31 @@ int proc_key_request(void * sub_proc,void * recv_msg)
 	key_frame->keypass=dup_str("kkk",0);	
 	void * send_msg;
 	void * notice_msg;
+	DB_RECORD * record;
 	if(recv_msg==NULL)
 	{
 		struct trust_demo_keyinfo * key_info;
-		key_info=memdb_get_first_record(DTYPE_TRUST_DEMO,SUBTYPE_KEY_INFO);
-		while(key_info!=NULL)
+		record=memdb_get_first(DTYPE_TRUST_DEMO,SUBTYPE_KEY_INFO);
+		while(record!=NULL)
 		{
 			send_msg=message_create(DTYPE_TRUST_DEMO,SUBTYPE_KEY_INFO,NULL);
 			if(send_msg==NULL)
 				return -EINVAL;
-			ret=message_add_record(send_msg,key_info);
+			ret=message_add_record(send_msg,record->record);
 			if(ret<0)
 				return ret;
+
+			void * slot_port=ex_module_findport(sub_proc,"key_request");
+			if(slot_port==NULL)
+				return -EINVAL;
+
+			message_get_uuid(send_msg,uuid);
+			void * sock = slot_create_sock(slot_port,uuid);
+			ret=slot_sock_addrecord(sock,record);	
+			ex_module_addsock(sub_proc,sock);
+
 			ret=ex_module_sendmsg(sub_proc,send_msg);
-			key_info=memdb_get_next_record(DTYPE_TRUST_DEMO,SUBTYPE_KEY_INFO);
+			record=memdb_get_next(DTYPE_TRUST_DEMO,SUBTYPE_KEY_INFO);
 		}
 	}
 	return ret;
@@ -141,4 +156,16 @@ int proc_key_request(void * sub_proc,void * recv_msg)
 
 int proc_key_load(void * sub_proc,void * recv_msg)
 {
+	int ret;
+	BYTE uuid[DIGEST_SIZE];
+	void * sock;
+	ret=message_get_uuid(recv_msg,uuid);
+	if(ret<0)
+		return -EINVAL;
+	sock=ex_module_removesock(sub_proc,uuid);
+	if(sock==NULL)
+		return 0;
+			
+	
+	
 }

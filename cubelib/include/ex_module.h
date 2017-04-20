@@ -54,30 +54,8 @@ int ex_module_create(char * name,int type,struct struct_elem_attr *  context_des
 
 int ex_module_init(void * ex_mod,void * pointer);
 
-//int ex_module_create_statelist(void * ex_mod,char ** state_namelist);
-// create a state name-value double list, and set default value in it
-// this function is called in main_proc
-
-//int ex_module_register_statelist(void * ex_mod,NAME2VALUE * state_list);
-// register some value in subject ex_mod's state name list
-// this function is called in sub_proc's init function
-
-//int ex_module_create_funclist(void * ex_mod,char ** func_namelist);
-// create a func name-pointer double list, and set default value in it
-// this function is called in main_proc
-
-//int ex_module_register_funclist(void * ex_mod,NAME2POINTER * func_list);
-// register some value in subject ex_mod's state name list
-// this function is called in sub_proc's init function
-
-//int ex_module_getfunc(void * ex_mod,char * func_name, void ** func);
-// get a func by func_name
 int ex_module_gettype(void * ex_mod);
 void * ex_module_getheadtemplate(void * ex_mod);
-
-//int ex_module_getpolicy(void * ex_mod, void ** deal_policy);
-
-//int ex_module_setpolicy(void * ex_mod, void * deal_policy);
 
 int ex_module_setinitfunc(void * ex_mod,void * init);
 int ex_module_setstartfunc(void * ex_mod,void * start);
@@ -115,4 +93,22 @@ void * proc_share_data_getpointer();
 int proc_share_data_setpointer(void * pointer);
 int proc_share_data_getvalue(char * valuename,void * value);
 int proc_share_data_setvalue(char * valuename,void * value);
+void * ex_module_addslot(void * ex_mod,void * slot_port);
+void * ex_module_findport(void * ex_mod,char * name);
+void * ex_module_addsock(void * ex_mod,void * sock);
+void * ex_module_removesock(void * ex_mod,BYTE * uuid);
+void * ex_module_findsock(void * ex_mod,BYTE * uuid);
+
+void * slot_port_init(char * name, int port_num);
+void * slot_port_addrecordpin(void * port,int type,int subtype);
+void * slot_port_addmessagepin(void * port,int type,int subtype);
+void * slot_create_sock(void * slot_port,BYTE * uuid);
+int slot_sock_addrecord(void * sock,void * record);
+int slot_sock_addrecorddata(void * sock,int type,int subtype, void * record);
+int slot_sock_addmsg(void * sock, void * message);
+int slot_sock_isactive(void * sock);
+int slot_sock_isempty(void * sock);
+void * slot_sock_removerecord(void * sock,int type,int subtype);
+void * slot_sock_removemessage(void * sock,int type,int subtype);
+
 #endif

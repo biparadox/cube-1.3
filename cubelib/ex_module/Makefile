@@ -1,8 +1,8 @@
 FLAGS= -g -o 
-CFLAGS= -g -c -fPIC -DUSER_MODE 
+CFLAGS= -g -c -fPIC -DUSER_MODE -I../include
 CC=gcc
 CCP=g++
-STRUCTOBJ= ex_module.o sec_msgqueue.o
+STRUCTOBJ= ex_module.o sec_msgqueue.o ex_module_slot.o
 LIBNAME=exmodule
 DEPENDLIB= -lmessage -lmemdb -lbasefunc -lcrypto_func -lstruct -ljson -lalloc -lstring -lpthread
 
@@ -14,7 +14,9 @@ test_main: test_main.c ../lib/lib$(LIBNAME).so
 	mv   lib$(LIBNAME).so ../lib
 ex_module.o: ex_module.c  
 	$(CC) $(CFLAGS) ex_module.c
-sec_msgqueue.o:  sec_msgqueue.c ../include/sec_entity.h
+sec_msgqueue.o:  sec_msgqueue.c 
 	$(CC) $(CFLAGS) sec_msgqueue.c 
+ex_module_slot.o:  ex_module_slot.c 
+	$(CC) $(CFLAGS) ex_module_slot.c 
 clean:
 	rm -f test_main  *~ *.o *.a ../lib/lib$(LIBNAME).so

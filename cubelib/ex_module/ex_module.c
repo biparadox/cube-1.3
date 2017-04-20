@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include <fcntl.h>
 #include <errno.h>
-#include <string.h>
 #include <sys/types.h>
 #include <sys/time.h>
 #include <sys/stat.h>
@@ -11,13 +10,14 @@
 #include <sys/wait.h>
 #include <pthread.h>
 
-#include "../include/data_type.h"
-#include "../include/kernel_comp.h"
-#include "../include/list.h"
-#include "../include/attrlist.h"
-#include "../include/struct_deal.h"
-#include "../include/connector.h"
-#include "../include/ex_module.h"
+#include "data_type.h"
+//#include "../include/kernel_comp.h"
+#include "list.h"
+#include "attrlist.h"
+#include "string.h"
+#include "struct_deal.h"
+#include "connector.h"
+#include "ex_module.h"
 
 
 
@@ -35,6 +35,8 @@ typedef struct proc_ex_module
 	pthread_mutex_t mutex;
 	void * recv_queue;
 	void * send_queue;
+	void * slots;
+	void * socks;
 	int  retval;
 }__attribute__((packed)) EX_MODULE;
 
@@ -47,6 +49,46 @@ struct ex_module_list
 }; 
 
 EX_MODULE * main_module;
+
+void * ex_module_addslot(void * ex_mod,void * slot_port)
+{
+	EX_MODULE * ex_module=ex_mod;
+	if(ex_mod==NULL)
+		return NULL;
+	return slot_list_addslot(ex_module->slots,slot_port);
+}
+
+void * ex_module_addsock(void * ex_mod,void * sock)
+{
+	EX_MODULE * ex_module=ex_mod;
+	if(ex_mod==NULL)
+		return NULL;
+	return slot_list_addslot(ex_module->socks,sock);
+}
+
+void * ex_module_removesock(void * ex_mod,BYTE * uuid)
+{
+	EX_MODULE * ex_module=ex_mod;
+	if(ex_mod==NULL)
+		return NULL;
+	return slot_list_removesock(ex_module->socks,uuid);
+}
+
+void * ex_module_findport(void * ex_mod,char *name)
+{
+	EX_MODULE * ex_module=ex_mod;
+	if(ex_mod==NULL)
+		return NULL;
+	return slot_list_findport(ex_module->slots,name);
+}
+
+void * ex_module_findsock(void * ex_mod,BYTE * uuid)
+{
+	EX_MODULE * ex_module=ex_mod;
+	if(ex_mod==NULL)
+		return NULL;
+	return slot_list_findsock(ex_module->socks,uuid);
+}
 
 struct proc_context
 {
@@ -106,7 +148,7 @@ int entity_comp_name(void * List_head, void * name)
 int ex_module_list_init()
 {
 	int ret;
-	ex_module_list=kmalloc(sizeof(struct ex_module_list),GFP_KERNEL);
+	ex_module_list=malloc(sizeof(struct ex_module_list));
 	if(ex_module_list==NULL)
 		return -ENOMEM;
 	INIT_LIST_HEAD(&(ex_module_list->head.list));
@@ -210,7 +252,7 @@ int add_ex_module(void * ex_module)
 	if(recordhead==NULL)
 		return -ENOMEM;
 
-	newrecord = kmalloc(sizeof(Record_List),GFP_KERNEL);
+	newrecord = malloc(sizeof(Record_List));
 	if(newrecord==NULL)
 		return -ENOMEM;
 	INIT_LIST_HEAD(&(newrecord->list));
@@ -243,13 +285,11 @@ int remove_ex_module(char * name,void **ex_mod)
 	List_del(curr_head);
 	pthread_rwlock_unlock(&(ex_module_list->rwlock));
 	record=record_elem->record;
-	kfree(record_elem);
+	free(record_elem);
         *ex_mod=record;	
 	return 1;
 }	
 
-
- 
 int ex_module_create(char * name,int type,struct struct_elem_attr *  context_desc, void ** ex_mod)
 {
 	int ret;
@@ -259,7 +299,7 @@ int ex_module_create(char * name,int type,struct struct_elem_attr *  context_des
 
 
 	// alloc mem for ex_module
-	ex_module=kmalloc(sizeof(EX_MODULE),GFP_KERNEL);
+	ex_module=malloc(sizeof(EX_MODULE));
 	if(ex_module==NULL)
 		return -ENOMEM;
 	memset(ex_module,0,sizeof(EX_MODULE));
@@ -274,7 +314,7 @@ int ex_module_create(char * name,int type,struct struct_elem_attr *  context_des
 		ex_module->context_template=create_struct_template(context_desc);
 		if(ex_module->context_template==NULL)
 		{
-			kfree(ex_module);
+			free(ex_module);
 			return -EINVAL;
 		}
 	}
@@ -283,7 +323,7 @@ int ex_module_create(char * name,int type,struct struct_elem_attr *  context_des
 	if(ret<0)
 	{
 		pthread_mutex_destroy(&(ex_module->mutex));
-		kfree(ex_module);
+		free(ex_module);
 		return -EINVAL;
 	}
 	ret=message_queue_init(&(ex_module->send_queue));
@@ -291,7 +331,7 @@ int ex_module_create(char * name,int type,struct struct_elem_attr *  context_des
 	{
 		message_queue_destroy(&(ex_module->recv_queue));
 		pthread_mutex_destroy(&(ex_module->mutex));
-		kfree(ex_module);
+		free(ex_module);
 		return -EINVAL;
 	}
 
@@ -301,6 +341,17 @@ int ex_module_create(char * name,int type,struct struct_elem_attr *  context_des
 	ex_module->head.type=type;
 	ex_module->init=NULL;
 	ex_module->start=NULL;
+	// init the  slot list and sock list
+
+	ex_module->slots=slot_list_init();
+	if(ex_module->slots==NULL)
+		return -EINVAL;
+
+	ex_module->socks=slot_list_init();
+	if(ex_module->socks==NULL)
+		return -EINVAL;
+
+	
 	// init the proc's mutex and the cond
 	ret=pthread_mutex_init(&(ex_module->mutex),NULL);
 
@@ -455,10 +506,10 @@ int ex_module_start(void * ex_mod,void * para)
 	if(ex_module->start==NULL)
 		return -EINVAL;
 
-	trans_pointer=kmalloc(sizeof(struct subject_para_struct),GFP_KERNEL);
+	trans_pointer=malloc(sizeof(struct subject_para_struct));
 	if(trans_pointer==NULL)
 	{
-		kfree(trans_pointer);
+		free(trans_pointer);
 		return -ENOMEM;
 	}
 
@@ -512,7 +563,7 @@ int ex_module_proc_getpara(void * arg,void ** ex_mod,void ** para)
 
 	*ex_mod=trans_pointer->ex_module;
 	*para=trans_pointer->para;
-	kfree(trans_pointer);
+	free(trans_pointer);
 	return 0;	
 }
 
@@ -565,7 +616,7 @@ void ex_module_destroy(void * ex_mod)
 		return ;
 	ex_module = (EX_MODULE *)ex_mod;
 	pthread_mutex_destroy(&(ex_module->mutex));
-	kfree(ex_module);
+	free(ex_module);
 	return;
 }
 

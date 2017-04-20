@@ -9,9 +9,9 @@ TEST_LIB= -L$(CUBELIBPATH)/lib -ltesi -ltspi -lcrypto -lstruct -lcrypto_func -lj
 
 main: test_main ca_create_crt
 test_main: test_main.c cube_cafunc.o
-	$(CC) $(FLAGS) test_main test_main.c $(STRUCTOBJ) $(TEST_LIB)
+	$(CC) $(FLAGS) test_main test_main.c $(INCLUDE) $(STRUCTOBJ) $(TEST_LIB)
 ca_create_crt: ca_create_crt.c cube_cafunc.o
-	$(CC) $(FLAGS) ca_create_crt ca_create_crt.c $(STRUCTOBJ) $(TEST_LIB)
+	$(CC) $(FLAGS) ca_create_crt ca_create_crt.c $(INCLUDE) $(STRUCTOBJ) $(TEST_LIB)
 cube_cafunc.o  :  cube_cafunc.c cube_cafunc.h
 	$(CC) $(CFLAGS) cube_cafunc.c
 clean:

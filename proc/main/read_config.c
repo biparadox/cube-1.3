@@ -42,28 +42,88 @@ char *  get_temp_filename(char * tag )
 	return tempbuf;
 }
 	
-int get_local_uuid(char * uuid)
+int convert_machine_uuid(char * uuidstr,BYTE * uuid)
+{
+	int i=0;
+	int j=0;
+	int len;
+	int hflag=0;
+	BYTE digit_value;
+	char digit;
+
+	
+	len=Strlen(uuidstr);
+	if(len<0)
+		return 0;	
+	
+	for(i=0;i<len;i++)
+	{
+		digit=uuidstr[i];
+		if((digit>='0') &&(digit<='9'))
+			digit_value= digit-'0';
+		else if((digit>='a') &&(digit<='f'))
+			digit_value= digit-'a'+10;
+		else if((digit>='A') &&(digit<='F'))
+			digit_value =digit-'A'+10;
+		else
+			continue;
+		if(hflag==0)
+		{
+			uuid[j]=digit_value;
+			hflag=1;
+		}
+		else
+		{
+			uuid[j]=(uuid[j++]<<4)+digit_value;
+			hflag=0;
+		}
+	}
+	return j;
+}
+
+int get_local_uuid(BYTE * uuid)
 {
 	FILE *fi,*fo;
-	int i=0;
+	int i=0,j=0;
 	char *s,ch;
 	int len;
+	int ret;
 
+	char uuidstr[DIGEST_SIZE*2];
+	
 	char cmd[128];
 	char *tempfile1,*tempfile2;
+	char filename[DIGEST_SIZE*4];
+	char *libpath;
 
 	tempfile1=get_temp_filename(".001");
 	if((tempfile1==NULL) || IS_ERR(tempfile1)) 
 		return tempfile1;
 
 	sprintf(cmd,"dmidecode | grep UUID | awk '{print $2}' > %s",tempfile1);
-	system(cmd);
+	ret=system(cmd);
 
 	fi=fopen(tempfile1,"r");
-	memset(uuid,0,DIGEST_SIZE*2);
-	len=fread(uuid,1,36,fi);
+	memset(uuidstr,0,DIGEST_SIZE*2);
+	len=fread(uuidstr,1,36,fi);
 	sprintf(cmd,"rm -f %s",tempfile1);
-	system(cmd);
+	ret=system(cmd);
+
+	if(len==0)
+	{
+		libpath=getenv("CUBE_SYS_PLUGIN");
+		if(libpath==NULL)
+			return 0;	
+		Strncpy(filename,libpath,DIGEST_SIZE*3);
+		Strcat(filename,"/uuid");
+		fi=fopen(filename,"r");
+		memset(uuidstr,0,DIGEST_SIZE);
+		len=fread(uuidstr,1,36,fi);
+		if(len<=0)
+			return 0;
+	}
+
+	len=convert_machine_uuid(uuidstr,uuid);
 	return len;
 }
 
