@@ -44,7 +44,7 @@ int main() {
 	void * temp_node;
 	
 //  	alloc_init(alloc_buffer);
-	fd=open("login.json",O_RDONLY);
+	fd=open("route.json",O_RDONLY);
 	if(fd<0)
 		return fd;
 	

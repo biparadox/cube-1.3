@@ -65,11 +65,6 @@ int key_request_start(void * sub_proc,void * para)
 	int subtype;
 	int initflag=0;
 
-	char local_uuid[DIGEST_SIZE];
-	char proc_name[DIGEST_SIZE];
-	
-	ret=proc_share_data_getvalue("uuid",local_uuid);
-	ret=proc_share_data_getvalue("proc_name",proc_name);
 
 	printf("begin tpm key create start!\n");
 
@@ -110,6 +105,11 @@ int proc_key_request(void * sub_proc,void * recv_msg)
 	int i;
 	int ret;
 	BYTE uuid[DIGEST_SIZE];
+	char local_uuid[DIGEST_SIZE];
+	char proc_name[DIGEST_SIZE];
+	
+	ret=proc_share_data_getvalue("uuid",local_uuid);
+	ret=proc_share_data_getvalue("proc_name",proc_name);
 
 	printf("begin to generate key request!\n");
 
@@ -134,10 +134,13 @@ int proc_key_request(void * sub_proc,void * recv_msg)
 			send_msg=message_create(DTYPE_TRUST_DEMO,SUBTYPE_KEY_INFO,NULL);
 			if(send_msg==NULL)
 				return -EINVAL;
-			ret=message_add_record(send_msg,record->record);
+			key_info=record->record;
+			Memcpy(key_info->vtpm_uuid,local_uuid,DIGEST_SIZE);
+			ret=message_add_record(send_msg,key_info);
 			if(ret<0)
 				return ret;
 
+			
 			void * slot_port=ex_module_findport(sub_proc,"key_request");
 			if(slot_port==NULL)
 				return -EINVAL;

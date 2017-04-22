@@ -21,13 +21,14 @@ int lib_read(int fd,int type,int subtype,void ** record)
 {
 	int ret;
 	int offset;
+	int read_size;
 	void * struct_template;
 	DB_RECORD * db_record;
 	BYTE buffer[2048];
-	ret=read(fd,buffer,2048);
-	if(ret<0)
-		return ret;
-	if(ret==0)
+	read_size=read(fd,buffer,2048);
+	if(read_size<0)
+		return read_size;
+	if(read_size==0)
 		return 0;
 
 	struct_template=memdb_get_template(type,subtype);
@@ -41,7 +42,7 @@ int lib_read(int fd,int type,int subtype,void ** record)
 	offset=blob_2_struct(buffer,*record,struct_template);
 	if(offset<0)
 		return -EINVAL;
-	lseek(fd,ret-offset,SEEK_CUR);
+	lseek(fd,offset-read_size,SEEK_CUR);
 	return 1;
 }
 

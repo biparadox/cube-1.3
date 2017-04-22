@@ -174,3 +174,35 @@ int create_tpm_key(struct vTPM_wrappedkey * key_frame)
 
 	return 0;
 }
+
+int find_tpm_key(struct vTPM_wrappedkey * key_frame)
+{
+	TSS_RESULT result;
+	TSS_HKEY   hKey;
+	TSS_HKEY   hWrapKey;
+	int i;
+	int ret;
+
+	char filename[DIGEST_SIZE*3];
+	
+	char buffer[1024];
+	char digest[DIGEST_SIZE];
+	int blobsize=0;
+	int fd;
+/*
+	Strcpy(filename,"privkey/");
+	digest_to_uuid(key_frame->uuid,buffer);
+	Strncat(filename,buffer,DIGEST_SIZE*2);
+	Strncat(filename,".key");
+*/	
+	fd=access(key_frame->key_filename,O_RDONLY);
+	if(fd<0)
+		return 0;
+		
+	calculate_sm3(key_frame->key_filename,digest);
+
+	ret=Memcmp(digest,key_frame->uuid,DIGEST_SIZE);
+	if(ret==0)
+		return 1;
+	return 0;
+}

@@ -19,7 +19,7 @@
 #include "connector.h"
 #include "ex_module.h"
 
-
+#include "slot_list.h"
 
 typedef struct proc_ex_module
 {

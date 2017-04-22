@@ -124,9 +124,23 @@ int proc_tpm_key_generate(void * sub_proc,void * recv_msg)
 			return -EINVAL;
 		if(key_frame==NULL)
 			break;
-		ret=create_tpm_key(key_frame);
-		if(ret<0)
-			return ret;
+		
+		if(!Isemptyuuid(key_frame->uuid))
+		{
+			ret=find_tpm_key(key_frame);
+			if(ret<0)
+				return -EINVAL;
+			if(ret==0)
+			{
+				Memset(key_frame->uuid,0,DIGEST_SIZE);
+			}		
+		}
+		else
+		{
+			ret=create_tpm_key(key_frame);
+			if(ret<0)
+				return ret;
+		}
 		ret=message_add_record(send_msg,key_frame);
 		if(ret<0)
 			break;

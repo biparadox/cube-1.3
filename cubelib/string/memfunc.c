@@ -381,6 +381,17 @@ int Isstrinuuid(BYTE * uuid)
 	return 0;
 }
 
+int Isemptyuuid(BYTE * uuid)
+{
+
+	BYTE compvalue[DIGEST_SIZE];
+	Memset(compvalue,0,DIGEST_SIZE);
+	
+	if(Memcmp(compvalue,uuid,DIGEST_SIZE)==0)
+		return 1;
+	return 0;
+}
+
 
 int bitmap_set(BYTE * bitmap, int site)
 {

@@ -50,12 +50,19 @@ int convert_machine_uuid(char * uuidstr,BYTE * uuid)
 	int hflag=0;
 	BYTE digit_value;
 	char digit;
+	BYTE *temp;
 
 	
 	len=Strlen(uuidstr);
 	if(len<0)
 		return 0;	
+	if(len>DIGEST_SIZE*2)
+		return -EINVAL;
 	
+	temp=Talloc0(DIGEST_SIZE);
+	if(temp==NULL)
+		return -ENOMEM;
+
 	for(i=0;i<len;i++)
 	{
 		digit=uuidstr[i];
@@ -69,16 +76,18 @@ int convert_machine_uuid(char * uuidstr,BYTE * uuid)
 			continue;
 		if(hflag==0)
 		{
-			uuid[j]=digit_value;
+			temp[j]=digit_value;
 			hflag=1;
 		}
 		else
 		{
-			uuid[j]=(uuid[j++]<<4)+digit_value;
+			temp[j]=(temp[j++]<<4)+digit_value;
 			hflag=0;
 		}
 	}
-	return j;
+	calculate_context_sm3(temp,DIGEST_SIZE,uuid);
+	Free(temp);
+	return DIGEST_SIZE;
 }
 
 int get_local_uuid(BYTE * uuid)

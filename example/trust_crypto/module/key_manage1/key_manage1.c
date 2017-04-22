@@ -100,6 +100,30 @@ int key_manage1_start(void * sub_proc,void * para)
 	return 0;
 };
 
+void * find_key_info(void * key_info)
+{
+	struct trust_demo_keyinfo * in_keyinfo=key_info;
+	struct trust_demo_keyinfo * db_keyinfo;
+	DB_RECORD * record;
+	void * comp_template;
+	int ret;
+	comp_template=memdb_get_template(DTYPE_TRUST_DEMO,SUBTYPE_KEY_INFO);
+	ret=struct_set_flag(comp_template,CUBE_ELEM_FLAG_TEMP,"vtpm_uuid,owner,peer,usage,key_type");
+	if(ret<0)
+		return NULL;
+	record=memdb_get_first(DTYPE_TRUST_DEMO,SUBTYPE_KEY_INFO);
+	while(record!=NULL)
+	{
+		db_keyinfo=record->record;
+		if(db_keyinfo==NULL)
+			return NULL;
+		if(struct_part_compare(db_keyinfo,in_keyinfo,comp_template,CUBE_ELEM_FLAG_TEMP))
+			break;
+		record=memdb_get_next(DTYPE_TRUST_DEMO,SUBTYPE_KEY_INFO);
+	}
+
+	return record;
+}
 
 int proc_key_check(void * sub_proc,void * recv_msg)
 {
@@ -107,40 +131,55 @@ int proc_key_check(void * sub_proc,void * recv_msg)
 	int i=0;
 	struct trust_demo_keyinfo * keyinfo;
 	struct trust_demo_keyinfo * comp_keyinfo;
-	struct vTPM_wrappedkey    * key_record;	
+	struct vTPM_wrappedkey    * key_struct;	
 	void * send_msg;
 	BYTE uuid[DIGEST_SIZE];
+	DB_RECORD * keyinfo_record;
+	DB_RECORD * key_record;
 
 	ret=message_get_record(recv_msg,&keyinfo,0);
 	if(keyinfo!=NULL)
 	{
-//		comp_keyinfo=memdb_get_first_record(DTYPE_TRUST_DEMO,SUBTYPE_KEY_INFO);
+		keyinfo_record=find_key_info(keyinfo);
+		if(keyinfo_record!=NULL)
+		{
+			comp_keyinfo=keyinfo_record->record;
+			key_record=memdb_find_first(DTYPE_TESI_KEY_STRUCT,SUBTYPE_WRAPPED_KEY,"uuid",comp_keyinfo->uuid);
+			if(key_record!=NULL)
+				key_struct=key_record->record;		
+		}
+		
+		else
+		{
+			// build a slot sock to store the (DTYPE_TRUST_DEMO,SUBTYPE_KEY_INFO) keyinfo record and wait for the
+			// (DTYPE_TESI_KEY_STRUCT,SUBTYPE_WRAPPED_KEY) message
+			// build (DTYPE_TESI_KEY_STRUCT,SUBTYPE_WRAPPED_KEY) message and send it
+			key_struct=Talloc0(sizeof(*key_struct));
+			if(key_struct==NULL)
+				return -ENOMEM;
+			Memcpy(key_struct->vtpm_uuid,keyinfo->vtpm_uuid,DIGEST_SIZE); 
+			key_struct->key_type=keyinfo->key_type; 
+			key_struct->key_size=1024;
+			key_struct->keypass=dup_str(keyinfo->passwd,DIGEST_SIZE);
+		}
 
-		// build a slot sock to store the (DTYPE_TRUST_DEMO,SUBTYPE_KEY_INFO) keyinfo record and wait for the
-		// (DTYPE_TESI_KEY_STRUCT,SUBTYPE_WRAPPED_KEY) message
 		void * slot_port=ex_module_findport(sub_proc,"key_request");
 		if(slot_port==NULL)
 			return -EINVAL;
 		ret=message_get_uuid(recv_msg,uuid);						
 		if(ret<0)
 			return ret;
+
 		void * sock=slot_create_sock(slot_port,uuid);
 		ret=slot_sock_addrecorddata(sock,DTYPE_TRUST_DEMO,SUBTYPE_KEY_INFO,keyinfo);
 		if(ret<0)
 			return ret;
 		ex_module_addsock(sub_proc,sock);		
 
-		// build (DTYPE_TESI_KEY_STRUCT,SUBTYPE_WRAPPED_KEY) message and send it
-		key_record=Talloc0(sizeof(*key_record));
-		if(key_record==NULL)
-			return -ENOMEM;
-		key_record->key_type=keyinfo->key_type; 
-		key_record->key_size=1024;
-		key_record->keypass=dup_str(keyinfo->passwd,DIGEST_SIZE);
 		send_msg=message_create(DTYPE_TESI_KEY_STRUCT,SUBTYPE_WRAPPED_KEY,recv_msg);
 		if(send_msg==NULL)
 			return -EINVAL;
-		message_add_record(send_msg,key_record);
+		message_add_record(send_msg,key_struct);
 		ex_module_sendmsg(sub_proc,send_msg);	
 	}	
 
@@ -154,8 +193,10 @@ int proc_key_store(void * sub_proc,void * recv_msg)
 	void * sock;	
 	struct vTPM_wrappedkey    * key_record;	
 	struct trust_demo_keyinfo * keyinfo;
+	void * send_msg;
+	struct types_pair * types;
 
-	ret=message_get_uuid(recv_msg,keyinfo->uuid);						
+	ret=message_get_uuid(recv_msg,uuid);						
 	if(ret<0)
 		return ret;
 	sock=ex_module_findsock(sub_proc,uuid);
@@ -172,4 +213,38 @@ int proc_key_store(void * sub_proc,void * recv_msg)
 	ret=message_get_record(recv_msg,&key_record,0);
 	if(key_record==NULL)
 		return -EINVAL;				
+
+	Memcpy(keyinfo->uuid,key_record->uuid,DIGEST_SIZE);
+	memdb_store(keyinfo,DTYPE_TRUST_DEMO,SUBTYPE_KEY_INFO,NULL);
+	memdb_store(key_record,DTYPE_TESI_KEY_STRUCT,SUBTYPE_WRAPPED_KEY,NULL);
+	
+	send_msg=message_create(DTYPE_TESI_KEY_STRUCT,SUBTYPE_WRAPPED_KEY,recv_msg);
+	if(send_msg==NULL)
+		return -EINVAL;
+	message_add_record(send_msg,key_record);
+	ex_module_sendmsg(sub_proc,send_msg);	
+
+	send_msg=message_create(DTYPE_TRUST_DEMO,SUBTYPE_KEY_INFO,recv_msg);
+	if(send_msg==NULL)
+		return -EINVAL;
+	message_add_record(send_msg,keyinfo);
+	ex_module_sendmsg(sub_proc,send_msg);	
+
+	send_msg=message_create(DTYPE_MESSAGE,SUBTYPE_TYPES,NULL);
+	if(send_msg==NULL)
+		return -EINVAL;
+	types=Talloc(sizeof(*types));
+	if(types==NULL)
+		return -EINVAL;
+	types->type=DTYPE_TRUST_DEMO;
+	types->subtype=SUBTYPE_KEY_INFO;
+	message_add_record(send_msg,types);
+	types=Talloc(sizeof(*types));
+	if(types==NULL)
+		return -EINVAL;
+	types->type=DTYPE_TESI_KEY_STRUCT;
+	types->subtype=SUBTYPE_WRAPPED_KEY;
+	message_add_record(send_msg,types);
+	ex_module_sendmsg(sub_proc,send_msg);	
+	return 0;
 }
