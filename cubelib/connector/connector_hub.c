@@ -35,6 +35,7 @@ int connector_hub_init(void * hub)
 	conn_list=malloc(sizeof(Record_List));
 	if(conn_list == NULL)
 		return -ENOMEM;
+	conn_list->record=NULL;
 
 	INIT_LIST_HEAD(&(conn_list->list));	
 	conn_hub->connector_list=conn_list;	
