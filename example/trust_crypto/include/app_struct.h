@@ -14,6 +14,7 @@ struct trust_demo_keyinfo
 {
         BYTE uuid[DIGEST_SIZE];    
         BYTE vtpm_uuid[DIGEST_SIZE]; 
+	int  ispubkey;
         char * owner;   
 	char * peer;
 	char * usage;

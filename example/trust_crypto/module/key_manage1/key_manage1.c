@@ -49,11 +49,6 @@ int key_manage1_init(void * sub_proc,void * para)
 	}
 
 	// prepare the slot sock
-	void * slot_port=slot_port_init("key_request",2);
-	slot_port_addrecordpin(slot_port,DTYPE_TRUST_DEMO,SUBTYPE_KEY_INFO);
-	slot_port_addmessagepin(slot_port,DTYPE_TESI_KEY_STRUCT,SUBTYPE_WRAPPED_KEY);
-	slot_port_addmessagepin(slot_port,DTYPE_TESI_KEY_STRUCT,SUBTYPE_PUBLIC_KEY);
-	ex_module_addslot(sub_proc,slot_port);
 	return 0;
 }
 
@@ -67,12 +62,22 @@ int key_manage1_start(void * sub_proc,void * para)
 	int i;
 	int type;
 	int subtype;
+	void * sock;	
+	BYTE uuid[DIGEST_SIZE];
 
 	char local_uuid[DIGEST_SIZE];
 	char proc_name[DIGEST_SIZE];
 	
 	ret=proc_share_data_getvalue("uuid",local_uuid);
 	ret=proc_share_data_getvalue("proc_name",proc_name);
+
+	// build a  slot for key request info
+	void * slot_port=slot_port_init("key_request",2);
+	slot_port_addrecordpin(slot_port,DTYPE_TRUST_DEMO,SUBTYPE_KEY_INFO);
+	slot_port_addmessagepin(slot_port,DTYPE_TESI_KEY_STRUCT,SUBTYPE_WRAPPED_KEY);
+	slot_port_addmessagepin(slot_port,DTYPE_TESI_KEY_STRUCT,SUBTYPE_PUBLIC_KEY);
+	ex_module_addslot(sub_proc,slot_port);
+
 
 	printf("begin tpm key manage1 start!\n");
 
@@ -92,13 +97,19 @@ int key_manage1_start(void * sub_proc,void * para)
 		{
 			proc_key_check(sub_proc,recv_msg);
 		}
-		if((type==DTYPE_TESI_KEY_STRUCT)&&(subtype==SUBTYPE_WRAPPED_KEY))
+		if(((type==DTYPE_TESI_KEY_STRUCT)&&(subtype==SUBTYPE_WRAPPED_KEY))
+			||((type==DTYPE_TESI_KEY_STRUCT)&&(subtype==SUBTYPE_PUBLIC_KEY)))
 		{
-			proc_key_store(sub_proc,recv_msg);
-		}
-		if((type==DTYPE_TESI_KEY_STRUCT)&&(subtype==SUBTYPE_PUBLIC_KEY))
-		{
-			proc_key_store(sub_proc,recv_msg);
+			ret=message_get_uuid(recv_msg,uuid);						
+			if(ret<0)
+				continue;
+			sock=ex_module_findsock(sub_proc,uuid);
+			if(sock==NULL)
+				continue;	
+			ret=slot_sock_addmsg(sock,recv_msg);
+	
+			if(ret>0)	
+				proc_key_store(sub_proc,sock);
 		}
 	}
 
@@ -142,6 +153,17 @@ int proc_key_check(void * sub_proc,void * recv_msg)
 	DB_RECORD * keyinfo_record;
 	DB_RECORD * key_record;
 
+	// build a slot_port
+	void * slot_port=ex_module_findport(sub_proc,"key_request");
+	if(slot_port==NULL)
+		return -EINVAL;
+	ret=message_get_uuid(recv_msg,uuid);						
+	if(ret<0)
+		return ret;
+	// build a sock
+	void * sock=slot_create_sock(slot_port,uuid);
+
+	// get message
 	ret=message_get_record(recv_msg,&keyinfo,0);
 	if(keyinfo!=NULL)
 	{
@@ -152,6 +174,10 @@ int proc_key_check(void * sub_proc,void * recv_msg)
 			key_record=memdb_find_first(DTYPE_TESI_KEY_STRUCT,SUBTYPE_WRAPPED_KEY,"uuid",comp_keyinfo->uuid);
 			if(key_record!=NULL)
 				key_struct=key_record->record;		
+			ret=slot_sock_addrecorddata(sock,DTYPE_TRUST_DEMO,SUBTYPE_KEY_INFO,comp_keyinfo);
+			if(ret<0)
+				return ret;
+			ex_module_addsock(sub_proc,sock);		
 		}
 		
 		else
@@ -166,20 +192,11 @@ int proc_key_check(void * sub_proc,void * recv_msg)
 			key_struct->key_type=keyinfo->key_type; 
 			key_struct->key_size=1024;
 			key_struct->keypass=dup_str(keyinfo->passwd,DIGEST_SIZE);
+			ret=slot_sock_addrecorddata(sock,DTYPE_TRUST_DEMO,SUBTYPE_KEY_INFO,keyinfo);
+			if(ret<0)
+				return ret;
+			ex_module_addsock(sub_proc,sock);		
 		}
-
-		void * slot_port=ex_module_findport(sub_proc,"key_request");
-		if(slot_port==NULL)
-			return -EINVAL;
-		ret=message_get_uuid(recv_msg,uuid);						
-		if(ret<0)
-			return ret;
-
-		void * sock=slot_create_sock(slot_port,uuid);
-		ret=slot_sock_addrecorddata(sock,DTYPE_TRUST_DEMO,SUBTYPE_KEY_INFO,keyinfo);
-		if(ret<0)
-			return ret;
-		ex_module_addsock(sub_proc,sock);		
 
 		send_msg=message_create(DTYPE_TESI_KEY_STRUCT,SUBTYPE_WRAPPED_KEY,recv_msg);
 		if(send_msg==NULL)
@@ -191,31 +208,24 @@ int proc_key_check(void * sub_proc,void * recv_msg)
 	return ret;
 }
 
-int proc_key_store(void * sub_proc,void * recv_msg)
+int proc_key_store(void * sub_proc,void * sock)
 {
 	int ret=0;
 	BYTE uuid[DIGEST_SIZE];
-	void * sock;	
 	struct vTPM_wrappedkey    * key_record;	
+	struct vTPM_wrappedkey    * pubkey_record;	
 	struct trust_demo_keyinfo * keyinfo;
+	struct trust_demo_keyinfo * pubkeyinfo;
 	void * send_msg;
+	void * recv_msg;
 	struct types_pair * types;
 
-	ret=message_get_uuid(recv_msg,uuid);						
-	if(ret<0)
-		return ret;
-	sock=ex_module_findsock(sub_proc,uuid);
-	if(sock==NULL)
-		return -EINVAL;	
-	ret=slot_sock_addmsg(sock,recv_msg);
-	
-	if(ret<=0)	
-		return ret;
-
+	// get keyinfo record
 	keyinfo= slot_sock_removerecord(sock,DTYPE_TRUST_DEMO,SUBTYPE_KEY_INFO);
 	if(keyinfo==NULL)
 		return -EINVAL;
 
+	// get WEAPPED_KEY message
 	recv_msg=slot_sock_removemessage(sock,DTYPE_TESI_KEY_STRUCT,SUBTYPE_WRAPPED_KEY);
 	if(recv_msg==NULL)
 		return -EINVAL;
@@ -226,7 +236,9 @@ int proc_key_store(void * sub_proc,void * recv_msg)
 
 	Memcpy(keyinfo->uuid,key_record->uuid,DIGEST_SIZE);
 	memdb_store(keyinfo,DTYPE_TRUST_DEMO,SUBTYPE_KEY_INFO,NULL);
-	memdb_store(key_record,DTYPE_TESI_KEY_STRUCT,SUBTYPE_WRAPPED_KEY,NULL);
+
+
+	//memdb_store(key_record,DTYPE_TESI_KEY_STRUCT,SUBTYPE_WRAPPED_KEY,NULL);
 	
 	send_msg=message_create(DTYPE_TESI_KEY_STRUCT,SUBTYPE_WRAPPED_KEY,recv_msg);
 	if(send_msg==NULL)
@@ -234,11 +246,35 @@ int proc_key_store(void * sub_proc,void * recv_msg)
 	message_add_record(send_msg,key_record);
 	ex_module_sendmsg(sub_proc,send_msg);	
 
-	send_msg=message_create(DTYPE_TRUST_DEMO,SUBTYPE_KEY_INFO,recv_msg);
+	// get PUBLIC_KEY message
+	recv_msg=slot_sock_removemessage(sock,DTYPE_TESI_KEY_STRUCT,SUBTYPE_PUBLIC_KEY);
+	if(recv_msg==NULL)
+		return -EINVAL;
+
+	ret=message_get_record(recv_msg,&pubkey_record,0);
+	if(key_record==NULL)
+		return -EINVAL;				
+
+
+	send_msg=message_create(DTYPE_TESI_KEY_STRUCT,SUBTYPE_PUBLIC_KEY,recv_msg);
+	if(send_msg==NULL)
+		return -EINVAL;
+	message_add_record(send_msg,pubkey_record);
+	ex_module_sendmsg(sub_proc,send_msg);	
+
+	
+
+	// build a public key_info struct 
+/*
+	Memcpy(pubkeyinfo,keyinfo,sizeof(*pubkey_info));
+	Memcpy(pubkeyinfo->uuid,pubkey_record->uuid,DIGEST_SIZE);
+	keyinfo->ispubkey=1;
+	send_msg=message_create(DTYPE_TRUST_DEMO,SUBTYPE_KEY_INFO,NULL);
 	if(send_msg==NULL)
 		return -EINVAL;
 	message_add_record(send_msg,keyinfo);
 	ex_module_sendmsg(sub_proc,send_msg);	
+*/
 
 	send_msg=message_create(DTYPE_MESSAGE,SUBTYPE_TYPES,NULL);
 	if(send_msg==NULL)

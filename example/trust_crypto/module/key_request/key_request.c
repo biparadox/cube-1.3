@@ -47,9 +47,6 @@ int key_request_init(void * sub_proc,void * para)
 		printf("open tpm error %d!\n",result);
 		return -ENFILE;
 	}
-	void * slot_port=slot_port_init("key_request",1);
-	slot_port_addrecordpin(slot_port,DTYPE_TRUST_DEMO,SUBTYPE_KEY_INFO);	
-	ex_module_addslot(sub_proc,slot_port);
 	return 0;
 }
 
@@ -60,12 +57,20 @@ int key_request_start(void * sub_proc,void * para)
 	void * recv_msg;
 	void * send_msg;
 	void * context;
+	void * sock;
+	BYTE uuid[DIGEST_SIZE];
 	int i;
 	int type;
 	int subtype;
 	int initflag=0;
 
 
+	// build a  slot for key request info
+	void * slot_port=slot_port_init("key_request",2);
+	slot_port_addrecordpin(slot_port,DTYPE_TRUST_DEMO,SUBTYPE_KEY_INFO);
+	slot_port_addmessagepin(slot_port,DTYPE_TESI_KEY_STRUCT,SUBTYPE_WRAPPED_KEY);
+	slot_port_addmessagepin(slot_port,DTYPE_TESI_KEY_STRUCT,SUBTYPE_PUBLIC_KEY);
+	ex_module_addslot(sub_proc,slot_port);
 	printf("begin tpm key create start!\n");
 
 
@@ -86,9 +91,19 @@ int key_request_start(void * sub_proc,void * para)
 			proc_key_request(sub_proc,NULL);
 			initflag=1;
 		}	
-		if((type==DTYPE_TESI_KEY_STRUCT)&&(subtype==SUBTYPE_WRAPPED_KEY))
+		if(((type==DTYPE_TESI_KEY_STRUCT)&&(subtype==SUBTYPE_WRAPPED_KEY))
+			||((type==DTYPE_TESI_KEY_STRUCT)&&(subtype==SUBTYPE_PUBLIC_KEY)))
 		{
-			proc_key_load(sub_proc,recv_msg);
+			ret=message_get_uuid(recv_msg,uuid);						
+			if(ret<0)
+				continue;
+			sock=ex_module_findsock(sub_proc,uuid);
+			if(sock==NULL)
+				continue;	
+			ret=slot_sock_addmsg(sock,recv_msg);
+	
+			if(ret>0)	
+				proc_key_load(sub_proc,recv_msg);
 		}
 	}
 

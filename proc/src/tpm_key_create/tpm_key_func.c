@@ -117,7 +117,7 @@ int create_tpm_key(struct vTPM_wrappedkey * key_frame,struct vTPM_publickey ** p
 
 	char filename[DIGEST_SIZE*3];
 	
-	char buffer[DIGEST_SIZE*16];
+	char buffer[DIGEST_SIZE*8];
 	char digest[DIGEST_SIZE];
 	int blobsize=0;
 	int fd;
@@ -170,12 +170,12 @@ int create_tpm_key(struct vTPM_wrappedkey * key_frame,struct vTPM_publickey ** p
 
 	if(ret<0)
 		return ret;
-	getcwd(buffer,DIGEST_SIZE*12);
+	getcwd(buffer,DIGEST_SIZE*5-6);
 	Strcat(buffer,"/");	
 	Strcat(buffer,filename);	
 	
 	
-	key_frame->key_filename=dup_str(buffer,DIGEST_SIZE*4);
+	key_frame->key_filename=dup_str(buffer,DIGEST_SIZE*7);
 
 
 	// Write the public key
@@ -232,7 +232,7 @@ int find_pubkey_by_privuuid(BYTE * priv_uuid,struct vTPM_publickey ** pubkey_fra
 	db_record=memdb_find_first(DTYPE_TESI_KEY_STRUCT,SUBTYPE_PUBLIC_KEY,"uuid",key_frame->pubkey_uuid);
 	if(db_record==NULL)
 		return 0;
-	pubkey_frame=db_record->record;
+	*pubkey_frame=db_record->record;
 	return 1;
 	
 }

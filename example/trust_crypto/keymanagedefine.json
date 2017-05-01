@@ -45,6 +45,7 @@
 			[
 				{"name":"uuid","type":"UUID"},
 				{"name":"vtpm_uuid","type":"UUID"},
+				{"name":"ispubkey","type":"INT"},
 				{"name":"owner","type":"ESTRING","size":32},
 				{"name":"peer","type":"ESTRING","size":32},
 				{"name":"usage","type":"ESTRING","size":32},

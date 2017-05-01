@@ -34,6 +34,7 @@ struct vTPM_wrappedkey
 	BYTE uuid[DIGEST_SIZE];
 	BYTE vtpm_uuid[DIGEST_SIZE];
 	int issrkwrapped; //flag which indices if the key is wrapped by srk
+	int iskeyverified;// flag which indices if the key is verified
 	int key_type; //the type of key,such as  STORAGE_KEY,SIGN_KEY
 	int key_alg; //the key algorithm
 	int key_size; // the size of key
@@ -50,6 +51,7 @@ struct vTPM_publickey
 	BYTE uuid[DIGEST_SIZE];
 	BYTE vtpm_uuid[DIGEST_SIZE];
 	int ispubek; //flag which decides if the pubkey is pubEK
+	int iskeyverified;// flag which indices if the key is verified
 	int key_type; //type of key,such as STORAGE_KEY,SIGN_KEY
 	int key_alg; //key algorithm
 	int key_size; // size of key
