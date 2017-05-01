@@ -96,6 +96,7 @@ int proc_tpm_key_generate(void * sub_proc,void * recv_msg)
 	TSS_HKEY   hWrapKey;
 	int i;
 	struct vTPM_wrappedkey * key_frame;
+	struct vTPM_publickey * pubkey_frame;
 	int ret;
 
 	char filename[DIGEST_SIZE*3];
@@ -117,6 +118,7 @@ int proc_tpm_key_generate(void * sub_proc,void * recv_msg)
 		return -EINVAL;
 
 	void * send_msg=message_create(DTYPE_TESI_KEY_STRUCT,SUBTYPE_WRAPPED_KEY,recv_msg);
+	void * send_pubkey_msg=message_create(DTYPE_TESI_KEY_STRUCT,SUBTYPE_PUBLIC_KEY,recv_msg);
 	for(i=0;i<msghead->record_num;i++)
 	{
 		ret=message_get_record(recv_msg,&key_frame,i);
@@ -125,9 +127,10 @@ int proc_tpm_key_generate(void * sub_proc,void * recv_msg)
 		if(key_frame==NULL)
 			break;
 		
+
 		if(!Isemptyuuid(key_frame->uuid))
 		{
-			ret=find_tpm_key(key_frame);
+			ret=find_tpm_key(key_frame,&pubkey_frame);
 			if(ret<0)
 				return -EINVAL;
 			if(ret==0)
@@ -137,15 +140,19 @@ int proc_tpm_key_generate(void * sub_proc,void * recv_msg)
 		}
 		else
 		{
-			ret=create_tpm_key(key_frame);
+			ret=create_tpm_key(key_frame,&pubkey_frame);
 			if(ret<0)
 				return ret;
 		}
 		ret=message_add_record(send_msg,key_frame);
 		if(ret<0)
 			break;
+		ret=message_add_record(send_pubkey_msg,pubkey_frame);
+		if(ret<0)
+			break;
 	};
-	
 	ret=ex_module_sendmsg(sub_proc,send_msg);
+	if(ret>=0)
+		ret=ex_module_sendmsg(sub_proc,send_pubkey_msg);
 	return ret;
 }

@@ -107,7 +107,7 @@ TSS_RESULT _load_tpm_key(BYTE * wrapkey_uuid, TSS_HKEY * hKey)
 }
 
 
-int create_tpm_key(struct vTPM_wrappedkey * key_frame)
+int create_tpm_key(struct vTPM_wrappedkey * key_frame,struct vTPM_publickey ** pubkey)
 {
 	TSS_RESULT result;
 	TSS_HKEY   hKey;
@@ -117,7 +117,7 @@ int create_tpm_key(struct vTPM_wrappedkey * key_frame)
 
 	char filename[DIGEST_SIZE*3];
 	
-	char buffer[1024];
+	char buffer[DIGEST_SIZE*16];
 	char digest[DIGEST_SIZE];
 	int blobsize=0;
 	int fd;
@@ -157,17 +157,59 @@ int create_tpm_key(struct vTPM_wrappedkey * key_frame)
 		exit(result);
 	}
 
+	struct vTPM_publickey * pubkey_frame;
+	pubkey_frame=Talloc(sizeof(*pubkey_frame));
+	if(pubkey_frame==NULL)
+		return -ENOMEM;
+	*pubkey=pubkey_frame;
+	// Write the wrapped Key
 	TESI_Local_WriteKeyBlob(hKey,"privkey/temp");
 
 	ret=convert_uuidname("privkey/temp",".key",key_frame->uuid,filename);
 
+
 	if(ret<0)
 		return ret;
-	key_frame->key_filename=dup_str(filename,DIGEST_SIZE*4);
+	getcwd(buffer,DIGEST_SIZE*12);
+	Strcat(buffer,"/");	
+	Strcat(buffer,filename);	
+	
+	
+	key_frame->key_filename=dup_str(buffer,DIGEST_SIZE*4);
 
 
+	// Write the public key
+
+
+
+	TESI_Local_WritePubKey(hKey,"pubkey/temp");
+	ret=convert_uuidname("pubkey/temp",".pem",pubkey_frame->uuid,filename);
+	if(ret<0)
+		return ret;
+	Memcpy(pubkey_frame->vtpm_uuid,key_frame->vtpm_uuid,DIGEST_SIZE);
+	pubkey_frame->ispubek=0;
+	pubkey_frame->key_type=key_frame->key_type;
+	pubkey_frame->key_alg=key_frame->key_alg;
+	pubkey_frame->key_size=key_frame->key_size;
+	Memcpy(pubkey_frame->key_binding_policy_uuid,key_frame->key_binding_policy_uuid,DIGEST_SIZE);
+	Memcpy(pubkey_frame->privatekey_uuid,key_frame->uuid,DIGEST_SIZE);
+	pubkey_frame->keypass=NULL;
+
+	getcwd(buffer,DIGEST_SIZE*12);
+	Strcat(buffer,"/");	
+	Strcat(buffer,filename);	
+	
+	pubkey_frame->key_filename=dup_str(buffer,DIGEST_SIZE*4);
+
+	Memcpy(key_frame->pubkey_uuid,pubkey_frame->uuid,DIGEST_SIZE);
+
+	// Write the privkey and pubkey
 	DB_RECORD * db_record;
 	db_record = memdb_store(key_frame,DTYPE_TESI_KEY_STRUCT,SUBTYPE_WRAPPED_KEY,NULL);
+	if(db_record==NULL)
+		return -EINVAL;
+	db_record->tail=hKey;
+	db_record = memdb_store(pubkey_frame,DTYPE_TESI_KEY_STRUCT,SUBTYPE_PUBLIC_KEY,NULL);
 	if(db_record==NULL)
 		return -EINVAL;
 	db_record->tail=hKey;
@@ -175,7 +217,28 @@ int create_tpm_key(struct vTPM_wrappedkey * key_frame)
 	return 0;
 }
 
-int find_tpm_key(struct vTPM_wrappedkey * key_frame)
+int find_pubkey_by_privuuid(BYTE * priv_uuid,struct vTPM_publickey ** pubkey_frame)
+{
+	
+	struct vTPM_wrappedkey * key_frame;
+	*pubkey_frame=NULL;
+	DB_RECORD * db_record;
+	db_record=memdb_find_first(DTYPE_TESI_KEY_STRUCT,SUBTYPE_WRAPPED_KEY,"uuid",priv_uuid);
+	if(db_record==NULL)
+		return 0;
+
+	key_frame=db_record->record;	
+
+	db_record=memdb_find_first(DTYPE_TESI_KEY_STRUCT,SUBTYPE_PUBLIC_KEY,"uuid",key_frame->pubkey_uuid);
+	if(db_record==NULL)
+		return 0;
+	pubkey_frame=db_record->record;
+	return 1;
+	
+}
+
+
+int find_tpm_key(struct vTPM_wrappedkey * key_frame,struct vTPM_publickey ** pubkey)
 {
 	TSS_RESULT result;
 	TSS_HKEY   hKey;
@@ -189,12 +252,9 @@ int find_tpm_key(struct vTPM_wrappedkey * key_frame)
 	char digest[DIGEST_SIZE];
 	int blobsize=0;
 	int fd;
-/*
-	Strcpy(filename,"privkey/");
-	digest_to_uuid(key_frame->uuid,buffer);
-	Strncat(filename,buffer,DIGEST_SIZE*2);
-	Strncat(filename,".key");
-*/	
+	
+
+
 	fd=access(key_frame->key_filename,O_RDONLY);
 	if(fd<0)
 		return 0;
@@ -202,7 +262,36 @@ int find_tpm_key(struct vTPM_wrappedkey * key_frame)
 	calculate_sm3(key_frame->key_filename,digest);
 
 	ret=Memcmp(digest,key_frame->uuid,DIGEST_SIZE);
-	if(ret==0)
-		return 1;
-	return 0;
+	if(ret!=0)
+		return 0;
+
+	ret=find_pubkey_by_privuuid(key_frame->uuid,pubkey);
+	if(ret!=1)
+		return 0;
+
+	struct 	vTPM_publickey * pubkey_frame=*pubkey;
+
+	if(!Isemptyuuid(key_frame->pubkey_uuid))
+	{
+		ret=Memcmp(key_frame->pubkey_uuid,pubkey_frame->uuid,DIGEST_SIZE);
+		if(ret!=0)
+			return 0;
+	}
+	else
+	{
+		Memcpy(key_frame->pubkey_uuid,pubkey_frame->uuid,DIGEST_SIZE);
+	}
+	
+	
+	fd=access(pubkey_frame->key_filename,O_RDONLY);
+	if(fd<0)
+		return 0;
+		
+	calculate_sm3(pubkey_frame->key_filename,digest);
+
+	ret=Memcmp(digest,pubkey_frame->uuid,DIGEST_SIZE);
+	if(ret!=0)
+		return 0;
+
+	return 1;
 }
