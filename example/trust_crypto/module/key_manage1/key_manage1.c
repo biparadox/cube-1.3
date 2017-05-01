@@ -52,6 +52,7 @@ int key_manage1_init(void * sub_proc,void * para)
 	void * slot_port=slot_port_init("key_request",2);
 	slot_port_addrecordpin(slot_port,DTYPE_TRUST_DEMO,SUBTYPE_KEY_INFO);
 	slot_port_addmessagepin(slot_port,DTYPE_TESI_KEY_STRUCT,SUBTYPE_WRAPPED_KEY);
+	slot_port_addmessagepin(slot_port,DTYPE_TESI_KEY_STRUCT,SUBTYPE_PUBLIC_KEY);
 	ex_module_addslot(sub_proc,slot_port);
 	return 0;
 }
@@ -92,6 +93,10 @@ int key_manage1_start(void * sub_proc,void * para)
 			proc_key_check(sub_proc,recv_msg);
 		}
 		if((type==DTYPE_TESI_KEY_STRUCT)&&(subtype==SUBTYPE_WRAPPED_KEY))
+		{
+			proc_key_store(sub_proc,recv_msg);
+		}
+		if((type==DTYPE_TESI_KEY_STRUCT)&&(subtype==SUBTYPE_PUBLIC_KEY))
 		{
 			proc_key_store(sub_proc,recv_msg);
 		}
@@ -210,6 +215,11 @@ int proc_key_store(void * sub_proc,void * recv_msg)
 	keyinfo= slot_sock_removerecord(sock,DTYPE_TRUST_DEMO,SUBTYPE_KEY_INFO);
 	if(keyinfo==NULL)
 		return -EINVAL;
+
+	recv_msg=slot_sock_removemessage(sock,DTYPE_TESI_KEY_STRUCT,SUBTYPE_WRAPPED_KEY);
+	if(recv_msg==NULL)
+		return -EINVAL;
+
 	ret=message_get_record(recv_msg,&key_record,0);
 	if(key_record==NULL)
 		return -EINVAL;				
@@ -244,6 +254,12 @@ int proc_key_store(void * sub_proc,void * recv_msg)
 		return -EINVAL;
 	types->type=DTYPE_TESI_KEY_STRUCT;
 	types->subtype=SUBTYPE_WRAPPED_KEY;
+	message_add_record(send_msg,types);
+	types=Talloc(sizeof(*types));
+	if(types==NULL)
+		return -EINVAL;
+	types->type=DTYPE_TESI_KEY_STRUCT;
+	types->subtype=SUBTYPE_PUBLIC_KEY;
 	message_add_record(send_msg,types);
 	ex_module_sendmsg(sub_proc,send_msg);	
 	return 0;
