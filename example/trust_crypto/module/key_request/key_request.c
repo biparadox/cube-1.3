@@ -103,7 +103,7 @@ int key_request_start(void * sub_proc,void * para)
 			ret=slot_sock_addmsg(sock,recv_msg);
 	
 			if(ret>0)	
-				proc_key_load(sub_proc,recv_msg);
+				proc_key_load(sub_proc,sock);
 		}
 	}
 
