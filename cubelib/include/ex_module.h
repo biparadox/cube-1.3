@@ -41,6 +41,12 @@ enum default_fsm_state
 	PROC_LOCAL_STOP=0x7fff,
 };
 
+struct start_para
+{
+	int argc;
+	char **argv;
+};
+
 // sec subject manage function
 int ex_module_list_init();
 int find_ex_module(char * name,void ** ex_mod);

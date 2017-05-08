@@ -37,7 +37,6 @@ static char audit_file[DIGEST_SIZE*2]="./message.log";
 static char connector_plugin_file[DIGEST_SIZE*2]="libconnector_process_func.so";
 static char router_plugin_file[DIGEST_SIZE*2]="librouter_process_func.so";
 
-
 int main(int argc,char **argv)
 {
 
@@ -87,12 +86,18 @@ int main(int argc,char **argv)
 	 NULL
     };
 
+    struct start_para start_para;
+
+    start_para.argc=argc;
+    start_para.argv=argv;	
 
     sys_plugin=getenv("CUBE_SYS_PLUGIN");
 //    if(sys_plugin==NULL)
 //	return -EINVAL;		
 //    app_plugin=getenv("CUBE_APP_PLUGIN");
     // process the command argument
+
+/*
     if(argc>=2)
     {
 	argv_offset=1;
@@ -103,6 +108,7 @@ int main(int argc,char **argv)
 		return -EINVAL;
 	}
     }
+*/
       
 //	alloc_init(alloc_buffer);
 	struct_deal_init();
@@ -124,6 +130,7 @@ int main(int argc,char **argv)
 	dispatch_init();
 
 	ex_module_list_init();
+/*
     for(argv_offset=1;argv_offset<argc;argv_offset+=2)
     {
 	if((argv[argv_offset][0]!='-')
@@ -172,7 +179,7 @@ int main(int argc,char **argv)
 	
 	}
     }	
-
+*/
     int fd =open(audit_file,O_CREAT|O_RDWR|O_TRUNC,0666);
     close(fd);
 
@@ -317,6 +324,14 @@ int main(int argc,char **argv)
 	  	if(ret<0)
   			return ret;
 		printf("monitor ex_modulec %s started successfully!\n",ex_module_getname(ex_module));
+	  }
+	  else if(ex_module_gettype(ex_module) == MOD_TYPE_START)
+	  {
+  		ret=ex_module_start(ex_module,&start_para);
+	  	if(ret<0)
+  			return ret;
+		printf("start ex_module %s started successfully!\n",ex_module_getname(ex_module));
+
 	  }
 	  	
     	  ret= get_next_ex_module(&ex_module);

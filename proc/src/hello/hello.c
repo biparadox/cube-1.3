@@ -31,23 +31,38 @@ int hello_init(void * sub_proc,void * para)
 
 int hello_start(void * sub_proc,void * para)
 {
-	proc_hello_message(sub_proc,NULL);
+	proc_hello_message(sub_proc,para);
 	sleep(2);
 	proc_exit_message(sub_proc,NULL);
 	sleep(2);
 	return 0;
 };
 
-int proc_hello_message(void * sub_proc,void * message)
+int proc_hello_message(void * sub_proc,void * para)
 {
 	int ret;
+	int i;
 	printf("begin proc hello \n");
 
+	struct start_para * start_para=para;
+
 	void * new_msg;
-	new_msg=message_create(DTYPE_MESSAGE,SUBTYPE_BASE_MSG,message);
+	new_msg=message_create(DTYPE_MESSAGE,SUBTYPE_BASE_MSG,NULL);
 	struct basic_message * msg_info;
 	msg_info=Talloc(sizeof(*msg_info));
-	msg_info->message=dup_str("hello,world!",0);
+	if((start_para==NULL) || (start_para->argc<=1))
+	{
+		msg_info->message=dup_str("Hello,world!",0);
+	}
+	else
+	{
+		char * buffer = Talloc(start_para->argc * DIGEST_SIZE);
+		Strcpy(buffer,"Hello,");	
+		for(i=1;i<start_para->argc;i++)
+			Strncat(buffer,start_para->argv[i],DIGEST_SIZE);
+		msg_info->message=dup_str(buffer,0);
+		Free(buffer);
+	}
 	ret=message_add_record(new_msg,msg_info);
 	if(ret<0)
 		return ret;
