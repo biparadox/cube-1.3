@@ -26,6 +26,7 @@ enum subtypelist_message
 	SUBTYPE_CONN_ACKI,
 	SUBTYPE_BASE_MSG,
 	SUBTYPE_UUID_RECORD,
+	SUBTYPE_CTRL_MSG,
 	SUBTYPE_TYPES
 };
 
@@ -65,6 +66,16 @@ enum message_flag
 	MSG_FLAG_SIGN=0x20,
 	MSG_FLAG_ZIP=0x40,
 	MSG_FLAG_VERIFY=0x80,
+};
+
+enum message_ctrl
+{
+	MSG_CTRL_INIT=0x01,
+	MSG_CTRL_START=0x02,
+	MSG_CTRL_SLEEP=0x03,
+	MSG_CTRL_RESUME=0x04,
+	MSG_CTRL_STOP=0x05,
+	MSG_CTRL_EXIT=0x06
 };
 
 typedef struct tagMessage_Head  //强制访问控制标记
@@ -112,21 +123,27 @@ typedef struct expand_extra_info  //expand data struct to store one or more DIGE
 
 int message_get_state(void * message);
 
-struct basic_message
+struct basic_message  // record (MESSAGE,BASIC_MSG)
 {
 	char * message;
 }__attribute__((packed));
 
-struct uuid_record
+struct uuid_record    // record (MESSAGE,UUID)
 {
 	BYTE uuid[DIGEST_SIZE];
 
 }__attribute__((packed));
 
-struct types_pair
+struct types_pair     // record (MESSAGE,TYPES)
 {
 	int type;
 	int subtype;
+}__attribute__((packed));
+
+struct ctrl_message     // record (MESSAGE,CTRL)
+{
+	enum message_ctrl ctrl;
+	char * name;
 }__attribute__((packed));
 
 

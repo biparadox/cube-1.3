@@ -25,7 +25,9 @@
 		"elem_no":1,
 		"elemlist":
 		[
-			"KEY_INFO=0x01"
+			"KEY_INFO=0x01",
+			"ENCDATA_INFO",
+			"FILECRYPT_INFO"
 		]
 	}
 }
@@ -51,6 +53,50 @@
 				{"name":"usage","type":"ESTRING","size":32},
 				{"name":"passwd","type":"ESTRING","size":32},
 				{"name":"key_type","type":"ENUM","ref_name":"tpm_key_usage"}
+			]
+		}
+	}	
+}
+{
+	"head":
+	{
+		"name":"trust_demo_keyinfo",
+		"type":"RECORDTYPE"
+	},
+	"record":
+	{
+		"type":"TRUST_DEMO",
+		"subtype":"ENCDATA_INFO",
+		"struct_desc":
+		{
+			"elem_desc":
+			[
+				{"name":"uuid","type":"UUID"},
+				{"name":"vtpm_uuid","type":"UUID"},
+				{"name":"enckey_uuid","type":"UUID"},
+				{"name":"filename","type":"ESTRING","size":256}
+			]
+		}
+	}	
+}
+{
+	"head":
+	{
+		"name":"trust_demo_keyinfo",
+		"type":"RECORDTYPE"
+	},
+	"record":
+	{
+		"type":"TRUST_DEMO",
+		"subtype":"FILECRYPT_INFO",
+		"struct_desc":
+		{
+			"elem_desc":
+			[
+				{"name":"plain_uuid","type":"UUID"},
+				{"name":"cipher_uuid","type":"UUID"},
+				{"name":"vtpm_uuid","type":"UUID"},
+				{"name":"encdata_uuid","type":"UUID"},
 			]
 		}
 	}	

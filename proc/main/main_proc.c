@@ -307,6 +307,7 @@ int main(int argc,char **argv)
 
     if(ret<0)
 	return ret;
+    int active_module_no=0;
     while(ex_module!=NULL)
     {
 	  if((ex_module_gettype(ex_module) == MOD_TYPE_MONITOR)
@@ -317,15 +318,49 @@ int main(int argc,char **argv)
   			return ret;
 		printf("monitor ex_modulec %s started successfully!\n",ex_module_getname(ex_module));
 	  }
+	  	
     	  ret= get_next_ex_module(&ex_module);
-
+	  active_module_no++;
     	  if(ret<0)
 		return ret;
     }
 
+    if(active_module_no==0)
+	return 0;
 
     int thread_retval;
-    ret=ex_module_join(conn_proc,&thread_retval);
-    printf("thread return value %d!\n",thread_retval);
+   ret=ex_module_join(router_proc,&thread_retval);
+    // third loop:  join all the non_system module 
+  /*     	
+    int * thread_retval;
+    thread_retval=malloc(sizeof(int)*active_module_no);
+    if(thread_retval==NULL)
+	return NULL;
+   
+    ret=get_first_ex_module(&ex_module);
+
+    if(ret<0)
+	return ret;
+    i=0;
+    while(ex_module!=NULL)
+    {
+	  if((ex_module_gettype(ex_module) == MOD_TYPE_MONITOR)
+	  	||(ex_module_gettype(ex_module) == MOD_TYPE_PORT))
+	  {
+		if(Strcmp(ex_module_getname(ex_module),"router_proc")!=0)
+		{
+    			ret=ex_module_join(ex_module,&thread_retval[i++]);
+	  		if(ret<0)
+  				return ret;
+		}
+	  }
+	  	
+    	  ret= get_next_ex_module(&ex_module);
+    	  if(ret<0)
+		return ret;
+    }
+
+    printf("thread return value %d!\n",thread_retval[0]);
+*/
     return ret;
 }

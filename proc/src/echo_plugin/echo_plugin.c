@@ -53,7 +53,16 @@ int echo_plugin_start(void * sub_proc,void * para)
 				message_get_type(recv_msg),message_get_subtype(recv_msg));
 			continue;
 		}
-		proc_echo_message(sub_proc,recv_msg);
+		if((type==DTYPE_MESSAGE)&&(subtype==SUBTYPE_CTRL_MSG))
+		{
+			ret=proc_ctrl_message(sub_proc,recv_msg);
+			if(ret==MSG_CTRL_EXIT)
+				return MSG_CTRL_EXIT;
+		}
+		else
+		{
+			proc_echo_message(sub_proc,recv_msg);
+		}
 	}
 	return 0;
 };
@@ -87,6 +96,28 @@ int proc_echo_message(void * sub_proc,void * message)
 	}
 
 	ex_module_sendmsg(sub_proc,new_msg);
+
+	return ret;
+}
+
+int proc_ctrl_message(void * sub_proc,void * message)
+{
+	int ret;
+	int i=0;
+	printf("begin proc echo \n");
+
+	struct ctrl_message * ctrl_msg;
+
+	
+	ret=message_get_record(message,&ctrl_msg,i++);
+	if(ret<0)
+		return ret;
+	if(ctrl_msg!=NULL)
+	{
+		ret=ctrl_msg->ctrl; 
+	}
+
+	ex_module_sendmsg(sub_proc,message);
 
 	return ret;
 }

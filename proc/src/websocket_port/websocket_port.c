@@ -129,6 +129,8 @@ static struct libwebsocket_protocols protocols[] = {
 int websocket_port_init(void * sub_proc,void * para)
 {
 
+    struct websocket_init_para * init_para=para;
+
     int ret;
     struct libwebsocket_context * context;
     struct lws_context_creation_info info;
@@ -142,7 +144,6 @@ int websocket_port_init(void * sub_proc,void * para)
     char local_uuid[DIGEST_SIZE];
     char proc_name[DIGEST_SIZE];
  	
-    struct websocket_init_para * init_para=para;
     if(init_para==NULL)
     {
 	   printf("can't find websocket port address!\n");

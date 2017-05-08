@@ -91,7 +91,11 @@ int key_request_start(void * sub_proc,void * para)
 			proc_key_request(sub_proc,NULL);
 			initflag=1;
 		}	
-		if(((type==DTYPE_TESI_KEY_STRUCT)&&(subtype==SUBTYPE_WRAPPED_KEY))
+		else if((type==DTYPE_TRUST_DEMO)&&(subtype==SUBTYPE_KEY_INFO))
+		{
+			proc_key_request(sub_proc,recv_msg);
+		}
+		else if(((type==DTYPE_TESI_KEY_STRUCT)&&(subtype==SUBTYPE_WRAPPED_KEY))
 			||((type==DTYPE_TESI_KEY_STRUCT)&&(subtype==SUBTYPE_PUBLIC_KEY)))
 		{
 			ret=message_get_uuid(recv_msg,uuid);						
@@ -140,9 +144,9 @@ int proc_key_request(void * sub_proc,void * recv_msg)
 	void * send_msg;
 	void * notice_msg;
 	DB_RECORD * record;
+	struct trust_demo_keyinfo * key_info;
 	if(recv_msg==NULL)
 	{
-		struct trust_demo_keyinfo * key_info;
 		record=memdb_get_first(DTYPE_TRUST_DEMO,SUBTYPE_KEY_INFO);
 		while(record!=NULL)
 		{
@@ -168,6 +172,10 @@ int proc_key_request(void * sub_proc,void * recv_msg)
 			ret=ex_module_sendmsg(sub_proc,send_msg);
 			record=memdb_get_next(DTYPE_TRUST_DEMO,SUBTYPE_KEY_INFO);
 		}
+	}
+	else
+	{
+		ret=ex_module_sendmsg(sub_proc,recv_msg);
 	}
 	return ret;
 }

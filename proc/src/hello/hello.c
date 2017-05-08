@@ -32,6 +32,9 @@ int hello_init(void * sub_proc,void * para)
 int hello_start(void * sub_proc,void * para)
 {
 	proc_hello_message(sub_proc,NULL);
+	sleep(2);
+	proc_exit_message(sub_proc,NULL);
+	sleep(2);
 	return 0;
 };
 
@@ -50,4 +53,24 @@ int proc_hello_message(void * sub_proc,void * message)
 		return ret;
 	ret=ex_module_sendmsg(sub_proc,new_msg);
 	return ret;
+}
+
+int proc_exit_message(void * sub_proc, void * recv_msg)
+{
+	int ret;
+	struct ctrl_message * ctrl_msg;
+	ctrl_msg=Talloc(sizeof(*ctrl_msg));
+	if(ctrl_msg==NULL)
+		return -ENOMEM;
+	ctrl_msg->name=dup_str(ex_module_getname(sub_proc),0);
+	ctrl_msg->ctrl=MSG_CTRL_EXIT;
+	void * new_msg;
+	new_msg=message_create(DTYPE_MESSAGE,SUBTYPE_CTRL_MSG,recv_msg);
+	if(new_msg==NULL)
+		return -EINVAL;
+	ret=message_add_record(new_msg,ctrl_msg);
+	if(ret<0)
+		return ret;
+	ret=ex_module_sendmsg(sub_proc,new_msg);
+	return ret;	
 }

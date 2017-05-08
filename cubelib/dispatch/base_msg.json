@@ -61,3 +61,44 @@
 		}
 	}
 }
+{
+	"head":
+	{
+		"name":"message_ctrl_type",
+		"type":"NAMELIST"
+	},
+	"record":
+	{
+		"elem_no":6,
+		"elemlist":
+		[
+			"INIT=0x01",
+			"START=0x02",
+			"SLEEP=0x03",
+			"RESUME=0x04",
+			"STOP=0x05",
+			"EXIT=0x06",
+		]
+	}
+}
+{
+	"head":
+	{
+		"name":"ctrl_message",
+		"type":"RECORDTYPE"
+	},
+	"record":
+	{
+		"type":"MESSAGE",
+		"subtype":"CTRL",
+		"struct_desc":
+		{
+			"elem_desc":
+			[
+				{"name":"ctrl","type":"ENUM","ref_name":"message_ctrl_type"},
+				{"name":"name","type":"ESTRING"}
+			]
+		}
+	}
+}
+{

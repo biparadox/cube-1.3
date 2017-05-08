@@ -20,6 +20,7 @@ enum module_type
 	MOD_TYPE_MONITOR,
 	MOD_TYPE_DECIDE,
 	MOD_TYPE_CONTROL,
+	MOD_TYPE_START,
 	MOD_TYPE_TRANSLATER,
 };
 enum ex_mod_state
