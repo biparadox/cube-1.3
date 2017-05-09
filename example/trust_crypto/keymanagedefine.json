@@ -22,12 +22,13 @@
 	"record":
 	{
 		"type":"TRUST_DEMO",
-		"elem_no":1,
+		"elem_no":4,
 		"elemlist":
 		[
 			"KEY_INFO=0x01",
 			"ENCDATA_INFO",
-			"FILECRYPT_INFO"
+			"FILECRYPT_INFO",
+			"FILE_OPTION"
 		]
 	}
 }
@@ -60,7 +61,7 @@
 {
 	"head":
 	{
-		"name":"trust_demo_keyinfo",
+		"name":"trust_demo_encdatainfo",
 		"type":"RECORDTYPE"
 	},
 	"record":
@@ -82,7 +83,7 @@
 {
 	"head":
 	{
-		"name":"trust_demo_keyinfo",
+		"name":"trust_demo_filecryptinfo",
 		"type":"RECORDTYPE"
 	},
 	"record":
@@ -97,6 +98,26 @@
 				{"name":"cipher_uuid","type":"UUID"},
 				{"name":"vtpm_uuid","type":"UUID"},
 				{"name":"encdata_uuid","type":"UUID"},
+			]
+		}
+	}	
+}
+{
+	"head":
+	{
+		"name":"trust_demo_fileoption",
+		"type":"RECORDTYPE"
+	},
+	"record":
+	{
+		"type":"TRUST_DEMO",
+		"subtype":"FILE_OPTION",
+		"struct_desc":
+		{
+			"elem_desc":
+			[
+				{"name":"filename","type":"ESTRING","size":256},
+				{"name":"option","type":"ESTRING"}
 			]
 		}
 	}	

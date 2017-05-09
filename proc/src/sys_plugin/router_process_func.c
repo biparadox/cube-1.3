@@ -386,6 +386,7 @@ int proc_router_start(void * sub_proc,void * para)
 						case MOD_TYPE_MONITOR:
 						case MOD_TYPE_DECIDE:
 						case MOD_TYPE_CONTROL:
+						case MOD_TYPE_START:
 						{
 							ret=router_set_next_jump(message);
 							if(ret<0)
@@ -502,6 +503,7 @@ int proc_router_start(void * sub_proc,void * para)
 					case MOD_TYPE_MONITOR:
 					case MOD_TYPE_CONTROL:
 					case MOD_TYPE_DECIDE:
+					case MOD_TYPE_START:
 					{
 						if(msg_head->route[0]!=0)
 						{
