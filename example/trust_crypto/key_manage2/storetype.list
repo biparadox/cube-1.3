@@ -1,0 +1,20 @@
+{
+	"type":"MESSAGE",
+	"subtype":"TYPES"
+}
+{
+	"type":"TESI_KEY_STRUCT",
+	"subtype":"WRAPPED_KEY"
+},
+{
+	"type":"TESI_KEY_STRUCT",
+	"subtype":"PUBLIC_KEY"
+}
+{
+	"type":"TRUST_DEMO",
+	"subtype":"KEY_INFO"
+}
+{
+	"type":"TRUST_DEMO",
+	"subtype":"ENCDATA_INFO"
+}
