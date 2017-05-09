@@ -157,6 +157,12 @@ int create_tpm_key(struct vTPM_wrappedkey * key_frame,struct vTPM_publickey ** p
 		exit(result);
 	}
 
+	result=TESI_Local_LoadKey(hKey,hWrapKey,NULL);
+	if(result!=TSS_SUCCESS)
+	{
+			return result;	
+	}
+
 	struct vTPM_publickey * pubkey_frame;
 	pubkey_frame=Talloc(sizeof(*pubkey_frame));
 	if(pubkey_frame==NULL)

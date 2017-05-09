@@ -29,7 +29,7 @@ struct trust_encdata_info
 {
         BYTE uuid[DIGEST_SIZE];    
         BYTE vtpm_uuid[DIGEST_SIZE]; 
-        BYTE encdata_uuid[DIGEST_SIZE]; 
+        BYTE enckey_uuid[DIGEST_SIZE]; 
         char *filename; 
 } __attribute__((packed));
 

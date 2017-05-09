@@ -60,7 +60,7 @@ int file_crypt_start(void * sub_proc,void * para)
 	ex_module_addslot(sub_proc,slot_port);
 	printf("begin file crypt start!\n");
 	
-	sleep(2);
+	sleep(1);
 	
 	ret=proc_filecrypt_start(sub_proc,para);
 	if(ret<0)
@@ -151,7 +151,7 @@ int proc_filecrypt_start(void * sub_proc,void * para)
 	keyinfo->peer=dup_str("",0);
 	keyinfo->usage=dup_str("",0);
 	keyinfo->passwd=dup_str("kkk",0);
-	keyinfo->key_type=TPM_KEY_STORAGE;
+	keyinfo->key_type=TPM_KEY_BIND;
 	void * send_msg=message_create(DTYPE_TRUST_DEMO,SUBTYPE_KEY_INFO,NULL);
 	if(send_msg==NULL)
 		return -EINVAL;

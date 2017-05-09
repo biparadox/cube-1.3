@@ -228,32 +228,34 @@ TSS_RESULT TESI_Local_LoadKey(TSS_HKEY hKey,TSS_HKEY hWrapKey, char * pwdk)
   char kpass[20];   
   TSS_HPOLICY hPolicy;
 
-    TSS_sha1((unsigned char *)pwdk,strlen(pwdk),kpass);
+  if(hWrapKey==NULL)
+	hWrapKey=hSRK;
+  if(pwdk!=NULL)
+  {
+  	TSS_sha1((unsigned char *)pwdk,strlen(pwdk),kpass);
 
 		// Get The SRK policy 
-   result = Tspi_GetPolicyObject(hKey,TSS_POLICY_USAGE,&hPolicy);
-   if (result != TSS_SUCCESS) {
+  	 result = Tspi_GetPolicyObject(hKey,TSS_POLICY_USAGE,&hPolicy);
+   	if (result != TSS_SUCCESS) {
 		print_error("Tspi_Context_GetPolicyObject ", result);
 		return result;
-   }
+   	}
 
 	
-  result = Tspi_Policy_SetSecret(hPolicy,TSS_SECRET_MODE_SHA1,
+  	result = Tspi_Policy_SetSecret(hPolicy,TSS_SECRET_MODE_SHA1,
 		sizeof(kpass),kpass);
 	if (result != TSS_SUCCESS) {
 		print_error("Tspi_Policy_SetSecret", result);
 		return result;
 	}
+    }	
 
-	if(hWrapKey==NULL)
-		hWrapKey=hSRK;
-
-        result=Tspi_Key_LoadKey(hKey,hWrapKey);
-	if (result != TSS_SUCCESS) {
-		print_error("Tspi_Key_LoadKey", result);
-		return result;
-	}
-	return TSS_SUCCESS;
+    result=Tspi_Key_LoadKey(hKey,hWrapKey);
+    if (result != TSS_SUCCESS) {
+	  print_error("Tspi_Key_LoadKey", result);
+	  return result;
+    }
+    return TSS_SUCCESS;
 }
 
 TSS_RESULT TESI_Local_ActiveSRK(char * pwds)
@@ -3161,6 +3163,7 @@ TSS_RESULT TESI_Local_Bind(char * plainname, TSS_HKEY hKey, char * ciphername)
 	fwrite(rgbEncryptedData,ulEncryptedDataLength,1,oFile);
 	fclose(oFile);
 }
+
 TSS_RESULT TESI_Local_BindBuffer(void * inbuffer,int inlength, TSS_HKEY hKey, void** outbuffer, int * outlength)
 {
 	TSS_HENCDATA hEncData;
@@ -3309,4 +3312,79 @@ TSS_RESULT TESI_Local_UnBindBuffer(void * inbuffer,int inlength, TSS_HKEY hKey, 
 	return result;
 }
 
+
+TSS_RESULT TESI_Local_Seal(char * plainname, TSS_HKEY hKey, char * ciphername,TSS_HPCRS hPcr)
+{
+	TSS_HENCDATA hEncData;
+	TSS_RESULT result;
+	FILE * file;
+	FILE* oFile;
+	UINT32 datalen;
+	void* rgbExternalData;
+	void* rgbEncryptedData = NULL;
+	UINT32	ulEncryptedDataLength = 0;
+
+ 	// read file text
+	file = fopen(plainname,"rb");
+  	if (file == NULL)
+   	{
+   	   printf("Unable to read plain file %s.\n",plainname);
+   	   return TSS_E_KEY_NOT_LOADED;
+  	 }
+	 fseek(file,0,SEEK_END);
+	 datalen=ftell(file);
+	 fseek(file,0,SEEK_SET);
+	 
+	rgbExternalData=(BYTE *)malloc(datalen);
+	if(rgbExternalData == NULL)
+		return TSS_E_OUTOFMEMORY;
+
+   	 result = fread((rgbExternalData),datalen,1,file);
+  	 if (result != 1)
+  	 {
+			fclose(file);
+			free(rgbExternalData);
+			printf("I/O Error reading plain file\n");
+			return TSS_E_OUTOFMEMORY;
+     	 }
+
+	 fclose(file);
+	
+	result = Tspi_Context_CreateObject( hContext,
+						TSS_OBJECT_TYPE_ENCDATA,
+						TSS_ENCDATA_SEAL, &hEncData );
+						
+	if ( result != TSS_SUCCESS )
+	{
+		free(rgbExternalData);
+		print_error( "Tspi_Context_CreateObject (hEncData)", result );
+		return result;
+	}
+
+		// Data Bind
+	result = Tspi_Data_Seal( hEncData, hKey, datalen, rgbExternalData,NULL );
+	if ( result != TSS_SUCCESS )
+	{
+		free(rgbExternalData);
+		print_error("Tspi_Data_Bind", result);
+		return result;
+	}
+	free(rgbExternalData);
+	//Get data
+	result = Tspi_GetAttribData(hEncData, TSS_TSPATTRIB_ENCDATA_BLOB,
+					TSS_TSPATTRIB_ENCDATABLOB_BLOB,
+					&ulEncryptedDataLength, &rgbEncryptedData);
+	if ( result != TSS_SUCCESS )
+	{
+		print_error( "Tspi_GetAttribData", result );
+		return result;
+	}
+	
+	printf("Data after encrypting:\n");
+	print_hex(rgbEncryptedData, ulEncryptedDataLength);
+	
+	oFile=fopen(ciphername,"wb");
+	fwrite(rgbEncryptedData,ulEncryptedDataLength,1,oFile);
+	fclose(oFile);
+}
 
