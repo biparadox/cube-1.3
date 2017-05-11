@@ -42,7 +42,7 @@ int read_dispatch_file(char * file_name,int is_aspect)
 	if(fd<0)
 		return fd;
 
-	readlen=read(fd,json_buffer,1024);
+	readlen=read(fd,json_buffer,4096);
 	if(readlen<0)
 		return -EIO;
 	json_buffer[readlen]=0;
