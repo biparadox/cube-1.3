@@ -417,6 +417,7 @@ int dispatch_match_message(void * policy,void * message)
 	
 			if(!struct_part_compare(match_rule->value,msg_record,match_rule->match_template,match_flag))
 				return 1;
+			return 0;
 		}
 		else
 		{
