@@ -55,6 +55,16 @@ int message_get_state(void * message)
 	return msg_box->head.state;
 }
 
+void * message_set_activemsg(void * message,void * active_msg)
+{
+	struct message_box * msg_box;
+	int ret;
+	if(message==NULL)
+		return -EINVAL;
+	msg_box=(struct message_box *)message;
+	msg_box->active_msg=active_msg;
+	return msg_box->active_msg;
+}
 void * message_get_activemsg(void * message)
 {
 	struct message_box * msg_box;

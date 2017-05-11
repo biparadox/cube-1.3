@@ -82,7 +82,12 @@ int proc_bubble_sort(void * sub_proc,void * message)
 	const int size=10;
 	int   value[size];
 	printf("begin proc bubble_sort \n");
+
+	struct visual_req * req_data;
 	
+	ret=message_get_record(message,&req_data,0);
+		
+
 	for(i=0;i<size;i++)
 	{
 		value[i]=rand()%256;

@@ -165,6 +165,7 @@ int message_record_init(void * message);
 void message_free(void * message);
 int message_free_blob(void * message);
 
+void * message_set_activemsg(void * message,void * active_msg);
 void * message_get_activemsg(void * message);
 int message_get_type(void * message);
 int message_get_subtype(void * message);

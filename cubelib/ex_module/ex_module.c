@@ -573,6 +573,13 @@ int ex_module_sendmsg(void * ex_mod,void *msg)
 	EX_MODULE * ex_module=(EX_MODULE *)ex_mod;
 	if(ex_mod==NULL)
 		return -EINVAL;
+	if(msg==NULL)
+		return -EINVAL;
+
+	BYTE buffer[DIGEST_SIZE];
+	Memset(buffer,0,DIGEST_SIZE);
+	message_set_receiver(msg,buffer);
+	message_set_sender(msg,ex_module_getname(ex_mod));
 
 	return message_queue_putmsg(ex_module->send_queue,msg);
 }
@@ -583,6 +590,7 @@ int ex_module_recvmsg(void * ex_mod,void **msg)
 	EX_MODULE * ex_module=(EX_MODULE *)ex_mod;
 	if(ex_mod==NULL)
 		return -EINVAL;
+	*msg=NULL;
 
 	return message_queue_getmsg(ex_module->recv_queue,msg);
 

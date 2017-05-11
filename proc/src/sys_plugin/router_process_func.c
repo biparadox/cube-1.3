@@ -314,6 +314,8 @@ int proc_router_start(void * sub_proc,void * para)
 
 			router_dup_activemsg_info(message);
 			
+			message_set_activemsg(message,message);
+
 			MSG_HEAD * msg_head;
 			msg_head=message_get_head(message);
 			// set rjump's value

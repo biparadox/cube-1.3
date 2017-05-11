@@ -752,6 +752,12 @@ int router_dup_activemsg_info (void * message)
 	void * active_msg=message_get_activemsg(message);
 	if(active_msg==NULL)
 		return 0;
+	if(active_msg==message)
+	{
+		new_msg_head=message_get_head(message);
+		msg_head->ljump++;
+		return 0;
+	}
 	
 	msg_head=message_get_head(active_msg);
 	new_msg_head=message_get_head(message);
