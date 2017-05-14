@@ -460,7 +460,7 @@ int proc_router_start(void * sub_proc,void * para)
 							ret=router_pop_site(message);
 							if(ret==0)
 							{
-								ret=router_find_policy_byname(&msg_policy,msg_head->route,0,0);
+								ret=router_find_policy_byname(&msg_policy,msg_head->route,msg_head->rjump,msg_head->ljump);
 								if(ret<0)
 								{
 									printf("can't find response message's route!\n");

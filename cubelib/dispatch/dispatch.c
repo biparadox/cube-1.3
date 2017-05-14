@@ -688,23 +688,22 @@ int router_set_query_end(void * message,void * policy)
 	while(rule!=NULL)
 	{
 		jumpcount++;
-		if(rule->target_type!=ROUTE_TARGET_LOCAL)	
+		if(rule->target_type==ROUTE_TARGET_CONN)	
 			break;
 		ret=dispatch_policy_getnextrouterule(policy,&rule);
-		if(ret<0)
-			return ret;
 	}
-	msg_head->ljump=jumpcount;
-	if(rule!=NULL)
-	{
-		ret=dispatch_policy_getnextrouterule(policy,&rule);
-		if(ret<0)
-			return ret;
-	}
-	if(rule==NULL)	
-	{
+
+	if(rule==NULL)
+		return -EINVAL;
+	ret=dispatch_policy_getnextrouterule(policy,&rule);
+
+	if(rule==NULL)
 		msg_head->flow=MSG_FLOW_FINISH;
+	else
+	{
+		message_set_receiver(message,rule->target_name);
 	}
+	msg_head->ljump=jumpcount++;
 	return 1;	
 }
 
