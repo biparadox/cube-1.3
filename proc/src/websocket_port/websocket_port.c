@@ -21,6 +21,7 @@ static char * websocketserver_addr;
 static int websocket_port;
 extern struct timeval time_val={0,50*1000};
 
+int isconnected=0;
 struct websocket_server_context
 {
        void * server_context;  //interface's hub
@@ -94,6 +95,7 @@ static int callback_cube_wsport(	struct libwebsocket_context * this,
 				&buf[LWS_SEND_BUFFER_PRE_PADDING],
 				ws_context->message_len,LWS_WRITE_TEXT);
 			free(buf);
+			isconnected=1;
 			break;
 		case LWS_CALLBACK_RECEIVE:
 		{
@@ -283,6 +285,10 @@ int websocket_port_start(void * sub_proc,void * para)
 		}while(1);
 	}
 	// send message to the remote
+
+	if(isconnected==0)
+		continue;
+
 	while(ex_module_recvmsg(sub_proc,&message_box)>=0)
 	{
 		if(message_box==NULL)
