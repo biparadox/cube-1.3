@@ -57,6 +57,7 @@ int file_crypt_start(void * sub_proc,void * para)
 	void * slot_port=slot_port_init("file_crypt",2);
 	slot_port_addrecordpin(slot_port,DTYPE_TRUST_DEMO,SUBTYPE_FILE_OPTION);
 	slot_port_addmessagepin(slot_port,DTYPE_MESSAGE,SUBTYPE_UUID_RECORD);
+	slot_port_addmessagepin(slot_port,DTYPE_TRUST_DEMO,SUBTYPE_FILECRYPT_INFO);
 	ex_module_addslot(sub_proc,slot_port);
 	printf("begin file crypt start!\n");
 	
@@ -78,7 +79,8 @@ int file_crypt_start(void * sub_proc,void * para)
  		type=message_get_type(recv_msg);
 		subtype=message_get_subtype(recv_msg);
 		
-		if((type==DTYPE_MESSAGE)&&(subtype==SUBTYPE_UUID_RECORD))
+		if(((type==DTYPE_MESSAGE)&&(subtype==SUBTYPE_UUID_RECORD))
+			||((type==DTYPE_TRUST_DEMO)&&(subtype==SUBTYPE_FILECRYPT_INFO)))
 		{
 			ret=message_get_uuid(recv_msg,uuid);						
 			if(ret<0)
@@ -87,11 +89,9 @@ int file_crypt_start(void * sub_proc,void * para)
 			if(sock==NULL)
 				continue;	
 			ret=slot_sock_addmsg(sock,recv_msg);
-	
-			sock=ex_module_removesock(sub_proc,uuid);
-			if(sock==NULL)
-				return 0;
-			proc_file_deal(sub_proc,sock);
+			if(ret>0)
+				proc_file_deal(sub_proc,sock);
+			
 		}
 	}
 
@@ -103,24 +103,35 @@ int crypt_file(char * filename,BYTE * key)
 {
 	const int buflen=1024;
 	int fd;
+	int fd1;
 	int readlen;
+	int cryptlen;
+	int offset=0;
 	BYTE plain[buflen];
 	BYTE *cipher;
 	fd=open(filename,O_RDWR);
 	if(fd<0)
 		return -EINVAL;
 
+	char * tempfilename="tempcrypt.file";
+
+	fd1=open(tempfilename,O_WRONLY|O_CREAT|O_TRUNC,0666);
+	if(fd1<0)
+		return -EINVAL;	
+
 	readlen=read(fd,plain,buflen);
-	
+
 	while(readlen>0)
 	{
-		sm4_context_crypt(plain,&cipher,readlen,key);
-		lseek(fd,SEEK_CUR,-readlen);
-		write(fd,cipher,readlen);
+		cryptlen=sm4_context_crypt(plain,&cipher,readlen,key);
+		write(fd1,cipher,cryptlen);
 		readlen=read(fd,plain,buflen);
 	}
 
 	close(fd);
+	close(fd1);
+	remove(filename);
+	rename(tempfilename,filename);
 	return 0;
 	
 	
@@ -206,7 +217,10 @@ int proc_file_deal(void * sub_proc,void * sock)
 	int ret;
 	BYTE * uuidkey;
 	struct trust_file_option * file_option;
+	struct trust_filecrypt_info * crypt_info;
 	void * key_msg;
+	void * crypt_msg;
+	void * send_msg;
 
 	file_option=slot_sock_removerecord(sock,DTYPE_TRUST_DEMO,SUBTYPE_FILE_OPTION);
 	if(file_option==NULL)
@@ -214,14 +228,27 @@ int proc_file_deal(void * sub_proc,void * sock)
 	key_msg=slot_sock_removemessage(sock,DTYPE_MESSAGE,SUBTYPE_UUID_RECORD);
 	if(key_msg==NULL)
 		return -EINVAL;
+	crypt_msg=slot_sock_removemessage(sock,DTYPE_TRUST_DEMO,SUBTYPE_FILECRYPT_INFO);
+	if(crypt_msg==NULL)
+		return -EINVAL;
 	ret=message_get_record(key_msg,&uuidkey,0);
 	if(ret<0)
 		return -EINVAL;
 	if(uuidkey==NULL)
 		return -EINVAL;
-	
+	ret=message_get_record(crypt_msg,&crypt_info,0);
+	if(ret<0)
+		return -EINVAL;
+	if(crypt_info==NULL)
+		return -EINVAL;
+	calculate_sm3(file_option->filename,crypt_info->plain_uuid);
 	crypt_file(file_option->filename,uuidkey);				
-	
+	calculate_sm3(file_option->filename,crypt_info->cipher_uuid);
+
+	send_msg=message_create(DTYPE_TRUST_DEMO,SUBTYPE_FILECRYPT_INFO,NULL);
+	message_add_record(send_msg,crypt_info);
+	ex_module_sendmsg(sub_proc,send_msg);
+
 	return 0;	
 	
 }

@@ -18,3 +18,7 @@
 	"type":"TRUST_DEMO",
 	"subtype":"ENCDATA_INFO"
 }
+{
+	"type":"TRUST_DEMO",
+	"subtype":"FILECRYPT_INFO"
+}
