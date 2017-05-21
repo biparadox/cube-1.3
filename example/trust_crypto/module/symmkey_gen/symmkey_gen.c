@@ -181,6 +181,7 @@ int proc_symmkey_gen(void * sub_proc,void * recv_msg)
 	if(send_msg==NULL)
 		return -EINVAL;
 	message_add_record(send_msg,encdatainfo);
+	memdb_store(encdatainfo,DTYPE_TRUST_DEMO,SUBTYPE_ENCDATA_INFO,NULL);
 	ex_module_sendmsg(sub_proc,send_msg);	
 	ex_module_sendmsg(sub_proc,recv_msg);	
 	return ret;

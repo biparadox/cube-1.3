@@ -133,7 +133,7 @@ void * find_key_info(void * key_info)
 		db_keyinfo=record->record;
 		if(db_keyinfo==NULL)
 			return NULL;
-		if(struct_part_compare(db_keyinfo,in_keyinfo,comp_template,CUBE_ELEM_FLAG_TEMP))
+		if(struct_part_compare(db_keyinfo,in_keyinfo,comp_template,CUBE_ELEM_FLAG_TEMP)==0)
 			break;
 		record=memdb_get_next(DTYPE_TRUST_DEMO,SUBTYPE_KEY_INFO);
 	}
@@ -252,7 +252,7 @@ int proc_key_store(void * sub_proc,void * sock)
 		return -EINVAL;
 
 	ret=message_get_record(recv_msg,&pubkey_record,0);
-	if(key_record==NULL)
+	if(pubkey_record==NULL)
 		return -EINVAL;				
 
 
@@ -296,6 +296,12 @@ int proc_key_store(void * sub_proc,void * sock)
 		return -EINVAL;
 	types->type=DTYPE_TESI_KEY_STRUCT;
 	types->subtype=SUBTYPE_PUBLIC_KEY;
+	message_add_record(send_msg,types);
+	types=Talloc(sizeof(*types));
+	if(types==NULL)
+		return -EINVAL;
+	types->type=DTYPE_TRUST_DEMO;
+	types->subtype=SUBTYPE_ENCDATA_INFO;
 	message_add_record(send_msg,types);
 	ex_module_sendmsg(sub_proc,send_msg);	
 	return 0;

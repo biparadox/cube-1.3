@@ -186,8 +186,6 @@ int create_tpm_key(struct vTPM_wrappedkey * key_frame,struct vTPM_publickey ** p
 
 	// Write the public key
 
-
-
 	TESI_Local_WritePubKey(hKey,"pubkey/temp");
 	ret=convert_uuidname("pubkey/temp",".pem",pubkey_frame->uuid,filename);
 	if(ret<0)
@@ -205,7 +203,7 @@ int create_tpm_key(struct vTPM_wrappedkey * key_frame,struct vTPM_publickey ** p
 	Strcat(buffer,"/");	
 	Strcat(buffer,filename);	
 	
-	pubkey_frame->key_filename=dup_str(buffer,DIGEST_SIZE*4);
+	pubkey_frame->key_filename=dup_str(buffer,DIGEST_SIZE*7);
 
 	Memcpy(key_frame->pubkey_uuid,pubkey_frame->uuid,DIGEST_SIZE);
 
