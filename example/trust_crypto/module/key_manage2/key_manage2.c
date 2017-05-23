@@ -97,7 +97,7 @@ int key_manage2_start(void * sub_proc,void * para)
 		{
 			proc_key_check(sub_proc,recv_msg);
 		}
-		if(((type==DTYPE_TESI_KEY_STRUCT)&&(subtype==SUBTYPE_WRAPPED_KEY))
+		else if(((type==DTYPE_TESI_KEY_STRUCT)&&(subtype==SUBTYPE_WRAPPED_KEY))
 			||((type==DTYPE_TESI_KEY_STRUCT)&&(subtype==SUBTYPE_PUBLIC_KEY)))
 		{
 			ret=message_get_uuid(recv_msg,uuid);						
@@ -110,6 +110,10 @@ int key_manage2_start(void * sub_proc,void * para)
 	
 			if(ret>0)	
 				proc_key_store(sub_proc,sock);
+		}
+		else if((type==DTYPE_TRUST_DEMO)&&(subtype==SUBTYPE_FILECRYPT_INFO))
+		{
+			proc_key_recover(sub_proc,recv_msg);	
 		}
 	}
 
@@ -304,5 +308,72 @@ int proc_key_store(void * sub_proc,void * sock)
 	types->subtype=SUBTYPE_ENCDATA_INFO;
 	message_add_record(send_msg,types);
 	ex_module_sendmsg(sub_proc,send_msg);	
+	return 0;
+}
+
+int proc_key_recover(void * sub_proc,void * recv_msg)
+{
+	
+	int ret;
+	DB_RECORD * record;
+	struct trust_filecrypt_info * filecrypt_info;
+	struct trust_filecrypt_info * decrypt_info;
+	struct trust_encdata_info *  encdata_info;
+	struct vTPM_wrappedkey * key_struct;
+	void * send_msg;
+	struct types_pair * types;
+	ret=message_get_record(recv_msg,&filecrypt_info,0);
+	if(filecrypt_info==NULL)
+		return -EINVAL;				
+	
+	if(!Isemptyuuid(filecrypt_info->encdata_uuid))
+	{
+		memdb_store(filecrypt_info,DTYPE_TRUST_DEMO,SUBTYPE_FILECRYPT_INFO,NULL);
+		send_msg=message_create(DTYPE_MESSAGE,SUBTYPE_TYPES,NULL);
+		if(send_msg==NULL)
+			return -EINVAL;
+		types=Talloc(sizeof(*types));
+		if(types==NULL)
+			return -EINVAL;
+		types->type=DTYPE_TRUST_DEMO;
+		types->subtype=SUBTYPE_FILECRYPT_INFO;
+		message_add_record(send_msg,types);
+		ex_module_sendmsg(sub_proc,send_msg);	
+	}	
+	else if(!Isemptyuuid(filecrypt_info->cipher_uuid))
+	{
+		record=memdb_find_first(DTYPE_TRUST_DEMO,SUBTYPE_FILECRYPT_INFO,"cipher_uuid",filecrypt_info->cipher_uuid);
+		if(record==NULL)
+			return -EINVAL;
+		decrypt_info=record->record;
+
+		record=memdb_find_first(DTYPE_TRUST_DEMO,SUBTYPE_ENCDATA_INFO,"uuid",decrypt_info->encdata_uuid);
+		if(record==NULL)
+			return -EINVAL;
+		encdata_info=record->record;
+
+		record=memdb_find_first(DTYPE_TESI_KEY_STRUCT,SUBTYPE_WRAPPED_KEY,"uuid",encdata_info->enckey_uuid);
+		if(record==NULL)
+			return -EINVAL;
+		key_struct=record->record;
+
+		send_msg=message_create(DTYPE_TRUST_DEMO,SUBTYPE_FILECRYPT_INFO,recv_msg);
+		if(send_msg==NULL)
+			return -EINVAL;
+		message_add_record(send_msg,decrypt_info);
+		ex_module_sendmsg(sub_proc,send_msg);
+
+		send_msg=message_create(DTYPE_TRUST_DEMO,SUBTYPE_ENCDATA_INFO,recv_msg);
+		if(send_msg==NULL)
+			return -EINVAL;
+		message_add_record(send_msg,encdata_info);
+		ex_module_sendmsg(sub_proc,send_msg);
+		send_msg=message_create(DTYPE_TESI_KEY_STRUCT,SUBTYPE_WRAPPED_KEY,recv_msg);
+		if(send_msg==NULL)
+			return -EINVAL;
+		message_add_record(send_msg,key_struct);
+		ex_module_sendmsg(sub_proc,send_msg);
+	}
+
 	return 0;
 }

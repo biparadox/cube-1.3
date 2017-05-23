@@ -53,12 +53,17 @@ int file_crypt_start(void * sub_proc,void * para)
 	int type;
 	int subtype;
 
-	// build a  slot for key request info
+	// build a  slot for key crypt info
 	void * slot_port=slot_port_init("file_crypt",2);
 	slot_port_addrecordpin(slot_port,DTYPE_TRUST_DEMO,SUBTYPE_FILE_OPTION);
 	slot_port_addmessagepin(slot_port,DTYPE_MESSAGE,SUBTYPE_UUID_RECORD);
 	slot_port_addmessagepin(slot_port,DTYPE_TRUST_DEMO,SUBTYPE_FILECRYPT_INFO);
 	ex_module_addslot(sub_proc,slot_port);
+	// build a  slot for key decrypt info
+	slot_port=slot_port_init("file_decrypt",2);
+	slot_port_addrecordpin(slot_port,DTYPE_TRUST_DEMO,SUBTYPE_FILE_OPTION);
+	slot_port_addmessagepin(slot_port,DTYPE_TRUST_DEMO,SUBTYPE_FILECRYPT_INFO);
+	slot_port_addmessagepin(slot_port,DTYPE_MESSAGE,SUBTYPE_UUID_RECORD);
 	printf("begin file crypt start!\n");
 	
 	sleep(1);
@@ -159,25 +164,30 @@ int proc_filecrypt_start(void * sub_proc,void * para)
 		return -EINVAL;	
 	}
 
+	file_option->filename=dup_str(start_para->argv[2],0);
+
 	switch(start_para->argv[1][1])
 	{
 		case 'e':
 		case 'E':
 			file_option->option=dup_str("encrypt",0);
+			ret=proc_crypt_requestkey(sub_proc,file_option);
 			break;
 		case 'd':
 		case 'D':
 			file_option->option=dup_str("decrypt",0);
 			break;
-			break;
 		default:
 			printf(" error usage! should be %s -(e|d) filename!",start_para->argv[0]);
 			return -EINVAL;	
 	}
-
-	file_option->filename=dup_str(start_para->argv[2],0);
+	return ret;
+}
 		
-
+int proc_crypt_requestkey ( void * sub_proc, struct trust_file_option * file_option)
+{
+	int ret;
+	struct trust_demo_keyinfo * keyinfo;
 	BYTE uuid[DIGEST_SIZE];
 	char local_uuid[DIGEST_SIZE];
 	char proc_name[DIGEST_SIZE];
