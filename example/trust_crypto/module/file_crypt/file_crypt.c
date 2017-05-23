@@ -62,7 +62,7 @@ int file_crypt_start(void * sub_proc,void * para)
 	// build a  slot for key decrypt info
 	slot_port=slot_port_init("file_decrypt",2);
 	slot_port_addrecordpin(slot_port,DTYPE_TRUST_DEMO,SUBTYPE_FILE_OPTION);
-//	slot_port_addmessagepin(slot_port,DTYPE_TRUST_DEMO,SUBTYPE_FILECRYPT_INFO);
+	slot_port_addmessagepin(slot_port,DTYPE_TRUST_DEMO,SUBTYPE_FILECRYPT_INFO);
 	slot_port_addmessagepin(slot_port,DTYPE_MESSAGE,SUBTYPE_UUID_RECORD);
 	ex_module_addslot(sub_proc,slot_port);
 	printf("begin file crypt start!\n");
@@ -86,7 +86,8 @@ int file_crypt_start(void * sub_proc,void * para)
 		subtype=message_get_subtype(recv_msg);
 		
 		if(((type==DTYPE_MESSAGE)&&(subtype==SUBTYPE_UUID_RECORD))
-			||((type==DTYPE_TRUST_DEMO)&&(subtype==SUBTYPE_FILECRYPT_INFO)))
+		    ||((type==DTYPE_TRUST_DEMO)&&(subtype==SUBTYPE_FILECRYPT_INFO)))	
+			
 		{
 			ret=message_get_uuid(recv_msg,uuid);						
 			if(ret<0)
@@ -141,6 +142,42 @@ int crypt_file(char * filename,BYTE * key)
 	return 0;
 	
 	
+}
+
+int decrypt_file(char * filename,BYTE * key)
+{
+	const int buflen=1024;
+	int fd;
+	int fd1;
+	int readlen;
+	int cryptlen;
+	int offset=0;
+	BYTE plain[buflen];
+	BYTE *cipher;
+	fd=open(filename,O_RDWR);
+	if(fd<0)
+		return -EINVAL;
+
+	char * tempfilename="tempcrypt.file";
+
+	fd1=open(tempfilename,O_WRONLY|O_CREAT|O_TRUNC,0666);
+	if(fd1<0)
+		return -EINVAL;	
+
+	readlen=read(fd,plain,buflen);
+
+	while(readlen>0)
+	{
+		cryptlen=sm4_context_decrypt(plain,&cipher,readlen,key);
+		write(fd1,cipher,cryptlen);
+		readlen=read(fd,plain,buflen);
+	}
+
+	close(fd);
+	close(fd1);
+	remove(filename);
+	rename(tempfilename,filename);
+	return 0;
 }
 
 
@@ -253,6 +290,7 @@ int proc_decrypt_requestkey ( void * sub_proc, struct trust_file_option * file_o
 	void * sock = slot_create_sock(slot_port,uuid);
 	ret=slot_sock_addrecorddata(sock,DTYPE_TRUST_DEMO,SUBTYPE_FILE_OPTION,file_option);	
 	ex_module_addsock(sub_proc,sock);
+	ret=slot_sock_addmsg(sock,send_msg);
 
 	ret=ex_module_sendmsg(sub_proc,send_msg);
 	return 0;		
@@ -288,9 +326,19 @@ int proc_file_deal(void * sub_proc,void * sock)
 		return -EINVAL;
 	if(crypt_info==NULL)
 		return -EINVAL;
-	calculate_sm3(file_option->filename,crypt_info->plain_uuid);
-	crypt_file(file_option->filename,uuidkey);				
-	calculate_sm3(file_option->filename,crypt_info->cipher_uuid);
+
+	if(Strncmp(file_option->option,"encrypt",DIGEST_SIZE)==0)
+	{
+		calculate_sm3(file_option->filename,crypt_info->plain_uuid);
+		crypt_file(file_option->filename,uuidkey);				
+		calculate_sm3(file_option->filename,crypt_info->cipher_uuid);
+	}
+	else if(Strncmp(file_option->option,"decrypt",DIGEST_SIZE)==0)
+	{
+		calculate_sm3(file_option->filename,crypt_info->cipher_uuid);
+		decrypt_file(file_option->filename,uuidkey);				
+		calculate_sm3(file_option->filename,crypt_info->plain_uuid);
+	}
 
 	send_msg=message_create(DTYPE_TRUST_DEMO,SUBTYPE_FILECRYPT_INFO,NULL);
 	message_add_record(send_msg,crypt_info);
