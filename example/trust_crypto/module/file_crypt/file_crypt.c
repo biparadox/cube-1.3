@@ -62,8 +62,9 @@ int file_crypt_start(void * sub_proc,void * para)
 	// build a  slot for key decrypt info
 	slot_port=slot_port_init("file_decrypt",2);
 	slot_port_addrecordpin(slot_port,DTYPE_TRUST_DEMO,SUBTYPE_FILE_OPTION);
-	slot_port_addmessagepin(slot_port,DTYPE_TRUST_DEMO,SUBTYPE_FILECRYPT_INFO);
+//	slot_port_addmessagepin(slot_port,DTYPE_TRUST_DEMO,SUBTYPE_FILECRYPT_INFO);
 	slot_port_addmessagepin(slot_port,DTYPE_MESSAGE,SUBTYPE_UUID_RECORD);
+	ex_module_addslot(sub_proc,slot_port);
 	printf("begin file crypt start!\n");
 	
 	sleep(1);
@@ -176,6 +177,7 @@ int proc_filecrypt_start(void * sub_proc,void * para)
 		case 'd':
 		case 'D':
 			file_option->option=dup_str("decrypt",0);
+			ret=proc_decrypt_requestkey(sub_proc,file_option);
 			break;
 		default:
 			printf(" error usage! should be %s -(e|d) filename!",start_para->argv[0]);
@@ -209,6 +211,41 @@ int proc_crypt_requestkey ( void * sub_proc, struct trust_file_option * file_opt
 		return -EINVAL;
 	message_add_record(send_msg,keyinfo);
 	void * slot_port=ex_module_findport(sub_proc,"file_crypt");
+	if(slot_port==NULL)
+		return -EINVAL;
+
+	message_get_uuid(send_msg,uuid);
+	void * sock = slot_create_sock(slot_port,uuid);
+	ret=slot_sock_addrecorddata(sock,DTYPE_TRUST_DEMO,SUBTYPE_FILE_OPTION,file_option);	
+	ex_module_addsock(sub_proc,sock);
+
+	ret=ex_module_sendmsg(sub_proc,send_msg);
+	return 0;		
+
+}
+
+int proc_decrypt_requestkey ( void * sub_proc, struct trust_file_option * file_option)
+{
+	int ret;
+	struct trust_filecrypt_info * decrypt_info;
+	BYTE uuid[DIGEST_SIZE];
+	char local_uuid[DIGEST_SIZE];
+	char proc_name[DIGEST_SIZE];
+	
+	ret=proc_share_data_getvalue("uuid",local_uuid);
+	ret=proc_share_data_getvalue("proc_name",proc_name);
+	decrypt_info=Calloc(sizeof(*decrypt_info));
+	if(decrypt_info==NULL)
+		return -ENOMEM;
+	Memcpy(decrypt_info->vtpm_uuid,local_uuid,DIGEST_SIZE);
+	Memset(decrypt_info->encdata_uuid,0,DIGEST_SIZE);
+	Memset(decrypt_info->plain_uuid,0,DIGEST_SIZE);
+	calculate_sm3(file_option->filename,decrypt_info->cipher_uuid);
+	void * send_msg=message_create(DTYPE_TRUST_DEMO,SUBTYPE_FILECRYPT_INFO,NULL);
+	if(send_msg==NULL)
+		return -EINVAL;
+	message_add_record(send_msg,decrypt_info);
+	void * slot_port=ex_module_findport(sub_proc,"file_decrypt");
 	if(slot_port==NULL)
 		return -EINVAL;
 

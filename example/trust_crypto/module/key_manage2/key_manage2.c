@@ -357,17 +357,18 @@ int proc_key_recover(void * sub_proc,void * recv_msg)
 			return -EINVAL;
 		key_struct=record->record;
 
-		send_msg=message_create(DTYPE_TRUST_DEMO,SUBTYPE_FILECRYPT_INFO,recv_msg);
-		if(send_msg==NULL)
-			return -EINVAL;
-		message_add_record(send_msg,decrypt_info);
-		ex_module_sendmsg(sub_proc,send_msg);
+//		send_msg=message_create(DTYPE_TRUST_DEMO,SUBTYPE_FILECRYPT_INFO,recv_msg);
+//		if(send_msg==NULL)
+//			return -EINVAL;
+//		message_add_record(send_msg,decrypt_info);
+//		ex_module_sendmsg(sub_proc,send_msg);
 
 		send_msg=message_create(DTYPE_TRUST_DEMO,SUBTYPE_ENCDATA_INFO,recv_msg);
 		if(send_msg==NULL)
 			return -EINVAL;
 		message_add_record(send_msg,encdata_info);
 		ex_module_sendmsg(sub_proc,send_msg);
+
 		send_msg=message_create(DTYPE_TESI_KEY_STRUCT,SUBTYPE_WRAPPED_KEY,recv_msg);
 		if(send_msg==NULL)
 			return -EINVAL;

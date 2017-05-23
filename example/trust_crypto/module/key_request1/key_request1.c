@@ -67,7 +67,6 @@ int key_request1_start(void * sub_proc,void * para)
 	void * slot_port=slot_port_init("key_request",2);
 	slot_port_addmessagepin(slot_port,DTYPE_TRUST_DEMO,SUBTYPE_ENCDATA_INFO);
 	slot_port_addmessagepin(slot_port,DTYPE_TESI_KEY_STRUCT,SUBTYPE_WRAPPED_KEY);
-	slot_port_addmessagepin(slot_port,DTYPE_TRUST_DEMO,SUBTYPE_KEY_INFO);
 	ex_module_addslot(sub_proc,slot_port);
 	printf("begin tpm key create start!\n");
 
@@ -82,16 +81,7 @@ int key_request1_start(void * sub_proc,void * para)
 
  		type=message_get_type(recv_msg);
 		subtype=message_get_subtype(recv_msg);
-		
-		if((type==DTYPE_TRUST_DEMO)&&(subtype==SUBTYPE_KEY_INFO))
-		{
-			message_get_uuid(recv_msg,uuid);
-			sock = slot_create_sock(slot_port,uuid);
-			ret=slot_sock_addmsg(sock,recv_msg);	
-			ex_module_addsock(sub_proc,sock);
-			ex_module_sendmsg(sub_proc,recv_msg);
-		}
-		else if(((type==DTYPE_TESI_KEY_STRUCT)&&(subtype==SUBTYPE_WRAPPED_KEY))
+		 if(((type==DTYPE_TESI_KEY_STRUCT)&&(subtype==SUBTYPE_WRAPPED_KEY))
 			||((type==DTYPE_TRUST_DEMO)&&(subtype==SUBTYPE_ENCDATA_INFO)))
 		{
 			ret=message_get_uuid(recv_msg,uuid);						
@@ -99,7 +89,12 @@ int key_request1_start(void * sub_proc,void * para)
 				continue;
 			sock=ex_module_findsock(sub_proc,uuid);
 			if(sock==NULL)
-				continue;	
+			{
+				sock = slot_create_sock(slot_port,uuid);
+				ret=slot_sock_addmsg(sock,recv_msg);	
+				ex_module_addsock(sub_proc,sock);
+					continue;
+			}	
 			ret=slot_sock_addmsg(sock,recv_msg);
 	
 			if(ret>0)	
