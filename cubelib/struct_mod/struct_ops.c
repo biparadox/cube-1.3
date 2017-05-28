@@ -572,6 +572,34 @@ int tpm16_set_bin_value(void * elem,void * addr,void * elem_attr)
 	*(UINT16 *)elem=Decode_UINT16(addr);
 	return sizeof(UINT16);
 }
+int bindata_get_text_value(void *elem,void * addr,void * elem_attr)
+{
+	int ret;
+	struct elem_template * curr_elem=elem_attr;
+	if(curr_elem->size==0)
+		return 0;
+	ret=bin_to_radix64(addr,curr_elem->size,elem);
+	return ret;
+}
+
+int bindata_set_text_value(void *elem,void * addr,void * elem_attr)
+{
+	int ret;
+	int len;
+	struct elem_template * curr_elem=elem_attr;
+	if(curr_elem->size==0)
+		return 0;
+	len=Strlen(elem);
+	if(len==0)
+		return 0;
+	ret=bin_to_radix64_len(len);
+	if(ret!=curr_elem->size)
+		return -EINVAL;
+	ret=radix64_to_bin(addr,len,elem);
+	return ret;
+}
+
+
 ELEM_OPS string_convert_ops =
 {
 	.get_int_value=get_string_value,
@@ -579,6 +607,8 @@ ELEM_OPS string_convert_ops =
 
 ELEM_OPS bindata_convert_ops =
 {
+	.get_text_value=bindata_get_text_value,
+	.set_text_value=bindata_set_text_value
 };
 
 ELEM_OPS uuid_convert_ops =
