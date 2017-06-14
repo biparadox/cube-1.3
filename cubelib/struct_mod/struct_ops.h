@@ -74,10 +74,11 @@ struct elem_template
 	struct struct_elem_attr * elem_desc;
 	int offset;    // the offset of this elem compare to the father
 	int size;      // this elem's size in the struct
-	void * ref;    	
-	void * def;	
-	int flag;
-	int index;
+	int tempsize;  // an value just used one time,
+	void * ref;    // a pointer to the ref value	
+	void * def;    // a pointer point to this elem's define value	
+	int flag;      // used to select some elem in this struct
+	int index;     // 
 	int limit;
 	struct elem_template * father;
 };

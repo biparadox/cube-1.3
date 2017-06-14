@@ -910,7 +910,7 @@ int _elem_get_text_value(void * addr,char * text,void * elem)
 	type=curr_elem->elem_desc->type;
 	int offset=0;
 	int i;	
-	int def_value;
+	int def_value=0;
 
 	// get this elem's addr
 
@@ -926,6 +926,7 @@ int _elem_get_text_value(void * addr,char * text,void * elem)
 			repeat_num=_elem_get_defvalue(curr_elem,addr);
 			if(repeat_num<0)
 				return repeat_num;
+			curr_elem->tempsize=repeat_num;
 		}
 		else
 		{

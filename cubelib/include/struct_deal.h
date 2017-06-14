@@ -76,9 +76,6 @@ struct struct_elem_attr
 	void * def;   
 };
 
-
-
-
 typedef struct tagnameofvalue
 {
 	char * name;

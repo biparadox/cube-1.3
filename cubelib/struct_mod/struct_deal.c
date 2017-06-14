@@ -1438,7 +1438,7 @@ int _tojson_proc_func(void * addr, void * data, void * elem,void * para)
 	char * json_str=data;
 	struct elem_template	* curr_elem=elem;
 	int ret=0,text_len;
-	char buf[512];
+	char buf[1024];
 	// get this elem's ops
 	ELEM_OPS * elem_ops=_elem_get_ops(curr_elem);
 	if(elem_ops==NULL)

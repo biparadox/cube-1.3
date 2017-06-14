@@ -327,17 +327,35 @@ int namelist_set_text_value(void * addr, char * text,void * elem_template)
 }
 
 int define_get_text_value(void * addr,char * text,void * elem_template){
-	char * blob = *(char **)addr;
+	int ret;
 	struct elem_template * curr_elem=elem_template;
 	int def_value;
 
-	def_value=_elem_get_defvalue(curr_elem,addr);
+	def_value=curr_elem->tempsize;
 	if(def_value<=0)
 		return def_value;
-	Memcpy(text,blob,def_value);
-	return def_value;
+	ret=bin_to_radix64(text,def_value,addr);
+	return ret;	
+//	ret=bin_to_radix64(addr,curr_elem->size,elem);
+
+//	Memcpy(text,blob,def_value);
+//	return def_value;
 }
 
+int define_set_text_value(void * addr,char * text,void * elem_template){
+	int ret;
+	struct elem_template * curr_elem=elem_template;
+	int def_value;
+	int str_len;
+
+	def_value=curr_elem->tempsize;
+	if(def_value<=0)
+		return def_value;
+	str_len=bin_to_radix64_len(def_value);
+
+	ret=radix64_to_bin(addr,str_len,text);
+	return ret;	
+}
 
 static inline int _isdigit(char c)
 {
@@ -636,6 +654,8 @@ ELEM_OPS estring_convert_ops =
 };
 ELEM_OPS define_convert_ops =
 {
+	.get_text_value = define_get_text_value,
+	.set_text_value = define_set_text_value,
 };
 
 ELEM_OPS int_convert_ops =
