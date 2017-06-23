@@ -1,234 +1,156 @@
-/*
- * RCSID $Id: sha1.c,v 1.1.1.1 2009/05/13 00:14:25 root Exp $
+/* Software-based Trusted Platform Module (TPM) Emulator
+ * Copyright (C) 2004-2010 Mario Strasser <mast@gmx.net>
+ *
+ * This module is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published
+ * by the Free Software Foundation; either version 2 of the License,
+ * or (at your option) any later version.
+ *
+ * This module is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * $Id: sha1.c 364 2010-02-11 10:24:45Z mast $
  */
 
-/*
- * The rest of the code is derived from sha1.c by Steve Reid, which is
- * public domain.
- * Minor cosmetic changes to accomodate it in the Linux kernel by ji.
- */
-
-//#include </byteorder.h>
-#include "../include/data_type.h"
-#include "../include/string.h"
 #include "sha1.h"
+#include <string.h>
 
-#if defined(rol)
-#undef rol
-#endif
+/* This code is based on Steve Reid's <steve@edmweb.com> 
+   public domain implementation. */ 
 
-#define SHA1HANDSOFF
-
-#define rol(value, bits) (((value) << (bits)) | ((value) >> (32 - (bits))))
-
-/* blk0() and blk() perform the initial expand. */
-/* I got the idea of expanding during the round function from SSLeay */
-#ifdef __LITTLE_ENDIAN
-#define blk0(i) (block->l[i] = (rol(block->l[i],24)&0xFF00FF00) \
-    |(rol(block->l[i],8)&0x00FF00FF))
+#define rol(v,b) (((v) << (b)) | ((v) >> (32 - (b))))
+#ifdef __BIG_ENDIAN__
+#define B0(i) (buf[i] = buf[i])
 #else
-#define blk0(i) block->l[i]
+#define B0(i) (buf[i] = (((buf[i] & 0xff000000) >> 24) \
+                       | ((buf[i] & 0x00ff0000) >> 8) \
+                       | ((buf[i] & 0x0000ff00) << 8) \
+                       | ((buf[i] & 0x000000ff) << 24)))
+
 #endif
-#define blk(i) (block->l[i&15] = rol(block->l[(i+13)&15]^block->l[(i+8)&15] \
-    ^block->l[(i+2)&15]^block->l[i&15],1))
+#define B1(i) (buf[i & 15] = rol(buf[i & 15] ^ buf[(i-14) & 15] \
+                                 ^ buf[(i-8) & 15] ^ buf[(i-3) & 15], 1))
+#define F0(x,y,z) ((x & (y ^ z)) ^ z)
+#define F1(x,y,z) (x ^ y ^ z)
+#define F2(x,y,z) (((x | y) & z) | (x & y))
+#define R0(a,b,c,d,e,i) e += F0(b,c,d) + B0(i) + 0x5A827999 + rol(a,5); b = rol(b,30);
+#define R1(a,b,c,d,e,i) e += F0(b,c,d) + B1(i) + 0x5A827999 + rol(a,5); b = rol(b,30);
+#define R2(a,b,c,d,e,i) e += F1(b,c,d) + B1(i) + 0x6ED9EBA1 + rol(a,5); b = rol(b,30);
+#define R3(a,b,c,d,e,i) e += F2(b,c,d) + B1(i) + 0x8F1BBCDC + rol(a,5); b = rol(b,30);
+#define R4(a,b,c,d,e,i) e += F1(b,c,d) + B1(i) + 0xCA62C1D6 + rol(a,5); b = rol(b,30);
 
-/* (R0+R1), R2, R3, R4 are the different operations used in SHA1 */
-#define R0(v,w,x,y,z,i) z+=((w&(x^y))^y)+blk0(i)+0x5A827999+rol(v,5);w=rol(w,30);
-#define R1(v,w,x,y,z,i) z+=((w&(x^y))^y)+blk(i)+0x5A827999+rol(v,5);w=rol(w,30);
-#define R2(v,w,x,y,z,i) z+=(w^x^y)+blk(i)+0x6ED9EBA1+rol(v,5);w=rol(w,30);
-#define R3(v,w,x,y,z,i) z+=(((w|x)&y)|(w&x))+blk(i)+0x8F1BBCDC+rol(v,5);w=rol(w,30);
-#define R4(v,w,x,y,z,i) z+=(w^x^y)+blk(i)+0xCA62C1D6+rol(v,5);w=rol(w,30);
-
-
-/* Hash a single 512-bit block. This is the core of the algorithm. */
-
-void SHA1Transform(UINT32 state[5], BYTE buffer[64])
+static void tpm_sha1_transform(uint32_t h[5], const uint8_t data[64])
 {
-UINT32 a, b, c, d, e;
-typedef union {
-    BYTE c[64];
-    UINT32 l[16];
-} CHAR64LONG16;
-CHAR64LONG16* block;
-#ifdef SHA1HANDSOFF
-static BYTE workspace[64];
-    block = (CHAR64LONG16*)workspace;
-    Memcpy(block, buffer, 64);
-#else
-    block = (CHAR64LONG16*)buffer;
-#endif
-    /* Copy context->state[] to working vars */
-    a = state[0];
-    b = state[1];
-    c = state[2];
-    d = state[3];
-    e = state[4];
-    /* 4 rounds of 20 operations each. Loop unrolled. */
-    R0(a,b,c,d,e, 0); R0(e,a,b,c,d, 1); R0(d,e,a,b,c, 2); R0(c,d,e,a,b, 3);
-    R0(b,c,d,e,a, 4); R0(a,b,c,d,e, 5); R0(e,a,b,c,d, 6); R0(d,e,a,b,c, 7);
-    R0(c,d,e,a,b, 8); R0(b,c,d,e,a, 9); R0(a,b,c,d,e,10); R0(e,a,b,c,d,11);
-    R0(d,e,a,b,c,12); R0(c,d,e,a,b,13); R0(b,c,d,e,a,14); R0(a,b,c,d,e,15);
-    R1(e,a,b,c,d,16); R1(d,e,a,b,c,17); R1(c,d,e,a,b,18); R1(b,c,d,e,a,19);
-    R2(a,b,c,d,e,20); R2(e,a,b,c,d,21); R2(d,e,a,b,c,22); R2(c,d,e,a,b,23);
-    R2(b,c,d,e,a,24); R2(a,b,c,d,e,25); R2(e,a,b,c,d,26); R2(d,e,a,b,c,27);
-    R2(c,d,e,a,b,28); R2(b,c,d,e,a,29); R2(a,b,c,d,e,30); R2(e,a,b,c,d,31);
-    R2(d,e,a,b,c,32); R2(c,d,e,a,b,33); R2(b,c,d,e,a,34); R2(a,b,c,d,e,35);
-    R2(e,a,b,c,d,36); R2(d,e,a,b,c,37); R2(c,d,e,a,b,38); R2(b,c,d,e,a,39);
-    R3(a,b,c,d,e,40); R3(e,a,b,c,d,41); R3(d,e,a,b,c,42); R3(c,d,e,a,b,43);
-    R3(b,c,d,e,a,44); R3(a,b,c,d,e,45); R3(e,a,b,c,d,46); R3(d,e,a,b,c,47);
-    R3(c,d,e,a,b,48); R3(b,c,d,e,a,49); R3(a,b,c,d,e,50); R3(e,a,b,c,d,51);
-    R3(d,e,a,b,c,52); R3(c,d,e,a,b,53); R3(b,c,d,e,a,54); R3(a,b,c,d,e,55);
-    R3(e,a,b,c,d,56); R3(d,e,a,b,c,57); R3(c,d,e,a,b,58); R3(b,c,d,e,a,59);
-    R4(a,b,c,d,e,60); R4(e,a,b,c,d,61); R4(d,e,a,b,c,62); R4(c,d,e,a,b,63);
-    R4(b,c,d,e,a,64); R4(a,b,c,d,e,65); R4(e,a,b,c,d,66); R4(d,e,a,b,c,67);
-    R4(c,d,e,a,b,68); R4(b,c,d,e,a,69); R4(a,b,c,d,e,70); R4(e,a,b,c,d,71);
-    R4(d,e,a,b,c,72); R4(c,d,e,a,b,73); R4(b,c,d,e,a,74); R4(a,b,c,d,e,75);
-    R4(e,a,b,c,d,76); R4(d,e,a,b,c,77); R4(c,d,e,a,b,78); R4(b,c,d,e,a,79);
-    /* Add the working vars back into context.state[] */
-    state[0] += a;
-    state[1] += b;
-    state[2] += c;
-    state[3] += d;
-    state[4] += e;
-    /* Wipe variables */
-    a = b = c = d = e = 0;
+  uint32_t a, b, c, d, e;
+  uint32_t buf[16];
+
+  /* copy state and data*/
+  a = h[0];
+  b = h[1];
+  c = h[2];
+  d = h[3];
+  e = h[4];
+  memcpy(buf, data, 64);
+  /* unrolled sha-1 rounds */
+  R0(a,b,c,d,e, 0); R0(e,a,b,c,d, 1); R0(d,e,a,b,c, 2); R0(c,d,e,a,b, 3);
+  R0(b,c,d,e,a, 4); R0(a,b,c,d,e, 5); R0(e,a,b,c,d, 6); R0(d,e,a,b,c, 7);
+  R0(c,d,e,a,b, 8); R0(b,c,d,e,a, 9); R0(a,b,c,d,e,10); R0(e,a,b,c,d,11);
+  R0(d,e,a,b,c,12); R0(c,d,e,a,b,13); R0(b,c,d,e,a,14); R0(a,b,c,d,e,15);
+  R1(e,a,b,c,d,16); R1(d,e,a,b,c,17); R1(c,d,e,a,b,18); R1(b,c,d,e,a,19);
+  R2(a,b,c,d,e,20); R2(e,a,b,c,d,21); R2(d,e,a,b,c,22); R2(c,d,e,a,b,23);
+  R2(b,c,d,e,a,24); R2(a,b,c,d,e,25); R2(e,a,b,c,d,26); R2(d,e,a,b,c,27);
+  R2(c,d,e,a,b,28); R2(b,c,d,e,a,29); R2(a,b,c,d,e,30); R2(e,a,b,c,d,31);
+  R2(d,e,a,b,c,32); R2(c,d,e,a,b,33); R2(b,c,d,e,a,34); R2(a,b,c,d,e,35);
+  R2(e,a,b,c,d,36); R2(d,e,a,b,c,37); R2(c,d,e,a,b,38); R2(b,c,d,e,a,39);
+  R3(a,b,c,d,e,40); R3(e,a,b,c,d,41); R3(d,e,a,b,c,42); R3(c,d,e,a,b,43);
+  R3(b,c,d,e,a,44); R3(a,b,c,d,e,45); R3(e,a,b,c,d,46); R3(d,e,a,b,c,47);
+  R3(c,d,e,a,b,48); R3(b,c,d,e,a,49); R3(a,b,c,d,e,50); R3(e,a,b,c,d,51);
+  R3(d,e,a,b,c,52); R3(c,d,e,a,b,53); R3(b,c,d,e,a,54); R3(a,b,c,d,e,55);
+  R3(e,a,b,c,d,56); R3(d,e,a,b,c,57); R3(c,d,e,a,b,58); R3(b,c,d,e,a,59);
+  R4(a,b,c,d,e,60); R4(e,a,b,c,d,61); R4(d,e,a,b,c,62); R4(c,d,e,a,b,63);
+  R4(b,c,d,e,a,64); R4(a,b,c,d,e,65); R4(e,a,b,c,d,66); R4(d,e,a,b,c,67);
+  R4(c,d,e,a,b,68); R4(b,c,d,e,a,69); R4(a,b,c,d,e,70); R4(e,a,b,c,d,71);
+  R4(d,e,a,b,c,72); R4(c,d,e,a,b,73); R4(b,c,d,e,a,74); R4(a,b,c,d,e,75);
+  R4(e,a,b,c,d,76); R4(d,e,a,b,c,77); R4(c,d,e,a,b,78); R4(b,c,d,e,a,79);
+  /* update state */
+  h[0] += a;
+  h[1] += b;
+  h[2] += c;
+  h[3] += d;
+  h[4] += e;
+  /* overwrite all used variables */
+  a = b = c = d = e = 0;
+  memset(buf, 0, 64);
 }
 
 
-/* SHA1Init - Initialize new context */
-
-void SHA1Init(void *vcontext)
+void tpm_sha1_init(tpm_sha1_ctx_t *ctx)
 {
-   SHA1_CTX* context=(SHA1_CTX *)vcontext;
-
-    /* SHA1 initialization constants */
-    context->state[0] = 0x67452301;
-    context->state[1] = 0xEFCDAB89;
-    context->state[2] = 0x98BADCFE;
-    context->state[3] = 0x10325476;
-    context->state[4] = 0xC3D2E1F0;
-    context->count[0] = context->count[1] = 0;
+  /* initialise with sha-1 constants */
+  ctx->h[0] = 0x67452301;
+  ctx->h[1] = 0xEFCDAB89;
+  ctx->h[2] = 0x98BADCFE;
+  ctx->h[3] = 0x10325476;
+  ctx->h[4] = 0xC3D2E1F0;
+  ctx->count_lo = ctx->count_hi = 0;
 }
 
-
-/* Run your data through this. */
-
-void SHA1Update(void *vcontext, BYTE* data, UINT32 len)
+void tpm_sha1_update(tpm_sha1_ctx_t *ctx, const uint8_t *data, size_t length)
 {
-    SHA1_CTX* context = vcontext;
-    UINT32 i, j;
+  size_t buf_off = (ctx->count_lo >> 3) & 63;
+  size_t data_off = 0;
 
-    j = context->count[0];
-    if ((context->count[0] += len << 3) < j)
-	context->count[1]++;
-    context->count[1] += (len>>29);
-    j = (j >> 3) & 63;
-    if ((j + len) > 63) {
-        Memcpy(&context->buffer[j], data, (i = 64-j));
-        SHA1Transform(context->state, context->buffer);
-        for ( ; i + 63 < len; i += 64) {
-            SHA1Transform(context->state, &data[i]);
-        }
-        j = 0;
+  /* add data */
+  if (length + buf_off >= 64) {
+    data_off = 64 - buf_off;
+    memcpy(&ctx->buf[buf_off], data, data_off);
+    tpm_sha1_transform(ctx->h, ctx->buf);
+    while (data_off + 64 <= length) { 
+      tpm_sha1_transform(ctx->h, &data[data_off]);
+      data_off += 64;
     }
-    else i = 0;
-    Memcpy(&context->buffer[j], &data[i], len - i);
+    buf_off = 0;
+  }
+  memcpy(&ctx->buf[buf_off], &data[data_off], length - data_off);
+  /* update counter */
+  buf_off = ctx->count_lo;
+  ctx->count_lo += length << 3;
+  if (ctx->count_lo < buf_off) ctx->count_hi++;
+  ctx->count_hi += length >> 29;
 }
 
-
-/* Add padding and return the message digest. */
-
-void SHA1Final(BYTE digest[20], void *vcontext)
+void tpm_sha1_update_be32(tpm_sha1_ctx_t *ctx, uint32_t data)
 {
-  UINT32 i, j;
-  BYTE finalcount[8];
-  SHA1_CTX* context = vcontext;
-    
-    for (i = 0; i < 8; i++) {
-        finalcount[i] = (BYTE)((context->count[(i >= 4 ? 0 : 1)]
-         >> ((3-(i & 3)) * 8) ) & 255);  /* Endian independent */
-    }
-    SHA1Update(context, (BYTE *)"\200", 1);
-    while ((context->count[0] & 504) != 448) {
-        SHA1Update(context, (BYTE *)"\0", 1);
-    }
-    SHA1Update(context, finalcount, 8);  /* Should cause a SHA1Transform() */
-    for (i = 0; i < 20; i++) {
-        digest[i] = (BYTE)
-         ((context->state[i>>2] >> ((3-(i & 3)) * 8) ) & 255);
-    }
-    /* Wipe variables */
-    i = j = 0;
-    Memset(context->buffer, 0, 64);
-    Memset(context->state, 0, 20);
-    Memset(context->count, 0, 8);
-    Memset(&finalcount, 0, 8);
-#ifdef SHA1HANDSOFF  /* make SHA1Transform overwrite its own static vars */
-    SHA1Transform(context->state, context->buffer);
-#endif
+  uint8_t buf[4];
+
+  buf[0] = (data >> 24) & 0xff;
+  buf[1] = (data >> 16) & 0xff;
+  buf[2] = (data >>  8) & 0xff;
+  buf[3] = (data >>  0) & 0xff;
+  tpm_sha1_update(ctx, buf, 4);
 }
 
-int calculate_context_sha1(char *context,int context_size,UINT32 *SM3_hash)
+void tpm_sha1_final(tpm_sha1_ctx_t *ctx, uint8_t digest[SHA1_DIGEST_LENGTH])
 {
-	int result;
-	SHA1_CTX index;
-	SHA1Init(&index);
-	SHA1Update(&index,context,context_size);
-	SHA1Final(SM3_hash,&index);
-	return 0;
+  uint8_t d, counter[8];
+
+  /* setup counter */
+  for (d = 0; d < 4; d++) {
+    counter[d    ] = (ctx->count_hi >> (24 - d * 8)) & 0xff;
+    counter[d + 4] = (ctx->count_lo >> (24 - d * 8)) & 0xff;
+  }
+  /* add padding */
+  d = 0x80;
+  tpm_sha1_update(ctx, &d, 1);
+  d = 0x00;
+  while ((ctx->count_lo & (63 * 8)) != (56 * 8)) tpm_sha1_update(ctx, &d, 1);
+  /* add counter */
+  tpm_sha1_update(ctx, counter, 8);
+  for (d = 0; d < SHA1_DIGEST_LENGTH; d++) 
+    digest[d] = (uint8_t)(ctx->h[d >> 2] >> (8 * (3 - (d & 3))) & 0xff);
+  /* overwrite all used variables */
+  memset(ctx, 0, sizeof(*ctx));
+  memset(counter, 0, sizeof(counter));
 }
-/*
- * $Log: sha1.c,v $
- * Revision 1.1.1.1  2009/05/13 00:14:25  root
- * linux-2-6-26
- *
- * Revision 1.1.2.1  2006/08/10 08:11:38  sunyu
- *
- * 2006/8/10 by sunyu modified for porting from freeswan to openswan.
- *
- * Revision 1.9  2004/04/06 02:49:26  mcr
- * 	pullup of algo code from alg-branch.
- *
- * Revision 1.8  2002/09/10 01:45:14  mcr
- * 	changed type of MD5_CTX and SHA1_CTX to void * so that
- * 	the function prototypes would match, and could be placed
- * 	into a pointer to a function.
- *
- * Revision 1.7  2002/04/24 07:55:32  mcr
- * 	#include patches and Makefiles for post-reorg compilation.
- *
- * Revision 1.6  2002/04/24 07:36:30  mcr
- * Moved from ./klips/net/ipsec/ipsec_sha1.c,v
- *
- * Revision 1.5  1999/12/13 13:59:13  rgb
- * Quick fix to argument size to Update bugs.
- *
- * Revision 1.4  1999/04/11 00:29:00  henry
- * GPL boilerplate
- *
- * Revision 1.3  1999/04/06 04:54:27  rgb
- * Fix/Add RCSID Id: and Log: bits to make PHMDs happy.  This includes
- * patch shell fixes.
- *
- * Revision 1.2  1999/01/22 06:55:50  rgb
- * 64-bit clean-up.
- *
- * Revision 1.1  1998/06/18 21:27:50  henry
- * move sources from klips/src to klips/net/ipsec, to keep stupid
- * kernel-build scripts happier in the presence of symlinks
- *
- * Revision 1.2  1998/04/23 20:54:04  rgb
- * Fixed md5 and sha1 include file nesting issues, to be cleaned up when
- * verified.
- *
- * Revision 1.1  1998/04/09 03:06:11  henry
- * sources moved up from linux/net/ipsec
- *
- * Revision 1.1.1.1  1998/04/08 05:35:05  henry
- * RGB's ipsec-0.8pre2.tar.gz ipsec-0.8
- *
- * Revision 0.4  1997/01/15 01:28:15  ji
- * New transform
- *
- *
- */

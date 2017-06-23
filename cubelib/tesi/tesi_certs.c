@@ -44,11 +44,13 @@ char * tss_err_string(TSS_RESULT result)
 /****************************************************************************/
 void TSS_sha1(void *input, unsigned int len, unsigned char *output)
 {
+
 	SHA_CTX sha;
    
 	SHA1_Init(&sha);
 	SHA1_Update(&sha,input,len);
 	SHA1_Final(output,&sha);
+
 }
 TSS_RESULT WriteValidation(TSS_VALIDATION * valData,char * name)
 {

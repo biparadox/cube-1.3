@@ -251,3 +251,17 @@ int get_random_uuid(BYTE * uuid)
 	close(fd);
 	return ret;
 }
+
+int calculate_context_sha1(char *context,int context_size,UINT32 *SM3_hash)
+{
+	int result;
+//	SHA1_CTX index;
+//	SHA1Init(&index);
+//	SHA1Update(&index,context,context_size);
+//	SHA1Final(SM3_hash,&index);
+	tpm_sha1_ctx_t index;
+	tpm_sha1_init(&index);
+	tpm_sha1_update(&index,context,context_size);
+	tpm_sha1_final(&index,SM3_hash);
+	return 0;
+}
