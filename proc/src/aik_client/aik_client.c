@@ -107,7 +107,7 @@ int aik_client_start(void * sub_proc,void * para)
 		{
 			proc_aik_activate(sub_proc,recv_msg);
 		}
-		else
+		else if((type==DTYPE_AIK_STRUCT)&&(subtype==SUBTYPE_AIK_USER_INFO))
 		{
 			proc_aik_request(sub_proc,recv_msg);
 		}
@@ -127,9 +127,9 @@ int proc_aik_request(void * sub_proc,void * recv_msg)
 	int ret;
 	struct aik_user_info * user_info;
 
-	user_info=memdb_get_first_record(DTYPE_AIK_STRUCT,SUBTYPE_AIK_USER_INFO);
-	if(user_info==NULL)
-		return -EINVAL;
+	ret=message_get_record(recv_msg,&user_info,0);
+	if(ret<0)
+		return ret;
 
 	memcpy(&reqinfo.user_info,user_info,sizeof(struct aik_user_info));
 

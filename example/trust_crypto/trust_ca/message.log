@@ -1,0 +1,5 @@
+
+**************Begin new trust node proc****************************
+{ "HEAD":{"tag":"MESG","version":65537,"sender_uuid":"connector_proc","receiver_uuid":"","route":"","flow":"FINISH","state":"INIT","flag":"NULL","ljump":1,"rjump":1,"record_type":"MESSAGE","record_subtype":"CONN_ACKI","record_num":1,"record_size":154,"expand_num":0,"expand_size":0,"msg_uuid":"ff80dc802f0f19a8dbfb3ce89d2bb3157172adbe3ecb26469d363b6baf2b6e47"},"RECORD":[{"uuid":"a62f059a886df1d5e7bf037ef89cce78c7addf3388093583d446c5b14306864f","client_name":"aik_user","client_proc":"aik_user","client_addr":"unknown addr","server_uuid":"a62f059a886df1d5e7bf037ef89cce78c7addf3388093583d446c5b14306864f","server_name":"trust_ca","service":"trust_server","server_addr":"","flags":0,"nonce":""}],"EXPAND" :[]}
+
+************************************************************

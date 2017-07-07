@@ -2201,7 +2201,7 @@ TSS_RESULT TESI_AIK_WriteCABlob(void * blob, char * blob_file)
 	int retval;
 	int blob_size;
 	sprintf(filename,"%s.req",blob_file);
-	fd=open(filename,O_WRONLY|O_CREAT|O_TRUNC);
+	fd=open(filename,O_WRONLY|O_CREAT|O_TRUNC,0666);
 	if(fd<=0)
 		return -EINVAL;
 	char buffer[4096];
@@ -2327,7 +2327,7 @@ TSS_RESULT  TESI_AIK_GenerateReq(TSS_HKEY hCAKey,int labelLen,BYTE * labelData, 
 		return result;
 	sprintf(filename,"%s.req",req);
 
-	fd=open(filename,O_WRONLY|O_CREAT|O_TRUNC,S_IRUSR|S_IWUSR);
+	fd=open(filename,O_WRONLY|O_CREAT|O_TRUNC,S_IRUSR|S_IWUSR,0666);
 	if(fd<0)
 	{	
 		printf("open req blob file error!\n");

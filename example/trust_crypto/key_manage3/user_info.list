@@ -1,0 +1,10 @@
+{
+	"type":"TESI_AIK_STRUCT",
+	"subtype":"USER_INFO"
+}
+{
+	"org":"Beijing University of Technology,Computer Science Academy",
+	"user_id":"07331",
+	"user_name":"zhaowen",
+	"role":"teacher of Introduction of trusted computing" 
+}
