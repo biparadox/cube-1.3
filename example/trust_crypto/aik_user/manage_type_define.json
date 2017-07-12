@@ -1,0 +1,54 @@
+{
+	"head":
+	{
+		"name":"key_manage_type",
+		"type":"TYPELIST"
+	},
+	"record":
+	{
+		"elem_no":1,
+		"elemlist":
+		[
+			"KEY_MANAGE=0x2100"
+		]
+	}
+}
+{
+	"head":
+	{
+		"name":"key_manage_subtype",
+		"type":"SUBTYPELIST"
+	},
+	"record":
+	{
+		"type":"KEY_MANAGE",
+		"elem_no":1,
+		"elemlist":
+		[
+			"AIK_BIND=0x01",
+		]
+	}
+}
+{
+	"head":
+	{
+		"name":"key_manage_aik_bind",
+		"type":"RECORDTYPE"
+	},
+	"record":
+	{
+		"type":"KEY_MANAGE",
+		"subtype":"AIK_BIND",
+		"struct_desc":
+		{
+			"elem_desc":
+			[
+				{"name":"machine_uuid","type":"UUID"},
+				{"name":"user_name","type":"ESTRING","size":32},
+				{"name":"aik_pub_uuid","type":"UUID"},
+				{"name":"aik_pri_uuid","type":"UUID"},
+				{"name":"aik_cert_uuid","type":"UUID"},
+			]
+		}
+	}	
+}

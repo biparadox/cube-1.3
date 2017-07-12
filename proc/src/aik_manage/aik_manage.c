@@ -28,6 +28,9 @@
 #include "aik_manage.h"
 
 static struct timeval time_val={0,50*1000};
+static char pdir[] = {"/home/lib206/cube-1.3/example/trust_crypto/aik_user"};
+static char pub_key_dir[] = {"/pubkey"};
+
 int print_error(char * str, int result)
 {
 	printf("%s %s",str,tss_err_string(result));
@@ -42,7 +45,7 @@ struct aik_proc_pointer
 
 int aik_manage_init(void * sub_proc,void * para)
 {
-/*	int ret;
+	int ret;
 	TSS_RESULT result;	
 	char local_uuid[DIGEST_SIZE*2+1];
 	
@@ -69,7 +72,7 @@ int aik_manage_init(void * sub_proc,void * para)
 	ret=ex_module_setpointer(sub_proc,aik_pointer);
 	if(ret<0)
 		return ret;
-	return 0;*/
+	return 0;
 }
 
 int aik_manage_start(void * sub_proc,void * para)
@@ -85,6 +88,8 @@ int aik_manage_start(void * sub_proc,void * para)
 
 	char local_uuid[DIGEST_SIZE*2+1];
 	char proc_name[DIGEST_SIZE*2+1];
+	char path[DIGEST_SIZE*3];
+	char filename[DIGEST_SIZE*3];
 	
 	ret=proc_share_data_getvalue("uuid",local_uuid);
 	ret=proc_share_data_getvalue("proc_name",proc_name);
@@ -100,9 +105,20 @@ int aik_manage_start(void * sub_proc,void * para)
 		if(recv_msg==NULL)
 			continue;
 
- 		type=message_get_type(recv_msg);
+		type=message_get_type(recv_msg);
 		subtype=message_get_subtype(recv_msg);
 		
+		
+		strcat(path,pdir);
+		strcat(path,pub_key_dir);
+		ret = readFileList(path, filename);
+		
+		if(ret>0)
+		{
+			printf(filename);
+			printf("\n");
+			continue;
+		}	
 		proc_aik_manage_apply_with_userinfo(sub_proc,recv_msg);
 	}
 
@@ -139,3 +155,58 @@ int proc_aik_manage_apply_with_userinfo(void * sub_proc,void * recv_msg)
 
 	return 0;
 }
+
+/*
+给定目录，回复一个目录下.pem文件的文件名（包含路径）
+*/
+int readFileList(char *Path, char *filename)  
+{  
+	int file_num = 0;  
+	
+	DIR *dir;  
+	struct dirent *ptr;    
+  
+	if ((dir = opendir(Path)) == NULL)  
+	{  
+		perror("Open dir error...");  
+		exit(1);  
+	}  
+  
+	while ((ptr = readdir(dir)) != NULL)  
+	{  
+		int size = strlen(ptr->d_name);		//检查文件名长度
+		if (strcmp(ptr->d_name, ".") == 0 || strcmp(ptr->d_name, "..") == 0)    //去除当前目录和上级目录  
+			continue;  
+		else if (strcmp( ( ptr->d_name + (size - 4) ) , ".pem") == 0)    //读取后缀为“pem”文件路径  
+		{  
+			strcpy(filename, Path);  
+			strcat(filename, ptr->d_name);  
+			file_num++;
+			break;
+		}  
+		else   
+		{  
+			continue;  
+		}  
+	}  
+	closedir(dir);  
+	return file_num;  
+}
+
+/*int proc_get_exe_pwd( char* pwd )
+{
+	int count;
+	
+	count = readlink( "/proc/self/exe", pwd, DIGEST_SIZE*3 );  
+	
+	if ( count < 0 || count >= DIGEST_SIZE*3 )  
+    {   
+        printf( "Failed\n" );  
+        return -1;  
+    }   
+	
+    pwd[ count ] = '\0';  
+    printf( "/proc/self/exe -> [%s]\n", pwd );  
+  
+    return 0; 
+}*/
