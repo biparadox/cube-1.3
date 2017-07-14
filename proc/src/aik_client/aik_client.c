@@ -26,6 +26,7 @@
 #include "tesi_key.h"
 #include "tesi_aik_struct.h"
 #include "aik_client.h"
+#include "key_manage_struct.h"
 
 static struct timeval time_val={0,50*1000};
 int print_error(char * str, int result)
@@ -127,21 +128,17 @@ int proc_aik_request(void * sub_proc,void * recv_msg)
 	int ret;
 	struct aik_user_info * user_info;
 
-	ret=message_get_record(recv_msg,&user_info,0);
+	ret=message_get_record(recv_msg,&user_info,0);//user_info
 	if(ret<0)
 		return ret;
 
 	memcpy(&reqinfo.user_info,user_info,sizeof(struct aik_user_info));
 
-/*
-	BYTE		*labelString = "UserA";
-	UINT32		labelLen = strlen(labelString) + 1;
-*/
 	char filename[DIGEST_SIZE*5];
 	char local_uuid[DIGEST_SIZE];
 	char proc_name[DIGEST_SIZE];
 	
-	ret=proc_share_data_getvalue("uuid",local_uuid);
+	ret=proc_share_data_getvalue("uuid",local_uuid);//读取机器码
 	ret=proc_share_data_getvalue("proc_name",proc_name);
 
 	printf("begin aik request!\n");
@@ -218,8 +215,10 @@ int proc_aik_activate(void * sub_proc,void * recv_msg)
 	int blobsize=0;
 	BYTE digest[DIGEST_SIZE];
 	char buffer[DIGEST_SIZE*5];
+	
 	struct policyfile_notice * file_notice;
-	struct aik_cert_info cert_info;
+	struct aik_cert_info cert_info;		//证书信息
+	struct key_manage_aik_bind manage_info;	//管理信息
 
 	ret = message_get_record(recv_msg,&file_notice,0);
 	if(ret<0)
@@ -257,12 +256,15 @@ int proc_aik_activate(void * sub_proc,void * recv_msg)
 	
 	// write the AIK and aipubkey
 
-	result=TESI_Local_WriteKeyBlob(hAIKey,"privkey/AIK");
+	result=TESI_Local_WriteKeyBlob(hAIKey,"privkey/AIK");//privkey
 	if (result != TSS_SUCCESS) {
 		print_error("store aik data error!\n", result);
 		exit(result);
 	}
 	ret=convert_uuidname("privkey/AIK",".key",digest,buffer);
+	memcpy(manage_info.aik_pri_uuid,buffer,sizeof(buffer));//将私钥uuid存下来
+	printf("get privkey_uuid success\n");
+
 	if(ret>0)
 		printf("Generate AIK private key blob %s!\n",buffer);
 
@@ -273,6 +275,9 @@ int proc_aik_activate(void * sub_proc,void * recv_msg)
 		exit(result);
 	}
 	ret=convert_uuidname("pubkey/AIK",".pem",digest,buffer);
+	memcpy(manage_info.aik_pub_uuid, buffer, sizeof(buffer));//将公钥uuid存下来
+	printf("get pubkey_uuid success\n");
+
 	if(ret>0)
 		printf("Generate AIK public key blob %s!\n",buffer);
 
@@ -295,7 +300,25 @@ int proc_aik_activate(void * sub_proc,void * recv_msg)
 
 	WriteSignDataToFile(&signdata,"cert/AIK");
 	ret=convert_uuidname("cert/AIK",".sda",digest,buffer);
+	memcpy(manage_info.aik_cert_uuid, buffer, sizeof(buffer));//将证书uuid存下来
+	printf("get cert_uuid success\n");
+	
+	manage_info.user_name = dup_str(cert_info.user_info.user_name, 0);//从证书信息中把用户名拎出来
+	memcpy(manage_info.machine_uuid, cert_info.machine_uuid, DIGEST_SIZE);
+	//manage_info.machine_uuid = cert_info.machine_uuid;//机器码应该没问题
+
+
 	if(ret>0)
 		printf("Generate AIK sign data %s!\n",buffer);
+
+	//发消息
+	void * send_msg;
+	send_msg = message_create(DTYPE_KEY_MANAGE, SUBTYPE_AIK_BIND, NULL);
+	if (send_msg == NULL)
+		return -EINVAL;
+	message_add_record(send_msg, &manage_info);
+	ex_module_sendmsg(sub_proc, send_msg);
+	printf("send manage_info to aik_manage\n");
+
 	return 0;
 }

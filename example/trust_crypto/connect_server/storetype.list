@@ -1,0 +1,12 @@
+{
+	"type":"MESSAGE",
+	"subtype":"TYPES"
+}
+{
+	"type":"KEY_MANAGE",
+	"subtype":"AIK_BIND"
+}
+{
+	"type":"KEY_MANAGE",
+	"subtype":"OTHER_AIK"
+}
