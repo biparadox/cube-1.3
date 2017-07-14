@@ -68,7 +68,6 @@ static __inline__ void List_add_tail(struct List_head *new, struct List_head *he
 }
 static __inline__ void List_del(struct List_head * head)
 {
-		struct List_head * temp;
 		if(head->next==head)
 				return;
 		head->next->prev=head->prev;

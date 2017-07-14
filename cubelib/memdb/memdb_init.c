@@ -54,7 +54,9 @@ int _namelist_tail_func(void * memdb,void * record)
 	struct struct_namelist * namelist=db_record->record;
 	int i;
 	int ret;
-	ret=Galloc0(&namevalue,sizeof(NAME2VALUE)*(namelist->elem_no+1));
+	namevalue=Dalloc0(sizeof(NAME2VALUE)*(namelist->elem_no+1),record);
+	if(namevalue==NULL)
+		return -ENOMEM;
 	Memcpy(namevalue,namelist->elemlist,sizeof(NAME2VALUE)*namelist->elem_no);	
 
 	db_record->tail=namevalue;
@@ -110,11 +112,11 @@ void * _clone_namelist(void * list1)
 
 	int elem_no = namelist1->elem_no;
 
-	ret=Galloc0(&newnamelist,sizeof(struct struct_namelist));
-	if(ret<0)
+	newnamelist=Calloc0(sizeof(struct struct_namelist));
+	if(newnamelist==NULL)
 		return NULL;
-	ret = Galloc0(&newnamelist->elemlist,sizeof(NAME2VALUE)*elem_no);
-	if(ret<0)
+	newnamelist->elemlist=Dalloc0(sizeof(NAME2VALUE)*elem_no,newnamelist);
+	if(newnamelist->elemlist==NULL)
 		return NULL;
 	newnamelist->elem_no=elem_no;
 	for(i=0;i<elem_no;i++)
@@ -137,8 +139,8 @@ void * _merge_namelist(void * list1, void * list2)
 
 	elem_no = namelist1->elem_no+namelist2->elem_no;
 
-	ret = Galloc0(&buf,sizeof(NAME2VALUE)*elem_no);
-	if(ret<0)
+	buf = Talloc0(sizeof(NAME2VALUE)*elem_no);
+	if(buf==NULL)
 		return NULL;
 	j=0;
 	k=0;
@@ -177,11 +179,11 @@ void * _merge_namelist(void * list1, void * list2)
 	}
 
 	
-	ret=Galloc0(&newnamelist,sizeof(struct struct_namelist));
-	if(ret<0)
+	newnamelist=Calloc0(sizeof(struct struct_namelist));
+	if(newnamelist==NULL)
 		return NULL;
-	ret = Galloc0(&newnamelist->elemlist,sizeof(NAME2VALUE)*elem_no);
-	if(ret<0)
+	newnamelist->elemlist = Dalloc0(sizeof(NAME2VALUE)*elem_no,newnamelist);
+	if(newnamelist->elemlist==NULL)
 		return NULL;
 	newnamelist->elem_no=elem_no;
 	for(i=0;i<elem_no;i++)
@@ -236,15 +238,15 @@ int _memdb_record_add_name(void * record,char * name)
 	if(len<DIGEST_SIZE)
 		len++;
 
-	ret=Galloc0(&new_name,len);
-	if(ret<0)
+	new_name=Dalloc0(len,record_db);
+	if(new_name==NULL)
 		return -ENOMEM;
 	Strncpy(new_name,name,DIGEST_SIZE);
 	
 	if(record_db->names==NULL)
 	{
-		ret=Galloc0(&(record_db->names),sizeof(char *));
-		if(ret<0)
+		record_db->names=Dalloc0(sizeof(char *),record_db);
+		if(record_db->names==NULL)
 			return -ENOMEM;
 		record_db->names[0]=new_name;
 		record_db->name_no++;
@@ -257,9 +259,9 @@ int _memdb_record_add_name(void * record,char * name)
 		namelist_no--;
 	namelist_no++;
 		
-	ret=Galloc0(&(new_namearray),sizeof(char *)*namelist_no);
-	if(ret<0)
-		return -EINVAL;
+	new_namearray=Dalloc0(sizeof(char *)*namelist_no,record_db);
+	if(new_namearray==NULL)
+		return -ENOMEM;
 	Memcpy(new_namearray,record_db->names,sizeof(char *)*(namelist_no-1));
 	new_namearray[namelist_no-1]=new_name;
 
@@ -305,9 +307,9 @@ int _memdb_record_remove_name(void * record,char * name)
 		Strncpy(record_db->head.name,record_db->names[0],DIGEST_SIZE);
 	}
 	
-	ret=Galloc0(&(new_namearray),sizeof(char *)*(namelist_no-1));
-	if(ret<0)
-		return -EINVAL;
+	new_namearray=Dalloc0(sizeof(char *)*(namelist_no-1),record_db);
+	if(new_namearray==NULL)
+		return -ENOMEM;
 	if(namelist_no<namesite_no)
 		return -EINVAL;
 	Free0(record_db->names[namesite_no-1]);
@@ -316,6 +318,7 @@ int _memdb_record_remove_name(void * record,char * name)
 		sizeof(char *)*(namelist_no-namesite_no));
 	Free0(record_db->names);
 	record_db->names=new_namearray;	
+	record_db->name_no--;
 
 	return namesite_no;		
 }
@@ -334,8 +337,8 @@ void * _struct_octet_to_attr(void * octet_array,int elem_no)
 
 	Memset(ref_comp,0,DIGEST_SIZE);
 
-	ret=Galloc0(&struct_desc,sizeof(struct struct_elem_attr)*(elem_no+1));
-	if(ret<0)
+	struct_desc=Calloc0(sizeof(struct struct_elem_attr)*(elem_no+1));
+	if(struct_desc==NULL)
 		return NULL;
 	for(i=0;i<elem_no;i++)
 	{
@@ -496,9 +499,9 @@ int memdb_register_db(int type,int subtype,void * struct_desc,void * tail_func,c
 
 	if(type<DB_DTYPE_START)
 	{
-		ret=Galloc0(&static_db_list[type],sizeof(struct memdb_desc));
-		if(ret<0)
-			return -EINVAL;
+		static_db_list[type]=Salloc0(sizeof(struct memdb_desc));
+		if(static_db_list[type]==NULL)
+			return -ENOMEM;
 		memdb=static_db_list[type];
 	}
 	else if(type>=DB_DTYPE_START)
@@ -681,8 +684,8 @@ void * _alloc_dynamic_db(int type,int subtype)
 	void * db_list=init_hash_list(8,type,subtype);
 	if(db_list==NULL)
 		return NULL;
-	ret=Galloc0(&memdb,sizeof(DB_DESC));
-	if(ret<0)
+	memdb=Salloc0(sizeof(DB_DESC));
+	if(memdb==NULL)
 		return NULL;
 	memdb->type=type;
 	memdb->subtype=subtype;
@@ -821,7 +824,7 @@ int memdb_init()
 
 
 	// alloc memspace for static database 
-	ret=Galloc0(&static_db_list,sizeof(void *)*DB_DTYPE_START);
+	static_db_list=Salloc0(sizeof(void *)*DB_DTYPE_START);
 	if(ret<0)
 		return ret;
 
@@ -837,16 +840,16 @@ int memdb_init()
 	templist1->elem_no=_get_namelist_no(&memdb_elem_type_array);
 	templist1->elemlist=&memdb_elem_type_array;
 
-	ret=Galloc0(&elemenumlist,sizeof(struct struct_namelist));
-	if(ret<0)
-		return ret;
+	elemenumlist=Dalloc0(sizeof(struct struct_namelist),NULL);
+	if(elemenumlist=NULL)
+		return -ENOMEM;
 
 	elemenumlist=_merge_namelist(templist,templist1);
 
 
-	ret=Galloc0(&typeenumlist,sizeof(struct struct_namelist));
-	if(ret<0)
-		return ret;
+	typeenumlist=Dalloc0(sizeof(struct struct_namelist),NULL);
+	if(typeenumlist==NULL)
+		return -ENOMEM;
 
 	templist->elem_no=_get_namelist_no(&struct_type_baselist);
 	templist->elemlist=&struct_type_baselist;
@@ -934,9 +937,9 @@ void *  memdb_store(void * data,int type,int subtype,char * name)
 		if(ret<0)
 			return NULL;
 	}
-	ret=Galloc0(&record,sizeof(DB_RECORD));
-	if(ret<0)
-		return -EINVAL;
+	record=Calloc0(sizeof(DB_RECORD));
+	if(record==NULL)
+		return -ENOMEM;
 
 	// build a faked record and comp uuid
 

@@ -271,9 +271,9 @@ int _elem_set_defvalue(void * elem,void * addr,int value)
 			int str_len=Strlen(buffer);
 			if(_ispointerelem(temp_elem->elem_desc->type))
 			{
-				int tempret=Palloc0(def_addr,str_len+1);
-				if(tempret<0)
-					return tempret;
+				*(char **)def_addr=Dalloc0(str_len+1,def_addr);
+				if(*(char **)def_addr==NULL)
+					return -ENOMEM;
 				Memcpy(*(char **)def_addr,buffer,str_len+1);
 			}
 			else
@@ -709,9 +709,9 @@ int _elem_set_bin_value(void * addr,void * data,void * elem)
 		}
 		if(_isarrayelem(type))
 		{
-			int tempret=Palloc0(elem_src,repeat_num*unitsize);
-			if(tempret<0)
-				return tempret;
+			*(BYTE **)elem_src = Dalloc0(repeat_num*unitsize,elem_src);
+			if(*(BYTE **)elem_src==NULL)
+				return -ENOMEM;
 			curr_elem->index=0;	
 			if(elem_ops->set_bin_value!=NULL)
 			{
@@ -746,9 +746,9 @@ int _elem_set_bin_value(void * addr,void * data,void * elem)
 					ret=unitsize*repeat_num;
 				if(ret!=0)
 				{
-					int tempret=Palloc0(elem_src,ret);
-					if(tempret<0)
-						return tempret;
+					*(BYTE **)elem_src=Dalloc0(ret,elem_src);
+					if(*(BYTE **)elem_src==NULL)
+						return -ENOMEM;
 					Memcpy(*(BYTE **)elem_src,data,ret);
 				}
 			}
@@ -805,7 +805,7 @@ int _elem_clone_value(void * addr, void * clone,void * elem)
 			if(def_value<0)
 				return def_value;
 			ret=unitsize*def_value;
-			int tempret=Palloc0(elem_clone,ret);
+			*(BYTE **)elem_clone=Dalloc0(ret,elem_clone);
 			if(*(BYTE **)elem_clone==NULL)	
 				return -ENOMEM;			
 			Memcpy(*(BYTE **)elem_clone,*(BYTE **)elem_src,ret);
@@ -814,7 +814,7 @@ int _elem_clone_value(void * addr, void * clone,void * elem)
 		else if(_isarrayelem(type))
 		{
 			ret=unitsize*curr_elem->size;
-			int tempret=Palloc0(elem_clone,ret);
+			*(BYTE **)elem_clone=Dalloc0(ret,elem_clone);
 			if(*(BYTE **)elem_clone==NULL)	
 				return -ENOMEM;			
 			Memcpy(*(BYTE **)elem_clone,*(BYTE **)elem_src,ret);
@@ -825,7 +825,7 @@ int _elem_clone_value(void * addr, void * clone,void * elem)
 			if((ret=_elem_get_bin_length(*(char **)elem_src,elem,addr))<0)
 				return ret;
 		}
-		int tempret=Palloc0(elem_clone,ret);
+		*(BYTE **)elem_clone=Dalloc0(ret,elem_clone);
 		if(*(BYTE **)elem_clone==NULL)	
 			return -ENOMEM;			
 		Memcpy(*(BYTE **)elem_clone,*(BYTE **)elem_src,ret);
@@ -1048,9 +1048,9 @@ int _elem_set_text_value(void * addr,char * text,void * elem)
 		}
 		if(_isarrayelem(type))
 		{
-			int tempret=Palloc0(elem_src,repeat_num*unitsize);
-			if(tempret<0)
-				return tempret;
+			*(BYTE **)elem_src=Dalloc0(repeat_num*unitsize,elem_src);
+			if(*(BYTE**)elem_src==NULL)
+				return -ENOMEM;
 			curr_elem->index=0;	
 			if(elem_ops->set_text_value!=NULL)
 			{
@@ -1099,9 +1099,9 @@ int _elem_set_text_value(void * addr,char * text,void * elem)
 					ret=unitsize*repeat_num;
 				if(ret!=0)
 				{
-					int tempret=Palloc0(elem_src,ret);
-					if(tempret<0)
-						return tempret;
+					*(BYTE **)elem_src=Dalloc0(ret,elem_src);
+					if(*(BYTE **)elem_src==NULL)
+						return -ENOMEM;
 					Memcpy(*(BYTE **)elem_src,text,ret);
 				}
 			}

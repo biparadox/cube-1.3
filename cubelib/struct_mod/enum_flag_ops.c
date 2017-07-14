@@ -12,7 +12,7 @@
 int enum_get_text_value(void * addr,char * text,void * elem_template){
 	struct elem_template * elem_attr=elem_template;
 	struct struct_elem_attr * elem_desc = elem_attr->elem_desc;
-	int enum_value;
+	UINT32 enum_value;
 	struct struct_namelist * enum_list;
 	int len;
 	int offset=0;
@@ -70,7 +70,7 @@ int enum_get_text_value(void * addr,char * text,void * elem_template){
 int enum_set_text_value(void * addr,void * text,void * elem_template){
 	struct elem_template * elem_attr=elem_template;
 	struct struct_elem_attr * elem_desc = elem_attr->elem_desc;
-	int enum_value;
+	UINT32 enum_value;
 	struct struct_namelist * enum_list;
 	int len;
 	int offset=0;
@@ -130,7 +130,7 @@ int flag_get_text_value(void * addr, char * text, void * elem_template){
 
 	struct elem_template * elem_attr=elem_template;
 	struct struct_elem_attr * elem_desc = elem_attr->elem_desc;
-	int flag_value;
+	UINT32 flag_value;
 	int retval;
 	int offset=0;
 	struct struct_namelist * flag_list;
@@ -184,7 +184,7 @@ int flag_set_text_value(void * addr, char * text, void * elem_template){
 
 	struct elem_template * elem_attr=elem_template;
 	struct struct_elem_attr * elem_desc = elem_attr->elem_desc;
-	int flag_value;
+	UINT32 flag_value;
 	int retval;
 	int offset=0;
 	struct struct_namelist * flag_list;

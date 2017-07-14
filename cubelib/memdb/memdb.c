@@ -23,9 +23,9 @@ int read_namelist_json_desc(void * root,void * record)
 	
 	void * temp_node;
 
-	ret=Galloc0(&namelist,sizeof(struct struct_namelist));
-	if(ret<0)
-		return ret;
+	namelist =Dalloc0(sizeof(struct struct_namelist),record);
+	if(namelist==NULL)
+		return -ENOMEM;
 	if(db_record->head.type!=DB_NAMELIST)
 		return -EINVAL;
 
@@ -37,7 +37,7 @@ int read_namelist_json_desc(void * root,void * record)
 		return -EINVAL;
 
 	ret=json_2_struct(root,namelist,namelist_template);
-//	namelist->elem_no=json_get_elemno(temp_node);
+//	namelist->elem_no=json_get_elemno(temp_node);/
 	db_record->record=namelist;
 
 	ret=memdb_comp_uuid(db_record);
@@ -62,9 +62,9 @@ int read_typelist_json_desc(void * root,void * record)
 	DB_RECORD * namelist_record;
 
 
-	ret=Galloc0(&typelist,sizeof(struct struct_typelist));
-	if(ret<0)
-		return ret;
+	typelist=Dalloc0(sizeof(struct struct_typelist),record);
+	if(typelist==NULL)
+		return -ENOMEM;
 	if(db_record->head.type!=DB_TYPELIST)
 		return -EINVAL;
 	
@@ -75,9 +75,9 @@ int read_typelist_json_desc(void * root,void * record)
 	{
 		// this typelist use namelist describe, 
 		// we should finish namelist store first	
-		ret=Galloc0(&namelist_record,sizeof(DB_RECORD));
-		if(ret<0)
-			return ret;
+		namelist_record=Calloc0(sizeof(DB_RECORD));
+		if(namelist_record==NULL)
+			return -ENOMEM;
 		namelist_record->head.type=DB_NAMELIST;
 		ret=read_namelist_json_desc(root,namelist_record);
 		if(ret<0)
@@ -138,9 +138,9 @@ int read_subtypelist_json_desc(void * root,void * record)
 	DB_RECORD * namelist_record;
 
 
-	ret=Galloc0(&subtypelist,sizeof(struct struct_subtypelist));
-	if(ret<0)
-		return ret;
+	subtypelist=Dalloc0(sizeof(struct struct_subtypelist),record);
+	if(subtypelist==NULL)
+		return -ENOMEM;
 	if(db_record->head.type!=DB_SUBTYPELIST)
 		return -EINVAL;
 	
@@ -151,9 +151,9 @@ int read_subtypelist_json_desc(void * root,void * record)
 	{
 		// this typelist use namelist describe, 
 		// we should finish namelist store first	
-		ret=Galloc0(&namelist_record,sizeof(DB_RECORD));
-		if(ret<0)
-			return ret;
+		namelist_record=Calloc0(sizeof(DB_RECORD));
+		if(namelist_record==NULL)
+			return -ENOMEM;
 		namelist_record->head.type=DB_NAMELIST;
 		ret=read_namelist_json_desc(root,namelist_record);
 		if(ret<0)
@@ -215,9 +215,9 @@ int read_default_json_desc(void * root,void * record)
 	if(struct_template==NULL)
 		return -EINVAL;
 
-	ret=Galloc0(&data,struct_size(struct_template));
-	if(ret<0)
-		return ret;
+	data=Dalloc0(struct_size(struct_template),record);
+	if(data==NULL)
+		return -ENOMEM;
 
 	ret=json_2_struct(root,data,struct_template);
 //	namelist->elem_no=json_get_elemno(temp_node);
@@ -236,7 +236,7 @@ void * memdb_read_struct_template(void * node)
 	void * struct_template;
 	BYTE uuid[DIGEST_SIZE];
 	int ret;
-	ret=Galloc0(&struct_record,sizeof(*struct_record));
+	struct_record=Calloc0(sizeof(*struct_record));
 	struct_record->head.type=DB_STRUCT_DESC;
 	ret=read_default_json_desc(node,struct_record);
 	if(ret<0)
@@ -268,9 +268,9 @@ int read_recordtype_json_desc(void * root,void * record)
 	if(struct_template==NULL)
 		return -EINVAL;
 
-	ret=Galloc0(&recordtype,sizeof(struct struct_recordtype));
-	if(ret<0)
-		return ret;
+	recordtype=Dalloc0(sizeof(struct struct_recordtype),record);
+	if(recordtype==NULL)
+		return -ENOMEM;
 
 	temp_node=json_find_elem("uuid",root);
 	if(temp_node==NULL)
@@ -278,9 +278,9 @@ int read_recordtype_json_desc(void * root,void * record)
 		temp_node=json_find_elem("struct_desc",root);
 		if(temp_node==NULL)
 			return -EINVAL;
-		ret=Galloc0(&struct_record,sizeof(*struct_record));
-		if(ret<0)
-			return ret;
+		struct_record=Calloc0(sizeof(*struct_record));
+		if(struct_record==NULL)
+			return -ENOMEM;
 		struct_record->head.type=DB_STRUCT_DESC;
 		Memcpy(struct_record->head.name,db_record->head.name,DIGEST_SIZE);
 		ret=read_default_json_desc(temp_node,struct_record);
@@ -343,7 +343,9 @@ int memdb_read_desc(void * root, BYTE * uuid)
 	}
 	
 	
-	ret=Galloc0(&db_record,sizeof(DB_RECORD));
+	db_record=Calloc0(sizeof(DB_RECORD));
+	if(db_record==NULL)
+		return -ENOMEM;
 	
 	ret=json_2_struct(head_node,&(db_record->head),head_template);
 	if(ret<0)

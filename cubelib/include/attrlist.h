@@ -28,7 +28,6 @@ static __inline__ struct List_head * find_elem_in_list(
 				struct List_head * elem)
 {
 	struct List_head * temp;
-	Record_List * ptr;
 	if(elem==NULL){
 		return NULL;
 	}
@@ -38,7 +37,6 @@ static __inline__ struct List_head * find_elem_in_list(
 	temp=head;
 	do
 	{
-		ptr=List_entry(temp,Record_List,list);
 		if(fn(temp,elem)==0)
 		{
 			return temp;	
@@ -202,15 +200,15 @@ static __inline__ void destroy_record_List_elem (struct List_head * elem)
 {
 	Record_List * record_elem;
 	record_elem = List_entry( elem, Record_List,list); 
-//	kfree(record_elem->record);
-//	kfree(record_elem);
+	Free(record_elem->record);
+	Free(record_elem);
 }
 
 static __inline__ void destroy_record_List_elem_only (struct List_head * elem)
 {
 	Record_List * record_elem;
 	record_elem = List_entry( elem, Record_List,list); 
-//	kfree(record_elem);
+	Free(record_elem);
 }
 static void destroy_record_list (struct List_head * head)
 {

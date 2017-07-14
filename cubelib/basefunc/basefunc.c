@@ -1,22 +1,8 @@
 /**
- * Copyright [2015] Tianfu Ma (matianfu@gmail.com)
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
  * File: basefunc.c
  *
  * Created on: Jun 5, 2015
- * Author: Tianfu Ma (matianfu@gmail.com)
+ * Author: Hu Jun (algorist@bjut.edu.cn)
  */
 
 #include "../include/errno.h"
@@ -65,29 +51,29 @@ typedef struct taguuid_hashlist
 	void * desc;
 	Record_List * hash_table;
 	int curr_index;
-	struct list_head * curr_head;
+	struct List_head * curr_head;
 }UUID_LIST;
 
 
 
 void * init_hash_list(int order,int type,int subtype)
 {
-	int ret;
 	int i;
 	if(order<0)
-		return -EINVAL;
+		return NULL;
 	if(order>10)
-		return -EINVAL;
+		return NULL;
 	UUID_LIST * hash_head;
-	hash_head=Calloc(sizeof(UUID_LIST));
+	hash_head=Salloc0(sizeof(UUID_LIST));
 	if(hash_head==NULL)
-		return -ENOMEM;
+		return NULL;
 	hash_head->hash_num=1<<order;
 	hash_head->desc=NULL;
 	hash_head->curr_index=0;
-	ret=Galloc(&hash_head->hash_table,sizeof(Record_List)*hash_head->hash_num);
-	if(ret<0)
-		return -ENOMEM;
+	hash_head->hash_table=Salloc(sizeof(Record_List)*hash_head->hash_num);
+
+	if(hash_head->hash_table==NULL)
+		return NULL;
 	for(i=0;i<hash_head->hash_num;i++)
 	{
 		INIT_LIST_HEAD(&(hash_head->hash_table[i].list));
@@ -136,8 +122,8 @@ int hashlist_add_elem(void * hashlist,void * elem)
 static __inline__ int comp_uuid(void * src,void * desc)
 {
 	int i;
-	unsigned int * src_array=(int *)src;
-	unsigned int * desc_array = (int *)desc;
+	unsigned int * src_array=(unsigned int *)src;
+	unsigned int * desc_array = (unsigned int *)desc;
 
 	for(i=0;i<DIGEST_SIZE/sizeof(int);i++)
 	{
@@ -151,17 +137,13 @@ static __inline__ int comp_uuid(void * src,void * desc)
 
 static __inline__ int comp_name(void * src,void * desc)
 {
-	int i;
-	unsigned int * src_array=(int *)src;
-	unsigned int * desc_array = (int *)desc;
-	
 	return Strncmp(src,desc,DIGEST_SIZE);
 }
 
 Record_List * list_find_nameelem(void * list,char  * name)
 {
 	Record_List * head = list;
-	Record_List * curr = head->list.next;
+	Record_List * curr = (Record_List *)head->list.next;
 	UUID_HEAD * record_head;
 	
 	while(curr!=head)
@@ -177,8 +159,7 @@ Record_List * list_find_nameelem(void * list,char  * name)
 Record_List * list_find_uuidelem(void * list,void * uuid)
 {
 	Record_List * head = list;
-	Record_List * curr = head->list.next;
-	Record_List * temp;
+	Record_List * curr = (Record_List *)head->list.next;
 	
 	while(curr!=head)
 	{
@@ -235,7 +216,7 @@ Record_List  * _hashlist_remove_elem(void * hashlist,void * elem)
 	curr_elem=_hashlist_find_elem(hashlist,elem);
 	if(curr_elem==NULL)
 		return NULL;
-	List_del(curr_elem);
+	List_del(&curr_elem->list);
 	return curr_elem;		
 }
 
@@ -262,7 +243,7 @@ void * hashlist_get_first(void * hashlist)
 		if(temp==&uuid_list->hash_table[i])
 			continue;
 		uuid_list->curr_index=i;
-		uuid_list->curr_head=temp;
+		uuid_list->curr_head=&temp->list;
 		return temp->record;
 	}
 	uuid_list->curr_index=0;
@@ -277,7 +258,7 @@ void * hashlist_get_next(void * hashlist)
 	int i;
 	if(uuid_list->curr_head==NULL)
 		return NULL;
-	temp=uuid_list->curr_head;
+	temp=(Record_List *)uuid_list->curr_head;
 	for(i=uuid_list->curr_index;i<uuid_list->hash_num;i++)
 	{
 		temp=(Record_List *)(temp->list.next);
@@ -287,7 +268,7 @@ void * hashlist_get_next(void * hashlist)
 			continue;
 		}
 		uuid_list->curr_index=i;
-		uuid_list->curr_head=temp;
+		uuid_list->curr_head=&temp->list;
 		return temp->record;
 	}
 	uuid_list->curr_index=0;
@@ -311,7 +292,7 @@ void * init_pointer_stack(int size)
 	BYTE * buffer;
 	buffer=Talloc(sizeof(POINTER_STACK)+sizeof(void *)*size);
 	if(buffer==NULL)
-		return -ENOMEM;
+		return NULL;
 	stack=(POINTER_STACK *)buffer;
 	stack->top=(void **)(buffer+sizeof(POINTER_STACK));
 	stack->curr=stack->top;
@@ -341,7 +322,7 @@ void * pointer_stack_pop(void * pointer_stack)
 	POINTER_STACK * stack;
 	stack=(POINTER_STACK *)pointer_stack;
 	if(--stack->curr<stack->top)
-		return -ERANGE;
+		return NULL;
 	return *(stack->curr);
 }
 
@@ -359,7 +340,7 @@ void * init_pointer_queue(int size)
 	BYTE * buffer;
 	buffer=Talloc(sizeof(POINTER_QUEUE)+sizeof(void *)*size);
 	if(buffer==NULL)
-		return -ENOMEM;
+		return NULL;
 	queue=(POINTER_QUEUE *)buffer;
 	Memset(queue,0,sizeof(POINTER_QUEUE)+sizeof(void *)*size);
 	queue->buffer=(void **)(buffer+sizeof(POINTER_QUEUE));
@@ -513,7 +494,7 @@ void * list_queue_getnext(void * list_queue)
 	if(slot==NULL)
 		return NULL;
 
-	slot=slot->list.next;
+	slot=(Record_List *)slot->list.next;
 	if(slot==&queue->queue_list)
 	{
 		queue->curr=NULL;
@@ -530,7 +511,6 @@ void * list_queue_removecurr(void * list_queue)
 	queue=(LIST_QUEUE *)list_queue;
 	void * record;
 	
-	
 	if(queue->record_num==0)
 	{
 		return NULL;
@@ -541,11 +521,11 @@ void * list_queue_removecurr(void * list_queue)
 
 	record=slot->record;
 
-	if(slot->list.next==&queue->queue_list)
+	if(slot->list.next==&queue->queue_list.list)
 	{
 		queue->curr=NULL;
 	}
-	queue->curr=slot->list.next;
+	queue->curr=(Record_List *)slot->list.next;
 	Free(slot);
 	return record;
 }

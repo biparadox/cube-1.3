@@ -213,7 +213,7 @@ void * json_find_elem(char * name,void * root)
 	
 	while(this_node != NULL)
 	{
-		if(Strncmp(name,this_node->name,DIGEST_SIZE*2)==0)
+		if(Strncmp(name,this_node->name,DIGEST_SIZE)==0)
 			break;
 		this_node=(JSON_NODE *)json_get_next_child(root);
 	}
@@ -465,7 +465,7 @@ int json_solve_str(void ** root, char *str)
                 ret=json_get_strvalue(value_buffer,str+offset);
                 if(ret<0)
                     return ret;
-                if(ret>=DIGEST_SIZE*2)
+                if(ret>=DIGEST_SIZE)
                     return ret;
                 offset+=ret;
 		{
@@ -523,7 +523,7 @@ int json_solve_str(void ** root, char *str)
                 	if(ret>DIGEST_SIZE*8+2)
                     		return -EINVAL;
 			json_set_type(child_node,JSON_ELEM_STRING,0);
-			ret=Palloc((void **)(&(child_node->value_str)),ret);
+			child_node->value_str=Palloc(ret,child_node);
 			Memcpy(child_node->value_str,value_buffer,ret);
 		}
 		// if this value is a num
@@ -532,7 +532,7 @@ int json_solve_str(void ** root, char *str)
                 	ret=json_get_numvalue(value_buffer,str+offset);
                 	if(ret<0)
                     		return ret;
-                	if(ret>=DIGEST_SIZE*2)
+                	if(ret>=DIGEST_SIZE)
                     		return ret;
 			json_set_type(child_node,JSON_ELEM_NUM,0);
 			Memcpy(&(child_node->value),value_buffer,sizeof(int));
@@ -543,7 +543,7 @@ int json_solve_str(void ** root, char *str)
                 	ret=json_get_boolvalue(value_buffer,str+offset);
                 	if(ret<0)
                     		return ret;
-                	if(ret>=DIGEST_SIZE*2)
+                	if(ret>=DIGEST_SIZE)
                     		return ret;
 			json_set_type(child_node,JSON_ELEM_BOOL,0);
 			Memcpy(&(child_node->value),value_buffer,sizeof(int));
@@ -598,7 +598,7 @@ int json_solve_str(void ** root, char *str)
                 	if(ret>DIGEST_SIZE*16+2)
                     		return -EINVAL;
 			json_set_type(child_node,JSON_ELEM_STRING,1);
-			Palloc((void **)(&(child_node->value_str)),ret);
+			child_node->value_str=Palloc(ret,child_node);
 			Memcpy(child_node->value_str,value_buffer,ret);
 		}
 		// if this value is a num
@@ -607,7 +607,7 @@ int json_solve_str(void ** root, char *str)
                 	ret=json_get_numvalue(value_buffer,str+offset);
                 	if(ret<0)
                     		return ret;
-                	if(ret>=DIGEST_SIZE*2)
+                	if(ret>=DIGEST_SIZE)
                     		return ret;
 			json_set_type(child_node,JSON_ELEM_NUM,1);
 			Memcpy(&(child_node->value),value_buffer,sizeof(int));
@@ -618,7 +618,7 @@ int json_solve_str(void ** root, char *str)
                 	ret=json_get_boolvalue(value_buffer,str+offset);
                 	if(ret<0)
                     		return ret;
-                	if(ret>=DIGEST_SIZE*2)
+                	if(ret>=DIGEST_SIZE)
                     		return ret;
 			json_set_type(child_node,JSON_ELEM_BOOL,1);
 			Memcpy(&(child_node->value),value_buffer,sizeof(int));

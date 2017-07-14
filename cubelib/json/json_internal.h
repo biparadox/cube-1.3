@@ -24,7 +24,7 @@ typedef struct json_elem_node
     int elem_type;            //  this json elem's type, it can be
                              //  NUM,STRING,BOOL,MAP,ARRAY or NULL
 
-    char name[DIGEST_SIZE*2]; // this json elem's name,
+    char name[DIGEST_SIZE]; // this json elem's name,
                               // if this json elem is the root elem,
                               //  its name is "__ROOT__"
     char * value_str;         // this json elem's value string

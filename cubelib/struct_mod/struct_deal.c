@@ -23,7 +23,7 @@ struct struct_namelist * _namevalue_2_namelist(NAME2VALUE * namevalue)
 	int i;
 	int ret;
 	const int max_namelist_no=1024;
-	ret=Galloc0(&namelist,sizeof(*namelist));
+	namelist=Calloc0(sizeof(*namelist));
 	if(namevalue==NULL)
 	{
 		namelist->elem_no=0;
@@ -163,10 +163,9 @@ int _create_template_start(void * addr,void * data,void * elem, void * para)
 	// prepare the root node's elem_list
 	root_node->elem_no=_count_struct_num(root_node->struct_desc);
 	
-	ret=Palloc0(&(root_node->elem_list),
-		sizeof(struct elem_template)*root_node->elem_no);
-	if(ret<0)
-		return ret;
+	root_node->elem_list=Dalloc0(sizeof(struct elem_template)*root_node->elem_no,root_node);
+	if(root_node->elem_list==NULL)
+		return -ENOMEM;
 
 	// prepare the struct node for SUBSTRUCT elem and ARRAY elem
 
@@ -176,9 +175,9 @@ int _create_template_start(void * addr,void * data,void * elem, void * para)
 		if(_issubsetelem(root_node->struct_desc[i].type))
 		{
 			
-			ret = Palloc0(&temp_node,sizeof(STRUCT_NODE)); 
-			if(ret<0)
-				return ret;
+			temp_node = Dalloc0(sizeof(STRUCT_NODE),root_node); 
+			if(temp_node==NULL)
+				return -ENOMEM;
 			root_node->elem_list[i].ref=temp_node;
 			temp_node->struct_desc=root_node->struct_desc[i].ref;
 			temp_node->parent=root_node;
@@ -201,10 +200,9 @@ int _create_template_enterstruct(void * addr,void * data,void * elem, void * par
 //	curr_node->struct_desc=curr_elem->elem_desc->ref;	
 	curr_node->elem_no=_count_struct_num(curr_node->struct_desc);
 	
-	ret=Palloc0(&(curr_node->elem_list),
-		sizeof(struct elem_template)*curr_node->elem_no);
-	if(ret<0)
-		return ret;
+	curr_node->elem_list=Dalloc0(sizeof(struct elem_template)*curr_node->elem_no,curr_node);
+	if(curr_node->elem_list==NULL)
+		return -ENOMEM;
 
 	// prepare the struct node for SUBSTRUCT elem and ARRAY elem
 
@@ -214,9 +212,9 @@ int _create_template_enterstruct(void * addr,void * data,void * elem, void * par
 		if(_issubsetelem(curr_node->struct_desc[i].type))
 		{
 			
-			ret = Palloc0(&temp_node,sizeof(STRUCT_NODE)); 
-			if(ret<0)
-				return ret;
+			temp_node = Dalloc0(sizeof(STRUCT_NODE),curr_node); 
+			if(temp_node==NULL)
+				return -ENOMEM;
 			curr_node->elem_list[i].ref=temp_node;
 			temp_node->struct_desc=curr_node->struct_desc[i].ref;
 			temp_node->parent=curr_node;
@@ -395,10 +393,9 @@ int _clone_template_start(void * addr,void * data,void * elem, void * para)
 	clone_node->elem_no=root_node->elem_no;
 	clone_node->struct_desc=root_node->struct_desc;
 
-	ret=Palloc0(&(clone_node->elem_list),
-		sizeof(struct elem_template)*clone_node->elem_no);
-	if(ret<0)
-		return ret;
+	clone_node->elem_list=Dalloc0(sizeof(struct elem_template)*clone_node->elem_no,clone_node);
+	if(clone_node->elem_list==NULL)
+		return -ENOMEM;
 
 	// prepare the struct node for SUBSTRUCT elem and ARRAY elem
 
@@ -408,9 +405,9 @@ int _clone_template_start(void * addr,void * data,void * elem, void * para)
 		if(_issubsetelem(clone_node->struct_desc[i].type))
 		{
 			
-			ret = Palloc0(&temp_node,sizeof(STRUCT_NODE)); 
-			if(ret<0)
-				return ret;
+			temp_node = Dalloc0(sizeof(STRUCT_NODE),clone_node); 
+			if(temp_node==NULL)
+				return -ENOMEM;
 			clone_node->elem_list[i].ref=temp_node;
 			temp_node->struct_desc=clone_node->struct_desc[i].ref;
 			temp_node->parent=clone_node;
@@ -446,10 +443,9 @@ int _clone_template_enterstruct(void * addr,void * data,void * elem, void * para
 	// prepare the root node's elem_list
 	clone_node->elem_no=my_para->source_node->elem_no;
 	
-	ret=Palloc0(&(clone_node->elem_list),
-		sizeof(struct elem_template)*clone_node->elem_no);
-	if(ret<0)
-		return ret;
+	clone_node->elem_list=Dalloc0(sizeof(struct elem_template)*clone_node->elem_no,clone_node);
+	if(clone_node->elem_list==NULL)
+		return -ENOMEM;
 
 	// prepare the struct node for SUBSTRUCT elem and ARRAY elem
 
@@ -460,9 +456,9 @@ int _clone_template_enterstruct(void * addr,void * data,void * elem, void * para
 		if(_issubsetelem(clone_node->struct_desc[i].type))
 		{
 			
-			ret = Palloc0(&temp_node,sizeof(STRUCT_NODE)); 
-			if(ret<0)
-				return ret;
+			temp_node = Dalloc0(sizeof(STRUCT_NODE),clone_node); 
+			if(temp_node==NULL)
+				return -ENOMEM;
 			clone_node->elem_list[i].ref=temp_node;
 			temp_node->struct_desc=clone_node->struct_desc[i].ref;
 			temp_node->parent=clone_node;
@@ -674,7 +670,7 @@ int struct_free_exitstruct(void * addr,void * data,void * elem,void * para)
 	if(_ispointerelem(curr_elem->elem_desc->type))
 	{
 		void * elem_addr=_elem_get_addr(elem,addr);
-		Free0(*(void **)elem_addr);
+		Free(*(void **)elem_addr);
 	}
 
 	return 0;
@@ -687,7 +683,7 @@ int proc_struct_free(void * addr,void * data,void * elem,void * para)
 	if(_ispointerelem(curr_elem->elem_desc->type))
 	{
 		void * elem_addr=_elem_get_addr(elem,addr);
-		Free0(*(void **)elem_addr);
+		Free(*(void **)elem_addr);
 	}
 	return 0;	
 }
@@ -815,7 +811,11 @@ int blob_2_struct_enterstruct(void * addr, void * data, void * elem,void * para)
 			elem_addr+=curr_elem->offset;
 			
 			if(curr_elem->limit>0)
-				ret=Palloc0(elem_addr,curr_elem->size*curr_elem->limit);
+			{
+				*(BYTE **)elem_addr=Dalloc0(curr_elem->size*curr_elem->limit,elem_addr);
+				if(*(BYTE **)elem_addr==NULL)
+					return -ENOMEM;
+			}
 		}
 		else 
 		{
@@ -891,7 +891,11 @@ int clone_struct_enterstruct(void * src, void * destr, void * elem,void * para)
 			elem_addr+=curr_elem->offset;
 			
 			if(curr_elem->limit>0)
-				ret=Palloc0(elem_addr,curr_elem->size*curr_elem->limit);
+			{
+				*(BYTE **)elem_addr=Dalloc0(curr_elem->size*curr_elem->limit,elem_addr);
+				if(*(BYTE **)elem_addr==NULL)
+					return -ENOMEM;
+			}
 		}
 		else 
 		{
@@ -934,7 +938,7 @@ void * clone_struct(void * addr,void * struct_template)
 	int ret;
 	void * new_struct;
 	
-	ret=Galloc0(&new_struct,struct_size(struct_template));
+	new_struct=Dalloc0(struct_size(struct_template),addr);
 	if(ret<0)
 		return NULL;
 	ret=struct_clone(addr,new_struct,struct_template);
@@ -1565,7 +1569,11 @@ int _jsonto_enterstruct(void * addr,void * data, void * elem,void * para)
 			elem_addr+=curr_elem->offset;
 			
 			if(curr_elem->limit>0)
-				ret=Palloc0(elem_addr,curr_elem->size*curr_elem->limit);
+			{
+				*(BYTE **)elem_addr=Dalloc0(curr_elem->size*curr_elem->limit,elem_addr);
+				if(*(BYTE **)elem_addr==NULL)
+					return -ENOMEM;
+			}
 		}
 		else
 		{

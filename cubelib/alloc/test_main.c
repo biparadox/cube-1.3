@@ -29,26 +29,11 @@ void test001() {
   void * p1, * p2, * p3;
   int freecount;
   int ret;
-  ret = Galloc0(&p1,250);
-  ret = Galloc0(&p2,98);
-  ret = Galloc0(&p3,77);
+  p1 = Calloc0(250);
+  p2 = Calloc0(98);
+  p3 = Calloc0(77);
 
 //  freecount=Ggetfreecount();
-  
-  printf("free count %d!\n",freecount);
-
-  Free0(p2);
-  Free0(p3);
-  Free0(p1);
-}
-void test003() {
-  void * p1, * p2, * p3;
-  int freecount;
-  p1 = Talloc(25);
-  p2 = Talloc(9);
-  p3 = Talloc(7);
-
-//  freecount=Tgetfreecount();
   
   printf("free count %d!\n",freecount);
 
@@ -57,13 +42,28 @@ void test003() {
   Free(p1);
 }
 
+void test002() {
+  void * p1, * p2, * p3;
+  int freecount;
+  int ret;
+  p1 = Talloc0(278);
+  p2 = Talloc0(198);
+  p3 = Talloc0(707);
+
+//  freecount=Ggetfreecount();
+  
+  printf("free count %d!\n",freecount);
+
+  TmemReset();
+}
+
 int main() {
 
 //  static unsigned char alloc_buffer[4096*(1+1+4+1+32+1+256)];	
 
-//  alloc_init(alloc_buffer);
+  alloc_init();
   test001();
-  test003();
+  test002();
 //  Tclear();
   return 0;
 }
