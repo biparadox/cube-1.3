@@ -32,7 +32,7 @@ int connector_hub_init(void * hub)
 	conn_hub = (struct tcloud_connector_hub *)hub;
 	memset(conn_hub,0,sizeof(struct tcloud_connector_hub));
 
-	conn_list=malloc(sizeof(Record_List));
+	conn_list=Dalloc(sizeof(Record_List),hub);
 	if(conn_list == NULL)
 		return -ENOMEM;
 	conn_list->record=NULL;
@@ -107,7 +107,7 @@ int  connector_hub_add_connector (void * hub,void * connector,void * attr)
 
 	conn_hub = (struct tcloud_connector_hub *)hub;
 
-	record_elem = malloc(sizeof(Record_List));
+	record_elem = Dalloc(sizeof(Record_List),hub);
 	if(record_elem==NULL)
 		return -ENOMEM;
 	INIT_LIST_HEAD(&(record_elem->list));
@@ -381,7 +381,7 @@ struct connector_hub_ops general_hub_ops =
 void * get_connector_hub()
 {
 	struct tcloud_connector_hub * hub;
-	hub=malloc(sizeof(struct tcloud_connector_hub));
+	hub=Calloc(sizeof(struct tcloud_connector_hub));
 	if(hub==NULL)
 		return -ENOMEM;
 

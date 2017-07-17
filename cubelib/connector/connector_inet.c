@@ -48,7 +48,7 @@ void * create_channel_af_inet_info(void * server_info)
 	struct connector_af_inet_info * src_info;
 	struct connector_af_inet_info * new_info;
 	src_info=(struct connector_af_inet_info *)server_info;
-	new_info=(struct connector_af_inet_info *)malloc(sizeof (struct connector_af_inet_info));
+	new_info=(struct connector_af_inet_info *)Talloc(sizeof (struct connector_af_inet_info));
 	if(new_info == NULL)
 		return NULL;
 	memset(new_info,0,sizeof (struct connector_af_inet_info));
@@ -111,7 +111,7 @@ char *  af_inet_getaddrstring(struct sockaddr_in * adr_inet)
 
 	namelen=strlen(cp)+strlen(addrbuf);
 
-	addrstring=malloc(namelen+1);
+	addrstring=Talloc(namelen+1);
 	if(addrstring==NULL)
 		return -ENOMEM;
 
@@ -148,10 +148,10 @@ int  connector_af_inet_info_init (void * connector,char * addr)
 		return 0;
 
 
-	base_info=malloc(sizeof(struct connector_af_inet_info));
+	base_info=Dalloc(sizeof(struct connector_af_inet_info),this_conn);
 	if(base_info==NULL)
 		return -ENOMEM;
-	memset(base_info,0,sizeof(struct connector_af_inet_info));
+	Memset(base_info,0,sizeof(struct connector_af_inet_info));
 	this_conn->conn_base_info=base_info;
 	
 
@@ -198,12 +198,12 @@ int  connector_af_inet_client_init (void * connector,char * name,char * addr)
 
 	this_conn=(struct tcloud_connector *)connector;
 
-	this_conn->conn_name=malloc(strlen(name)+1);
+	this_conn->conn_name=Dalloc(strlen(name)+1,this_conn);
 	if(this_conn->conn_name==NULL)
 		return -ENOMEM;
 	strcpy(this_conn->conn_name,name);
 
-	this_conn->conn_addr=malloc(strlen(addr)+1);
+	this_conn->conn_addr=Dalloc(strlen(addr)+1,this_conn);
 	if(this_conn->conn_addr==NULL)
 		return -ENOMEM;
 	strcpy(this_conn->conn_addr,addr);
@@ -224,12 +224,12 @@ int  connector_af_inet_server_init (void * connector,char * name,char * addr)
 
 	this_conn=(struct tcloud_connector *)connector;
 
-	this_conn->conn_name=malloc(strlen(name)+1);
+	this_conn->conn_name=Dalloc(strlen(name)+1,this_conn);
 	if(this_conn->conn_name==NULL)
 		return -ENOMEM;
 	strcpy(this_conn->conn_name,name);
 	
-	this_conn->conn_addr=malloc(strlen(addr)+1);
+	this_conn->conn_addr=Dalloc(strlen(addr)+1,this_conn);
 	if(this_conn->conn_addr==NULL)
 		return -ENOMEM;
 	strcpy(this_conn->conn_addr,addr);
@@ -237,7 +237,7 @@ int  connector_af_inet_server_init (void * connector,char * name,char * addr)
 	connector_af_inet_info_init (connector,addr);
 	base_info=(struct connector_af_inet_info *)(this_conn->conn_base_info);
 
-	server_info=malloc(sizeof(struct connector_af_inet_server_info));
+	server_info=Dalloc(sizeof(struct connector_af_inet_server_info),this_conn);
 	if(server_info==NULL)
 		return -ENOMEM;
 	memset(server_info,0,sizeof(struct connector_af_inet_server_info));
@@ -300,7 +300,7 @@ void * connector_af_inet_accept (void * connector)
 	channel_base_info = create_channel_af_inet_info(base_info);
 	channel_conn->conn_fd=accept_fd;
 
-	channel_info=malloc(sizeof(struct connector_af_inet_channel_info));
+	channel_info=Dalloc(sizeof(struct connector_af_inet_channel_info),channel_conn);
 	if(channel_info==NULL)
 		return NULL;
 	channel_info->server=this_conn;
@@ -322,7 +322,7 @@ void * connector_af_inet_accept (void * connector)
 	struct List_head * head, *currlib;
 	Record_List * record_elem;
 
-	record_elem = malloc(sizeof(Record_List));
+	record_elem = Calloc(sizeof(Record_List));
 	if(record_elem==NULL)
 		return -ENOMEM;
 	INIT_LIST_HEAD(&(record_elem->list));

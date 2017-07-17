@@ -115,7 +115,7 @@ int get_filedata_from_message(void * message)
 	int subtype;
 
 
-	pfdata= malloc(sizeof(struct policyfile_data));
+	pfdata= Talloc(sizeof(struct policyfile_data));
         if(pfdata==NULL)
        		return -ENOMEM;	       
 	message_head=message_get_head(message);
@@ -231,7 +231,7 @@ int proc_file_receive(void * sub_proc,void * message)
 			storedata->block_size=block_size;
 			storedata->block_num=(pfdata->total_size+(storedata->block_size-1))/storedata->block_size;
 			storedata->mark_len=(storedata->block_num+7)/8;
-			storedata->marks=malloc(storedata->mark_len);
+			storedata->marks=Talloc(storedata->mark_len);
 			if(storedata->marks==NULL)
 				return -ENOMEM;
 			memset(storedata->marks,0,storedata->mark_len);

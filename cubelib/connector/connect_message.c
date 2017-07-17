@@ -144,9 +144,17 @@ void * build_server_syn_message(char * service,char * local_uuid,char * proc_nam
 	int record_size;
 	int retval;
 
-	server_syn=malloc(sizeof(struct connect_syn));
+	message_box=message_create(DTYPE_MESSAGE,SUBTYPE_CONN_SYNI,NULL); // SYNI
+	if(message_box==NULL)
+		return -EINVAL;
+	if(IS_ERR(message_box))
+		return -EINVAL;
+	server_syn=Dalloc(sizeof(struct connect_syn),message_box);
 	if(server_syn == NULL)
+	{
+		message_free(message_box);
 		return -ENOMEM;
+	}
 
 	Memset(server_syn,0,sizeof(struct connect_syn));
 	
@@ -157,11 +165,6 @@ void * build_server_syn_message(char * service,char * local_uuid,char * proc_nam
 	{
 		server_syn->service=dup_str(service,0);
 	}
-	message_box=message_create(DTYPE_MESSAGE,SUBTYPE_CONN_SYNI,NULL); // SYNI
-	if(message_box==NULL)
-		return -EINVAL;
-	if(IS_ERR(message_box))
-		return -EINVAL;
 	retval=message_add_record(message_box,server_syn);
 
 //	message_head->state=MSG_FLOW_INIT;
@@ -183,9 +186,16 @@ void * build_client_ack_message(void * message_box,char * local_uuid,char * proc
 	struct tcloud_connector * temp_conn=conn;
 	void * new_msg;
 
-	client_ack=malloc(sizeof(struct connect_ack));
+	new_msg=message_create(DTYPE_MESSAGE,SUBTYPE_CONN_ACKI,message_box); //ACKI
+	if(new_msg==NULL)
+		return -EINVAL;
+
+	client_ack=Dalloc(sizeof(struct connect_ack),new_msg);
 	if(client_ack==NULL)
+	{
+		message_free(new_msg);
 		return -ENOMEM;
+	}
 //	server_syn=malloc(sizeof(struct connect_syn));
 //	if(server_syn==NULL)
 //		return -ENOMEM;
@@ -195,9 +205,15 @@ void * build_client_ack_message(void * message_box,char * local_uuid,char * proc
 	retval=message_get_record(message_box,&server_syn,0);
 
 	if(retval<0)
+	{
+		message_free(new_msg);
 		return -EINVAL;
+	}
 	if(server_syn==NULL)
+	{
+		message_free(new_msg);
 		return -EINVAL;
+	}
 	temp_conn->conn_extern_info=server_syn;
 
 	Memcpy(client_ack->uuid,local_uuid,DIGEST_SIZE);
@@ -213,13 +229,6 @@ void * build_client_ack_message(void * message_box,char * local_uuid,char * proc
 	client_ack->flags=server_syn->flags;
 	strncpy(client_ack->nonce,server_syn->nonce,DIGEST_SIZE);
 
-	new_msg=message_create(DTYPE_MESSAGE,SUBTYPE_CONN_ACKI,message_box); //ACKI
-	if(new_msg==NULL)
-		return -EINVAL;
-
-	
-//	message_head=message_get_head(new_msg);
-//	message_head->state=MSG_FLOW_INIT;
 	message_set_state(new_msg,MSG_FLOW_INIT);
 	retval=message_add_record(new_msg,client_ack);
 	return new_msg;
@@ -237,20 +246,19 @@ int receive_local_client_ack(void * message_box,void * conn,void * hub)
 	struct connect_proc_info * channel_info;
 
 
-	client_ack=malloc(sizeof(struct connect_ack));
+	client_ack=Talloc(sizeof(struct connect_ack));
 	if(client_ack==NULL)
 		return -ENOMEM;
 	Memset(client_ack,0,sizeof(struct connect_ack));
 
 
-	channel_info=malloc(sizeof(struct connect_proc_info));
+	channel_info=Dalloc(sizeof(struct connect_proc_info),conn);
 	if(channel_info==NULL)
 		return -ENOMEM;
 	Memset(channel_info,0,sizeof(struct connect_proc_info));
 //	channel_info->channel_state=PROC_CHANNEL_RECVACK;
 	channel_conn->conn_extern_info=channel_info;
 
-//	retval=load_message_record(message_box,&client_ack);
 	retval=message_get_record(message_box,&client_ack,0);
 
 	if(retval<0)
@@ -273,10 +281,8 @@ int receive_local_client_ack(void * message_box,void * conn,void * hub)
 	channel_info->proc_name=dup_str(client_ack->client_process,0);
 	channel_info->channel_name=NULL;
 	channel_info->islocal=1;
-//	channel_info->channel_state=PROC_CHANNEL_READY;
 	
 	connector_setstate(channel_conn,CONN_CHANNEL_HANDSHAKE);
 	return 0;
-
 }
 

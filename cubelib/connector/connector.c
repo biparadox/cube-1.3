@@ -107,7 +107,7 @@ int   connector_setname (void * connector,char * name)
 	this_conn=(struct tcloud_connector *)connector;
 	if(this_conn->conn_name != NULL)
 	free(this_conn->conn_name);
-	this_conn->conn_name=malloc(strlen(name)+1);
+	this_conn->conn_name=Dalloc(strlen(name)+1,this_conn);
 		
 	if(this_conn->conn_name==NULL)
 		return -ENOMEM;
@@ -173,7 +173,7 @@ int  connector_get_protocol (void * connector)
 void * get_connector(int type,int protocol)
 {
 	struct tcloud_connector * connector;
-	connector=malloc(sizeof(struct tcloud_connector));
+	connector=Calloc(sizeof(struct tcloud_connector));
 	if(connector==NULL)
 		return -ENOMEM;
 
