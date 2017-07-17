@@ -197,7 +197,7 @@ int main() {
 	message=message_create(DTYPE_MESSAGE,SUBTYPE_BASE_MSG,NULL);	
 
 	struct basic_message * base_msg;
-	ret=Galloc0(&base_msg,sizeof(*base_msg));
+	base_msg=Talloc0(sizeof(*base_msg));
 	if(base_msg==NULL)
 		return -ENOMEM;
 	base_msg->message=dup_str("hello",0);

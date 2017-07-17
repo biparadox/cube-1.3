@@ -57,7 +57,7 @@ void * dispatch_policy_create()
 {
 	int ret;
 	DISPATCH_POLICY * policy;
-	ret=Galloc0(&policy,sizeof(DISPATCH_POLICY));
+	policy=Calloc0(sizeof(DISPATCH_POLICY));
 	if(policy==NULL)
 		return NULL;
 	_init_policy_list(&policy->match_list);
@@ -132,8 +132,8 @@ void * dispatch_read_policy(void * policy_node)
     while(match_rule_node!=NULL)
     {
 	void * record_template;
-        ret=Galloc0(&temp_match_rule,sizeof(MATCH_RULE));
-	if(ret<0)
+        temp_match_rule=Dalloc0(sizeof(MATCH_RULE),policy);
+	if(temp_match_rule==NULL)
 		return NULL;
         ret=json_2_struct(match_rule_node,temp_match_rule,match_rule_template);
         if(ret<0)
@@ -153,8 +153,8 @@ void * dispatch_read_policy(void * policy_node)
 		ret=json_marked_struct(temp_node,record_template,match_flag);
 		if(ret<0)
 			return NULL;
-		ret=Galloc0(&value_struct,struct_size(record_template));
-		if(ret<0)
+		value_struct=Dalloc0(struct_size(record_template),policy);
+		if(value_struct==NULL)
 		{
 			free_struct_template(record_template);
 			return NULL;
@@ -182,8 +182,8 @@ void * dispatch_read_policy(void * policy_node)
     route_rule_node=json_get_first_child(temp_node);
     while(route_rule_node!=NULL)
     {
-    	ret=Galloc0(&temp_route_rule,sizeof(ROUTE_RULE));
-    	if(ret<0)
+    	temp_route_rule=Dalloc0(sizeof(ROUTE_RULE),policy);
+    	if(temp_route_rule==NULL)
 		return NULL;
    	 temp_route_rule=malloc(sizeof(ROUTE_RULE));
     	ret=json_2_struct(route_rule_node,temp_route_rule,route_rule_template);
@@ -292,7 +292,7 @@ int _dispatch_rule_add(void * list,void * rule)
 	if(recordhead==NULL)
 		return -ENOMEM;
 
-	ret=Galloc0(&newrecord,sizeof(Record_List));
+	newrecord=Calloc0(sizeof(Record_List));
 	if(newrecord==NULL)
 		return -ENOMEM;
 	INIT_LIST_HEAD(&(newrecord->list));
@@ -1343,12 +1343,12 @@ int route_push_site(void * message,BYTE * name)
 		return -EINVAL;
 	if(expand==NULL)
 	{
-		expand=Calloc0(sizeof(MSG_EXPAND));
+		expand=Dalloc0(sizeof(MSG_EXPAND),message);
 		if(expand==NULL)
 			return -ENOMEM;	
 		expand->type=DTYPE_MSG_EXPAND;
 		expand->subtype=SUBTYPE_FLOW_TRACE;
-		ret=Galloc0(&flow_trace,sizeof(*flow_trace));
+		flow_trace=Dalloc0(sizeof(*flow_trace),message);
 		if(flow_trace==NULL)
 			return -ENOMEM;	
 		expand->expand=flow_trace;
@@ -1361,7 +1361,9 @@ int route_push_site(void * message,BYTE * name)
 	if(flow_trace->record_num==0)
 	{
 		flow_trace->record_num++;
-		ret=Galloc0(&flow_trace->trace_record,DIGEST_SIZE);
+		flow_trace->trace_record=Dalloc0(DIGEST_SIZE,message);
+		if(flow_trace->trace_record==NULL)
+			return -ENOMEM;
 		Memcpy(flow_trace->trace_record,name,DIGEST_SIZE);
 		message_add_expand(message,expand);	
 	}
@@ -1370,11 +1372,11 @@ int route_push_site(void * message,BYTE * name)
 		int curr_offset=flow_trace->record_num*DIGEST_SIZE;
 		flow_trace->record_num++;
 		char * buffer;
-		ret=Galloc0(&buffer,curr_offset+DIGEST_SIZE);
+		buffer=Dalloc0(curr_offset+DIGEST_SIZE,message);
 		if(buffer==NULL)
 			return -ENOMEM;
 		Memcpy(buffer,flow_trace->trace_record,curr_offset);
-		free(flow_trace->trace_record);
+		Free(flow_trace->trace_record);
 		Memcpy(buffer+curr_offset,name,DIGEST_SIZE);
 		flow_trace->trace_record=buffer;
 		message_replace_define_expand(message,expand);
@@ -1400,7 +1402,7 @@ int route_push_aspect_site(void * message,char * proc,char * point)
 			return -ENOMEM;	
 		expand->type=DTYPE_MSG_EXPAND;
 		expand->subtype=SUBTYPE_ASPECT_POINT;
-		ret=Galloc0(&aspect_point,sizeof(*aspect_point));
+		aspect_point=Dalloc0(sizeof(*aspect_point),message);
 		if(aspect_point==NULL)
 			return -ENOMEM;	
 		expand->expand=aspect_point;
@@ -1413,11 +1415,11 @@ int route_push_aspect_site(void * message,char * proc,char * point)
 	if(aspect_point->record_num==0)
 	{
 		aspect_point->record_num++;
-		ret=Galloc0(&aspect_point->aspect_proc,DIGEST_SIZE);
+		aspect_point->aspect_proc=Dalloc0(DIGEST_SIZE,message);
 		if(aspect_point->aspect_proc==NULL)
 			return -ENOMEM;
 		Memcpy(aspect_point->aspect_proc,proc,DIGEST_SIZE);
-		ret=Galloc0(&aspect_point->aspect_point,DIGEST_SIZE);
+		aspect_point->aspect_point=Dalloc0(DIGEST_SIZE,message);
 		if(aspect_point->aspect_point==NULL)
 			return -ENOMEM;
 		Memcpy(aspect_point->aspect_point,point,DIGEST_SIZE);
@@ -1428,7 +1430,7 @@ int route_push_aspect_site(void * message,char * proc,char * point)
 		int curr_offset=aspect_point->record_num*DIGEST_SIZE;
 		aspect_point->record_num++;
 		char * buffer;
-		ret=Galloc0(&buffer,curr_offset+DIGEST_SIZE);
+		buffer=Dalloc0(curr_offset+DIGEST_SIZE,message);
 		if(buffer==NULL)
 			return -ENOMEM;
 		Memcpy(buffer,aspect_point->aspect_proc,curr_offset);
@@ -1436,7 +1438,7 @@ int route_push_aspect_site(void * message,char * proc,char * point)
 		Memcpy(buffer+curr_offset,proc,DIGEST_SIZE);
 		aspect_point->aspect_proc=buffer;
 
-		ret=Galloc0(&buffer,curr_offset+DIGEST_SIZE);
+		buffer=Dalloc0(curr_offset+DIGEST_SIZE,message);
 		if(buffer==NULL)
 			return -ENOMEM;
 		Memcpy(buffer,aspect_point->aspect_point,curr_offset);
@@ -1554,9 +1556,7 @@ int router_store_route(void * message)
 	if(message==NULL)
 		return  -EINVAL;
 	msg_head=(MSG_HEAD *)message_get_head(message);	
-	ret=Galloc0(&route_record,sizeof(*route_record));
-	if(ret<0)
-		return ret;
+	route_record=Dalloc0(sizeof(*route_record),message);
 	if(route_record==NULL)
 		return -ENOMEM;	
 

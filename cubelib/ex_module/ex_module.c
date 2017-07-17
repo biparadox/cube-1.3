@@ -148,7 +148,7 @@ int entity_comp_name(void * List_head, void * name)
 int ex_module_list_init()
 {
 	int ret;
-	ex_module_list=malloc(sizeof(struct ex_module_list));
+	ex_module_list=Salloc(sizeof(struct ex_module_list));
 	if(ex_module_list==NULL)
 		return -ENOMEM;
 	INIT_LIST_HEAD(&(ex_module_list->head.list));
@@ -156,11 +156,11 @@ int ex_module_list_init()
 	ex_module_list->curr=&(ex_module_list->head.list);
 	ret=pthread_rwlock_init(&(ex_module_list->rwlock),NULL);
 
-	ret=Galloc0(&main_module,sizeof(*main_module));
+	main_module=Salloc0(sizeof(*main_module));
 	main_module->context_template=create_struct_template(&proc_context_desc);
 	if(main_module->context_template==NULL)
 		return -EINVAL;
-	ret=Galloc0(&main_module->context,struct_size(main_module->context_template));
+	main_module->context=Salloc0(struct_size(main_module->context_template));
 
 	return 0;
 }
