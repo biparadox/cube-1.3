@@ -23,7 +23,7 @@ struct struct_namelist * _namevalue_2_namelist(NAME2VALUE * namevalue)
 	int i;
 	int ret;
 	const int max_namelist_no=1024;
-	namelist=Calloc0(sizeof(*namelist));
+	namelist=Salloc0(sizeof(*namelist));
 	if(namevalue==NULL)
 	{
 		namelist->elem_no=0;

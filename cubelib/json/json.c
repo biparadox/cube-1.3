@@ -523,7 +523,9 @@ int json_solve_str(void ** root, char *str)
                 	if(ret>DIGEST_SIZE*8+2)
                     		return -EINVAL;
 			json_set_type(child_node,JSON_ELEM_STRING,0);
-			child_node->value_str=Palloc(ret,child_node);
+			child_node->value_str=Dalloc(ret,child_node);
+			if(child_node->value_str==NULL)
+				return -ENOMEM;
 			Memcpy(child_node->value_str,value_buffer,ret);
 		}
 		// if this value is a num
@@ -598,7 +600,9 @@ int json_solve_str(void ** root, char *str)
                 	if(ret>DIGEST_SIZE*16+2)
                     		return -EINVAL;
 			json_set_type(child_node,JSON_ELEM_STRING,1);
-			child_node->value_str=Palloc(ret,child_node);
+			child_node->value_str=Dalloc(ret,child_node);
+			if(child_node->value_str==NULL)
+				return -ENOMEM;
 			Memcpy(child_node->value_str,value_buffer,ret);
 		}
 		// if this value is a num

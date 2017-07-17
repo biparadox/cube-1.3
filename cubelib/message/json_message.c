@@ -109,9 +109,9 @@ int json_2_message(char * json_str,void ** message)
     	{
         	if(curr_record==NULL)
             		return -EINVAL;
-        	ret=Galloc0(&precord,struct_size(msg_box->record_template));
-        	if(ret<=0)
-            		return -EINVAL;
+        	precord=Dalloc0(struct_size(msg_box->record_template),msg_box);
+        	if(precord==NULL)
+            		return -ENOMEM;
        		json_2_struct(curr_record,precord,msg_box->record_template);
         	message_add_record(msg_box,precord);
         	curr_record=json_get_next_child(record_node);
@@ -133,8 +133,8 @@ int json_2_message(char * json_str,void ** message)
     	{
         	if(curr_expand==NULL)
             		return -EINVAL;
-		ret=Galloc0(&msg_expand,sizeof(*msg_expand));
-		if(ret<0)
+		msg_expand=Dalloc0(sizeof(*msg_expand),msg_box);
+		if(msg_expand==NULL)
 			return -ENOMEM;
 
 		ret=json_2_struct(curr_expand,msg_expand,message_get_expand_template());
@@ -148,8 +148,8 @@ int json_2_message(char * json_str,void ** message)
 			if(curr_expand_template==NULL)
 				return -EINVAL;
 			msg_expand->data_size=0;
-			ret=Galloc(&msg_expand->expand,struct_size(curr_expand_template));
-			if(ret<0)
+			msg_expand->expand=Dalloc0(struct_size(curr_expand_template),msg_box);
+			if(msg_expand->expand==NULL)
 				return -ENOMEM;
 			ret=json_2_struct(tempnode,msg_expand->expand,curr_expand_template);
 			if(ret<0)

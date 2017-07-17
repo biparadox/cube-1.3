@@ -112,7 +112,7 @@ void * _clone_namelist(void * list1)
 
 	int elem_no = namelist1->elem_no;
 
-	newnamelist=Calloc0(sizeof(struct struct_namelist));
+	newnamelist=Dalloc0(sizeof(struct struct_namelist),list1);
 	if(newnamelist==NULL)
 		return NULL;
 	newnamelist->elemlist=Dalloc0(sizeof(NAME2VALUE)*elem_no,newnamelist);
@@ -179,7 +179,7 @@ void * _merge_namelist(void * list1, void * list2)
 	}
 
 	
-	newnamelist=Calloc0(sizeof(struct struct_namelist));
+	newnamelist=Dalloc0(sizeof(struct struct_namelist),list1);
 	if(newnamelist==NULL)
 		return NULL;
 	newnamelist->elemlist = Dalloc0(sizeof(NAME2VALUE)*elem_no,newnamelist);
@@ -337,7 +337,7 @@ void * _struct_octet_to_attr(void * octet_array,int elem_no)
 
 	Memset(ref_comp,0,DIGEST_SIZE);
 
-	struct_desc=Calloc0(sizeof(struct struct_elem_attr)*(elem_no+1));
+	struct_desc=Salloc0(sizeof(struct struct_elem_attr)*(elem_no+1));
 	if(struct_desc==NULL)
 		return NULL;
 	for(i=0;i<elem_no;i++)

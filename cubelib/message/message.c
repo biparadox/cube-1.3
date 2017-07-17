@@ -136,7 +136,7 @@ int message_set_route(void * message,const char * route)
 int msgfunc_init()
 {
 	int ret;
-	ret=Galloc0(&msg_kits,sizeof(struct tag_msg_kits));
+	msg_kits=Salloc0(sizeof(struct tag_msg_kits));
 	if(msg_kits==NULL)
 		return -ENOMEM;
 	msg_kits->type=memdb_get_typeno("MESSAGE");	
@@ -158,8 +158,8 @@ void * message_init()
 {
 	int ret;
 	struct message_box * msg_box;
-	ret=Galloc0(&msg_box,sizeof(struct message_box));
-	if(ret<0)
+	msg_box=Calloc0(sizeof(struct message_box));
+	if(msg_box==NULL)
 		return NULL;
 	Memcpy(msg_box->head.tag,"MESG",4);
 	msg_box->head.version=0x00010001;
@@ -184,7 +184,7 @@ int __message_alloc_record_site(void * message)
 	// malloc a new record_array space,and duplicate the old record_array value
 	if(msg_head->record_num>0)
 	{
-		ret=Galloc0(&msg_box->record,(sizeof(BYTE *)+sizeof(void *)+sizeof(int))*msg_head->record_num);
+		msg_box->record=Dalloc0((sizeof(BYTE *)+sizeof(void *)+sizeof(int))*msg_head->record_num,msg_box);
 		if(msg_box->record==NULL)
 			return -ENOMEM;
 		memset(msg_box->record,0,(sizeof(BYTE *)+sizeof(void *)+sizeof(int))*msg_box->head.record_num);
@@ -210,7 +210,7 @@ int __message_alloc_expand_site(void * message)
 	// malloc a new record_array space,and duplicate the old record_array value
 	if(msg_head->expand_num>0)
 	{
-		ret=Galloc0(&msg_box->expand,(sizeof(BYTE *)+sizeof(void *)+sizeof(int))*msg_head->expand_num);
+		msg_box->expand=Dalloc0((sizeof(BYTE *)+sizeof(void *)+sizeof(int))*msg_head->expand_num,msg_box);
 		if(msg_box->expand==NULL)
 			return -ENOMEM;
 		memset(msg_box->expand,0,(sizeof(BYTE *)+sizeof(void *)+sizeof(int))*msg_box->head.expand_num);
@@ -324,8 +324,8 @@ int __message_add_record_site(void * message,int increment)
 	old_sizearray=msg_box->record_size;
 
 	// malloc a new record_array space,and duplicate the old record_array value
-	ret=Galloc0(&msg_box->record,(sizeof(BYTE *)+sizeof(void *)+sizeof(int))*msg_head->record_num);
-	if(ret<0)
+	msg_box->record=Dalloc0((sizeof(BYTE *)+sizeof(void *)+sizeof(int))*msg_head->record_num,msg_box);
+	if(msg_box->record==NULL)
 		return -ENOMEM;
 	msg_box->precord=msg_box->record+msg_head->record_num;
 	msg_box->record_size=msg_box->precord+msg_head->record_num;
@@ -392,8 +392,8 @@ int message_record_struct2blob(void * message)
 	if(message==NULL)
 		return -EINVAL;
 
-	ret=Galloc0(&buffer,bufsize);
-	if(ret<0)
+	buffer=Talloc0(bufsize);
+	if(buffer==NULL)
 		return -ENOMEM;
 
 	record_size=0;
@@ -410,7 +410,7 @@ int message_record_struct2blob(void * message)
 				return blobsize;
 			}
 			msg_box->record_size[i]=blobsize;
-			ret=Galloc0(&msg_box->record[i],blobsize);
+			msg_box->record[i]=Dalloc0(blobsize,msg_box);
 			if(msg_box->record[i]==NULL)
 			{
 				Free(buffer);
@@ -444,7 +444,7 @@ int message_expand_struct2blob(void * message)
 	if(message==NULL)
 		return -EINVAL;
 
-	ret=Galloc0(&buffer,bufsize);
+	buffer=Talloc0(bufsize);
 	if(buffer==NULL)
 		return -ENOMEM;
 	expand_size=0;
@@ -480,7 +480,7 @@ int message_expand_struct2blob(void * message)
 
 		msg_box->expand_size[i]=ret+offset;
 		tempsize=ret;
-		ret=Galloc0(&msg_box->expand[i],ret+offset);
+		msg_box->expand[i]=Dalloc0(ret+offset,msg_box);
 		if(msg_box->expand[i]==NULL)
 		{
 			Free(buffer);
@@ -517,7 +517,7 @@ int message_output_blob(void * message, BYTE ** blob)
 
 	record_size=0;
 	expand_size=0;
-	ret=Galloc0(&buffer,4096);
+	buffer=Talloc0(4096);
 	if(buffer==NULL)
 		return -ENOMEM;
 
@@ -576,9 +576,9 @@ int message_output_blob(void * message, BYTE ** blob)
 
 	blob_size=sizeof(MSG_HEAD)+msg_box->head.record_size+msg_box->head.expand_size;
 	msg_box->blob=buffer;
-	ret=Galloc0(blob,blob_size);
-	if(ret<0)
-		return ret;
+	*blob=Dalloc0(blob_size,msg_box);
+	if(*blob==NULL)
+		return -ENOMEM;
 	Memcpy(*blob,buffer,blob_size);
 	
 	Free(buffer);
@@ -989,16 +989,16 @@ int message_load_expand(void * message)
 	{
 		continue;
 	}
-	ret=Galloc0(&buffer,struct_size(struct_template));
+	buffer=Dalloc0(struct_size(struct_template),msg_box);
 	if(buffer==NULL)
-		return -EINVAL;
+		return -ENOMEM;
 	ret=blob_2_struct(msg_box->expand[no]+sizeof(MSG_EXPAND_HEAD),buffer,struct_template);
 	if(ret!=expand->data_size)
 	{
 		struct_free(buffer,struct_template);
 		return -EINVAL;
 	}
-	msg_box->pexpand[no]=Calloc0(sizeof(MSG_EXPAND));
+	msg_box->pexpand[no]=Dalloc0(sizeof(MSG_EXPAND),msg_box);
 	if(msg_box->pexpand[no]==NULL)
 		return -EINVAL;
 	pexpand=(MSG_EXPAND *)msg_box->pexpand[no];
@@ -1376,8 +1376,8 @@ int __message_add_expand_site(void * message,int increment)
 	old_sizearray=msg_box->expand_size;
 
 	// malloc a new expand_array space,and duplicate the old expand_array value
-	ret=Galloc0(&msg_box->expand,(sizeof(BYTE *)+sizeof(void *)+sizeof(int))*msg_head->expand_num);
-	if(ret<0)
+	msg_box->expand=Dalloc0((sizeof(BYTE *)+sizeof(void *)+sizeof(int))*msg_head->expand_num,msg_box);
+	if(msg_box->expand==NULL)
 		return -ENOMEM;
 	msg_box->pexpand=msg_box->expand+msg_head->expand_num;
 	msg_box->expand_size=msg_box->pexpand+msg_head->expand_num;
@@ -1430,7 +1430,7 @@ int message_add_expand_data(void * message,int type,int subtype,void * expand)
 	if(expand==NULL)
 		return -EINVAL;
 
-	ret=Galloc0(&msg_expand,sizeof(MSG_EXPAND));
+	msg_expand=Dalloc0(sizeof(MSG_EXPAND),message);
 	if(msg_expand==NULL)
 		return -ENOMEM;
 	msg_expand->data_size=0;
@@ -1701,9 +1701,7 @@ int message_get_record(void * message,void ** msg_record, int record_no)
 	if(msg_box->precord[record_no]==NULL)
 	{
 
-		ret=Galloc0(&(msg_box->precord[record_no]),struct_size(msg_box->record_template));
-		if(ret<0)
-			return ret;
+		msg_box->precord[record_no]=Dalloc0(struct_size(msg_box->record_template),msg_box);
 		if(msg_box->precord[record_no]==NULL)
 			return -ENOMEM;	
 		ret=blob_2_struct(msg_box->record[record_no],msg_box->precord[record_no],msg_box->record_template);
@@ -1744,9 +1742,9 @@ int message_get_expand(void * message,void ** msg_record, int record_no)
 	if(msg_box->precord[record_no]==NULL)
 	{
 
-		ret=Galloc0(&expand_head,struct_size(struct_template));
-		if(ret<0)
-			return ret;
+		expand_head=Talloc0(struct_size(struct_template));
+		if(expand_head==NULL)
+			return NULL;
 		ret=blob_2_struct(expand_head,msg_box->record[record_no],struct_template);
 		if(ret<0)
 			return ret;
@@ -1754,7 +1752,7 @@ int message_get_expand(void * message,void ** msg_record, int record_no)
 		if(struct_template==NULL)
 			return -EINVAL;
 		
-		ret=Galloc0(&(msg_box->precord[record_no]),struct_size(struct_template));
+		msg_box->precord[record_no]=Talloc0(struct_size(struct_template));
 		if(msg_box->precord[record_no]==NULL)
 			return -ENOMEM;	
 		ret=blob_2_struct(msg_box->precord[record_no],msg_box->record[record_no],struct_template);
