@@ -203,7 +203,7 @@ int read_one_connector(void ** connector,void * json_node)
 
     if(json_node!=NULL)
     {
-        temp_cfg=malloc(sizeof(struct connector_config));
+        temp_cfg=Talloc(sizeof(struct connector_config));
         ret=json_2_struct(json_node,temp_cfg,conn_cfg_template);
         if(ret<0)
             return -EINVAL;
@@ -338,7 +338,7 @@ int proc_conn_init(void * sub_proc,void * para)
 //    	conn_cfg_template=create_struct_template(&main_config_desc);
 //	printf("main template create succeed!\n");
     	conn_cfg_template=create_struct_template(&connector_config_desc);
-	sub_proc_pointer=malloc(sizeof(struct connector_proc_pointer));
+	sub_proc_pointer=Salloc(sizeof(struct connector_proc_pointer));
 	if(sub_proc_pointer==NULL)
 		return -ENOMEM;
 	Memset(sub_proc_pointer,0,sizeof(struct connector_proc_pointer));

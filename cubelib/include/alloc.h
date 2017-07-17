@@ -9,7 +9,7 @@ void * Calloc(int size);
 void * Calloc0(int size);
 
 void * Dalloc(int size,void * base);
-int Dalloc0(int size,void * base);
+void * Dalloc0(int size,void * base);
 
 void * Talloc(int size);
 void * Talloc0(int size);

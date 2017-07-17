@@ -35,7 +35,7 @@ char *  get_temp_filename(char * tag )
 			return -EINVAL;
 		strcat(buf,tag);
 	}
-	char * tempbuf = malloc(len+1);
+	char * tempbuf = Talloc(len+1);
 	if(tempbuf==NULL)
 		return -EINVAL;
 	memcpy(tempbuf,buf,len+1);
@@ -238,7 +238,7 @@ int read_sys_cfg(void ** lib_para_struct,void * root_node)
     int ret;
     char filename[DIGEST_SIZE*4];
 	
-    ret=Galloc0(&lib_para,sizeof(*lib_para));
+    lib_para=Salloc0(sizeof(*lib_para));
     if(lib_para==NULL)
 	return -ENOMEM;
 
@@ -402,7 +402,7 @@ int read_plugin_cfg(void ** plugin,void * root_node)
     temp_node=json_find_elem("init_para",root_node);
     if(temp_node!=NULL)
     {
-	ret=Galloc0(&init_para,struct_size(lib_para->para_template));
+	init_para=Salloc0(struct_size(lib_para->para_template));
 	if(init_para==NULL)
 		return -ENOMEM;
 	ret=json_2_struct(temp_node,init_para,lib_para->para_template);
@@ -542,7 +542,7 @@ int read_main_cfg(void * lib_para_struct,void * root_node)
 	temp_node=json_find_elem("init_para",root_node);
         if(temp_node!=NULL)
         {
-		ret=Galloc0(&init_para,struct_size(lib_para->para_template));
+		init_para=Salloc0(struct_size(lib_para->para_template));
 		if(init_para==NULL)
 			return -ENOMEM;
 		ret=json_2_struct(temp_node,init_para,lib_para->para_template);

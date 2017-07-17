@@ -1034,12 +1034,12 @@ void message_free(void * message)
 	{
 		if(msg_box->expand[i]!=NULL)
                 {
-			free(msg_box->expand[i]);
+			Free(msg_box->expand[i]);
                     	msg_box->expand[i]=NULL;
                 }
                 if(msg_box->pexpand[i]!=NULL)
                 {
-                    free(msg_box->pexpand[i]);
+                    Free(msg_box->pexpand[i]);
                     msg_box->pexpand[i]=NULL;
                 }
        }
@@ -1047,20 +1047,20 @@ void message_free(void * message)
        {
         	if(msg_box->record[i]!=NULL)
                 {
-                    free(msg_box->record[i]);
+                    Free(msg_box->record[i]);
                     msg_box->record[i]=NULL;
                 }
                 if(msg_box->precord[i]!=NULL)
                 {
-                    free(msg_box->precord[i]);
+                    Free(msg_box->precord[i]);
                     msg_box->precord[i]=NULL;
                 }
 	}
 
-        free(msg_box->record);
+        Free(msg_box->record);
         free_struct_template(msg_box->record_template);
     	free_struct_template(msg_box->head_template);
-    	free(msg_box);
+    	Free(msg_box);
 	return;
 }
 

@@ -509,7 +509,7 @@ int rule_get_target(void * router_rule,void * message,void **result)
 			expand_template=memdb_get_template(expand_type,expand_subtype);
 			if(expand_template==NULL)
 				return -EINVAL;		
-			target=malloc(DIGEST_SIZE*2+1);
+			target=Talloc(DIGEST_SIZE*2+1);
 			ret=struct_read_elem(rule->target_name+offset,expand->expand,target,expand_template);		
 			if(ret<0)
 				return ret;
@@ -1269,7 +1269,7 @@ int router_set_next_jump(void * message)
 				return ret;		
 			Strncpy(msg_head->receiver_uuid,target,DIGEST_SIZE);
 			msg_head->flag |=MSG_FLAG_LOCAL;
-			free(target);
+			Free(target);
 			//message_set_state(message,MSG_FLOW_LOCAL);
 			break;
 		case ROUTE_TARGET_NAME:
@@ -1287,7 +1287,7 @@ int router_set_next_jump(void * message)
 			{
 				Memcpy(msg_head->receiver_uuid,target,DIGEST_SIZE);
 			}	
-			free(target);
+			Free(target);
 			message_set_state(message,MSG_FLOW_DELIVER);
 			msg_head->flag&=~MSG_FLAG_LOCAL;
 //			msg_head->rjump++;
@@ -1297,7 +1297,7 @@ int router_set_next_jump(void * message)
 			if(ret<0)
 				return ret;		
 			Strncpy(msg_head->receiver_uuid,target,DIGEST_SIZE-1);
-			free(target);
+			Free(target);
 			message_set_state(message,MSG_FLOW_DELIVER);
 			msg_head->flag&=~MSG_FLAG_LOCAL;
 //			msg_head->rjump++;
