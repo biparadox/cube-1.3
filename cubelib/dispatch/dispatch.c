@@ -372,6 +372,8 @@ int dispatch_match_message_jump(void * policy, void * message)
 int dispatch_match_message(void * policy,void * message)
 {
 	int ret;
+	int result=0;
+	int prev_result=0;
 	DISPATCH_POLICY * dispatch_policy=(DISPATCH_POLICY *)policy;
 	MATCH_RULE * match_rule;
 	MSG_HEAD * msg_head;
@@ -390,41 +392,79 @@ int dispatch_match_message(void * policy,void * message)
 		if(match_rule->area==0)
 		{
 			if(match_rule->type==0)
-				return 1;
-			if(match_rule->type ==msg_head->record_type)
+				result=1;
+			else if(match_rule->type ==msg_head->record_type)
 			{
 				if(match_rule->subtype==0)
-					return 1;
-				if(match_rule->subtype==msg_head->record_subtype)
-					return 1;
+					result= 1;
+				else if(match_rule->subtype==msg_head->record_subtype)
+					result = 1;
 			}
-			return 0;
+			else
+			{
+				result = 0;
+			}
 		}
-		if(match_rule->area==MATCH_AREA_RECORD)
+		else if(match_rule->area==MATCH_AREA_RECORD)
 		{	
 			if(match_rule->type==0)
-				return 1;
-			if((match_rule->type!=msg_head->record_type)||
+				result = 1;
+			else if((match_rule->type!=msg_head->record_type)||
 				(match_rule->subtype!=msg_head->record_subtype))
-				return 0;
-			if(match_rule->match_template==NULL)
-				return 1;
-			ret=message_get_record(message,&msg_record,0);
-			if(ret<0)
-				return ret;
-			if(msg_record==NULL)
-				return 0;
+				result = 0;
+			else if(match_rule->match_template==NULL)
+				result = 1;
+			else
+			{
+				ret=message_get_record(message,&msg_record,0);
+				if(ret<0)
+					result =ret;
+				else if(msg_record==NULL)
+					result = 0;
 	
-			if(!struct_part_compare(match_rule->value,msg_record,match_rule->match_template,match_flag))
-				return 1;
-			return 0;
+				else if(!struct_part_compare(match_rule->value,msg_record,match_rule->match_template,match_flag))
+					result = 1;
+				else
+					result = 0;
+			}
 		}
 		else
 		{
-			return 0;
+			result = 0;
 		}
+		
+		if(result<0)
+			return result;
+		switch(match_rule->op)
+		{
+			case DISPATCH_MATCH_AND:
+				if(result==0)
+					return result;	
+				prev_result=1;
+				break;				
+			case DISPATCH_MATCH_OR:
+				if(result>0)
+					return result;	
+				break;				
+
+			case DISPATCH_MATCH_NOT:
+				if(result>0)
+					return 0;	
+				prev_result=1;
+				break;
+			case DISPATCH_MATCH_ORNOT:
+				if(result==0)
+					return 1;
+				break;	
+			
+			default:
+				return -EINVAL;	
+		}
+		ret=dispatch_policy_getnextmatchrule(policy,&match_rule);
+		if(ret<0)
+			return ret;
 	}	
-	return 0;
+	return prev_result;
 }
 
 int rule_get_target(void * router_rule,void * message,void **result)

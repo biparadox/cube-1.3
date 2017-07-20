@@ -165,7 +165,7 @@ int  connector_hub_del_connector (void * hub,void * connector)
 	if(conn_hub->curr_except==curr)
 		conn_hub->curr_except=curr->next;
 	List_del(curr);
-	free(record_elem);
+	Free(record_elem);
 
 	new_conn=(struct tcloud_connector *)connector;
 	

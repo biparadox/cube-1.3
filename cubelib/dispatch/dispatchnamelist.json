@@ -6,12 +6,13 @@
 	},
 	"record":
 	{
-		"elem_no":4,
+		"elem_no":5,
 		"elemlist":
 		[
 			"AND=0x01",
 			"OR",
 			"NOT",
+			"ORNOT",
 			"ERROR"
 		]
 	}
