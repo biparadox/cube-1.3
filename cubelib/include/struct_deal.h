@@ -35,7 +35,8 @@ enum cube_struct_elem_type   // describe types could be used in the struct
 	CUBE_TYPE_JSONSTRING,  // a variable length string encluded in "{}", "[]" or "\"\"" or "\'\'", it is only special in struct_json, other times,
        			        // it is same as ESTRING	
 	CUBE_TYPE_NODATA,   // this element has no data
-	CUBE_TYPE_ARRAY,   // this element has no data
+	CUBE_TYPE_ARRAY,   // this element use an pointer point to a fixed number element
+	CUBE_TYPE_DEFARRAY,   // this element has no data
 	CUBE_TYPE_DEFINE,	//an octets sequence whose length defined by a forhead element (an uchar, an ushort or a int element), the attr parameter 
 				//show the element's name, 
 	CUBE_TYPE_DEFSTR,	//a string whose length defined by a forhead element (an uchar, an ushort or a int element), the attr parameter 

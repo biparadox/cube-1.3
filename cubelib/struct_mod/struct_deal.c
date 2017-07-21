@@ -235,15 +235,18 @@ int _create_template_exitstruct(void * addr,void * data,void * elem, void * para
 	int i;
 	struct create_para * my_para = para;
 	struct elem_template * curr_elem=elem;
-	if(curr_elem->elem_desc->type == CUBE_TYPE_ARRAY)
+	if(_isarrayelem(curr_elem->elem_desc->type))
 	{
-		struct elem_template * temp_elem;
-		temp_elem= _get_elem_by_name(my_para->curr_node,curr_elem->elem_desc->def);
-		if(temp_elem==NULL)
-			return -EINVAL;
-		if(!_isvalidvalue(temp_elem->elem_desc->type))
-			return -EINVAL;
-		curr_elem->def=temp_elem;
+		if(_isdefineelem(curr_elem->elem_desc->type))
+		{
+			struct elem_template * temp_elem;
+			temp_elem= _get_elem_by_name(my_para->curr_node,curr_elem->elem_desc->def);
+			if(temp_elem==NULL)
+				return -EINVAL;
+			if(!_isvalidvalue(temp_elem->elem_desc->type))
+				return -EINVAL;
+			curr_elem->def=temp_elem;
+		}
 		curr_elem->size=my_para->curr_offset;
 		my_para->curr_offset=curr_elem->offset+sizeof(void *);
 		curr_elem->limit=0;
@@ -707,7 +710,7 @@ int struct_2_blob_enterstruct(void * addr, void * data, void * elem,void * para)
 	if(curr_elem->limit==0)
 	{
 		curr_elem->index=0;
-		if(_isarrayelem(curr_elem->elem_desc->type))
+		if(_isdefineelem(curr_elem->elem_desc->type))
 			curr_elem->limit=_elem_get_defvalue(curr_elem,addr);
 		else 
 		{
@@ -801,7 +804,16 @@ int blob_2_struct_enterstruct(void * addr, void * data, void * elem,void * para)
 		curr_elem->index=0;
 		if(_isarrayelem(curr_elem->elem_desc->type))
 		{
-			curr_elem->limit=_elem_get_defvalue(curr_elem,addr);
+			if(_isdefineelem(curr_elem->elem_desc->type))
+			{
+				curr_elem->limit=_elem_get_defvalue(curr_elem,addr);
+			}
+			else
+			{
+				curr_elem->limit=curr_elem->elem_desc->size;
+				if(curr_elem->limit==0)
+					curr_elem->limit=1;
+			}
 			if(curr_elem->father==NULL)
 				elem_addr=addr;
 			else
@@ -881,7 +893,16 @@ int clone_struct_enterstruct(void * src, void * destr, void * elem,void * para)
 		curr_elem->index=0;
 		if(_isarrayelem(curr_elem->elem_desc->type))
 		{
-			curr_elem->limit=_elem_get_defvalue(curr_elem,destr);
+			if(_isdefineelem(curr_elem->elem_desc->type))
+			{
+				curr_elem->limit=_elem_get_defvalue(curr_elem,destr);
+			}
+			else
+			{
+				curr_elem->limit=curr_elem->elem_desc->size;
+				if(curr_elem->limit==0)
+					curr_elem->limit=1;
+			}
 			if(curr_elem->father==NULL)
 				elem_addr=destr;
 			else
@@ -975,7 +996,7 @@ int compare_struct_enterstruct(void * src, void * destr, void * elem,void * para
 	if(curr_elem->limit==0)
 	{
 		curr_elem->index=0;
-		if(_isarrayelem(curr_elem->elem_desc->type))
+		if(_isdefineelem(curr_elem->elem_desc->type))
 		{
 			curr_elem->limit=_elem_get_defvalue(curr_elem,destr);
 			defvalue=_elem_get_defvalue(curr_elem,src);
@@ -1395,7 +1416,7 @@ int _tojson_enterstruct(void * addr,void * data, void * elem,void * para)
 	{
 		_print_elem_name(data,elem,para);
 		curr_elem->index=0;
-		if(_isarrayelem(curr_elem->elem_desc->type))
+		if(_isdefineelem(curr_elem->elem_desc->type))
 			curr_elem->limit=_elem_get_defvalue(curr_elem,addr);
 		else 
 		{
@@ -1543,7 +1564,16 @@ int _jsonto_enterstruct(void * addr,void * data, void * elem,void * para)
 		curr_elem->index=0;
 		if(_isarrayelem(curr_elem->elem_desc->type))
 		{
-			curr_elem->limit=_elem_get_defvalue(curr_elem,addr);
+			if(_isdefineelem(curr_elem->elem_desc->type))
+			{
+				curr_elem->limit=_elem_get_defvalue(curr_elem,addr);
+			}
+			else
+			{
+				curr_elem->limit=curr_elem->elem_desc->size;
+				if(curr_elem->limit==0)
+					curr_elem->limit=1;
+			}
 			if(curr_elem->limit==0)
 			{
 			
