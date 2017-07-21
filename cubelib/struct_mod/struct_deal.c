@@ -52,7 +52,6 @@ int  _convert_frame_func (void *addr, void * data, void * struct_template,
 
 
 	int offset=0;
-//	struct struct_elem_attr * curr_desc;
 	ELEM_OPS * elem_ops;
 	int def_value;
 	int ret;
@@ -65,7 +64,6 @@ int  _convert_frame_func (void *addr, void * data, void * struct_template,
 
 
 	do{
-		// throughout the node tree: back
 		if(curr_node->temp_var == curr_node->elem_no)
 		{
 			if(curr_node==root_node)

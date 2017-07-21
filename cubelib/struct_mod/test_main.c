@@ -21,6 +21,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <errno.h>
 #include "data_type.h"
 #include "string.h"
 #include "alloc.h"
@@ -45,6 +46,14 @@ struct test_struct
 	BYTE * data;	
 };
 
+typedef struct uuid_head
+{
+	BYTE uuid[DIGEST_SIZE];
+	char name[DIGEST_SIZE];
+	int type;
+	int subtype;
+}__attribute__((packed)) UUID_HEAD;
+
 struct struct_elem_attr test_struct_desc[] =
 {
 	{"uuid",CUBE_TYPE_UUID,DIGEST_SIZE,NULL},
@@ -59,7 +68,7 @@ struct struct_elem_attr uuid_head_desc[] =
 {
 	{"uuid",CUBE_TYPE_UUID,DIGEST_SIZE,NULL},
 	{"name",CUBE_TYPE_STRING,DIGEST_SIZE,NULL},
-	{"type",CUBE_TYPE_ENUM,sizeof(int),NULL},
+	{"type",CUBE_TYPE_ENUM,sizeof(int),&user_type},
 	{"subtype",CUBE_TYPE_ENUM,sizeof(int),NULL},
 	{NULL,CUBE_TYPE_ENDDATA,0,NULL}
 };
@@ -90,6 +99,129 @@ struct struct_elem_attr expand_flow_trace_desc[] =
 };
 
 
+struct connect_login
+{
+    char user[DIGEST_SIZE];
+    char *passwd;
+    char nonce[DIGEST_SIZE];
+} __attribute__((packed));
+
+static struct struct_elem_attr connect_login_desc[]=
+{
+    {"user",CUBE_TYPE_STRING,DIGEST_SIZE,NULL},
+    {"passwd",CUBE_TYPE_ESTRING,0,NULL},
+    {"nonce",CUBE_TYPE_BINDATA,DIGEST_SIZE,NULL},
+    {NULL,CUBE_TYPE_ENDDATA,0,NULL}
+};
+
+static struct struct_elem_attr login_db_desc[] =
+{
+    	{"head",CUBE_TYPE_SUBSTRUCT,0,&uuid_head_desc,NULL},
+   	{"record_no",CUBE_TYPE_INT,sizeof(int),NULL,NULL},
+    	{"login_list2",CUBE_TYPE_ARRAY,0,&connect_login_desc,"record_no"},
+//    	{"login_list1",CUBE_TYPE_SUBSTRUCT,3,&connect_login_desc,NULL},
+	{NULL,CUBE_TYPE_ENDDATA,0,NULL}
+	
+};
+
+struct login_db
+{
+	UUID_HEAD head;
+	int record_no;
+	struct connect_login * login_list2;
+//	struct connect_login login_list1[3];
+}__attribute__((packed));
+
+
+int test_array()
+{
+	char * name_list[] = {
+		"Hujun",
+		"Taozheng",
+		"Wangyubo",
+		NULL
+	};
+	char * passwd_list[] = {
+		"openstack",
+		"passwd",
+		"baixibao",
+		NULL,
+	};
+	char buffer[4096];
+	char buffer1[4096];
+	char text[4096];
+	char text1[4096];
+	void * root;
+
+	int i,j;
+	int ret;
+	struct login_db init_struct;
+	struct login_db * recover_struct;
+	struct login_db * recover_struct1;
+	void * struct_template;	
+
+	Memset(init_struct.head.uuid,'B',0x20);
+	Strcpy(init_struct.head.name,"login_list");
+	init_struct.head.type=2;
+	init_struct.head.subtype=0;
+
+	for(i=0;name_list[i]!=NULL;i++);
+	init_struct.record_no=i;
+
+	init_struct.login_list2 =Talloc0(sizeof(struct connect_login)*init_struct.record_no);
+	for(i=0;i<init_struct.record_no;i++)
+	{
+		Strncpy(init_struct.login_list2[i].user,name_list[i],DIGEST_SIZE);
+		init_struct.login_list2[i].passwd=passwd_list[i];
+		Memset(init_struct.login_list2[i].nonce, 'A'+(char)i,DIGEST_SIZE);
+		
+	}
+	struct_template=create_struct_template(&login_db_desc);
+
+	int size=struct_size(struct_template);
+	printf("this struct's size is %d\n",size);
+
+	recover_struct=Talloc0(size);
+	if(recover_struct==NULL)
+		return -ENOMEM;
+	recover_struct1=Talloc0(size);
+	if(recover_struct1==NULL)
+		return -ENOMEM;
+
+	ret=struct_2_blob(&init_struct,buffer,struct_template);	
+	printf("get %d size blob!\n",ret);
+	ret=blob_2_struct(buffer,recover_struct,struct_template);
+	printf("read %d size blob!\n",ret);
+	ret=struct_2_json(recover_struct,text,struct_template);
+	printf("read %d size to json %s!\n",ret,text);
+
+	ret=json_solve_str(&root,text);
+
+	ret=json_2_struct(root,recover_struct1,struct_template);
+	printf("read %d size struct from json !\n",ret);
+
+	void * recover_struct2=clone_struct(recover_struct1,struct_template);
+	if(recover_struct2==NULL)
+	{
+		printf("clone struct failed!\n");
+		return -1;
+	}
+
+	ret=struct_compare(recover_struct1,recover_struct2,struct_template);
+	if(ret!=0)
+	{
+		printf("compare struct different!\n");
+		return -1;
+	}
+	else
+		printf("compare struct is the same!\n");
+
+	ret=struct_2_json(recover_struct2,text1,struct_template);
+	printf("recover struct %d size to json %s!\n",ret,text1);
+
+	return 0;
+
+}
 
 int main() {
 
@@ -107,6 +239,9 @@ int main() {
 	struct expand_flow_trace * dup3;
 
 	struct_deal_init();
+
+	test_array();
+
 	test_trace.name=dup_str("Hello",0);
 	test_trace.trace_record=Talloc0(DIGEST_SIZE*test_trace.record_num);
 	

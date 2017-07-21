@@ -607,13 +607,13 @@ int bindata_set_text_value(void *elem,void * addr,void * elem_attr)
 	struct elem_template * curr_elem=elem_attr;
 	if(curr_elem->size==0)
 		return 0;
-	len=Strlen(elem);
+	len=Strlen((char *)addr);
 	if(len==0)
 		return 0;
-	ret=bin_to_radix64_len(len);
+	ret=radix_to_bin_len(len);
 	if(ret!=curr_elem->size)
 		return -EINVAL;
-	ret=radix64_to_bin(addr,len,elem);
+	ret=radix64_to_bin(elem,len,addr);
 	return ret;
 }
 
