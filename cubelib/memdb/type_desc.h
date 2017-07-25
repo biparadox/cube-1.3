@@ -25,7 +25,7 @@ struct struct_elem_attr elem_attr_octet_desc[] =
 struct struct_elem_attr struct_define_desc[] =
 {
 	{"elem_no",CUBE_TYPE_INT,sizeof(int),NULL,NULL},
-	{"elem_desc",CUBE_TYPE_ARRAY,sizeof(void *),&elem_attr_octet_desc,"elem_no"},
+	{"elem_desc",CUBE_TYPE_DEFARRAY,sizeof(void *),&elem_attr_octet_desc,"elem_no"},
 	{NULL,CUBE_TYPE_ENDDATA,0,NULL,NULL}
 };
 struct struct_elem_attr struct_namelist_desc[] =
@@ -62,7 +62,7 @@ struct struct_elem_attr struct_recordtype_desc[] =
 	{"subtype",CUBE_TYPE_RECORDSUBTYPE,sizeof(int),NULL,"type"},
 	{"uuid",CUBE_TYPE_UUID,DIGEST_SIZE,NULL,NULL},
 	{"flag_no",CUBE_TYPE_INT,sizeof(int),NULL,NULL},
-	{"index",CUBE_TYPE_ARRAY,sizeof(void *),&index_list_desc,"flag_no"},
+	{"index",CUBE_TYPE_DEFARRAY,sizeof(void *),&index_list_desc,"flag_no"},
 	{NULL,CUBE_TYPE_ENDDATA,0,NULL,NULL}
 };
 #endif
