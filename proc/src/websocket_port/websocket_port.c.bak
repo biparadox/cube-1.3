@@ -63,22 +63,24 @@ static struct struct_elem_attr connect_syn_desc[]=
 };
 */
 
-static int callback_http(	struct lws * wsi,
-				enum lws_callback_reasons reason,
+static int callback_http(	struct libwebsocket_context * this,
+				struct libwebsocket * wsi,
+				enum libwebsocket_callback_reasons reason,
 				void * user,void * in,size_t len)
 {
 	return 0;
 }
 		
-static int callback_cube_wsport(struct lws * wsi,
-				enum lws_callback_reasons reason,
+static int callback_cube_wsport(	struct libwebsocket_context * this,
+				struct libwebsocket * wsi,
+				enum libwebsocket_callback_reasons reason,
 				void * user,void * in,size_t len)
 {
 	int i;
 	switch(reason) {
 		case LWS_CALLBACK_ESTABLISHED:
 			ws_context->callback_interface=wsi;
-			ws_context->callback_context=lws_get_context(wsi);
+			ws_context->callback_context=this;
 			printf("connection established\n");
 			BYTE * buf= (unsigned char *)malloc(
 				LWS_SEND_BUFFER_PRE_PADDING+
@@ -89,7 +91,7 @@ static int callback_cube_wsport(struct lws * wsi,
 			Memcpy(&buf[LWS_SEND_BUFFER_PRE_PADDING],
 				ws_context->websocket_message,
 				ws_context->message_len);
-			lws_write(wsi,
+			libwebsocket_write(wsi,
 				&buf[LWS_SEND_BUFFER_PRE_PADDING],
 				ws_context->message_len,LWS_WRITE_TEXT);
 			free(buf);
@@ -110,7 +112,7 @@ static int callback_cube_wsport(struct lws * wsi,
 	return 0;
 }
 
-static struct lws_protocols protocols[] = {
+static struct libwebsocket_protocols protocols[] = {
 	{
 		"http_only",
 		callback_http,
@@ -132,7 +134,7 @@ int websocket_port_init(void * sub_proc,void * para)
     struct websocket_init_para * init_para=para;
 
     int ret;
-    struct lws_context * context;
+    struct libwebsocket_context * context;
     struct lws_context_creation_info info;
 		
 
@@ -168,7 +170,7 @@ int websocket_port_init(void * sub_proc,void * para)
 //    info.iface=NULL;
     info.iface=websocketserver_addr;
     info.protocols=protocols;
-    info.extensions=lws_get_internal_extensions();
+    info.extensions=libwebsocket_get_internal_extensions();
     info.ssl_cert_filepath=NULL;
     info.ssl_private_key_filepath=NULL;
     info.gid=-1;
@@ -205,7 +207,7 @@ int websocket_port_init(void * sub_proc,void * para)
     ws_context->websocket_message=dup_str(buffer,0);
     ws_context->message_len=Strlen(buffer);
 
-    context = lws_create_context(&info);
+    context = libwebsocket_create_context(&info);
     if(context==NULL)
     {
 	printf(" wsport context create error!\n");
@@ -245,7 +247,7 @@ int websocket_port_start(void * sub_proc,void * para)
 
     for(i=0;i<500*1000;i++)
     {
-	 lws_service(ws_context->server_context,50);
+	 libwebsocket_service(ws_context->server_context,50);
 	 // check if there is something to read
 	 if(ws_context->readlen>0)
 	{
@@ -293,7 +295,7 @@ int websocket_port_start(void * sub_proc,void * para)
 			break;
     		stroffset=message_output_json(message_box,buffer+LWS_SEND_BUFFER_PRE_PADDING);
 		if(stroffset>0)
-			lws_write(ws_context->callback_interface,
+			libwebsocket_write(ws_context->callback_interface,
 				&buffer[LWS_SEND_BUFFER_PRE_PADDING],
 				stroffset,LWS_WRITE_TEXT);
 
