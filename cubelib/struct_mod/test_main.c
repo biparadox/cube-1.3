@@ -134,6 +134,94 @@ struct login_db
 }__attribute__((packed));
 
 
+static struct struct_elem_attr file_list_desc[] =
+{
+   	{"record_no",CUBE_TYPE_INT,sizeof(int),NULL,NULL},
+    	{"file_list",CUBE_TYPE_DEFSTRARRAY,32,NULL,"record_no"},
+	{NULL,CUBE_TYPE_ENDDATA,0,NULL}
+	
+};
+
+struct file_list
+{
+	int record_no;
+	char * file_list;
+}__attribute__((packed));
+
+int test_strarray()
+{
+	char * name_list[] = {
+		"Hujun",
+		"Taozheng",
+		"Wangyubo",
+		NULL
+	};
+	char buffer[4096];
+	char buffer1[4096];
+	char text[4096];
+	char text1[4096];
+	void * root;
+
+	int i,j;
+	int ret;
+	struct file_list init_struct;
+	struct file_list * recover_struct;
+	struct file_list * recover_struct1;
+	void * struct_template;	
+
+	for(i=0;name_list[i]!=NULL;i++);
+	init_struct.record_no=i;
+
+	init_struct.file_list =Talloc0(32*init_struct.record_no);
+	for(i=0;i<init_struct.record_no;i++)
+	{
+		Strncpy(init_struct.file_list+DIGEST_SIZE*i,name_list[i],DIGEST_SIZE);
+	}
+	struct_template=create_struct_template(&file_list_desc);
+
+	int size=struct_size(struct_template);
+	printf("this struct's size is %d\n",size);
+
+	recover_struct=Talloc0(size);
+	if(recover_struct==NULL)
+		return -ENOMEM;
+	recover_struct1=Talloc0(size);
+	if(recover_struct1==NULL)
+		return -ENOMEM;
+
+	ret=struct_2_blob(&init_struct,buffer,struct_template);	
+	printf("get %d size blob!\n",ret);
+	ret=blob_2_struct(buffer,recover_struct,struct_template);
+	printf("read %d size blob!\n",ret);
+	ret=struct_2_json(recover_struct,text,struct_template);
+	printf("read %d size to json %s!\n",ret,text);
+
+	ret=json_solve_str(&root,text);
+
+	ret=json_2_struct(root,recover_struct1,struct_template);
+	printf("read %d size struct from json !\n",ret);
+
+	void * recover_struct2=clone_struct(recover_struct1,struct_template);
+	if(recover_struct2==NULL)
+	{
+		printf("clone struct failed!\n");
+		return -1;
+	}
+
+	ret=struct_compare(recover_struct1,recover_struct2,struct_template);
+	if(ret!=0)
+	{
+		printf("compare struct different!\n");
+		return -1;
+	}
+	else
+		printf("compare struct is the same!\n");
+
+	ret=struct_2_json(recover_struct2,text1,struct_template);
+	printf("recover struct %d size to json %s!\n",ret,text1);
+	return 0;
+}
+
 int test_array()
 {
 	char * name_list[] = {
@@ -241,7 +329,7 @@ int main() {
 
 	struct_deal_init();
 
-	test_array();
+	test_strarray();
 
 	test_trace.name=dup_str("Hello",0);
 	test_trace.trace_record=Talloc0(DIGEST_SIZE*test_trace.record_num);

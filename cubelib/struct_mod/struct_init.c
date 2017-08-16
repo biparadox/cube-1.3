@@ -604,10 +604,13 @@ int _elem_get_bin_value(void * addr,void * data,void * elem)
 
 	elem_src=_elem_get_addr(elem,addr);
 
-	if(_ispointerelem(type))
+	if(_ispointerelem(type)||
+		(_isdefineelem(type)&&_isarrayelem(type)))
 	{
 		int unitsize=get_fixed_elemsize(type);
-		if(unitsize<=0)
+		if(unitsize<0)
+			unitsize=curr_elem->elem_desc->size;
+		else if(unitsize==0)
 			unitsize=1;
 		if(_isdefineelem(type))
 		{
@@ -701,10 +704,13 @@ int _elem_set_bin_value(void * addr,void * data,void * elem)
 
 	elem_src=_elem_get_addr(elem,addr);
 
-	if(_ispointerelem(type))
+	if(_ispointerelem(type)||
+		(_isdefineelem(type)&&_isarrayelem(type)))
 	{
 		int unitsize=get_fixed_elemsize(type);
-		if(unitsize<=0)
+		if(unitsize<0)
+			unitsize=curr_elem->elem_desc->size;
+		else if(unitsize==0)
 			unitsize=1;
 		if(_isdefineelem(type))
 		{
@@ -803,10 +809,13 @@ int _elem_clone_value(void * addr, void * clone,void * elem)
 	elem_src=_elem_get_addr(elem,addr);
 	elem_clone=_elem_get_addr(elem,clone);
 
-	if(_ispointerelem(type))
+	if(_ispointerelem(type)||
+		(_isdefineelem(type)&&_isarrayelem(type)))
 	{
 		int unitsize=get_fixed_elemsize(type);
-		if(unitsize<=0)
+		if(unitsize<0)
+			unitsize=curr_elem->elem_desc->size;
+		else if(unitsize==0)
 			unitsize=1;
 		if(_isdefineelem(type))
 		{
@@ -855,6 +864,8 @@ int _elem_compare_deffunc(void * addr, void * dest,void * elem)
 	void * elem_dest;
 	void * elem_src;
 	struct elem_template * curr_elem=elem;
+	enum cube_struct_elem_type type;
+	type=curr_elem->elem_desc->type;
 	
 	// get this elem's addr
 
@@ -863,7 +874,8 @@ int _elem_compare_deffunc(void * addr, void * dest,void * elem)
 	// if this func is empty, we use default func
 	if((ret=_elem_get_bin_length(*(char **)elem_src,elem,addr))<0)
 		return ret;
-	if(_ispointerelem(curr_elem->elem_desc->type))
+	if(_ispointerelem(type)||
+		(_isdefineelem(type)&&_isarrayelem(type)))
 	{
 		ret=Strncmp(*(char **)elem_src,*(char **)elem_dest,DIGEST_SIZE*32);
 	}
@@ -925,10 +937,13 @@ int _elem_get_text_value(void * addr,char * text,void * elem)
 
 	elem_src=_elem_get_addr(elem,addr);
 
-	if(_ispointerelem(type))
+	if(_ispointerelem(type)||
+		(_isdefineelem(type)&&_isarrayelem(type)))
 	{
 		int unitsize=get_fixed_elemsize(type);
-		if(unitsize<=0)
+		if(unitsize<0)
+			unitsize=curr_elem->elem_desc->size;
+		else if(unitsize==0)
 			unitsize=1;
 		if(_isdefineelem(type))
 		{
