@@ -22,8 +22,8 @@ static struct InitElemInfo_struct InitElemInfo [] =
 //	{CUBE_TYPE_DEFUUIDARRAY,&defuuidarray_convert_ops,ELEM_ATTR_POINTER|ELEM_ATTR_ARRAY|ELEM_ATTR_DEFINE,DIGEST_SIZE},
 	{CUBE_TYPE_UUIDARRAY,&uuidarray_convert_ops,ELEM_ATTR_ARRAY,DIGEST_SIZE},
 	{CUBE_TYPE_DEFUUIDARRAY,&defuuidarray_convert_ops,ELEM_ATTR_ARRAY|ELEM_ATTR_DEFINE,DIGEST_SIZE},
-//	{CUBE_TYPE_DEFNAMELIST,&defnamelist_convert_ops,ELEM_ATTR_POINTER|ELEM_ATTR_DEFINE|ELEM_ATTR_ARRAY,sizeof(void *)+sizeof(int)},
-	{CUBE_TYPE_DEFNAMELIST,&defnamelist_convert_ops,ELEM_ATTR_DEFINE|ELEM_ATTR_ARRAY,sizeof(void *)+sizeof(int)},
+	{CUBE_TYPE_DEFNAMELIST,&defnamelist_convert_ops,ELEM_ATTR_POINTER|ELEM_ATTR_DEFINE|ELEM_ATTR_ARRAY,sizeof(void *)+sizeof(int)},
+//	{CUBE_TYPE_DEFNAMELIST,&defnamelist_convert_ops,ELEM_ATTR_DEFINE|ELEM_ATTR_ARRAY,sizeof(void *)+sizeof(int)},
 	{CUBE_TYPE_INT,&int_convert_ops,ELEM_ATTR_VALUE|ELEM_ATTR_NUM,sizeof(int)},
 	{CUBE_TYPE_UCHAR,&int_convert_ops,ELEM_ATTR_VALUE|ELEM_ATTR_NUM,sizeof(char)},
 	{CUBE_TYPE_USHORT,&int_convert_ops,ELEM_ATTR_VALUE|ELEM_ATTR_NUM,sizeof(short)},
@@ -278,7 +278,7 @@ int _elem_set_defvalue(void * elem,void * addr,int value)
 		if(elem_ops->set_text_value==NULL)
 		{
 			int str_len=Strlen(buffer);
-			if(_ispointerelem(temp_elem->elem_desc->type))
+			if( _ispointerelem(temp_elem->elem_desc->type))
 			{
 				*(char **)def_addr=Dalloc0(str_len+1,def_addr);
 				if(*(char **)def_addr==NULL)
@@ -1040,10 +1040,12 @@ int _elem_set_text_value(void * addr,char * text,void * elem)
 
 	elem_src=_elem_get_addr(elem,addr);
 
-	if(_ispointerelem(type))
+	if(_isarrayelem(type) || _ispointerelem(type))
 	{
 		int unitsize=get_fixed_elemsize(type);
-		if(unitsize<=0)
+		if(unitsize<0)
+			unitsize=curr_elem->elem_desc->size;
+		else if(unitsize==0)
 			unitsize=1;
 		if(_isdefineelem(type))
 		{
