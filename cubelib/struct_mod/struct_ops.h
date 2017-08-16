@@ -78,21 +78,21 @@ struct elem_template
 	void * ref;    // a pointer to the ref value	
 	void * def;    // a pointer point to this elem's define value	
 	int flag;      // used to select some elem in this struct
-	int index;     // 
-	int limit;
-	struct elem_template * father;
-};
+	int index;     // count the elem in an array  
+	int limit;     // count the elem's size
+	struct elem_template * father; // this elem's father elem
+}ELEM_NODE;
 
 typedef struct struct_template_node
 {
-	void * parent;
-	int offset;
-	int size;
-	int elem_no;
-	int flag;
-	struct struct_elem_attr * struct_desc;
-	struct elem_template * elem_list;
-	int temp_var;
+	void * parent;   // this struct's parent node ,NULL when this node is root node
+	int offset;      // this struct's offset
+	int size;        // this struct's size
+	int elem_no;     // count which elem is the current elem it deal with
+	int flag;        // used to select some elem in this struct
+	struct struct_elem_attr * struct_desc;   // the describe array of this struct
+	struct elem_template * elem_list;        // this struct's elem node list 
+	int temp_var;   // a temp value in this struct node
 	
 }STRUCT_NODE;
 

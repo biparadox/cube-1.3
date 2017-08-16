@@ -15,11 +15,15 @@ static struct InitElemInfo_struct InitElemInfo [] =
 	{CUBE_TYPE_BINDATA,&bindata_convert_ops,0,-1},
 	{CUBE_TYPE_DEFINE,&define_convert_ops,ELEM_ATTR_POINTER|ELEM_ATTR_DEFINE,1},
 	{CUBE_TYPE_DEFSTR,&string_convert_ops,ELEM_ATTR_POINTER|ELEM_ATTR_DEFINE,1},
-	{CUBE_TYPE_DEFSTRARRAY,&string_convert_ops,ELEM_ATTR_POINTER|ELEM_ATTR_DEFINE|ELEM_ATTR_ARRAY,1},
+	//{CUBE_TYPE_DEFSTRARRAY,&string_convert_ops,ELEM_ATTR_POINTER|ELEM_ATTR_DEFINE|ELEM_ATTR_ARRAY,-1},
+	{CUBE_TYPE_DEFSTRARRAY,&string_convert_ops,ELEM_ATTR_DEFINE|ELEM_ATTR_ARRAY,-1},
 	{CUBE_TYPE_UUID,&uuid_convert_ops,0,DIGEST_SIZE},
-	{CUBE_TYPE_UUIDARRAY,&uuidarray_convert_ops,ELEM_ATTR_POINTER|ELEM_ATTR_ARRAY,DIGEST_SIZE},
-	{CUBE_TYPE_DEFUUIDARRAY,&defuuidarray_convert_ops,ELEM_ATTR_POINTER|ELEM_ATTR_ARRAY|ELEM_ATTR_DEFINE,DIGEST_SIZE},
-	{CUBE_TYPE_DEFNAMELIST,&defnamelist_convert_ops,ELEM_ATTR_POINTER|ELEM_ATTR_DEFINE|ELEM_ATTR_ARRAY,sizeof(void *)+sizeof(int)},
+//	{CUBE_TYPE_UUIDARRAY,&uuidarray_convert_ops,ELEM_ATTR_POINTER|ELEM_ATTR_ARRAY,DIGEST_SIZE},
+//	{CUBE_TYPE_DEFUUIDARRAY,&defuuidarray_convert_ops,ELEM_ATTR_POINTER|ELEM_ATTR_ARRAY|ELEM_ATTR_DEFINE,DIGEST_SIZE},
+	{CUBE_TYPE_UUIDARRAY,&uuidarray_convert_ops,ELEM_ATTR_ARRAY,DIGEST_SIZE},
+	{CUBE_TYPE_DEFUUIDARRAY,&defuuidarray_convert_ops,ELEM_ATTR_ARRAY|ELEM_ATTR_DEFINE,DIGEST_SIZE},
+//	{CUBE_TYPE_DEFNAMELIST,&defnamelist_convert_ops,ELEM_ATTR_POINTER|ELEM_ATTR_DEFINE|ELEM_ATTR_ARRAY,sizeof(void *)+sizeof(int)},
+	{CUBE_TYPE_DEFNAMELIST,&defnamelist_convert_ops,ELEM_ATTR_DEFINE|ELEM_ATTR_ARRAY,sizeof(void *)+sizeof(int)},
 	{CUBE_TYPE_INT,&int_convert_ops,ELEM_ATTR_VALUE|ELEM_ATTR_NUM,sizeof(int)},
 	{CUBE_TYPE_UCHAR,&int_convert_ops,ELEM_ATTR_VALUE|ELEM_ATTR_NUM,sizeof(char)},
 	{CUBE_TYPE_USHORT,&int_convert_ops,ELEM_ATTR_VALUE|ELEM_ATTR_NUM,sizeof(short)},
@@ -34,7 +38,9 @@ static struct InitElemInfo_struct InitElemInfo [] =
 	{CUBE_TYPE_SFLAG,&flag_convert_ops,ELEM_ATTR_NAMELIST,sizeof(UINT16)},
 	{CUBE_TYPE_BFLAG,&flag_convert_ops,ELEM_ATTR_NAMELIST,sizeof(BYTE)},
 	{CUBE_TYPE_SUBSTRUCT,NULL,ELEM_ATTR_SUBSET,0},
-	{CUBE_TYPE_ARRAY,NULL,ELEM_ATTR_POINTER|ELEM_ATTR_ARRAY|ELEM_ATTR_SUBSET,0},
+//	{CUBE_TYPE_ARRAY,NULL,ELEM_ATTR_POINTER|ELEM_ATTR_ARRAY|ELEM_ATTR_SUBSET,0},
+//	{CUBE_TYPE_DEFARRAY,NULL,ELEM_ATTR_POINTER|ELEM_ATTR_ARRAY|ELEM_ATTR_SUBSET|ELEM_ATTR_DEFINE,0},
+	{CUBE_TYPE_ARRAY,NULL,ELEM_ATTR_ARRAY|ELEM_ATTR_SUBSET,0},
 	{CUBE_TYPE_DEFARRAY,NULL,ELEM_ATTR_POINTER|ELEM_ATTR_ARRAY|ELEM_ATTR_SUBSET|ELEM_ATTR_DEFINE,0},
 	{CUBE_TYPE_ENDDATA,NULL,ELEM_ATTR_EMPTY,0},
 };
@@ -152,7 +158,7 @@ void * _elem_get_addr(void * elem,void * addr)
 	{
 		if(_issubsetelem(curr_elem->elem_desc->type))
 		{
-			if(_ispointerelem(curr_elem->elem_desc->type))
+			if(_isarrayelem(curr_elem->elem_desc->type))
 			{
 				offset_array[limit]+=curr_elem->size * curr_elem->index;
 				offset_array[++limit]=curr_elem->offset;

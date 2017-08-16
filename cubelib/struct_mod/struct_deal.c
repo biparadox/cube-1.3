@@ -111,7 +111,7 @@ int  _convert_frame_func (void *addr, void * data, void * struct_template,
 				if(ret<0)
 					return ret;
 			}
-			if(_ispointerelem(curr_elem->elem_desc->type))
+			if(_isarrayelem(curr_elem->elem_desc->type))
 			{
 				if(curr_elem->limit==0)
 				{
@@ -219,11 +219,15 @@ int _create_template_enterstruct(void * addr,void * data,void * elem, void * par
 		}
 	} 
 	curr_elem->offset=my_para->curr_offset;
-	if(_ispointerelem(curr_elem->elem_desc->type))
+	if(_isarrayelem(curr_elem->elem_desc->type))
 		my_para->curr_offset=0;
 	if(curr_elem->father==NULL)
 		curr_elem->father=my_para->parent_elem;
-	curr_elem->limit=1;
+
+	if((!_isarrayelem(curr_elem->elem_desc->type)) && (curr_elem->elem_desc->size>0))
+		curr_elem->limit=curr_elem->elem_desc->size;
+	else
+		curr_elem->limit=1;
 	my_para->parent_elem=curr_elem;
 	my_para->curr_offset=0;
 	return 0;
