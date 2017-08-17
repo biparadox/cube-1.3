@@ -102,6 +102,7 @@ int main() {
 		"namelist.json",
 		"typelist.json",
 		"subtypelist.json",
+		"memdb.json",
 		"msghead.json",
 		"headrecord.json",
 		NULL

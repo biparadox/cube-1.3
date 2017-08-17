@@ -15,6 +15,15 @@
 
 #define MAX_RECORD_NUM 65536
 
+enum dynamic_memdb_typelist
+{
+	DTYPE_MEMDB=0x120
+};
+enum subtypelist_message
+{
+	SUBTYPE_UUID_HEAD=0x01,
+	SUBTYPE_INDEX_ELEM
+};
 struct types
 {
 	int type;

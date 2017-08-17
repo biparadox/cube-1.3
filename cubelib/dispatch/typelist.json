@@ -6,9 +6,10 @@
 	},
 	"record":
 	{
-		"elem_no":4,
+		"elem_no":5,
 		"elemlist":
 		[
+			"MEMDB=0x120",
 			"MESSAGE=0x200",
 			"MSG_EXPAND",
 			"DISPATCH=0x210"

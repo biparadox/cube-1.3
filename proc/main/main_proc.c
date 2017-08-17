@@ -77,6 +77,7 @@ int main(int argc,char **argv)
 	"dispatchnamelist.json",
 	"typelist.json",
 	"subtypelist.json",
+	"memdb.json",
 	"msghead.json",
 	"msgrecord.json",
 	"expandrecord.json",

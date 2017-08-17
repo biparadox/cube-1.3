@@ -9,6 +9,7 @@
 		"elem_no":4,
 		"elemlist":
 		[
+			"MEMDB=0x120",
 			"MESSAGE=0x200",
 			"TUBE",
 			"BLOCK",

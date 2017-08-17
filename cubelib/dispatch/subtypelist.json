@@ -1,6 +1,23 @@
 {
 	"head":
 	{
+		"name":"memdb_subtypelist",
+		"type":"SUBTYPELIST"
+	},
+	"record":
+	{
+		"type":"MEMDB",
+		"elem_no":2,
+		"elemlist":
+		[
+			"UUID_HEAD=0x01",
+			"INDEX_ELEM"
+		]
+	}
+}
+{
+	"head":
+	{
 		"name":"message_subtypelist",
 		"type":"SUBTYPELIST"
 	},
