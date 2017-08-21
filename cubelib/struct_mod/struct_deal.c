@@ -607,7 +607,11 @@ int struct_size(void * struct_template)
 	int total_size;
 
 	if(last_elem->elem_desc->type == CUBE_TYPE_SUBSTRUCT)
+	{
+		if(last_elem->elem_desc->size==0)
+			return last_elem->offset+last_elem->size;
 		return last_elem->offset+last_elem->size*last_elem->elem_desc->size;
+	}
 
 	elem_ops=_elem_get_ops(last_elem);
 	if((elem_ops==NULL)|| (elem_ops->elem_size==NULL))

@@ -761,7 +761,7 @@ int _elem_set_bin_value(void * addr,void * data,void * elem)
 					ret=unitsize*repeat_num;
 				if(ret!=0)
 				{
-					*(BYTE **)elem_src=Dalloc0(ret,elem_src);
+					*(BYTE **)elem_src=Dalloc0(ret,addr);
 					if(*(BYTE **)elem_src==NULL)
 						return -ENOMEM;
 					Memcpy(*(BYTE **)elem_src,data,ret);
