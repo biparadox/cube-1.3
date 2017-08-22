@@ -262,8 +262,10 @@ int proc_aik_activate(void * sub_proc,void * recv_msg)
 		exit(result);
 	}
 	ret=convert_uuidname("privkey/AIK",".key",digest,buffer);
-	memcpy(manage_info.aik_pri_uuid,buffer,sizeof(buffer));//将私钥uuid存下来
+	memcpy(manage_info.aik_pri_uuid , digest, sizeof(digest));//将私钥uuid存下来
 	printf("get privkey_uuid success\n");
+	printf(manage_info.aik_pri_uuid);
+	printf("\n");
 
 	if(ret>0)
 		printf("Generate AIK private key blob %s!\n",buffer);
@@ -275,8 +277,10 @@ int proc_aik_activate(void * sub_proc,void * recv_msg)
 		exit(result);
 	}
 	ret=convert_uuidname("pubkey/AIK",".pem",digest,buffer);
-	memcpy(manage_info.aik_pub_uuid, buffer, sizeof(buffer));//将公钥uuid存下来
+	memcpy(manage_info.aik_pub_uuid, digest, sizeof(digest));//将公钥uuid存下来
 	printf("get pubkey_uuid success\n");
+	printf(manage_info.aik_pub_uuid);
+	printf("\n");
 
 	if(ret>0)
 		printf("Generate AIK public key blob %s!\n",buffer);
@@ -300,12 +304,20 @@ int proc_aik_activate(void * sub_proc,void * recv_msg)
 
 	WriteSignDataToFile(&signdata,"cert/AIK");
 	ret=convert_uuidname("cert/AIK",".sda",digest,buffer);
-	memcpy(manage_info.aik_cert_uuid, buffer, sizeof(buffer));//将证书uuid存下来
+	memcpy(manage_info.aik_cert_uuid, digest, sizeof(digest));//将证书uuid存下来
 	printf("get cert_uuid success\n");
+	printf(manage_info.aik_cert_uuid);
+	printf("\n");
 	
 	manage_info.user_name = dup_str(cert_info.user_info.user_name, 0);//从证书信息中把用户名拎出来
-	memcpy(manage_info.machine_uuid, cert_info.machine_uuid, DIGEST_SIZE);
-	//manage_info.machine_uuid = cert_info.machine_uuid;//机器码应该没问题
+	printf("get user_name success\n");
+	printf(manage_info.user_name);
+	printf("\n");
+
+	memcpy(manage_info.machine_uuid, cert_info.machine_uuid, DIGEST_SIZE);//机器码
+	printf("get machine_uuid success\n");
+	printf(manage_info.machine_uuid);
+	printf("\n");
 
 
 	if(ret>0)

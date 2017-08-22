@@ -97,7 +97,7 @@ int proc_store_message(void * sub_proc,void * message)
 	int subtype;
 	int i;
 	int ret;
-	printf("begin proc echo \n");
+	printf("begin store data \n");
 
 	type=message_get_type(message);
 	subtype=message_get_subtype(message);
@@ -144,5 +144,7 @@ int proc_store_message(void * sub_proc,void * message)
 		if(ret<0)
 			return ret;
 	}
+	
+	printf("store data success\n");
 	return ret;
 }

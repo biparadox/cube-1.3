@@ -268,11 +268,11 @@ int proc_aik_casign(void * sub_proc,void * recv_msg)
 	
 	if (result = TESI_AIK_CreateAIKCert(hAIKey,aik_pointer->cakey,buffer,blobsize,pubek_name,"cert/active")) {
 		printf("ca_create_credential %s", tss_err_string(result));
-		free(pubek_name);
+		Free(pubek_name);
 		return result;
 	}
 	printf("create active.req succeed!\n");
-	free(pubek_name);
+	Free(pubek_name);
 
 	ret=convert_uuidname("cert/active",".req",digest,filename);
 

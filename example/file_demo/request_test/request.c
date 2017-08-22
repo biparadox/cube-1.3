@@ -19,7 +19,7 @@
 #include "basetype.h"
 #include "message.h"
 #include "ex_module.h"
-#include "../include/file_struct.h"
+#include "file_struct.h"
 
 #include "request.h"
 
