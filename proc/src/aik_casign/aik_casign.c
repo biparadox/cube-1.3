@@ -28,6 +28,7 @@
 #include "aik_casign.h"
 
 static struct timeval time_val={0,50*1000};
+static char passwd[DIGEST_SIZE];
 
 struct aik_proc_pointer
 {
@@ -115,6 +116,12 @@ int aik_casign_init(void * sub_proc,void * para)
 		return -ENOMEM;
 	memset(aik_pointer,0,sizeof(struct aik_proc_pointer));
 
+	struct init_struct * init_para=para;
+	if(para==NULL)
+		return -EINVAL;
+	Memset(passwd,0,DIGEST_SIZE);
+	strncpy(passwd,init_para->passwd,DIGEST_SIZE);
+
 	OpenSSL_add_all_algorithms();
         ERR_load_crypto_strings();
 	result=TESI_Local_Reload();
@@ -125,7 +132,7 @@ int aik_casign_init(void * sub_proc,void * para)
 	}
 
 	public_key_memdb_init();
-	ReadPrivKey(&(aik_pointer->cakey),"privkey/CA","my ca center");
+	ReadPrivKey(&(aik_pointer->cakey),"privkey/CA",passwd);
 	if(aik_pointer->cakey == NULL)
 	{
 		printf("read rsa private key failed!\n");
@@ -261,11 +268,11 @@ int proc_aik_casign(void * sub_proc,void * recv_msg)
 	
 	if (result = TESI_AIK_CreateAIKCert(hAIKey,aik_pointer->cakey,buffer,blobsize,pubek_name,"cert/active")) {
 		printf("ca_create_credential %s", tss_err_string(result));
-		free(pubek_name);
+		Free(pubek_name);
 		return result;
 	}
 	printf("create active.req succeed!\n");
-	free(pubek_name);
+	Free(pubek_name);
 
 	ret=convert_uuidname("cert/active",".req",digest,filename);
 
