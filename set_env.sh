@@ -7,4 +7,5 @@ export CUBE_BASE_DEFINE=$CUBE_PATH/proc/main/base_define
 export CUBE_DEFINE_PATH=$CUBE_PATH/proc/define
 export CUBE_SYS_PLUGIN=$CUBE_PATH/proc/plugin/
 export CUBE_APP_PLUGIN=../plugin
+export CUBE_TCG_PATH=/opt/tcg
 #export CUBE_PATH CUBELIBPATH LD_LIBRARY_PATH
