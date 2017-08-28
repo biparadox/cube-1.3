@@ -180,11 +180,14 @@ int  connector_af_inet_info_init (void * connector,char * addr)
 /*
 * Now bind the address to the socket:
 */
-	retval = bind(this_conn->conn_fd,
-		(struct sockaddr *)&(base_info->adr_inet),
-		base_info->len_inet);
-	if ( retval == -1 )
-		return -ENONET;
+	if(this_conn->conn_type==CONN_SERVER)
+	{
+		retval = bind(this_conn->conn_fd,
+			(struct sockaddr *)&(base_info->adr_inet),
+			base_info->len_inet);
+		if ( retval == -1 )
+			return -ENONET;
+	}
 
 	return this_conn->conn_fd;
 }
