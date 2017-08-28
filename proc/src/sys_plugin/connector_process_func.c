@@ -423,6 +423,10 @@ int proc_conn_start(void * sub_proc,void * para)
 				}
 				usleep(50);
 			}
+			if(ret<0)
+			{
+				printf("client %s connect failed!\n",connector_getname(temp_conn));
+			}
 
 		}	
 		temp_conn=hub_get_next_connector(hub);

@@ -825,8 +825,8 @@ int memdb_init()
 
 	// alloc memspace for static database 
 	static_db_list=Salloc0(sizeof(void *)*DB_DTYPE_START);
-	if(ret<0)
-		return ret;
+	if(static_db_list==NULL)
+		return -ENOMEM;
 
 	// generate two init namelist
 
