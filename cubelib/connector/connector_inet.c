@@ -287,9 +287,9 @@ void * connector_af_inet_accept (void * connector)
 	this_conn=(struct tcloud_connector *)connector;
 
 	if(this_conn->conn_type!=CONN_SERVER)
-		return -EINVAL;
+		return NULL;
 	if(this_conn->conn_protocol!=AF_INET)
-		return -EINVAL;
+		return NULL;
 	base_info=(struct connector_af_inet_info * )this_conn->conn_base_info;
 	server_info=(struct connector_af_inet_server_info * )this_conn->conn_var_info;
 
@@ -317,17 +317,14 @@ void * connector_af_inet_accept (void * connector)
 
 	channel_conn->conn_peeraddr=af_inet_getaddrstring(&peeraddr);
 
-
-
 //      get channel's peer addr end
-
 
 	struct List_head * head, *currlib;
 	Record_List * record_elem;
 
 	record_elem = Calloc(sizeof(Record_List));
 	if(record_elem==NULL)
-		return -ENOMEM;
+		return NULL;
 	INIT_LIST_HEAD(&(record_elem->list));
 	record_elem->record=channel_conn;
 
@@ -335,7 +332,6 @@ void * connector_af_inet_accept (void * connector)
 	channel_conn->conn_state=CONN_CHANNEL_ACCEPT;
 
 	return channel_conn;
-
 }
 
 int connector_af_inet_close_channel(void * connector,void * channel)
