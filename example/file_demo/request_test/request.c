@@ -47,8 +47,7 @@ int request_start(void * sub_proc,void * para)
 	int subtype;
 
 	// send init message
-	usleep(10*1000);
-	proc_request_message(sub_proc,NULL);
+//	usleep(10*1000);
 
 	for(i=0;i<3000*1000;i++)
 	{
@@ -66,7 +65,12 @@ int request_start(void * sub_proc,void * para)
 				message_get_type(recv_msg),message_get_subtype(recv_msg));
 			continue;
 		}
-		if((type ==DTYPE_FILE_TRANS) &&
+		if((type ==DTYPE_MESSAGE) &&
+			(subtype ==SUBTYPE_CONN_SYNI))
+		{
+			proc_request_message(sub_proc,NULL);
+		}
+		else if((type ==DTYPE_FILE_TRANS) &&
 			(subtype ==SUBTYPE_FILE_NOTICE))
 		{
 			proc_notice_message(sub_proc,recv_msg);
