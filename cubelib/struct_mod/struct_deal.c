@@ -966,7 +966,7 @@ void * clone_struct(void * addr,void * struct_template)
 	void * new_struct;
 	
 	new_struct=Dalloc0(struct_size(struct_template),addr);
-	if(ret<0)
+	if(new_struct==NULL)
 		return NULL;
 	ret=struct_clone(addr,new_struct,struct_template);
 	if(ret<0)
