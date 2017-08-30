@@ -396,6 +396,7 @@ int proc_conn_start(void * sub_proc,void * para)
 
 
 	struct timeval conn_val;
+	conn_val.tv_sec=time_val.tv_sec;
 	conn_val.tv_usec=time_val.tv_usec;
 
 	sub_proc_pointer = ex_module_getpointer(sub_proc);

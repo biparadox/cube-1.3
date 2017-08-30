@@ -262,6 +262,7 @@ int proc_router_start(void * sub_proc,void * para)
 
 //	struct timeval time_val={0,10*1000};
 	struct timeval router_val;
+	router_val.tv_sec=time_val.tv_sec;
 	router_val.tv_usec=time_val.tv_usec;
 	comp_proc_uuid(local_uuid,proc_name,conn_uuid);
 

@@ -310,11 +310,11 @@ int __message_add_record_site(void * message,int increment)
 	void * old_sizearray;
 	
 
+	if(message==NULL)
+		return -EINVAL;
 	msg_box=(struct message_box *)message;
 
 	msg_head=&(msg_box->head);
-	if(message==NULL)
-		return -EINVAL;
 	
 	int record_no=msg_head->record_num;
 	msg_head->record_num+=increment;
