@@ -437,7 +437,7 @@ int proc_conn_start(void * sub_proc,void * para)
 
 	// 
 
-	for(i=0;i<500*1000;i++)
+	while(1)
 	{
 
 //		usleep(conn_val.tv_usec);

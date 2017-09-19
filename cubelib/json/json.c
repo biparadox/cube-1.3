@@ -217,7 +217,7 @@ void * json_find_elem(char * name,void * root)
 			break;
 		this_node=(JSON_NODE *)json_get_next_child(root);
 	}
-	return this_node;
+	return (void *)this_node;
 }
 
 static inline int json_get_boolvalue(void * value_addr,char * json_str)

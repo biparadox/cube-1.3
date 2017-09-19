@@ -23,7 +23,7 @@ struct tpm_pcr_selection {
 
 struct tpm_pcr_composite
 {
-	struct tcm_pcr_selection pcr_select;
+	struct tpm_pcr_selection pcr_select;
         int value_size;
 	BYTE * pcr_value;
 }__attribute((packed));

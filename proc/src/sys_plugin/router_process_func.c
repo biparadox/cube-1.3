@@ -267,7 +267,7 @@ int proc_router_start(void * sub_proc,void * para)
 	comp_proc_uuid(local_uuid,proc_name,conn_uuid);
 
 	// message routing loop
-	for(i=0;i<5000*1000;i++)
+	while(1)
 	{
 		usleep(router_val.tv_usec);
 		void * sub_proc;

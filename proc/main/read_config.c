@@ -475,7 +475,11 @@ int read_record_file(char * record_file)
 			ret=json_2_struct(record_node,record,record_template);
 			if(ret>=0)
 			{
-				ret=memdb_store(record,type,subtype,NULL);
+				char * record_name=NULL;
+				void * temp_node=json_find_elem("name",record_node);
+				if(temp_node!=NULL)
+					record_name=json_get_valuestr(temp_node);
+				ret=memdb_store(record,type,subtype,record_name);
 				if(ret>=0)
 				{
 					record=NULL;

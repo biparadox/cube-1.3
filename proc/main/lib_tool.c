@@ -141,18 +141,27 @@ int main(int argc,char **argv)
 //    app_plugin=getenv("CUBE_APP_PLUGIN");
     // process the command argument
 
-/*
+   int ifmerge=0;
+
     if(argc>=2)
     {
 	argv_offset=1;
-	if(argc%2!=1)
+	if(strcmp(argv[1],"merge")==0)
 	{
-		printf("error format! should be %s [-m main_cfgfile] [-p plugin_cfgfile]"
-			"[-c connect_cfgfile] [-r router_cfgfile] [-s aspect_cfgfile] [-a audit_file]!\n",argv[0]);
+		ifmerge=1;
+		if(argc<=3)
+		{
+			printf("error lib_tool merge format! should be %s merge destdir srcdir1 srcdir2 ...\n",argv[0]);
+		}
+	}
+	else if(strcmp(argv[1],"show"))
+	{
+		if(argc<3)
+		printf("error format! should be %s show MEMDB_TYPE MEMDB_SUBTYPE ...\n",argv[0]);
 		return -EINVAL;
 	}
     }
-*/
+
       
 //	alloc_init(alloc_buffer);
 	struct_deal_init();
@@ -208,44 +217,42 @@ int main(int argc,char **argv)
     printf("this machine's local uuid is %s\n",local_uuid);
     proc_share_data_setvalue("uuid",local_uuid);
 
-	if(argc!=3)
-	{
-		printf("error format! should be %s MEMDB_TYPE MEMDB_SUBTYPE!\n",argv[0]);
-		return -EINVAL;
-	}
-	int typeno,subtypeno;
-	void * record;
-	DB_RECORD * db_record;
-	typeno=memdb_get_typeno(argv[1]);
-	if(typeno<=0)
-		return -EINVAL;
-	subtypeno=memdb_get_subtypeno(typeno,argv[2]);
-	if(subtypeno<0)
-		return -EINVAL;
 
-	sprintf(namebuffer,"lib/%s-%s.lib",argv[1],argv[2]);
-	if((fd=open(namebuffer,O_RDONLY))<0)
+	if(!ifmerge)
 	{
-		printf("Error! memdb (%s,%s) does not exist!\n",argv[1],argv[2]);
-		return -EINVAL;
-	}
+		int typeno,subtypeno;
+		void * record;
+		DB_RECORD * db_record;
+		typeno=memdb_get_typeno(argv[1]);
+		if(typeno<=0)
+			return -EINVAL;
+		subtypeno=memdb_get_subtypeno(typeno,argv[2]);
+		if(subtypeno<0)
+			return -EINVAL;
 
-	while((ret=lib_read(fd,typeno,subtypeno,&record))>0)	
-	{
-		ret=memdb_store(record,typeno,subtypeno,NULL);
-		if(ret<0)
-			break;
-	}
-	close(fd);
+		sprintf(namebuffer,"lib/%s-%s.lib",argv[1],argv[2]);
+		if((fd=open(namebuffer,O_RDONLY))<0)
+		{
+			printf("Error! memdb (%s,%s) does not exist!\n",argv[1],argv[2]);
+			return -EINVAL;
+		}
+
+		while((ret=lib_read(fd,typeno,subtypeno,&record))>0)	
+		{
+			ret=memdb_store(record,typeno,subtypeno,NULL);
+			if(ret<0)
+				break;
+		}
+		close(fd);
 	
-	db_record=memdb_get_first(typeno,subtypeno);
-	while(db_record!=NULL)
-	{
-		memdb_print(db_record,json_buffer);
-		printf("%s\n",json_buffer);
-		db_record=memdb_get_next(typeno,subtypeno);
-	}
-		
+		db_record=memdb_get_first(typeno,subtypeno);
+		while(db_record!=NULL)
+		{
+			memdb_print(db_record,json_buffer);
+			printf("%s\n",json_buffer);
+			db_record=memdb_get_next(typeno,subtypeno);
+		}
+	}	
 
     return ret;
 }
