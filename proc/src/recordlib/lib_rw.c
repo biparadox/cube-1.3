@@ -35,14 +35,19 @@ int lib_read(int fd,int type,int subtype,void ** record)
 	if(struct_template==NULL)
 		return -EINVAL;
 
+	db_record=Talloc0(sizeof(*db_record));
+	if(db_record==NULL)
+		return -ENOMEM;
+	Memcpy(&db_record->head,buffer,sizeof(db_record->head));
+
 	*record=Talloc0(struct_size(struct_template));
 	if(*record==NULL)
 		return -ENOMEM;
 	
-	offset=blob_2_struct(buffer,*record,struct_template);
+	offset=blob_2_struct(buffer+sizeof(db_record->head),*record,struct_template);
 	if(offset<0)
 		return -EINVAL;
-	lseek(fd,offset-read_size,SEEK_CUR);
+	lseek(fd,sizeof(db_record->head)+offset-read_size,SEEK_CUR);
 	return 1;
 }
 
@@ -53,19 +58,27 @@ int lib_write(int fd, int type,int subtype, void * record)
 	void * struct_template;
 	BYTE buffer[2048];
 
+	DB_RECORD * db_record=record;
+
 	if(record==NULL)
 		return 0;
-
-
 
 	struct_template=memdb_get_template(type,subtype);
 	if(struct_template==NULL)
 		return -EINVAL;
 
-	offset=struct_2_blob(record,buffer,struct_template);
-	if(offset<0)
+
+	ret=write(fd,&db_record->head,sizeof(db_record->head));
+	if(ret<0)
+		return ret;
+	
+	offset=ret;	
+	
+	ret=struct_2_blob(db_record->record,buffer,struct_template);
+	if(ret<0)
 		return -EINVAL;
-	ret=write(fd,buffer,offset);
+	offset+=ret;
+	ret=write(fd,buffer,ret);
 	if(ret<0)
 		return ret;
 	return 1;

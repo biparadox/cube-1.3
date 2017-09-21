@@ -30,7 +30,7 @@ int recordlib_init(void * sub_proc,void * para)
 	char * subtype_str;
 	char filename[DIGEST_SIZE*3];
 	int  fd;
-	void * record;
+	DB_RECORD * record;
 	
 	types=memdb_get_first_record(DTYPE_MESSAGE,SUBTYPE_TYPES);
 	
@@ -51,7 +51,7 @@ int recordlib_init(void * sub_proc,void * para)
 
 		while((ret=lib_read(fd,types->type,types->subtype,&record))>0)	
 		{
-			ret=memdb_store(record,types->type,types->subtype,NULL);
+			ret=memdb_store_record(record);
 			if(ret<0)
 				break;
 		}
@@ -68,7 +68,6 @@ int recordlib_start(void * sub_proc,void * para)
 	int i;
 	int type;
 	int subtype;
-
 
 	for(i=0;i<3000*1000;i++)
 	{
@@ -107,7 +106,7 @@ int proc_store_message(void * sub_proc,void * message)
 		return -EINVAL;
 
 	struct types_pair * types;
-	void * record;
+	DB_RECORD * record;
 	char * type_str;
 	char * subtype_str;
 	char filename[DIGEST_SIZE*3];
@@ -131,13 +130,13 @@ int proc_store_message(void * sub_proc,void * message)
 		if(fd<0)
 			return fd;
 		
-		record=memdb_get_first_record(types->type,types->subtype);
+		record=memdb_get_first(types->type,types->subtype);
 		while(record!=NULL)		
 		{
 			ret=lib_write(fd,types->type,types->subtype,record);
 			if(ret<0)
 				break;
-			record=memdb_get_next_record(types->type,types->subtype);
+			record=memdb_get_next(types->type,types->subtype);
 		}
 		close(fd);
 		ret=message_get_record(message,&types,i++);

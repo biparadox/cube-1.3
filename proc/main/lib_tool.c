@@ -223,17 +223,17 @@ int main(int argc,char **argv)
 		int typeno,subtypeno;
 		void * record;
 		DB_RECORD * db_record;
-		typeno=memdb_get_typeno(argv[1]);
+		typeno=memdb_get_typeno(argv[2]);
 		if(typeno<=0)
 			return -EINVAL;
-		subtypeno=memdb_get_subtypeno(typeno,argv[2]);
+		subtypeno=memdb_get_subtypeno(typeno,argv[3]);
 		if(subtypeno<0)
 			return -EINVAL;
 
-		sprintf(namebuffer,"lib/%s-%s.lib",argv[1],argv[2]);
+		sprintf(namebuffer,"lib/%s-%s.lib",argv[2],argv[3]);
 		if((fd=open(namebuffer,O_RDONLY))<0)
 		{
-			printf("Error! memdb (%s,%s) does not exist!\n",argv[1],argv[2]);
+			printf("Error! memdb (%s,%s) does not exist!\n",argv[2],argv[3]);
 			return -EINVAL;
 		}
 
