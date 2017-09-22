@@ -32,59 +32,9 @@ typedef struct proc_init_parameter
 static char main_config_file[DIGEST_SIZE*2]="./main_config.cfg";
 static char sys_config_file[DIGEST_SIZE*2]="./sys_config.cfg";
 
-int lib_read(int fd,int type,int subtype,void ** record)
-{
-	int ret;
-	int offset;
-	int read_size;
-	void * struct_template;
-	DB_RECORD * db_record;
-	BYTE buffer[2048];
-	read_size=read(fd,buffer,2048);
-	if(read_size<0)
-		return read_size;
-	if(read_size==0)
-		return 0;
+int lib_read(int fd,int type,int subtype,void ** record);
+int lib_write(int fd, int type,int subtype, void * record);
 
-	struct_template=memdb_get_template(type,subtype);
-	if(struct_template==NULL)
-		return -EINVAL;
-
-	*record=Talloc0(struct_size(struct_template));
-	if(*record==NULL)
-		return -ENOMEM;
-	
-	offset=blob_2_struct(buffer,*record,struct_template);
-	if(offset<0)
-		return -EINVAL;
-	lseek(fd,offset-read_size,SEEK_CUR);
-	return 1;
-}
-
-int lib_write(int fd, int type,int subtype, void * record)
-{
-	int ret;
-	int offset;
-	void * struct_template;
-	BYTE buffer[2048];
-
-	if(record==NULL)
-		return 0;
-
-
-
-	struct_template=memdb_get_template(type,subtype);
-	if(struct_template==NULL)
-		return -EINVAL;
-
-	offset=struct_2_blob(record,buffer,struct_template);
-	if(offset<0)
-		return -EINVAL;
-	ret=write(fd,buffer,offset);
-	if(ret<0)
-		return ret;
-	return 1;
-}
 int main(int argc,char **argv)
 {
 
@@ -221,7 +171,7 @@ int main(int argc,char **argv)
 	if(!ifmerge)
 	{
 		int typeno,subtypeno;
-		void * record;
+		DB_RECORD * record;
 		DB_RECORD * db_record;
 		typeno=memdb_get_typeno(argv[2]);
 		if(typeno<=0)
@@ -239,7 +189,7 @@ int main(int argc,char **argv)
 
 		while((ret=lib_read(fd,typeno,subtypeno,&record))>0)	
 		{
-			ret=memdb_store(record,typeno,subtypeno,NULL);
+			ret=memdb_store_record(record);
 			if(ret<0)
 				break;
 		}
