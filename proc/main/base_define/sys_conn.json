@@ -1,0 +1,30 @@
+{
+	"head":
+	{
+		"name":"peer_info",
+		"type":"RECORDTYPE"
+	},
+	"record":
+	{
+		"type":"SYS_CONN",
+		"subtype":"PEER_INFO",
+		"struct_desc":
+		{
+			"elem_desc":
+			[
+				{"name":"uuid","type":"UUID"},
+				{"name":"machine_uuid","type":"UUID"},
+				{"name":"proc_name","type":"STRING","size":"32"},
+				{"name":"user_name","type":"STRING","size":32},
+				{"name":"session_uuid","type":"UUID"},
+				{"name":"peer_addr","type":"ESTRING","size":128},
+				{"name":"conn_describe","type":"ESTRING","size":512}
+			]
+		},
+		"index":
+		{
+			"flag":"INDEX",
+			"elemlist":"uuid,machine_uuid,proc_name,user_name,session_uuid,peer_addr"
+		}
+	}	
+}
