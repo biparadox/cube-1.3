@@ -13,6 +13,7 @@
 extern ELEM_OPS string_convert_ops;
 extern ELEM_OPS estring_convert_ops;
 extern ELEM_OPS bindata_convert_ops;
+extern ELEM_OPS hexdata_convert_ops;
 extern ELEM_OPS define_convert_ops;
 extern ELEM_OPS int_convert_ops;
 extern ELEM_OPS uuid_convert_ops;

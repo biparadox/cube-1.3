@@ -13,6 +13,7 @@ static struct InitElemInfo_struct InitElemInfo [] =
 	{CUBE_TYPE_STRING,&string_convert_ops,ELEM_ATTR_VALUE,-1},
 	{CUBE_TYPE_ESTRING,&estring_convert_ops,ELEM_ATTR_VALUE|ELEM_ATTR_POINTER,1},
 	{CUBE_TYPE_BINDATA,&bindata_convert_ops,0,-1},
+	{CUBE_TYPE_HEXDATA,&hexdata_convert_ops,0,-1},
 	{CUBE_TYPE_DEFINE,&define_convert_ops,ELEM_ATTR_POINTER|ELEM_ATTR_DEFINE,1},
 	{CUBE_TYPE_DEFSTR,&string_convert_ops,ELEM_ATTR_POINTER|ELEM_ATTR_DEFINE,1},
 	//{CUBE_TYPE_DEFSTRARRAY,&string_convert_ops,ELEM_ATTR_POINTER|ELEM_ATTR_DEFINE|ELEM_ATTR_ARRAY,-1},

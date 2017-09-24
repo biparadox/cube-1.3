@@ -116,6 +116,55 @@ int estring_get_length (void * value,void * attr)
 	return retval;
 }
 
+int _bin_2_hex(BYTE * bin,int size,BYTE * hex)
+{
+	int i;
+	BYTE tempdata;
+	for(i=0;i<size;i++)
+	{
+		tempdata=bin[i]>>4;
+		if(tempdata>9)
+			hex[i*2]=tempdata-10+'a';
+		else
+			hex[i*2]=tempdata+'0';
+		tempdata=bin[i] &0x0f;
+		if(tempdata>9)
+			hex[i*2+1]=tempdata-10+'a';
+		else
+			hex[i*2+1]=tempdata+'0';
+	}
+	return size*2;
+}
+
+int _hex_2_bin(BYTE * hex,int size,BYTE * bin)
+{
+	int i;
+	int len;
+	unsigned char var;
+	len=Strnlen(hex,size);
+
+	if(len%2!=0)
+		return -EINVAL;
+
+	for(i=0;i<len;i++)
+	{
+		if((hex[i]>='0') &&(hex[i]<='9'))
+			var=hex[i]-'0';
+		else if((hex[i]>='a')&&(hex[i]<='f'))
+			var=hex[i]-'a';
+		else if((hex[i]>='A')&&(hex[i]<='F'))
+			var=hex[i]-'A';
+		else
+			return -EINVAL;
+		if(i%2==0)
+			bin[i/2]=var*0x10;
+		else
+			bin[i/2]+=var;
+								
+	}
+	return len/2;
+}
+
 int _digest_to_uuid(BYTE * digest, char * uuid)
 {
 	BYTE char_value;
@@ -617,6 +666,27 @@ int bindata_set_text_value(void *elem,void * addr,void * elem_attr)
 	return ret;
 }
 
+int hexdata_get_text_value(void *elem,void * addr,void * elem_attr)
+{
+	int ret;
+	struct elem_template * curr_elem=elem_attr;
+	if(curr_elem->size==0)
+		return 0;
+	ret=_bin_2_hex(addr,curr_elem->size,elem);
+	return ret;
+}
+
+int hexdata_set_text_value(void *elem,void * addr,void * elem_attr)
+{
+	int ret;
+	int len;
+	struct elem_template * curr_elem=elem_attr;
+	if(curr_elem->size==0)
+		return 0;
+	ret=_hex_2_bin(elem,curr_elem->size,addr);
+	return ret;
+}
+
 
 ELEM_OPS string_convert_ops =
 {
@@ -627,6 +697,11 @@ ELEM_OPS bindata_convert_ops =
 {
 	.get_text_value=bindata_get_text_value,
 	.set_text_value=bindata_set_text_value
+};
+ELEM_OPS hexdata_convert_ops =
+{
+	.get_text_value=hexdata_get_text_value,
+	.set_text_value=hexdata_set_text_value
 };
 
 ELEM_OPS uuid_convert_ops =

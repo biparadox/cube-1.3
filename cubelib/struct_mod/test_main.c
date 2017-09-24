@@ -110,7 +110,7 @@ static struct struct_elem_attr connect_login_desc[]=
 {
     {"user",CUBE_TYPE_STRING,DIGEST_SIZE,NULL},
     {"passwd",CUBE_TYPE_ESTRING,0,NULL},
-    {"nonce",CUBE_TYPE_BINDATA,DIGEST_SIZE,NULL},
+    {"nonce",CUBE_TYPE_HEXDATA,DIGEST_SIZE,NULL},
     {NULL,CUBE_TYPE_ENDDATA,0,NULL}
 };
 
