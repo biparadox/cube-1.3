@@ -91,3 +91,19 @@
 		]
 	}
 }
+{
+	"head":
+	{
+		"name":"sys_conn_subtypelist",
+		"type":"SUBTYPELIST"
+	},
+	"record":
+	{
+		"type":"SYS_CONN",
+		"elem_no":1,
+		"elemlist":
+		[
+			"PEER_INFO"
+		]
+	}
+}

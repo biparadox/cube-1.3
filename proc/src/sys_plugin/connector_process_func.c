@@ -483,8 +483,6 @@ int proc_conn_start(void * sub_proc,void * para)
 				}
 				else if(connector_get_type(recv_conn)==CONN_CLIENT)
 				{
-
-
 					while((ret=message_read_from_conn(&message_box,recv_conn))>0)
 					{
 						printf("proc conn client receive %d data!\n",ret);

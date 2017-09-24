@@ -228,7 +228,7 @@ int proc_crypt_requestkey ( void * sub_proc, struct trust_file_option * file_opt
 	int ret;
 	struct trust_demo_keyinfo * keyinfo;
 	BYTE uuid[DIGEST_SIZE];
-	char local_uuid[DIGEST_SIZE];
+	BYTE local_uuid[DIGEST_SIZE];
 	char proc_name[DIGEST_SIZE];
 	
 	ret=proc_share_data_getvalue("uuid",local_uuid);

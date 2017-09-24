@@ -244,7 +244,8 @@ int receive_local_client_ack(void * message_box,void * conn,void * hub)
 	int record_size;
 	void * blob;
 	struct connect_proc_info * channel_info;
-
+	char buf[DIGEST_SIZE*4];
+	int addr_len;
 
 	client_ack=Talloc(sizeof(struct connect_ack));
 	if(client_ack==NULL)
@@ -283,6 +284,15 @@ int receive_local_client_ack(void * message_box,void * conn,void * hub)
 	channel_info->islocal=1;
 	
 	connector_setstate(channel_conn,CONN_CHANNEL_HANDSHAKE);
+	struct sysconn_peer_info * peer_info=Talloc0(sizeof(*peer_info));
+	if(peer_info==NULL)
+		return -ENOMEM;
+
+	Memcpy(peer_info->uuid,conn_uuid,DIGEST_SIZE);
+	Memcpy(peer_info->machine_uuid,client_ack->uuid,DIGEST_SIZE);
+	Strncpy(peer_info->proc_name,client_ack->client_process,DIGEST_SIZE);
+	peer_info->peer_addr=dup_str(channel_conn->conn_peeraddr,DIGEST_SIZE*4);		
+	memdb_store(peer_info,DTYPE_SYS_CONN,SUBTYPE_PEER_INFO,channel_info->channel_name);
 	return 0;
 }
 

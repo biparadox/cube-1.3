@@ -2,6 +2,15 @@
 #define 	TCLOUD_CONNECTOR_H
 #include "../include/data_type.h"
 
+enum  dtype_sysconn_typelist
+{
+	DTYPE_SYS_CONN=0x230,
+};
+enum subtypelist_sys_conn
+{
+	SUBTYPE_PEER_INFO=0x01
+};
+ 
 enum    connector_type
 {
 	CONN_INVALID=1,
@@ -109,7 +118,7 @@ typedef struct tcloud_connector_hub
 
 struct connect_proc_info
 {
-	char uuid[DIGEST_SIZE*2];
+	char uuid[DIGEST_SIZE];
 	char * proc_name;
 	char * channel_name;
 	int islocal;
@@ -117,6 +126,16 @@ struct connect_proc_info
 	int proc_state;
 } __attribute__((packed));
 
+struct sysconn_peer_info
+{
+	BYTE uuid[DIGEST_SIZE];
+	BYTE machine_uuid[DIGEST_SIZE];
+	char proc_name[DIGEST_SIZE];
+	char user_name[DIGEST_SIZE];
+	BYTE session_uuid[DIGEST_SIZE];
+	char * peer_addr;
+	char * conn_describe;
+} __attribute__((packed));
 void * get_connector(int type,int protocol);
 
 extern struct connector_ops connector_af_unix_server_ops; 

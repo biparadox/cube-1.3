@@ -84,6 +84,7 @@ int main(int argc,char **argv)
 	"base_msg.json",
 	"dispatchrecord.json",
 	"exmoduledefine.json",
+	"sys_conn.json",
 	 NULL
     };
 

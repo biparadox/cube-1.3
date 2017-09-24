@@ -6,14 +6,15 @@
 	},
 	"record":
 	{
-		"elem_no":5,
+		"elem_no":6,
 		"elemlist":
 		[
 			"MEMDB=0x120",
 			"MESSAGE=0x200",
 			"MSG_EXPAND",
-			"DISPATCH=0x210"
-			"EXMODULE=0x220"
+			"DISPATCH=0x210",
+			"EXMODULE=0x220",
+			"SYS_CONN=0x230"
 		]
 	}
 }
