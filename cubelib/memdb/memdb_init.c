@@ -1139,7 +1139,7 @@ void * memdb_find_first(int type,int subtype,char * elem_name,void * value)
 
 	record_template=memdb_get_template(type,subtype);
 	if(record_template==NULL)
-		return -EINVAL;
+		return NULL;
 
 	record=memdb_get_first(type,subtype);	
 	while(record!=NULL)

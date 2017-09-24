@@ -17,7 +17,7 @@
 				{"name":"proc_name","type":"STRING","size":"32"},
 				{"name":"user_name","type":"STRING","size":32},
 				{"name":"session_uuid","type":"UUID"},
-				{"name":"peer_addr","type":"ESTRING","size":128},
+				{"name":"peer_addr","type":"ESTRING","size":64},
 				{"name":"conn_describe","type":"ESTRING","size":512}
 			]
 		},

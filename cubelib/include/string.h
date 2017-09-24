@@ -40,4 +40,6 @@ int bitmap_set(BYTE * bitmap,int site);
 int bitmap_clear(BYTE * bitmap,int site);
 int bitmap_get(BYTE * bitmap,int site);
 int bitmap_is_allset(BYTE * bitmap,int size);
+int bin_2_hex(BYTE * bin,int size,BYTE * hex);
+int hex_2_bin(BYTE * hex,int size,BYTE * bin);
 #endif
