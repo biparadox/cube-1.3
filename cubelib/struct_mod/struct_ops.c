@@ -672,7 +672,7 @@ int hexdata_get_text_value(void *elem,void * addr,void * elem_attr)
 	struct elem_template * curr_elem=elem_attr;
 	if(curr_elem->size==0)
 		return 0;
-	ret=_bin_2_hex(addr,curr_elem->size,elem);
+	ret=_bin_2_hex(elem,curr_elem->size,addr);
 	return ret;
 }
 
@@ -683,7 +683,7 @@ int hexdata_set_text_value(void *elem,void * addr,void * elem_attr)
 	struct elem_template * curr_elem=elem_attr;
 	if(curr_elem->size==0)
 		return 0;
-	ret=_hex_2_bin(elem,curr_elem->size,addr);
+	ret=_hex_2_bin(addr,curr_elem->size,elem);
 	return ret;
 }
 
