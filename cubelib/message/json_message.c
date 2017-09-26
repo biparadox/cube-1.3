@@ -1,12 +1,11 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <errno.h>
 
 #include "../include/data_type.h"
 #include "../include/list.h"
-#include "../include/string.h"
+#include "../include/memfunc.h"
 #include "../include/alloc.h"
 #include "../include/json.h"
 #include "../include/struct_deal.h"

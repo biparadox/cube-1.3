@@ -3,7 +3,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <errno.h>
-#include <string.h>
+#include <memfunc.h>
 #include <sys/select.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -12,7 +12,7 @@
 
 #include "data_type.h"
 #include "list.h"
-#include "string.h"
+#include "memfunc.h"
 #include "alloc.h"
 #include "json.h"
 #include "struct_deal.h"

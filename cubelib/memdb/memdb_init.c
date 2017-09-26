@@ -3,7 +3,7 @@
 #include"../include/errno.h"
 #include "../include/list.h"
 #include "../include/attrlist.h"
-#include "../include/string.h"
+#include "../include/memfunc.h"
 #include "../include/alloc.h"
 #include "../include/json.h"
 #include "../include/struct_deal.h"

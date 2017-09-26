@@ -2,7 +2,7 @@
 #include "data_type.h"
 #include "alloc.h"
 #include "struct_deal.h"
-#include "string.h"
+#include "memfunc.h"
 #include "json.h"
 #include "struct_ops.h"
 #include "struct_attr.h"

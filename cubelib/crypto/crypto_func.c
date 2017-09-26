@@ -1,5 +1,5 @@
 /*#include <stdlib.h>
-#include <string.h>
+#include <memfunc.h>
 #include <stdlib.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -13,7 +13,7 @@
 #include <unistd.h>
 
 #include "../include/data_type.h"
-#include "../include/string.h"
+#include "../include/memfunc.h"
 #include "../include/errno.h"
 //#include "../list.h"
 #include "sm3.h"

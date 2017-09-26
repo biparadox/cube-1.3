@@ -21,13 +21,13 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "../include/data_type.h"
-#include "../include/list.h"
-#include "../include/alloc.h"
-#include "../include/string.h"
-#include "../include/basefunc.h"
-#include "../include/struct_deal.h"
-#include "../include/crypto_func.h"
+#include "data_type.h"
+#include "list.h"
+#include "alloc.h"
+#include "memfunc.h"
+#include "basefunc.h"
+#include "struct_deal.h"
+#include "crypto_func.h"
 
 
 int main() {

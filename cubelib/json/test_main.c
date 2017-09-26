@@ -30,7 +30,7 @@
 #include "../include/data_type.h"
 #include "../include/alloc.h"
 #include "../include/json.h"
-#include "../include/string.h"
+#include "../include/memfunc.h"
 
 int main() {
 

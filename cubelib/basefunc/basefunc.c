@@ -8,7 +8,7 @@
 #include "../include/errno.h"
 #include "../include/data_type.h"
 #include "../include/alloc.h"
-#include "../include/string.h"
+#include "../include/memfunc.h"
 #include "../include/list.h"
 #include "../include/basefunc.h"
 #include "../include/attrlist.h"

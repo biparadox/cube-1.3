@@ -9,7 +9,7 @@
 
 #include "data_type.h"
 #include "list.h"
-#include "string.h"
+#include "memfunc.h"
 #include "alloc.h"
 #include "json.h"
 #include "struct_deal.h"

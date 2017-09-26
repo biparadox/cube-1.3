@@ -23,7 +23,7 @@
 #include <stdlib.h>
 #include <errno.h>
 #include "data_type.h"
-#include "string.h"
+#include "memfunc.h"
 #include "alloc.h"
 #include "json.h"
 #include "struct_deal.h"

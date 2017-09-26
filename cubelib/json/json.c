@@ -2,7 +2,7 @@
 
 #include "../include/data_type.h"
 #include "../include/errno.h"
-#include "../include/string.h"
+#include "../include/memfunc.h"
 #include "../include/json.h"
 #include "../include/alloc.h"
 #include "../include/attrlist.h"

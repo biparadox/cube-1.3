@@ -1,7 +1,7 @@
 #include "errno.h"
 #include "data_type.h"
 #include "alloc.h"
-#include "string.h"
+#include "memfunc.h"
 #include "struct_deal.h"
 #include "struct_ops.h"
 #include "struct_attr.h"

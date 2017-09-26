@@ -2,7 +2,7 @@
 #include <errno.h>
 
 #include "../include/data_type.h"
-#include "../include/string.h"
+#include "../include/memfunc.h"
 
 #include "alloc_struct.h"
 

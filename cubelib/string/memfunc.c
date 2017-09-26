@@ -21,7 +21,7 @@
 #include <errno.h>
 //#include "../include/errno.h"
 #include "../include/data_type.h"
-#include "../include/string.h"
+#include "../include/memfunc.h"
 
 const int maxnamelen=DIGEST_SIZE*8+1;
 void * Memcpy(void * dest,void * src, unsigned int count)
