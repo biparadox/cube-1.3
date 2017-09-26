@@ -6,7 +6,7 @@
 
 #include "data_type.h"
 #include "alloc.h"
-#include "string.h"
+#include "memfunc.h"
 #include <libwebsockets.h>
 #include "basefunc.h"
 #include "struct_deal.h"

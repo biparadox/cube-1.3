@@ -11,7 +11,7 @@
 #include "data_type.h"
 #include "alloc.h"
 #include "json.h"
-#include "string.h"
+#include "memfunc.h"
 #include "struct_deal.h"
 #include "crypto_func.h"
 #include "message.h"
