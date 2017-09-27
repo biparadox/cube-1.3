@@ -1,5 +1,5 @@
 #!/bin/sh
-export TCGPATH=$CUBE_TCG_PATH
+export TCGPATH=$CUBE_TRUSTROOT_PATH
 export SWTPMPATH=$TCGPATH/swTPM
 export TPMDEVPATH=$TCGPATH/tpmd_dev
 sudo killall tpm_server

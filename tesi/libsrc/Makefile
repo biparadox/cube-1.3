@@ -6,7 +6,7 @@ STRUCTOBJ= common.o tesi_certs.o key_certify.o
 LIBNAME=tesi
 DEPENDLIB= -lmessage -lmemdb -lbasefunc -lcrypto_func -lstruct -ljson -lalloc -lstring -lcrypto -ltspi
 
-main: $(CUBELIBPATH)/lib/lib$(LIBNAME).so  test_main
+main: $(CUBELIBPATH)/lib/lib$(LIBNAME).so 
 #test_main: test_main.c $(CUBELIBPATH)/lib/lib$(LIBNAME).so 
 #	$(CC) $(FLAGS) test_main test_main.c -L$(CUBELIBPATH)/lib -l$(LIBNAME) $(DEPENDLIB)   
 $(CUBELIBPATH)/lib/lib$(LIBNAME).so: $(STRUCTOBJ)
