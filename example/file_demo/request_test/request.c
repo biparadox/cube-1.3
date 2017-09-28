@@ -11,7 +11,7 @@
 
 #include "data_type.h"
 #include "alloc.h"
-#include "string.h"
+#include "memfunc.h"
 #include "basefunc.h"
 #include "struct_deal.h"
 #include "crypto_func.h"
@@ -25,6 +25,8 @@
 
 static struct timeval time_val={0,50*1000};
 static char filename[DIGEST_SIZE*4];
+int proc_request_message(void * sub_proc,void * message);
+int proc_notice_message(void * sub_proc,void * message);
 
 int request_init(void * sub_proc,void * para)
 {
@@ -107,7 +109,7 @@ int proc_notice_message(void * sub_proc,void * message)
 	char uuidname[DIGEST_SIZE*2+1];
 	printf("receive proc notice \n");
 
-	ret=message_get_record(message,&notice,0);
+	ret=message_get_record(message,(void **)(&notice),0);
 	if(ret<0)
 		return ret;		
 	digest_to_uuid(notice->uuid,uuidname);

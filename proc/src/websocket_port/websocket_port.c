@@ -63,7 +63,7 @@ static struct struct_elem_attr connect_syn_desc[]=
 };
 */
 
-static int callback_http(	struct lws_context * this,
+static int callback_http(	
 				struct lws * wsi,
 				enum lws_callback_reasons reason,
 				void * user,void * in,size_t len)
@@ -71,11 +71,12 @@ static int callback_http(	struct lws_context * this,
 	return 0;
 }
 		
-static int callback_cube_wsport(	struct lws_context * this,
+static int callback_cube_wsport(
 				struct lws * wsi,
 				enum lws_callback_reasons reason,
 				void * user,void * in,size_t len)
 {
+	struct lws_context * this=lws_get_context(wsi);
 	int i;
 	switch(reason) {
 		case LWS_CALLBACK_ESTABLISHED:
