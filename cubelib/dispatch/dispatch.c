@@ -389,7 +389,7 @@ int dispatch_match_message(void * policy,void * message)
 		return ret;
 	while(match_rule!=NULL)
 	{
-		if(match_rule->area==0)
+		if((match_rule->area==0)||(match_rule->area==MATCH_AREA_HEAD))
 		{
 			if(match_rule->type==0)
 				result=1;
@@ -728,7 +728,7 @@ int router_set_query_end(void * message,void * policy)
 	while(rule!=NULL)
 	{
 		jumpcount++;
-		if(rule->target_type==ROUTE_TARGET_CONN)	
+		if((rule->target_type==ROUTE_TARGET_CONN)||(rule->target_type==ROUTE_TARGET_NAME))	
 			break;
 		ret=dispatch_policy_getnextrouterule(policy,&rule);
 	}
@@ -1548,10 +1548,10 @@ int router_pop_site(void * message)
 		Free(expand);
 	}
 		
-	{
-		msg_head->state=MSG_FLOW_DELIVER;
-		msg_head->flag |= MSG_FLAG_LOCAL;
-	}
+//	{
+//		msg_head->state=MSG_FLOW_DELIVER;
+//		msg_head->flag |= MSG_FLAG_LOCAL;
+//	}
 
 	return 1;
 }
