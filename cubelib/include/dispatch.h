@@ -49,6 +49,14 @@ enum route_target_type
     ROUTE_TARGET_ERROR=0xFFFF,
 };
 
+enum dispatch_policy_state
+{
+	POLICY_OPEN=0x01,
+	POLICY_CLOSE,
+	POLICY_WAIT,	
+	POLICY_TEST,	
+	POLICY_IGNORE
+};
 int dispatch_init();
 void * dispatch_policy_create();
 
@@ -75,6 +83,8 @@ int dispatch_policy_getfirstmatchrule(void * policy,void ** rule);
 int dispatch_policy_getnextmatchrule(void * policy,void ** rule);
 int dispatch_policy_getfirstrouterule(void * policy,void ** rule);
 int dispatch_policy_getnextrouterule(void * policy,void ** rule);
+int dispatch_policy_getstate(void * policy);
+const char * dispatch_policy_getname(void * policy);
 
 int dispatch_match_sender(void * policy,char * sender);
 int dispatch_match_message(void * policy,void * message);

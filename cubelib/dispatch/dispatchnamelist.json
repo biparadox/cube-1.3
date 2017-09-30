@@ -60,3 +60,22 @@
 		]
 	}
 }
+{
+	"head":
+	{
+		"name":"dispatch_policy_state",
+		"type":"NAMELIST"
+	},
+	"record":
+	{
+		"elem_no":5,
+		"elemlist":
+		[
+			"OPEN=0x01",
+			"CLOSE",
+			"WAIT",
+			"TEST",
+			"IGNORE"
+		]
+	}
+}

@@ -68,11 +68,19 @@ int read_dispatch_file(char * file_name,int is_aspect)
 			printf("read %d file error!\n",count);
 			break;
 		}
-		if(is_aspect)
-			dispatch_aspect_policy_add(policy);
+		if((dispatch_policy_getstate(policy)==POLICY_IGNORE)
+			||(dispatch_policy_getstate(policy)==POLICY_CLOSE))
+		{
+			printf("policy %s is ignored!\n",dispatch_policy_getname(policy));
+		}
 		else
-			dispatch_policy_add(policy);
-		count++;
+		{
+			if(is_aspect)
+				dispatch_aspect_policy_add(policy);
+			else
+				dispatch_policy_add(policy);
+			count++;
+		}
 	}
 	printf("read %d policy succeed!\n",count);
 	return count;

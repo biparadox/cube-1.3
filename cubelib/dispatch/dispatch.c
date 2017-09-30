@@ -46,6 +46,20 @@ int dispatch_init( )
 	return 0;
 }
 
+const char * dispatch_policy_getname(void * policy)
+{
+    DISPATCH_POLICY * dispatch_policy=policy;
+    if(policy==NULL)
+	    return -EINVAL;
+    return dispatch_policy->name;
+}
+int dispatch_policy_getstate(void * policy)
+{
+    DISPATCH_POLICY * dispatch_policy=policy;
+    if(policy==NULL)
+	    return -EINVAL;
+    return dispatch_policy->state;
+}
 int dispatch_policy_gettype(void * policy)
 {
     DISPATCH_POLICY * dispatch_policy=policy;
@@ -749,7 +763,7 @@ int router_set_query_end(void * message,void * policy)
 
 int router_find_route_policy(void * message,void **msg_policy,char * sender_proc)
 {
-    void * policy;
+    DISPATCH_POLICY * policy;
     int ret;
     *msg_policy=NULL;
 
@@ -758,6 +772,14 @@ int router_find_route_policy(void * message,void **msg_policy,char * sender_proc
         return ret;
     while(policy!=NULL)
     {
+	if((policy->state==POLICY_CLOSE)||(policy->state==POLICY_IGNORE))
+	{
+    		ret=dispatch_policy_getnext(&policy);
+    		if(ret<0)
+             		return ret;
+		continue;
+	}
+
     	ret=dispatch_match_sender(policy,sender_proc);
 	if(ret>0)
 	{	

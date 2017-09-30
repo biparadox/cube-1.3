@@ -28,9 +28,11 @@ typedef struct tagroute_rule
 	char * target_name;
 }__attribute__((packed)) ROUTE_RULE;
 
+
 typedef struct tagdispatch_policy
 {
 	char * name;
+	enum dispatch_policy_state state;	
 	int type;
 	char sender[DIGEST_SIZE];
 	char * newname; 
@@ -43,6 +45,7 @@ typedef struct tagdispatch_policy
 static POLICY_LIST local_router_policy;
 static POLICY_LIST main_router_policy;
 static POLICY_LIST aspect_router_policy;
+
 
 struct expand_route_record
 {

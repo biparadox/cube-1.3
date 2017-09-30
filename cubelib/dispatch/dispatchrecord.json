@@ -13,6 +13,7 @@
 			"elem_desc":
 			[
 				{"name":"name","type":"ESTRING"},
+				{"name":"state","type":"ENUM","ref_name":"dispatch_policy_state"},
 				{"name":"type","type":"ENUM","ref_name":"message_flow_type"},
 				{"name":"sender","type":"STRING","size":32},
 				{"name":"newname","type":"ESTRING"},
@@ -23,7 +24,7 @@
 		"index":
 		{
 			"flag":"INDEX",
-			"elemlist":"name,type,sender,newname,ljump,rjump"
+			"elemlist":"name,state,type,sender,newname,ljump,rjump"
 		}
 	}	
 }
