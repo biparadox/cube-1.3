@@ -73,7 +73,7 @@ struct struct_elem_attr uuid_head_desc[] =
 	{NULL,CUBE_TYPE_ENDDATA,0,NULL}
 };
 
-struct expand_flow_trace
+struct uuid_array_record
 {
     int  data_size;
     int  type;		      // this should be "MSG_EXPAND"
@@ -85,7 +85,7 @@ struct expand_flow_trace
     BYTE *trace_record;
 } __attribute__((packed));
 
-struct struct_elem_attr expand_flow_trace_desc[] =
+struct struct_elem_attr uuid_array_record_desc[] =
 {
     	{"data_size",CUBE_TYPE_INT,0,NULL,NULL},
    	{"type",CUBE_TYPE_INT,0,NULL,NULL},
@@ -314,7 +314,7 @@ int test_array()
 
 int main() {
 
-	struct expand_flow_trace test_trace={0,513,3,2,NULL,2,NULL,NULL};
+	struct uuid_array_record test_trace={0,513,3,2,NULL,2,NULL,NULL};
 
 
 	char buffer[4096];
@@ -323,9 +323,9 @@ int main() {
 	char text1[4096];
 	void * root;
 	int ret;
-	struct expand_flow_trace * dup1;
-	struct expand_flow_trace * dup2;
-	struct expand_flow_trace * dup3;
+	struct uuid_array_record * dup1;
+	struct uuid_array_record * dup2;
+	struct uuid_array_record * dup3;
 
 	struct_deal_init();
 
@@ -345,7 +345,7 @@ int main() {
 	test_trace.namelist[1].name=dup_str("KEY",0);
 
 	
-	void * struct_template= create_struct_template(&expand_flow_trace_desc);
+	void * struct_template= create_struct_template(&uuid_array_record_desc);
 	
 	dup1=Talloc0(struct_size(struct_template));
 

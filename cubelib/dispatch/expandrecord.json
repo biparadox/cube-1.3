@@ -2,7 +2,7 @@
 	"head":
 	{
 		"name":"expand_flow_trace",
-		"type":"RECORDTYPE",
+		"type":"RECORDTYPE"
 	},
 	"record":
 	{

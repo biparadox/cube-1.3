@@ -8,9 +8,6 @@
 	{
 		"elem_desc":
 		[
-			{"name":"data_size","type":"INT"},
-			{"name":"type","type":"TYPE"},
-			{"name":"subtype","type":"SUBTYPE"},
 			{"name":"record_num","type":"INT"},
 			{"name":"trace_record","type":"UUIDARRAY","def":"record_num"}
 		]
@@ -26,9 +23,6 @@
 	{
 		"elem_desc":
 		[
-			{"name":"data_size","type":"INT"},
-			{"name":"type","type":"TYPE"},
-			{"name":"subtype","type":"SUBTYPE"},
 			{"name":"record_num","type":"INT"},
 			{"name":"aspect_proc","type":"UUIDARRAY","def":"record_num"},
 			{"name":"aspect_point","type":"UUIDARRAY","def":"record_num"}
@@ -45,9 +39,6 @@
 	{
 		"elem_desc":
 		[
-			{"name":"data_size","type":"INT"},
-			{"name":"type","type":"TYPE"},
-			{"name":"subtype","type":"SUBTYPE"},
 			{"name":"sender_uuid","type":"UUID"},
 			{"name":"receiver_uuid","type":"UUID"},
 			{"name":"route","type":"STRING","size":32},

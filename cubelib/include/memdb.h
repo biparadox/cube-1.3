@@ -17,18 +17,32 @@
 
 enum dynamic_memdb_typelist
 {
-	DTYPE_MEMDB=0x120
+	DTYPE_MEMDB=0x120,
+	DTYPE_RECORD=0x121
 };
 enum subtypelist_memdb
 {
 	SUBTYPE_UUID_HEAD=0x01,
 	SUBTYPE_INDEX_ELEM
 };
+enum subtype_record
+{
+	SUBTYPE_UUID=0x01,
+	SUBTYPE_UUID_ARRAY,
+	SUBTYPE_STRING,
+	SUBTYPE_RECORD_TYPES
+};
 struct types
 {
 	int type;
 	int subtype;
 }__attribute__((packed));
+struct uuid_array_record
+{
+	int num;
+	BYTE * arrays;
+}__attribute__((packed));
+
 
 int memdb_init(void);
 int read_json_desc(void * root, BYTE * uuid);

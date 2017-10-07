@@ -10,6 +10,7 @@
 		"elemlist":
 		[
 			"MEMDB=0x120",
+			"RECORD=0x121",
 			"MESSAGE=0x200",
 			"MSG_EXPAND",
 			"DISPATCH=0x210",

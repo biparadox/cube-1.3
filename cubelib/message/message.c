@@ -2144,3 +2144,19 @@ int message_set_blob(void * message, void * blob, int size)
 	msg_box->head.record_size=size;
 	return size;
 }
+
+void * message_gen_typesmsg(int type,int subtype,void * active_msg)
+{
+	struct types_pair * types;
+	void * send_msg;
+	send_msg=message_create(DTYPE_MESSAGE,SUBTYPE_TYPES,active_msg);			//构造存储请求给recordlib，要求其存储信息
+	if(send_msg==NULL)
+		return -EINVAL;
+	types=Talloc(sizeof(*types));
+	if(types==NULL)
+		return -EINVAL;
+	types->type=type;
+	types->subtype=subtype;
+	message_add_record(send_msg,types);
+	return send_msg;
+}

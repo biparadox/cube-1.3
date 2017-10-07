@@ -26,7 +26,7 @@
 #include "tesi_key.h"
 #include "tesi_aik_struct.h"
 #include "aik_client.h"
-#include "key_manage_struct.h"
+//#include "key_manage_struct.h"
 
 static struct timeval time_val={0,50*1000};
 int print_error(char * str, int result)
@@ -218,7 +218,7 @@ int proc_aik_activate(void * sub_proc,void * recv_msg)
 	
 	struct policyfile_notice * file_notice;
 	struct aik_cert_info cert_info;		//证书信息
-	struct key_manage_aik_bind manage_info;	//管理信息
+	struct key_manage_aik_info manage_info;	//管理信息
 
 	ret = message_get_record(recv_msg,&file_notice,0);
 	if(ret<0)
@@ -325,7 +325,7 @@ int proc_aik_activate(void * sub_proc,void * recv_msg)
 
 	//发消息
 	void * send_msg;
-	send_msg = message_create(DTYPE_KEY_MANAGE, SUBTYPE_AIK_BIND, NULL);
+	send_msg = message_create(DTYPE_AIK_STRUCT,SUBTYPE_AIK_INFO, NULL);
 	if (send_msg == NULL)
 		return -EINVAL;
 	message_add_record(send_msg, &manage_info);

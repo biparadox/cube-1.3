@@ -1,5 +1,5 @@
-#ifndef KEY_MANAGE_H
-#define KEY_MANAGE_H
+#ifndef KEY_MANAGE_STRUCT_H
+#define KEY_MANAGE_STRUCT_H
 
 /*
 秘钥管理主类别
@@ -28,5 +28,15 @@ struct key_manage_aik_bind
 	BYTE aik_pri_uuid[DIGEST_SIZE];
 	BYTE aik_cert_uuid[DIGEST_SIZE];
 }__attribute__((packed));
-
+/*
+struct key_info_struct
+{
+	BYTE key_uuid[DIGEST_SIZE];
+	int  key_type;
+	char user_name[DIGEST_SIZE];
+	BYTE machine_uuid[DIGEST_SIZE];
+	BYTE pub_uuid[DIGEST_SIZE];
+	BYTE key_cert_uuid[DIGEST_SIZE];
+}__attribute__((packed));
+*/
 #endif

@@ -150,14 +150,14 @@ struct ctrl_message     // record (MESSAGE,CTRL)
 struct expand_flow_trace
 {
     int  record_num;
-    char *trace_record;
+    BYTE *trace_record;
 } __attribute__((packed));
 
 struct expand_aspect_point
 {
     int  record_num;
-    char * aspect_proc;
-    char * aspect_point;
+    BYTE * aspect_proc;
+    BYTE * aspect_point;
 } __attribute__((packed));
 
 void * message_init();
@@ -257,4 +257,5 @@ int json_2_message(char * json_str,void ** message);
 int message_output_record_blob(void * message, BYTE ** blob);
 
 char * message_get_typestr(void * message);
+void * message_gen_typesmsg(int type,int subtype,void * active_msg);
 #endif

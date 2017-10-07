@@ -101,12 +101,13 @@
 	"record":
 	{
 		"type":"TESI_AIK_STRUCT",
-		"elem_no":3,
+		"elem_no":4,
 		"elemlist":
 		[
 			"USER_INFO=0x01",
 			"CERT_INFO",
-			"CA_CERT"
+			"CA_CERT",
+			"AIK_INFO"
 		]
 	}
 }

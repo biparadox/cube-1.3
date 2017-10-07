@@ -29,7 +29,7 @@
 	"head":
 	{
 		"name":"memdb_index_elem",
-		"type":"RECORDTYPE",
+		"type":"RECORDTYPE"
 	},
 	"record":
 	{
@@ -48,6 +48,26 @@
 		{
 			"flag":"INDEX",
 			"elemlist":"head,flag,uuid"
+		}
+	}	
+}
+{
+	"head":
+	{
+		"name":"uuid_array_record",
+		"type":"RECORDTYPE"
+	},
+	"record":
+	{
+		"type":"RECORD",
+		"subtype":"UUID_ARRAY",
+		"struct_desc":
+		{
+			"elem_desc":
+			[
+				{"name":"record_num","type":"INT"},
+				{"name":"trace_record","type":"DEFUUIDARRAY","def":"record_num"}
+			]
 		}
 	}	
 }

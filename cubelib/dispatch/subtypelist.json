@@ -1,7 +1,7 @@
 {
 	"head":
 	{
-		"name":"memdb_subtypelist",
+		"name":"subtypelist_memdb",
 		"type":"SUBTYPELIST"
 	},
 	"record":
@@ -12,6 +12,25 @@
 		[
 			"UUID_HEAD=0x01",
 			"INDEX_ELEM"
+		]
+	}
+}
+{
+	"head":
+	{
+		"name":"subtype_record",
+		"type":"SUBTYPELIST"
+	},
+	"record":
+	{
+		"type":"RECORD",
+		"elem_no":4,
+		"elemlist":
+		[
+			"UUID=0x01",
+			"UUID_ARRAY",
+			"STRING",
+			"TYPES"
 		]
 	}
 }

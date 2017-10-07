@@ -1,7 +1,7 @@
 {
 	"head":
 	{
-		"name":"expand_flow_trace",
+		"name":"uuid_array_record",
 		"type":"STRUCT"
 	},
 	"record":
@@ -62,14 +62,14 @@
 {
 	"head":
 	{
-		"name":"expand_flow_trace",
+		"name":"uuid_array_record",
 		"type":"RECORDTYPE"
 	},
 	"record":
 	{
 		"type":"MSG_EXPAND",
 		"subtype":"FLOW_TRACE",
-		"uuid":"expand_flow_trace"
+		"uuid":"uuid_array_record"
 	}	
 }
 {

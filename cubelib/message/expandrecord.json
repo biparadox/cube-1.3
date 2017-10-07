@@ -1,7 +1,7 @@
 {
 	"head":
 	{
-		"name":"expand_flow_trace",
+		"name":"uuid_array_record",
 		"type":"RECORDTYPE",
 	},
 	"record":

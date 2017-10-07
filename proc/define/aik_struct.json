@@ -62,3 +62,26 @@
 		}
 	}	
 }
+{
+	"head":
+	{
+		"name":"key_manage_aik_info",
+		"type":"RECORDTYPE"
+	},
+	"record":
+	{
+		"type":"TESI_AIK_STRUCT",
+		"subtype":"AIK_INFO",
+		"struct_desc":
+		{
+			"elem_desc":
+			[
+				{"name":"machine_uuid","type":"UUID"},
+				{"name":"user_name","type":"ESTRING","size":32},
+				{"name":"aik_pub_uuid","type":"UUID"},
+				{"name":"aik_pri_uuid","type":"UUID"},
+				{"name":"aik_cert_uuid","type":"UUID"},
+			]
+		}
+	}	
+}
