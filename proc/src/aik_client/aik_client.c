@@ -325,7 +325,7 @@ int proc_aik_activate(void * sub_proc,void * recv_msg)
 
 	//·¢ÏûÏ¢
 	void * send_msg;
-	send_msg = message_create(DTYPE_AIK_STRUCT,SUBTYPE_AIK_INFO, NULL);
+	send_msg = message_create(DTYPE_AIK_STRUCT,SUBTYPE_AIK_INFO, recv_msg);
 	if (send_msg == NULL)
 		return -EINVAL;
 	message_add_record(send_msg, &manage_info);
