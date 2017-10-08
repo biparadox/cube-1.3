@@ -83,6 +83,10 @@ int tpm_key_create_start(void * sub_proc,void * para)
 		{
 			proc_tpm_key_generate(sub_proc,recv_msg);
 		}
+		else if((type =DTYPE_TESI_KEY_STRUCT)&&(subtype==SUBTYPE_KEY_CERTIFY))
+		{
+			proc_tpm_key_certify(sub_proc,recv_msg);
+		}
 	}
 
 	return 0;
@@ -154,5 +158,70 @@ int proc_tpm_key_generate(void * sub_proc,void * recv_msg)
 	ret=ex_module_sendmsg(sub_proc,send_msg);
 	if(ret>=0)
 		ret=ex_module_sendmsg(sub_proc,send_pubkey_msg);
+	return ret;
+}
+
+int proc_tpm_key_certify(void * sub_proc,void * recv_msg)
+{
+	TSS_RESULT result;
+	TSS_HKEY   hKey;
+	TSS_HKEY   hAIK;
+	int i;
+	struct vTPM_wrappedkey * key_frame;
+	struct vTPM_publickey * pubkey_frame;
+	KEY_CERT * key_cert;
+	int ret;
+
+	char filename[DIGEST_SIZE*3];
+	
+	printf("begin tpm key certify!\n");
+	char buffer[1024];
+	char digest[DIGEST_SIZE];
+	int blobsize=0;
+	int fd;
+
+	// create a signkey and write its key in localsignkey.key, write its pubkey in localsignkey.pem
+	result=TESI_Local_Reload();
+
+	i=0;
+
+	MSG_HEAD * msghead;
+	msghead=message_get_head(recv_msg);
+	if(msghead==NULL)
+		return -EINVAL;
+
+	void * send_msg=message_create(DTYPE_TESI_KEY_STRUCT,SUBTYPE_KEY_CERTIFY,recv_msg);
+	for(i=0;i<msghead->record_num;i++)
+	{
+		ret=message_get_record(recv_msg,&key_cert,i);
+		if(ret<0)
+			return -EINVAL;
+		if(key_cert==NULL)
+			break;
+
+		if(Isemptyuuid(key_cert->uuid))
+		{
+			result=_load_tpm_key(key_cert->keyuuid,&hKey);
+			if(result!=0)
+				return -EINVAL;
+			result=_load_tpm_key(key_cert->aikuuid,&hAIK);
+			if(result!=0)
+				return -EINVAL;
+			result=TESI_Report_CertifyKey(hKey,hAIK,"cert/key");	
+			if ( result != TSS_SUCCESS )
+			{
+				printf( "Certify key failed %s!\n",tss_err_string(result));
+				return result;
+			}
+			ret=convert_uuidname("cert/key",".val",key_cert->uuid,filename);
+			
+			if(ret<0)
+				return ret;
+		}
+		ret=message_add_record(send_msg,key_cert);
+		if(ret<0)
+			break;
+	};
+	ret=ex_module_sendmsg(sub_proc,send_msg);
 	return ret;
 }

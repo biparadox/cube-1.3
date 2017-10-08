@@ -69,8 +69,8 @@ TSS_RESULT _load_tpm_key(BYTE * wrapkey_uuid, TSS_HKEY * hKey)
 	hWrapKey=NULL;
 	for(;i>=0;i--)
 	{
-		if(db_record[i]->tail==NULL)
-		{
+//		if(db_record[i]->tail==NULL)
+//		{
 			Strcpy(filename,wrapkey_frame[i]->key_filename);
 			filename[Strlen(filename)-4]=0;
 			result=TESI_Local_ReadKeyBlob(&hTempKey,filename);
@@ -85,7 +85,8 @@ TSS_RESULT _load_tpm_key(BYTE * wrapkey_uuid, TSS_HKEY * hKey)
 			}
 			hWrapKey=hTempKey;
 			db_record[i]->tail=hTempKey;	
-		}	
+//		}
+/*	
 		else
 		{
 			hTempKey=db_record[i]->tail;
@@ -96,6 +97,7 @@ TSS_RESULT _load_tpm_key(BYTE * wrapkey_uuid, TSS_HKEY * hKey)
 			}
 			hWrapKey=hTempKey;
 		}
+*/
 	}
 	// get hkey
 	if(result!=TSS_SUCCESS)
@@ -200,7 +202,6 @@ int create_tpm_key(struct vTPM_wrappedkey * key_frame,struct vTPM_publickey ** p
 	pubkey_frame->key_size=key_frame->key_size;
 	Memcpy(pubkey_frame->key_binding_policy_uuid,key_frame->key_binding_policy_uuid,DIGEST_SIZE);
 	Memcpy(pubkey_frame->privatekey_uuid,key_frame->uuid,DIGEST_SIZE);
-	pubkey_frame->keypass=NULL;
 
 	getcwd(buffer,DIGEST_SIZE*12);
 	Strcat(buffer,"/");	

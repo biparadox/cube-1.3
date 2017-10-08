@@ -132,11 +132,11 @@ int proc_aik_request(void * sub_proc,void * recv_msg)
 	if(ret<0)
 		return ret;
 
-	memcpy(&reqinfo.user_info,user_info,sizeof(struct aik_user_info));
+	Memcpy(&reqinfo.user_info,user_info,sizeof(struct aik_user_info));
 
 	char filename[DIGEST_SIZE*5];
-	char local_uuid[DIGEST_SIZE];
-	char proc_name[DIGEST_SIZE];
+	BYTE local_uuid[DIGEST_SIZE];
+	BYTE proc_name[DIGEST_SIZE];
 	
 	ret=proc_share_data_getvalue("uuid",local_uuid);//读取机器码
 	ret=proc_share_data_getvalue("proc_name",proc_name);
@@ -219,6 +219,13 @@ int proc_aik_activate(void * sub_proc,void * recv_msg)
 	struct policyfile_notice * file_notice;
 	struct aik_cert_info cert_info;		//证书信息
 	struct key_manage_aik_info manage_info;	//管理信息
+	struct vTPM_wrappedkey * aikey;
+	struct vTPM_publickey * aipubkey;
+	BYTE local_uuid[DIGEST_SIZE];
+	BYTE proc_name[DIGEST_SIZE];
+	
+	ret=proc_share_data_getvalue("uuid",local_uuid);//读取机器码
+	ret=proc_share_data_getvalue("proc_name",proc_name);
 
 	ret = message_get_record(recv_msg,&file_notice,0);
 	if(ret<0)
@@ -254,6 +261,10 @@ int proc_aik_activate(void * sub_proc,void * recv_msg)
 		exit(result);
 	}
 	
+
+	aikey=Talloc0(sizeof(*aikey));
+	aipubkey=Talloc0(sizeof(*aipubkey));
+
 	// write the AIK and aipubkey
 
 	result=TESI_Local_WriteKeyBlob(hAIKey,"privkey/AIK");//privkey
@@ -262,7 +273,18 @@ int proc_aik_activate(void * sub_proc,void * recv_msg)
 		exit(result);
 	}
 	ret=convert_uuidname("privkey/AIK",".key",digest,buffer);
-	memcpy(manage_info.aik_pri_uuid , digest, sizeof(digest));//将私钥uuid存下来
+	// build aik's key frame
+	Memcpy(aikey->uuid,digest,DIGEST_SIZE);
+	Memcpy(aikey->vtpm_uuid,local_uuid,DIGEST_SIZE);
+	aikey->issrkwrapped=1;
+	aikey->key_type=TPM_KEY_IDENTITY;
+	aikey->keypass=dup_str("kkk",0);
+	aikey->key_filename=dup_str(buffer,0);
+
+	Memcpy(aipubkey->vtpm_uuid,local_uuid,DIGEST_SIZE);
+	Memcpy(aipubkey->privatekey_uuid,digest,DIGEST_SIZE);
+	
+	Memcpy(manage_info.aik_pri_uuid , digest, sizeof(digest));//将私钥uuid存下来
 	printf("get privkey_uuid success\n");
 	printf(manage_info.aik_pri_uuid);
 	printf("\n");
@@ -277,7 +299,15 @@ int proc_aik_activate(void * sub_proc,void * recv_msg)
 		exit(result);
 	}
 	ret=convert_uuidname("pubkey/AIK",".pem",digest,buffer);
-	memcpy(manage_info.aik_pub_uuid, digest, sizeof(digest));//将公钥uuid存下来
+	// build aipubk's key frame
+	Memcpy(aipubkey->uuid,digest,DIGEST_SIZE);
+	aipubkey->ispubek=0;
+	aipubkey->key_type=TPM_KEY_IDENTITY;
+	aipubkey->key_filename=dup_str(buffer,0);
+
+	Memcpy(aikey->pubkey_uuid,digest,DIGEST_SIZE);
+	
+	Memcpy(manage_info.aik_pub_uuid, digest, sizeof(digest));//将公钥uuid存下来
 	printf("get pubkey_uuid success\n");
 	printf(manage_info.aik_pub_uuid);
 	printf("\n");
@@ -304,7 +334,7 @@ int proc_aik_activate(void * sub_proc,void * recv_msg)
 
 	WriteSignDataToFile(&signdata,"cert/AIK");
 	ret=convert_uuidname("cert/AIK",".sda",digest,buffer);
-	memcpy(manage_info.aik_cert_uuid, digest, sizeof(digest));//将证书uuid存下来
+	Memcpy(manage_info.aik_cert_uuid, digest, sizeof(digest));//将证书uuid存下来
 	printf("get cert_uuid success\n");
 	printf(manage_info.aik_cert_uuid);
 	printf("\n");
@@ -314,11 +344,16 @@ int proc_aik_activate(void * sub_proc,void * recv_msg)
 	printf(manage_info.user_name);
 	printf("\n");
 
-	memcpy(manage_info.machine_uuid, cert_info.machine_uuid, DIGEST_SIZE);//机器码
+	Memcpy(manage_info.machine_uuid, cert_info.machine_uuid, DIGEST_SIZE);//机器码
 	printf("get machine_uuid success\n");
 	printf(manage_info.machine_uuid);
 	printf("\n");
 
+
+	//store the aik and aipubkey
+
+	memdb_store(aikey,DTYPE_TESI_KEY_STRUCT,SUBTYPE_WRAPPED_KEY,NULL);
+	memdb_store(aipubkey,DTYPE_TESI_KEY_STRUCT,SUBTYPE_PUBLIC_KEY,NULL);
 
 	if(ret>0)
 		printf("Generate AIK sign data %s!\n",buffer);

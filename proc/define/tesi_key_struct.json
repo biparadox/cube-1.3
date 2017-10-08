@@ -51,7 +51,6 @@
 				{"name":"key_size","type":"INT"},
 				{"name":"binding_policy_uuid","type":"UUID"},
 				{"name":"privatekey_uuid","type":"UUID"},
-				{"name":"keypass","type":"ESTRING"},
 				{"name":"key_filename","type":"ESTRING"}
 			]
 		}
@@ -81,7 +80,6 @@
 				{"name":"pubkeydigest","type":"DEFINE","def":"keydigestsize"},
 				{"name":"PCRinfosize","type":"INT"},
 				{"name":"PCRinfos","type":"DEFINE","def":"PCRinfosize"},
-				{"name":"keypass","type":"ESTRING"},
 				{"name":"filename","type":"ESTRING"}
 			]
 		}

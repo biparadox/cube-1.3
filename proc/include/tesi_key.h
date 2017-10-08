@@ -57,7 +57,6 @@ struct vTPM_publickey
 	int key_size; // size of key
 	BYTE key_binding_policy_uuid[DIGEST_SIZE]; //if the corresponding privateKey of the pubEK is bindkey,it should save the uuid of bind policy 
 	BYTE privatekey_uuid[DIGEST_SIZE]; //the corresponding privatedKey's of pubKey,if the pubKey is pubEK,the uuid should be set by uuid of vtpm
-	char * keypass; //the password of key
 	char * key_filename; //the file which saved the pubKey
 }__attribute__((packed));
 
