@@ -103,7 +103,7 @@ int proc_tpm_key_generate(void * sub_proc,void * recv_msg)
 	struct vTPM_publickey * pubkey_frame;
 	int ret;
 
-	char filename[DIGEST_SIZE*3];
+	char filename[DIGEST_SIZE*4];
 	
 	printf("begin tpm key generate!\n");
 	char buffer[1024];
@@ -172,7 +172,7 @@ int proc_tpm_key_certify(void * sub_proc,void * recv_msg)
 	KEY_CERT * key_cert;
 	int ret;
 
-	char filename[DIGEST_SIZE*3];
+	char filename[DIGEST_SIZE*4];
 	
 	printf("begin tpm key certify!\n");
 	char buffer[1024];
@@ -214,9 +214,9 @@ int proc_tpm_key_certify(void * sub_proc,void * recv_msg)
 				return result;
 			}
 			ret=convert_uuidname("cert/key",".val",key_cert->uuid,filename);
-			
 			if(ret<0)
 				return ret;
+			key_cert->filename=dup_str(filename,0);
 		}
 		ret=message_add_record(send_msg,key_cert);
 		if(ret<0)
