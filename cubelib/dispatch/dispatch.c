@@ -388,6 +388,7 @@ int dispatch_match_message(void * policy,void * message)
 	int ret;
 	int result=0;
 	int prev_result=0;
+	int match_rule_num=0;
 	DISPATCH_POLICY * dispatch_policy=(DISPATCH_POLICY *)policy;
 	MATCH_RULE * match_rule;
 	MSG_HEAD * msg_head;
@@ -474,10 +475,13 @@ int dispatch_match_message(void * policy,void * message)
 			default:
 				return -EINVAL;	
 		}
+		match_rule_num++;
 		ret=dispatch_policy_getnextmatchrule(policy,&match_rule);
 		if(ret<0)
 			return ret;
 	}	
+	if(match_rule_num==0)
+		return 0;
 	return prev_result;
 }
 
