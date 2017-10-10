@@ -369,7 +369,12 @@ int message_add_record(void * message,void * record)
 	    	return ret;
 
 	// assign the record's value 
-    	msg_box->precord[curr_site]=record;
+    	msg_box->precord[curr_site]=Dalloc0(struct_size(msg_box->record_template),msg_box);
+	if(msg_box->precord[curr_site]==NULL)
+		return -ENOMEM;
+	ret=struct_clone(record,msg_box->precord[curr_site],msg_box->record_template);
+	if(ret<0)
+		return ret;
     	msg_box->box_state=MSG_BOX_ADD;
     	return ret;
 }
