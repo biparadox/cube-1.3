@@ -1,6 +1,6 @@
-FLAGS= -g -o 
-CFLAGS= -g -c -DUSER_MODE 
 INCLUDE= -I$(CUBELIBPATH)/include/ 
+FLAGS= -g -o 
+CFLAGS= -g -c -DUSER_MODE  
 CC=gcc
 CCP=g++
 TESI_PROC=TESI_test TESI_getpubek TESI_init  
@@ -17,14 +17,14 @@ TESI_init: TESI_init.c
 	$(CC) $(FLAGS) TESI_init TESI_init.c $(INCLUDE) $(TEST_LIB)
 #TESI_bind: TESI_bind.c 
 #	$(CC) $(FLAGS) TESI_bind TESI_bind.c $(INCLUDE) $(TEST_LIB)
-#TESI_bind_genkey: TESI_bind_genkey.c 
-#	$(CC) $(FLAGS) TESI_bind_genkey TESI_bind_genkey.c $(INCLUDE) $(TEST_LIB)
+TESI_bind_genkey: TESI_bind_genkey.c 
+	$(CC) $(FLAGS) TESI_bind_genkey TESI_bind_genkey.c $(INCLUDE) $(TEST_LIB)
 #TESI_report_certifykey: TESI_report_certifykey.c 
 #	$(CC) $(FLAGS) TESI_report_certifykey TESI_report_certifykey.c $(INCLUDE) $(TEST_LIB)
-#TESI_bind_binddata: TESI_bind_binddata.c 
-#	$(CC) $(FLAGS) TESI_bind_binddata TESI_bind_binddata.c $(INCLUDE) $(TEST_LIB)
-#TESI_bind_unbinddata: TESI_bind_unbinddata.c 
-#	$(CC) $(FLAGS) TESI_bind_unbinddata TESI_bind_unbinddata.c $(INCLUDE) $(TEST_LIB)
+TESI_bind_binddata: TESI_bind_binddata.c 
+	$(CC) $(FLAGS) TESI_bind_binddata TESI_bind_binddata.c $(INCLUDE) $(TEST_LIB)
+TESI_bind_unbinddata: TESI_bind_unbinddata.c 
+	$(CC) $(FLAGS) TESI_bind_unbinddata TESI_bind_unbinddata.c $(INCLUDE) $(TEST_LIB)
 #TESI_clear: TESI_clear.c 
 #	$(CC) $(FLAGS) TESI_clear TESI_clear.c -L/usr/local/lib $(INCLUDE) $(TEST_LIB)
 #TESI_PCR: TESI_PCR.c 

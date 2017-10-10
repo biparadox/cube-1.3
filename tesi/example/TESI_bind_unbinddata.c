@@ -59,7 +59,7 @@
 
 #include <stdio.h>
 #include "data_type.h"
-#include "../common.h"
+#include "../libsrc/common.h"
 #include "tesi.h"
 
 int

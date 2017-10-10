@@ -3309,7 +3309,7 @@ TSS_RESULT TESI_Local_UnBindBuffer(void * inbuffer,int inlength, TSS_HKEY hKey, 
 	result = Tspi_Data_Unbind( hEncData, hKey, outlength,outbuffer );
 	if ( result != TSS_SUCCESS )
 	{
-		print_error("TESI_Local_BindBuffer", result);
+		print_error("TESI_Local_UnBindBuffer", result);
 		return result;
 	}
 	return result;

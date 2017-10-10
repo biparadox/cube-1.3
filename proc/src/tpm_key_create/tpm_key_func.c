@@ -25,7 +25,6 @@
 #include "file_struct.h"
 #include "tesi_key.h"
 #include "tesi_aik_struct.h"
-#include "tpm_key_create.h"
 
 
 #define MAX_WRAPPED_LAYER 10
