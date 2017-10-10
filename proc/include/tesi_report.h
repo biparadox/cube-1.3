@@ -6,7 +6,7 @@ enum dtype_tesi_report
 	DTYPE_TESI_REPORT=0x611,
 };
 
-enum subtype_tesi_struct
+enum subtype_tesi_report_struct
 {
 	SUBTYPE_PCR_SELECTION=0x01,
 	SUBTYPE_PCR_COMPOSITE,

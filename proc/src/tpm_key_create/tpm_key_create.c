@@ -171,7 +171,7 @@ int proc_tpm_key_certify(void * sub_proc,void * recv_msg)
 	struct vTPM_publickey * pubkey_frame;
 	KEY_CERT * key_cert;
 	int ret;
-
+	DB_RECORD * db_record;
 	char filename[DIGEST_SIZE*4];
 	
 	printf("begin tpm key certify!\n");
@@ -217,6 +217,23 @@ int proc_tpm_key_certify(void * sub_proc,void * recv_msg)
 			if(ret<0)
 				return ret;
 			key_cert->filename=dup_str(filename,0);
+
+			// change key_cert's keyid to public_key
+			db_record=memdb_find_first(DTYPE_TESI_KEY_STRUCT,SUBTYPE_WRAPPED_KEY,"uuid",key_cert->keyuuid);
+			if(db_record==NULL)
+				return -EINVAL;
+			key_frame=db_record->record;
+			key_cert->keyusage=key_frame->key_type;
+			Memcpy(key_cert->keyuuid,key_frame->pubkey_uuid,DIGEST_SIZE);
+
+			// change aik's keyid to public_key
+			db_record=memdb_find_first(DTYPE_TESI_KEY_STRUCT,SUBTYPE_WRAPPED_KEY,"uuid",key_cert->aikuuid);
+			if(db_record==NULL)
+				return -EINVAL;
+			key_frame=db_record->record;
+			Memcpy(key_cert->aikuuid,key_frame->pubkey_uuid,DIGEST_SIZE);
+		
+			memdb_store(key_cert,DTYPE_TESI_KEY_STRUCT,SUBTYPE_KEY_CERTIFY,NULL);
 		}
 		ret=message_add_record(send_msg,key_cert);
 		if(ret<0)
