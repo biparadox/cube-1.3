@@ -1766,6 +1766,7 @@ TSS_RESULT TESI_Local_SetPcrLocality(TSS_HPCRS hPcr)
 
 TSS_RESULT TESI_Local_Quote(TSS_HKEY hIdentKey,TSS_HPCRS hPcr,char *name)
 {
+	struct TAC_local_keyset * local_keyset;
 	TSS_RESULT result;
 	BYTE*		data;
 	TSS_VALIDATION valData;

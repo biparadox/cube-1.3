@@ -399,6 +399,13 @@ int dispatch_match_message(void * policy,void * message)
 	if(msg_head==NULL)
 		return -EINVAL;
 
+	if(dispatch_policy->name!=NULL)
+	{
+		if(msg_head->route[0]!=0)
+			if(Strncmp(dispatch_policy->name,msg_head->route,DIGEST_SIZE)!=0)
+				return 0;	
+	}
+
 	ret=dispatch_policy_getfirstmatchrule(policy,&match_rule);
 	if(ret<0)
 		return ret;
