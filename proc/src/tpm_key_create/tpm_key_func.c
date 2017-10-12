@@ -21,6 +21,9 @@
 #include "message.h"
 #include "ex_module.h"
 #include "tesi.h"
+#include <tss/tddl_error.h>
+#include <tss/tcs_error.h>
+#include <tss/tspi.h>
 
 #include "file_struct.h"
 #include "tesi_key.h"
