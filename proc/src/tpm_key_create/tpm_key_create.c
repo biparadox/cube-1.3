@@ -9,6 +9,9 @@
 #include <sys/socket.h>
 #include <openssl/rsa.h>
 #include <openssl/evp.h>
+#include <tss/tddl_error.h>
+#include <tss/tcs_error.h>
+#include <tss/tspi.h>
 
 #include "data_type.h"
 #include "errno.h"

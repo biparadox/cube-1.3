@@ -7,7 +7,6 @@
 #include "common.h"
 #include <tss/tpm.h>
 
-#include "../include/data_type.h"
 #include "../include/tesi.h"
 #include "../include/struct_deal.h"
 #include "../include/crypto_func.h"

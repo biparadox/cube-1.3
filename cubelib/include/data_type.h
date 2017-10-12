@@ -10,12 +10,14 @@
 #ifndef CUBE_DATA_TYPE_H
 #define CUBE_DATA_TYPE_H
 
+#ifndef TSS_PLATFORM_H
 typedef unsigned char         BYTE;
 typedef unsigned short int  UINT16;
 typedef unsigned int        UINT32;
 typedef unsigned long int   UINT64;
 typedef unsigned short int    WORD;
 typedef unsigned int         DWORD;
+#endif
 
 #define BITSTRING (unsigned char *)
 #define CUBE_DEBUG  
