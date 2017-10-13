@@ -50,29 +50,6 @@ int aik_client_init(void * sub_proc,void * para)
 	TSS_RESULT result;	
 	char local_uuid[DIGEST_SIZE*2+1];
 	
-	struct aik_proc_pointer * aik_pointer;
-	void * context;
-	aik_pointer= malloc(sizeof(struct aik_proc_pointer));
-	if(aik_pointer==NULL)
-		return -ENOMEM;
-	memset(aik_pointer,0,sizeof(struct aik_proc_pointer));
-
-
-	result=TESI_Local_ReloadWithAuth("ooo","sss");
-	if(result!=TSS_SUCCESS)
-	{
-		printf("open tpm error %d!\n",result);
-		return -ENFILE;
-	}
-	result= TESI_Local_GetPubEK("pubkey/pubek","ooo");
-	if(result!=TSS_SUCCESS)
-	{
-		printf("get pubek error %d!\n",result);
-		return -EIO;
-	}
-	ret=ex_module_setpointer(sub_proc,aik_pointer);
-	if(ret<0)
-		return ret;
 	return 0;
 }
 
@@ -94,6 +71,9 @@ int aik_client_start(void * sub_proc,void * para)
 	ret=proc_share_data_getvalue("proc_name",proc_name);
 
 	printf("begin aik process start!\n");
+
+	sleep(1);
+	proc_aik_keyinit(sub_proc,para);
 
 	for(i=0;i<300*1000;i++)
 	{
@@ -120,6 +100,38 @@ int aik_client_start(void * sub_proc,void * para)
 	return 0;
 };
 
+int proc_aik_keyinit(void * sub_proc,void * para)
+{
+	TSS_RESULT result;
+	int ret;
+	struct aik_proc_pointer * aik_pointer;
+	void * context;
+	aik_pointer= malloc(sizeof(struct aik_proc_pointer));
+	if(aik_pointer==NULL)
+		return -ENOMEM;
+	memset(aik_pointer,0,sizeof(struct aik_proc_pointer));
+
+
+	result=TESI_Local_ReloadWithAuth("ooo","sss");
+//	result=TESI_Local_Reload();
+	if(result!=TSS_SUCCESS)
+	{
+		printf("open tpm error %d!\n",result);
+		return -ENFILE;
+	}
+	result= TESI_Local_GetPubEK("pubkey/pubek","ooo");
+	if(result!=TSS_SUCCESS)
+	{
+		printf("get pubek error %d!\n",result);
+		return -EIO;
+	}
+//	TESI_Local_Fin();
+	ret=ex_module_setpointer(sub_proc,aik_pointer);
+	if(ret<0)
+		return ret;
+	return 0;
+
+}
 
 int proc_aik_request(void * sub_proc,void * recv_msg)
 {
@@ -150,7 +162,8 @@ int proc_aik_request(void * sub_proc,void * recv_msg)
 	int blobsize=0;
 	int fd;
 	// create a signkey and write its key in localsignkey.key, write its pubkey in localsignkey.pem
-	result=TESI_Local_ReloadWithAuth("ooo","sss");
+//	result=TESI_Local_ReloadWithAuth("ooo","sss");
+//	result=TESI_Local_Reload();
 
 	calculate_sm3("pubkey/pubek.pem",reqinfo.pubkey_uuid);
 	Memcpy(reqinfo.machine_uuid,local_uuid,DIGEST_SIZE);

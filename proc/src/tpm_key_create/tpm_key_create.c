@@ -42,12 +42,12 @@ int tpm_key_create_init(void * sub_proc,void * para)
 	TSS_RESULT result;	
 	char local_uuid[DIGEST_SIZE];
 	
-	result=TESI_Local_ReloadWithAuth("ooo","sss");
-	if(result!=TSS_SUCCESS)
-	{
-		printf("open tpm error %d!\n",result);
-		return -ENFILE;
-	}
+//	result=TESI_Local_ReloadWithAuth("ooo","sss");
+//	if(result!=TSS_SUCCESS)
+//	{
+//		printf("open tpm error %d!\n",result);
+//		return -ENFILE;
+//	}
 	return 0;
 }
 
@@ -115,7 +115,7 @@ int proc_tpm_key_generate(void * sub_proc,void * recv_msg)
 	int fd;
 
 	// create a signkey and write its key in localsignkey.key, write its pubkey in localsignkey.pem
-	result=TESI_Local_ReloadWithAuth("ooo","sss");
+//	result=TESI_Local_Reload();
 
 	i=0;
 
@@ -126,6 +126,10 @@ int proc_tpm_key_generate(void * sub_proc,void * recv_msg)
 
 	void * send_msg=message_create(DTYPE_TESI_KEY_STRUCT,SUBTYPE_WRAPPED_KEY,recv_msg);
 	void * send_pubkey_msg=message_create(DTYPE_TESI_KEY_STRUCT,SUBTYPE_PUBLIC_KEY,recv_msg);
+	result=TESI_Local_ReloadWithAuth("ooo","sss");
+	//result=TESI_Local_Reload();
+	if(result!=0)
+		return -EINVAL;
 	for(i=0;i<msghead->record_num;i++)
 	{
 		ret=message_get_record(recv_msg,&key_frame,i);
@@ -158,6 +162,7 @@ int proc_tpm_key_generate(void * sub_proc,void * recv_msg)
 		if(ret<0)
 			break;
 	};
+	TESI_Local_Fin();
 	ret=ex_module_sendmsg(sub_proc,send_msg);
 	if(ret>=0)
 		ret=ex_module_sendmsg(sub_proc,send_pubkey_msg);
@@ -184,7 +189,6 @@ int proc_tpm_key_certify(void * sub_proc,void * recv_msg)
 	int fd;
 
 	// create a signkey and write its key in localsignkey.key, write its pubkey in localsignkey.pem
-	result=TESI_Local_Reload();
 
 	i=0;
 
@@ -193,6 +197,9 @@ int proc_tpm_key_certify(void * sub_proc,void * recv_msg)
 	if(msghead==NULL)
 		return -EINVAL;
 
+	result=TESI_Local_ReloadWithAuth("ooo","sss");
+	if(result!=0)
+		return -EINVAL;
 	void * send_msg=message_create(DTYPE_TESI_KEY_STRUCT,SUBTYPE_KEY_CERTIFY,recv_msg);
 	for(i=0;i<msghead->record_num;i++)
 	{
@@ -204,18 +211,27 @@ int proc_tpm_key_certify(void * sub_proc,void * recv_msg)
 
 		if(Isemptyuuid(key_cert->uuid))
 		{
+			//result=TESI_Local_Reload();
 			result=_load_tpm_key(key_cert->keyuuid,&hKey);
 			if(result!=0)
+			{
+				TESI_Local_Fin();
 				return -EINVAL;
+			}
 			result=_load_tpm_key(key_cert->aikuuid,&hAIK);
 			if(result!=0)
+			{
+				TESI_Local_Fin();
 				return -EINVAL;
+			}
 			result=TESI_Report_CertifyKey(hKey,hAIK,"cert/key");	
 			if ( result != TSS_SUCCESS )
 			{
 				printf( "Certify key failed %s!\n",tss_err_string(result));
+				TESI_Local_Fin();
 				return result;
 			}
+			result=TESI_Report_CertifyKey(hKey,hAIK,"cert/key");	
 			ret=convert_uuidname("cert/key",".val",key_cert->uuid,filename);
 			if(ret<0)
 				return ret;
@@ -242,6 +258,8 @@ int proc_tpm_key_certify(void * sub_proc,void * recv_msg)
 		if(ret<0)
 			break;
 	};
+	TESI_Local_Fin();
+	
 	ret=ex_module_sendmsg(sub_proc,send_msg);
 	return ret;
 }
