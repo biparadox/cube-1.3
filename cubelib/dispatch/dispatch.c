@@ -766,7 +766,13 @@ int router_set_query_end(void * message,void * policy)
 		msg_head->flow=MSG_FLOW_FINISH;
 	else
 	{
+		// if next target is a remote target, change flow to DELIVER
 		message_set_receiver(message,rule->target_name);
+		if(rule->target_type!=ROUTE_TARGET_LOCAL)
+		{
+			msg_head->flow=MSG_FLOW_DELIVER;
+			msg_head->flag &=~MSG_FLAG_RESPONSE;
+		}
 	}
 	msg_head->ljump=jumpcount++;
 	return 1;	
@@ -1607,16 +1613,16 @@ int router_pop_aspect_site(void * message, char * proc)
 	if(aspect_point->record_num<1)
 		return 0;
 
-	int curr_offset=(--(aspect_point->record_num))*DIGEST_SIZE*2;
-	memcpy(msg_head->receiver_uuid,aspect_point->aspect_point+curr_offset,DIGEST_SIZE);
-	memcpy(proc,aspect_point->aspect_proc+curr_offset,DIGEST_SIZE);
+	int curr_offset=(--(aspect_point->record_num))*DIGEST_SIZE;
+	Memcpy(msg_head->receiver_uuid,aspect_point->aspect_point+curr_offset,DIGEST_SIZE);
+	Memcpy(proc,aspect_point->aspect_proc+curr_offset,DIGEST_SIZE);
 
 	if(aspect_point->record_num==0)
 	{
 		message_remove_expand(message,DTYPE_MSG_EXPAND,SUBTYPE_ASPECT_POINT,&expand);
 		Free(expand);
-		free(aspect_point->aspect_proc);
-		free(aspect_point->aspect_point);
+		Free(aspect_point->aspect_proc);
+		Free(aspect_point->aspect_point);
 	}
 	return 1;
 }
@@ -1678,6 +1684,6 @@ int route_recover_route(void * message)
 	msg_head->flag = (msg_head->flag &temp_mask) | (route_record->flag & (~temp_mask));
 
 	message_remove_expand(message,DTYPE_MSG_EXPAND,SUBTYPE_ROUTE_RECORD,&route_record);
-	free(route_record);
+	Free(route_record);
 	return 1;
 }

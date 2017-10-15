@@ -277,7 +277,7 @@ int connector_read_cfg(char * filename,void * hub)
                 fp=NULL;
             }
         }
-        printf("conn %d is %s\n",conn_num+1,buffer);
+//      printf("conn %d is %s\n",conn_num+1,buffer);
 
         solve_offset=json_solve_str(&root,buffer);
         if(solve_offset<=0)

@@ -165,7 +165,12 @@ int proc_aik_request(void * sub_proc,void * recv_msg)
 //	result=TESI_Local_ReloadWithAuth("ooo","sss");
 //	result=TESI_Local_Reload();
 
-	calculate_sm3("pubkey/pubek.pem",reqinfo.pubkey_uuid);
+	ret=calculate_sm3("pubkey/pubek.pem",reqinfo.pubkey_uuid);
+	if(ret<0)
+	{
+		printf("can't calculate pubek.pem's digest");
+		return -ENFILE;
+	}
 	Memcpy(reqinfo.machine_uuid,local_uuid,DIGEST_SIZE);
 	
 	// create info blob

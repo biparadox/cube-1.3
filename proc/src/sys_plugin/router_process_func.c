@@ -46,7 +46,7 @@ int read_dispatch_file(char * file_name,int is_aspect)
 	if(readlen<0)
 		return -EIO;
 	json_buffer[readlen]=0;
-	printf("%s\n",json_buffer);
+//	printf("%s\n",json_buffer);
 	close(fd);
 
 	json_offset=0;
