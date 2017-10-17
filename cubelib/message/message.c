@@ -1112,9 +1112,9 @@ int message_set_sender(void * message,BYTE * sender)
 		if(ret<0)
 			return ret;
 	}
-	else if(len>DIGEST_SIZE/2)
+	else if(len>DIGEST_SIZE/4*3)
 		return -EINVAL;
-	Strncpy(msg_box->head.sender_uuid,sender,DIGEST_SIZE/2);
+	Strncpy(msg_box->head.sender_uuid,sender,DIGEST_SIZE/4*3);
 	return 0;
 }
 
@@ -1129,7 +1129,7 @@ int message_set_sender_uuid(void * message,BYTE * sender_uuid)
 	Memset(msg_box->head.sender_uuid,0,DIGEST_SIZE);
 	if(Isstrinuuid(sender_uuid))
 	{
-		Strncpy(msg_box->head.sender_uuid,sender_uuid,DIGEST_SIZE/2);
+		Strncpy(msg_box->head.sender_uuid,sender_uuid,DIGEST_SIZE/4*3);
 	}
 	else
 	{
@@ -1155,9 +1155,9 @@ int message_set_receiver(void * message, BYTE * receiver)
 		if(ret<0)
 			return ret;
 	}
-	else if(len>DIGEST_SIZE/2)
+	else if(len>DIGEST_SIZE/4*3)
 		return -EINVAL;
-	Strncpy(msg_box->head.receiver_uuid,receiver,DIGEST_SIZE/2);
+	Strncpy(msg_box->head.receiver_uuid,receiver,DIGEST_SIZE/4*3);
 	return 0;
 }
 
@@ -1172,7 +1172,7 @@ int message_set_receiver_uuid(void * message, BYTE * receiver_uuid)
 	
 	if(Isstrinuuid(receiver_uuid))
 	{
-		Strncpy(msg_box->head.receiver_uuid,receiver_uuid,DIGEST_SIZE/2);
+		Strncpy(msg_box->head.receiver_uuid,receiver_uuid,DIGEST_SIZE/4*3);
 	}
 	else
 	{

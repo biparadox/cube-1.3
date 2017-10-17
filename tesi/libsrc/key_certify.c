@@ -245,7 +245,7 @@ int convert_uuidname(char * name, char * suffix, BYTE * digest,char * newfilenam
 	}
 	Memcpy(newfilename+offset,uuidstr,DIGEST_SIZE*2);
 	offset+=DIGEST_SIZE*2;
-	Strncpy(newfilename+offset,suffix,DIGEST_SIZE/2);
+	Strncpy(newfilename+offset,suffix,DIGEST_SIZE/4*3);
 	
 	ret=rename(filename,newfilename);
 	if(ret<0)

@@ -159,7 +159,7 @@ int main() {
 	
 	flow_trace.record_num=1;
 	flow_trace.trace_record=Talloc0(DIGEST_SIZE*flow_trace.record_num);
-	Strncpy(flow_trace.trace_record,"test_port",DIGEST_SIZE/2);
+	Strncpy(flow_trace.trace_record,"test_port",DIGEST_SIZE/4*3);
 
 	ret=message_add_record(message,&base_msg);
 	if(ret<0)

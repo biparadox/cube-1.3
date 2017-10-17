@@ -517,17 +517,19 @@ int rule_get_target(void * router_rule,void * message,void **result)
 			if(ret<0)
 				return ret;
 		    }		
-		    else if(ret<DIGEST_SIZE/2)
+		    else if(ret<DIGEST_SIZE/4*3)
 		    {
 		    	Memcpy(target,rule->target_name,ret);
 		    }
+		    else
+			return -EINVAL;
 		    break;
 	    case ROUTE_TARGET_CONN:
 		    target=Talloc0(DIGEST_SIZE);
 		    if(target==NULL)
 			return -ENOMEM;	
 		    ret=Strnlen(rule->target_name,DIGEST_SIZE*2);
-		    if(ret>DIGEST_SIZE/2-1)
+		    if(ret>DIGEST_SIZE/4*3-1)
 			return -EINVAL;
 		    target[0]=':';
 		    Memcpy(target+1,rule->target_name,ret);
@@ -1360,7 +1362,7 @@ int router_set_next_jump(void * message)
 			if(Isstrinuuid(target))
 			{
 //				msg_head->receiver_uuid[0]='@';
-				Strncpy(msg_head->receiver_uuid,target,DIGEST_SIZE/2);
+				Strncpy(msg_head->receiver_uuid,target,DIGEST_SIZE/4*3);
 			}
 			else
 			{
@@ -1402,9 +1404,9 @@ int route_push_site_str(void * message,char * name)
 	}
 	else
 	{
-		if(len>DIGEST_SIZE/2)
+		if(len>DIGEST_SIZE/4*3)
 			return -EINVAL;
-		Strncpy(buffer,name,DIGEST_SIZE/2);
+		Strncpy(buffer,name,DIGEST_SIZE/4*3);
 	}
 	return route_push_site(message,buffer);	
 }

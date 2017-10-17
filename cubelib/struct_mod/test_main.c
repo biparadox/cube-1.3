@@ -334,7 +334,7 @@ int main() {
 	test_trace.name=dup_str("Hello",0);
 	test_trace.trace_record=Talloc0(DIGEST_SIZE*test_trace.record_num);
 	
-	Strncpy(test_trace.trace_record,"ws_port",DIGEST_SIZE/2);
+	Strncpy(test_trace.trace_record,"ws_port",DIGEST_SIZE/4*3);
 	Memset(test_trace.trace_record+DIGEST_SIZE,'A',DIGEST_SIZE);
 	
 	test_trace.namelist=Talloc0(sizeof(NAME2VALUE)*test_trace.enum_num);

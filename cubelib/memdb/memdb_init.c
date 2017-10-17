@@ -377,7 +377,7 @@ void * _struct_octet_to_attr(void * octet_array,int elem_no)
 		{
 
 			
-			if(Memcmp(ref_comp,elem_desc_octet->ref,DIGEST_SIZE/2)==0)
+			if(Memcmp(ref_comp,elem_desc_octet->ref,DIGEST_SIZE/4*3)==0)
 			{
 				// invalid ref uuid, we should find ref by ref_name
 				ref_namelist=memdb_find_byname(elem_desc_octet->ref_name,DB_NAMELIST,0);

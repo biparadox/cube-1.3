@@ -171,7 +171,7 @@ int uuid_get_text_value(void * addr, void * data,void * elem_template)
 	// Now it is a name
 	{
 		Memset(data,0,DIGEST_SIZE);
-		Strncpy(data,addr,DIGEST_SIZE/2);	
+		Strncpy(data,addr,DIGEST_SIZE/4*3);	
 		return Strlen(data);
 	}
 	
@@ -180,11 +180,11 @@ int uuid_get_text_value(void * addr, void * data,void * elem_template)
 
 int uuid_set_text_value(void * addr, char * text,void * elem_template)
 {
-	if(Strnlen(text,DIGEST_SIZE*2)<DIGEST_SIZE/2)
+	if(Strnlen(text,DIGEST_SIZE*2)<DIGEST_SIZE/4*3)
 	{
 		// Now it is a name
 		Memset(addr,0,DIGEST_SIZE);
-		Strncpy(addr,text,DIGEST_SIZE/2);	
+		Strncpy(addr,text,DIGEST_SIZE/4*3);	
 		return DIGEST_SIZE;
 		
 	}

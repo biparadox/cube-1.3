@@ -101,8 +101,8 @@ int proc_hack_message(void * sub_proc,void * message)
                 return -EINVAL;
 	char brute_pass[9];
 
-	BYTE comp_value[DIGEST_SIZE/2];
-	Memset(comp_value,0,DIGEST_SIZE/2);
+	BYTE comp_value[DIGEST_SIZE/4*3];
+	Memset(comp_value,0,DIGEST_SIZE/4*3);
 
 	for(i=0;i<10000000;i++)
 	{
@@ -114,7 +114,7 @@ int proc_hack_message(void * sub_proc,void * message)
 
 		if(i>123455)
 			printf("test to 123455 \n");
-		if(Memcmp(blob+DIGEST_SIZE/2,comp_value,DIGEST_SIZE/2)==0)
+		if(Memcmp(blob+DIGEST_SIZE/2,comp_value,DIGEST_SIZE/4*3)==0)
 		{
         		message_set_blob(message,blob,blob_size);
 			int flag=message_get_flag(message);

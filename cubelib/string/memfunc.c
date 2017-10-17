@@ -373,11 +373,27 @@ int Isvaliduuid(char * uuid)
 int Isstrinuuid(BYTE * uuid)
 {
 
-	BYTE compvalue[DIGEST_SIZE/2];
-	Memset(compvalue,0,DIGEST_SIZE/2);
-	
-	if(Memcmp(compvalue,uuid+DIGEST_SIZE/2,DIGEST_SIZE/2)==0)
+	BYTE compvalue[DIGEST_SIZE];
+	Memset(compvalue,0,DIGEST_SIZE);
+	int i;	
+	int len;
+
+	len=Strnlen(uuid,DIGEST_SIZE);
+
+	if(len>DIGEST_SIZE/4*3)
+		return 0;
+
+	if(Memcmp(compvalue,uuid+len,DIGEST_SIZE-len)==0)
+	{
+		if(len<=DIGEST_SIZE/4*3)
+			return 1;
+		for(i=0;i<len;i++)
+		{
+			if(uuid[i]>=127)
+				return 0;
+		}
 		return 1;
+	}
 	return 0;
 }
 
