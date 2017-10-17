@@ -35,8 +35,10 @@ int read_dispatch_file(char * file_name,int is_aspect)
 	void * findlist;
 	void * memdb_template ;
 	BYTE uuid[DIGEST_SIZE];
-	char json_buffer[4096];
+	char json_buffer[4097];
 	void * policy;
+	int finishread=0;
+	int leftlen=0;
 
 	fd=open(file_name,O_RDONLY);
 	if(fd<0)
@@ -46,19 +48,35 @@ int read_dispatch_file(char * file_name,int is_aspect)
 	if(readlen<0)
 		return -EIO;
 	json_buffer[readlen]=0;
+	if(readlen<4096)
+		finishread=1;
+
+	leftlen=readlen;
 //	printf("%s\n",json_buffer);
-	close(fd);
 
 	json_offset=0;
-	while(json_offset<readlen)
+
+	while(leftlen>DIGEST_SIZE)
 	{
-		ret=json_solve_str(&root_node,json_buffer+json_offset);
+		ret=json_solve_str(&root_node,json_buffer);
 		if(ret<0)
 		{
 			printf("solve json str error!\n");
 			break;
 		}
 		json_offset+=ret;
+		Memcpy(json_buffer,json_buffer+ret,leftlen-ret);
+		leftlen-=ret;
+		json_buffer[leftlen]=0;
+
+		if(finishread==0)
+		{
+			ret=read(fd,json_buffer+leftlen,4096-leftlen);
+			if(ret<4096-leftlen)
+				finishread=1;
+			leftlen+=ret;	
+		}	
+	
 		if(ret<32)
 			continue;
 
@@ -83,6 +101,7 @@ int read_dispatch_file(char * file_name,int is_aspect)
 		}
 	}
 	printf("read %d policy succeed!\n",count);
+	close(fd);
 	return count;
 }
 
@@ -413,11 +432,13 @@ int proc_router_start(void * sub_proc,void * para)
 								break;
 							}
 							else if((msg_head->state ==MSG_FLOW_DELIVER)
+								&&!(msg_head->flag &MSG_FLAG_LOCAL)
 								&&!(msg_head->flag & MSG_FLAG_RESPONSE))	
 							{
 								route_push_aspect_site(message,origin_proc,conn_uuid);
 								break;
 							}
+							break;
 						}
 						default:
 							return -EINVAL;

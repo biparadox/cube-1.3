@@ -219,7 +219,7 @@ int _elem_get_defvalue(void * elem,void * addr)
 		return -EINVAL;
 	elem_ops=_elem_get_ops(temp_elem);
 	if(elem_ops==NULL)
-		return NULL;
+		return -EINVAL;
 
 
 	// now compute the define elem's offset
@@ -235,7 +235,20 @@ int _elem_get_defvalue(void * elem,void * addr)
 	// if define elem is an elem in curr_elem's father subset
 	if(elem_ops->get_int_value == NULL)
 	{
-		define_value = *(int *)def_addr;
+		if((temp_elem->size==4)||(temp_elem->size==8))
+		{
+			define_value = *(int *)def_addr;
+		}
+		else if(temp_elem->size==2)
+		{
+			define_value = *(UINT16 *)def_addr;
+		}
+		else if(temp_elem->size==1)
+		{
+			define_value = *(BYTE *)def_addr;
+		}
+		else
+			return -EINVAL;
 	}
 	else
 	{

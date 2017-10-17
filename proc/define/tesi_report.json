@@ -12,7 +12,7 @@
 		{
 			"elem_desc":
 			[
-				{"name":"size_of_select","type":"UINT16"},
+				{"name":"size_of_select","type":"TPM16"},
 				{"name":"pcr_select","type":"DEFINE","def":"size_of_select"}
 			]
 		}
@@ -53,10 +53,10 @@
 		{
 			"elem_desc":
 			[
-				{"name":"version","type":"BINARRAY","size":4},
+				{"name":"version","type":"BINDATA","size":4},
 				{"name":"fixed","type":"STRING","size":4},
-				{"name":"digestValue","type":"BINARRAY","size":20},
-				{"name":"externalData","type":"BINARRAY","size":20}
+				{"name":"digestValue","type":"BINDATA","size":20},
+				{"name":"externalData","type":"BINDATA","size":20}
 			]
 		}
 	}	
@@ -75,7 +75,7 @@
 		{
 			"elem_desc":
 			[
-				{"name":"version","type":"BINARRAY","size":4},
+				{"name":"version","type":"BINDATA","size":4},
 				{"name":"ulExternalDataLength","type":"INT"},
 				{"name":"rgbExternalData","type":"DEFINE","def":"ulExternalDataLength"},
 				{"name":"ulDataLength","type":"INT"},
