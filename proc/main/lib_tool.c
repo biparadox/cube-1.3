@@ -35,6 +35,30 @@ static char sys_config_file[DIGEST_SIZE*2]="./sys_config.cfg";
 int lib_read(int fd,int type,int subtype,void ** record);
 int lib_write(int fd, int type,int subtype, void * record);
 
+int lib_gettype(char * libname, int * typeno,int * subtypeno)
+{
+		char buffer[DIGEST_SIZE*3];
+		char typename[DIGEST_SIZE];
+		char subtypename[DIGEST_SIZE];
+		int ret;
+		int offset=0;
+
+		Strncpy(buffer,libname,DIGEST_SIZE*3);
+		ret=Getfiledfromstr(typename,buffer+offset,'-',DIGEST_SIZE*2);
+		if(ret<=0)
+			return -EINVAL;
+		*typeno=memdb_get_typeno(typename);
+		if(*typeno<=0)
+			return -EINVAL;
+		offset+=ret;
+		offset++;
+		ret=Getfiledfromstr(subtypename,buffer+offset,'.',DIGEST_SIZE*2);
+		*subtypeno=memdb_get_subtypeno(*typeno,subtypename);
+		if(*subtypeno<0)
+			return -EINVAL;
+		return 0;
+};
+
 int main(int argc,char **argv)
 {
 
@@ -101,13 +125,14 @@ int main(int argc,char **argv)
 		ifmerge=1;
 		if(argc<=3)
 		{
-			printf("error lib_tool merge format! should be %s merge destdir srcdir1 srcdir2 ...\n",argv[0]);
+			printf("error lib_tool merge format! should be %s merge destlibname [srclibname1|srclibdir1]"
+				"[srclibname2|srclibdir2] ...\n",argv[0]);
 		}
 	}
 	else if(strcmp(argv[1],"show"))
 	{
-		if(argc<3)
-		printf("error format! should be %s show MEMDB_TYPE MEMDB_SUBTYPE ...\n",argv[0]);
+		if(argc<2)
+		printf("error format! should be %s show libname ...\n",argv[0]);
 		return -EINVAL;
 	}
     }
@@ -173,17 +198,20 @@ int main(int argc,char **argv)
 		int typeno,subtypeno;
 		DB_RECORD * record;
 		DB_RECORD * db_record;
-		typeno=memdb_get_typeno(argv[2]);
-		if(typeno<=0)
-			return -EINVAL;
-		subtypeno=memdb_get_subtypeno(typeno,argv[3]);
-		if(subtypeno<0)
+		char buffer[DIGEST_SIZE*3];
+		char * libdir="lib/";
+		argv_offset=Strlen(libdir);	
+
+		if(Memcmp(argv[2],libdir,argv_offset)!=0)
 			return -EINVAL;
 
-		sprintf(namebuffer,"lib/%s-%s.lib",argv[2],argv[3]);
-		if((fd=open(namebuffer,O_RDONLY))<0)
+		ret=lib_gettype(argv[2]+argv_offset,&typeno,&subtypeno);
+		if(ret<0)
+			return ret;
+
+		if((fd=open(argv[2],O_RDONLY))<0)
 		{
-			printf("Error! memdb (%s,%s) does not exist!\n",argv[2],argv[3]);
+			printf("Error! memdb (%d,%d) does not exist!\n",typeno,subtypeno);
 			return -EINVAL;
 		}
 
@@ -203,6 +231,82 @@ int main(int argc,char **argv)
 			db_record=memdb_get_next(typeno,subtypeno);
 		}
 	}	
+	else
+	{
+		int typeno,subtypeno;
+		DB_RECORD * record;
+		DB_RECORD * db_record;
+		char buffer[DIGEST_SIZE*3];
+		char * libdir="lib/";
+		argv_offset=Strlen(libdir);	
+
+		if(Memcmp(argv[2],libdir,argv_offset)!=0)
+			return -EINVAL;
+
+		ret=lib_gettype(argv[2]+argv_offset,&typeno,&subtypeno);
+		if(ret<0)
+			return ret;
+
+		if((fd=open(argv[2],O_RDONLY))<0)
+		{
+			printf("Error! memdb (%d,%d) does not exist!\n",typeno,subtypeno);
+			return -EINVAL;
+		}
+
+		while((ret=lib_read(fd,typeno,subtypeno,&record))>0)	
+		{
+			ret=memdb_store_record(record);
+			if(ret<0)
+				break;
+		}
+		close(fd);
+
+		for(i=3;i<argc;i++)
+		{
+			struct stat s_buf;  
+  
+    			stat(argv[i],&s_buf);  
+  
+    			if(S_ISDIR(s_buf.st_mode))
+			{
+				if(Strlen(argv[i])<DIGEST_SIZE*2)
+				{
+					Strncpy(namebuffer,argv[i],DIGEST_SIZE*2);
+					Strcat(namebuffer,"/");
+					Strcat(namebuffer,argv[2]);
+					if((fd=open(namebuffer,O_RDONLY))<0)
+						return -EINVAL;
+				}
+			}
+			else if((fd=open(argv[i],O_RDONLY))<0)
+				return -EINVAL;
+
+			while((ret=lib_read(fd,typeno,subtypeno,&record))>0)	
+			{
+				ret=memdb_store_record(record);
+				if(ret<0)
+					break;
+			}
+			close(fd);
+		}
+
+		if((fd=open(argv[2],O_WRONLY|O_TRUNC))<0)
+		{
+			printf("Error! memdb (%d,%d) can't be write!\n",typeno,subtypeno);
+			return -EINVAL;
+		}
+
+	
+		db_record=memdb_get_first(typeno,subtypeno);
+		while(db_record!=NULL)
+		{
+			memdb_print(db_record,json_buffer);
+			printf("%s\n",json_buffer);
+			lib_write(fd,typeno,subtypeno,db_record);		
+			db_record=memdb_get_next(typeno,subtypeno);
+		}
+	
+	}
 
     return ret;
 }
