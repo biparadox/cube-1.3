@@ -8,6 +8,7 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/socket.h>
+#include <dirent.h>
 
 #include "data_type.h"
 #include "alloc.h"
@@ -69,6 +70,8 @@ int recordlib_start(void * sub_proc,void * para)
 	int type;
 	int subtype;
 
+	proc_lib_init(sub_proc,NULL);
+
 	for(i=0;i<3000*1000;i++)
 	{
 		usleep(time_val.tv_usec);
@@ -89,6 +92,91 @@ int recordlib_start(void * sub_proc,void * para)
 	}
 	return 0;
 };
+
+int lib_gettype(char * libname, int * typeno,int * subtypeno)
+{
+		char buffer[DIGEST_SIZE*3];
+		char typename[DIGEST_SIZE];
+		char subtypename[DIGEST_SIZE];
+		int ret;
+		int offset=0;
+
+		Strncpy(buffer,libname,DIGEST_SIZE*3);
+		ret=Getfiledfromstr(typename,buffer+offset,'-',DIGEST_SIZE*2);
+		if(ret<=0)
+			return -EINVAL;
+		*typeno=memdb_get_typeno(typename);
+		if(*typeno<=0)
+			return -EINVAL;
+		offset+=ret;
+		offset++;
+		ret=Getfiledfromstr(subtypename,buffer+offset,'.',DIGEST_SIZE*2);
+		*subtypeno=memdb_get_subtypeno(*typeno,subtypename);
+		if(*subtypeno<0)
+			return -EINVAL;
+		return 0;
+};
+
+int proc_lib_init(void * sub_proc,void * para)
+{
+	DIR * dir;
+	struct dirent *ptr;
+	int ret;
+	char filename[DIGEST_SIZE*3];
+	char buffer[DIGEST_SIZE];
+	int typeno;
+	int subtypeno;
+	int filecount=0;
+	int recordcount=0;
+	int namelen;
+	DB_RECORD * record;
+	int fd;
+
+	if ((dir = opendir("lib")) == NULL)
+	{
+		printf("Open lib's dir error...\n");
+		return -EIO;
+	}
+	while ((ptr = readdir(dir)) != NULL)
+	{
+		if (strcmp(ptr->d_name, ".") == 0 || strcmp(ptr->d_name, "..") == 0)    //去除当前目录和上级目录
+			continue;
+		else
+		{
+			namelen=Strlen(ptr->d_name);
+			if(Strcmp(ptr->d_name+namelen-4,".lib")!=0)
+				continue;
+			ret=lib_gettype(ptr->d_name,&typeno,&subtypeno);
+			if(ret<0)
+				return ret;
+			Strcpy(filename,"lib/");
+			Strcat(filename,ptr->d_name);
+			fd=open(filename,O_RDONLY);
+			if(fd<0)
+			{
+				printf("read lib file %s error!\n",filename);
+				continue;
+			}
+			recordcount=0;
+			while((ret=lib_read(fd,typeno,subtypeno,&record))>0)
+			{
+				ret=memdb_store_record(record);
+				if(ret<0)
+				{
+					printf("read %d record in lib file %s error!\n",recordcount,filename);
+					
+					break;
+				}
+				recordcount++;
+			}
+			printf("read %d record from lib file %s!\n",recordcount,filename);
+			filecount++;
+		}
+	}
+	closedir(dir);	
+	printf("read %d lib files!\n",filecount);
+	return filecount;
+}
 
 int proc_store_message(void * sub_proc,void * message)
 {
