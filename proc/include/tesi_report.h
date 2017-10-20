@@ -1,9 +1,11 @@
 #ifndef TESI_REPORT_H
 #define TESI_REPORT_H
 
+#define PCR_SELECT_NUM 16
+#define PCR_SIZE  20
 enum dtype_tesi_report
 {
-	DTYPE_TESI_REPORT=0x611,
+	DTYPE_TESI_REPORT=0x604,
 };
 
 enum subtype_tesi_report_struct

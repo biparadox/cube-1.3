@@ -1710,7 +1710,6 @@ TSS_RESULT TESI_Local_SelectPcrEx(TSS_HPCRS hPcr,UINT32 Index)
 {
 
         TSS_RESULT result;
-        //result = Tspi_PcrComposite_SelectPcrIndexEx(hPcr, Index,TSS_PCRS_DIRECTION_RELEASE);
 	result = Tspi_PcrComposite_SelectPcrIndexEx(hPcr, Index,2);
         if (result != TSS_SUCCESS) {
                 print_error("Tspi_PcrComposite_SelectPcrIndexEx", result);
@@ -1718,6 +1717,41 @@ TSS_RESULT TESI_Local_SelectPcrEx(TSS_HPCRS hPcr,UINT32 Index)
         }
         return TSS_SUCCESS;
 
+}
+
+TSS_RESULT TESI_Local_GetSinglePcrHash(UINT32 Index,BYTE * value,BYTE * Hash)
+{
+        TSS_HCONTEXT    hContext;
+        TSS_HPCRS       hPcrComposite;
+        TSS_RESULT      result;
+
+                // Create Context
+        result = Tspi_Context_Create( &hContext );
+        if ( result != TSS_SUCCESS )
+		return result;
+
+        result = Tspi_Context_CreateObject( hContext, TSS_OBJECT_TYPE_PCRS,
+                                        TSS_PCRS_STRUCT_INFO_SHORT, &hPcrComposite );
+        if ( result != TSS_SUCCESS )
+		return result;
+        result = Tspi_PcrComposite_SetPcrValue( hPcrComposite, Index,20,value);
+        if (result != TSS_SUCCESS)
+		return result;
+	result = Tspi_PcrComposite_SelectPcrIndexEx(hPcrComposite, Index,TSS_PCRS_DIRECTION_RELEASE);
+	if (result != TSS_SUCCESS) 
+	{
+		print_error("select pcr index",result);
+		return result;
+	}
+    
+	result = Tspi_PcrComposite_GetCompositeHash(hPcrComposite, NULL, Hash );
+        if (result != TSS_SUCCESS)
+		return result;
+
+	Tspi_Context_FreeMemory( hContext, NULL );
+  	Tspi_Context_Close( hContext );
+
+	return TSS_SUCCESS;
 }
 
 TSS_RESULT TESI_Local_PcrExtend(UINT32 index,BYTE * Data) 

@@ -33,7 +33,7 @@
 			"elem_desc":
 			[
 				{"name":"select","type":"SUBSTRUCT","ref_name":"tesi_pcr_selection"},
-				{"name":"valueSize","type":"INT"},
+				{"name":"valueSize","type":"TPM32"},
 				{"name":"pcrValue","type":"DEFINE","def":"valueSize"}
 			]
 		}
