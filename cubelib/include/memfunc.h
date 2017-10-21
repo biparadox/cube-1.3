@@ -42,4 +42,8 @@ int bitmap_get(BYTE * bitmap,int site);
 int bitmap_is_allset(BYTE * bitmap,int size);
 int bin_2_hex(BYTE * bin,int size,BYTE * hex);
 int hex_2_bin(BYTE * hex,int size,BYTE * bin);
+int bin_to_radix64_len(int length);
+int radix_to_bin_len(int length);
+int bin_to_radix64(char * radix64,int length,unsigned char * bin); 
+int radix64_to_bin(unsigned char * bin,int length, char * radix64); 
 #endif
