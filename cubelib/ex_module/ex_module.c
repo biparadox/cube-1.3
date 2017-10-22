@@ -551,13 +551,13 @@ int ex_module_proc_getpara(void * arg,void ** ex_mod,void ** para)
 	
 	if((arg==NULL) || IS_ERR(arg))
 		return -EINVAL;
-	printf("subject getpara!,arg=%x\n",arg);
+	//printf("subject getpara!,arg=%x\n",arg);
 	struct subject_para_struct * trans_pointer=(struct subject_para_struct * )arg;
 	
-	printf("ex_module =%x\n",trans_pointer->ex_module);
+	//printf("ex_module =%x\n",trans_pointer->ex_module);
 	if((trans_pointer->ex_module==NULL)||IS_ERR(trans_pointer->ex_module))
 	{
-		printf("sec subject get para err!\n");
+		//printf("sec subject get para err!\n");
 		return -EINVAL;
 	}
 

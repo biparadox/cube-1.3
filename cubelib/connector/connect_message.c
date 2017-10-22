@@ -169,7 +169,7 @@ void * build_server_syn_message(char * service,char * local_uuid,char * proc_nam
 
 //	message_head->state=MSG_FLOW_INIT;
 	message_set_state(message_box,MSG_FLOW_INIT);
-	printf("init message success!\n");
+	//printf("init message success!\n");
 	return message_box;
 
 }

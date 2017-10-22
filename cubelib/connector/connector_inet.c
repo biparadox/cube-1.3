@@ -77,7 +77,7 @@ int	af_inet_formaddr(struct sockaddr_in * adr_inet, int * len,char * addrstring)
 	}
 	if(i==namelen)
 	{
-		printf("no port number!\n");
+		//printf("no port number!\n");
 		return -EINVAL;
 	}
 		
@@ -162,13 +162,13 @@ int  connector_af_inet_info_init (void * connector,char * addr)
 	int yes=1;
 	if(setsockopt(this_conn->conn_fd,SOL_SOCKET,SO_REUSEADDR,&yes,sizeof(int))==-1)
 	{
-			printf("setsockopt reuseaddr error!\n");
+			//printf("setsockopt reuseaddr error!\n");
 			return -EINVAL;
 	}
 	struct timeval timeout ={0,1000};   // we hope each read only delay 10 microsecond
 	if(setsockopt(this_conn->conn_fd,SOL_SOCKET,SO_RCVTIMEO,&timeout,sizeof(timeout))==-1)
 	{
-			printf("setsockopt timeout error!\n");
+			//printf("setsockopt timeout error!\n");
 			return -EINVAL;
 	}
 /*

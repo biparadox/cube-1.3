@@ -65,7 +65,7 @@ TSS_RESULT WriteValidation(TSS_VALIDATION * valData,char * name)
 	file = fopen(filename,"wb");
   	if (file == NULL)
    	{
-   	   printf("Unable to write val file %s.\n",filename);
+   	   ////printf("Unable to write val file %s.\n",filename);
    	   return TSS_E_KEY_NOT_LOADED;
   	 }
 
@@ -73,7 +73,7 @@ TSS_RESULT WriteValidation(TSS_VALIDATION * valData,char * name)
    	result = fwrite(&(valData->versionInfo),1,sizeof(TSS_VERSION),file);
   	 if (result != sizeof(TSS_VERSION))
      	 {
-	      printf("I/O Error writing valData\n");
+	      ////printf("I/O Error writing valData\n");
   	    return TSS_E_KEY_NOT_LOADED;
       	 }
 
@@ -82,14 +82,14 @@ TSS_RESULT WriteValidation(TSS_VALIDATION * valData,char * name)
    	 result = fwrite(&datalen,1,sizeof(UINT32),file);
   	 if (result != sizeof(UINT32))
      	 {
-	      printf("I/O Error writing valData\n");
+	      ////printf("I/O Error writing valData\n");
   	      return TSS_E_KEY_NOT_LOADED;
       	 }
 
    	 result = fwrite(valData->rgbExternalData,1,datalen,file);
   	 if (result != datalen)
      	 {
-	      printf("I/O Error writing valData\n");
+	      ////printf("I/O Error writing valData\n");
   	      return TSS_E_KEY_NOT_LOADED;
       	 }
 
@@ -97,14 +97,14 @@ TSS_RESULT WriteValidation(TSS_VALIDATION * valData,char * name)
    	 result = fwrite(&datalen,1,sizeof(UINT32),file);
   	 if (result != sizeof(UINT32))
      	 {
-	      printf("I/O Error writing valData\n");
+	      ////printf("I/O Error writing valData\n");
   	      return TSS_E_KEY_NOT_LOADED;
       	 }
 
    	 result = fwrite(valData->rgbData,1,datalen,file);
   	 if (result != datalen)
      	 {
-	      printf("I/O Error writing valData\n");
+	      //printf("I/O Error writing valData\n");
   	      return TSS_E_KEY_NOT_LOADED;
 	 }
 
@@ -112,14 +112,14 @@ TSS_RESULT WriteValidation(TSS_VALIDATION * valData,char * name)
    	 result = fwrite(&datalen,1,sizeof(UINT32),file);
   	 if (result != sizeof(UINT32))
      	 {
-	      printf("I/O Error writing valData\n");
+	      //printf("I/O Error writing valData\n");
   	      return TSS_E_KEY_NOT_LOADED;
       	 }
 
    	 result = fwrite(valData->rgbValidationData,1,datalen,file);
   	 if (result != datalen)
      	 {
-	      printf("I/O Error writing valData\n");
+	      //printf("I/O Error writing valData\n");
   	      return TSS_E_KEY_NOT_LOADED;
 	 }
 	 fclose(file);
@@ -138,7 +138,7 @@ TSS_RESULT ReadValidation(TSS_VALIDATION * valData,char * name)
 	file = fopen(filename,"rb");
   	if (file == NULL)
    	{
-   	   printf("Unable to read val file %s.\n",filename);
+   	   //printf("Unable to read val file %s.\n",filename);
    	   return TSS_E_KEY_NOT_LOADED;
   	 }
 
@@ -146,7 +146,7 @@ TSS_RESULT ReadValidation(TSS_VALIDATION * valData,char * name)
    	result = fread(&(valData->versionInfo),1,sizeof(TSS_VERSION),file);
   	 if (result != sizeof(TSS_VERSION))
      	 {
-	      printf("I/O Error writing valData\n");
+	      //printf("I/O Error writing valData\n");
   	    return TSS_E_KEY_NOT_LOADED;
       	 }
 
@@ -154,7 +154,7 @@ TSS_RESULT ReadValidation(TSS_VALIDATION * valData,char * name)
    	 result = fread(&datalen,1,sizeof(UINT32),file);
   	 if (result != sizeof(UINT32))
      	 {
-	      printf("I/O Error writing valData\n");
+	      //printf("I/O Error writing valData\n");
   	      return TSS_E_KEY_NOT_LOADED;
       	 }
 
@@ -165,7 +165,7 @@ TSS_RESULT ReadValidation(TSS_VALIDATION * valData,char * name)
    	 result = fread((valData->rgbExternalData),1,datalen,file);
   	 if (result != datalen)
      	 {
-	      printf("I/O Error writing valData\n");
+	      //printf("I/O Error writing valData\n");
   	      return TSS_E_KEY_NOT_LOADED;
       	 }
 	 valData->ulExternalDataLength=datalen;
@@ -173,7 +173,7 @@ TSS_RESULT ReadValidation(TSS_VALIDATION * valData,char * name)
    	 result = fread(&datalen,1,sizeof(UINT32),file);
   	 if (result != sizeof(UINT32))
      	 {
-	      printf("I/O Error writing valData\n");
+	      //printf("I/O Error writing valData\n");
   	      return TSS_E_KEY_NOT_LOADED;
       	 }
 
@@ -184,7 +184,7 @@ TSS_RESULT ReadValidation(TSS_VALIDATION * valData,char * name)
    	 result = fread((valData->rgbData),1,datalen,file);
   	 if (result != datalen)
      	 {
-	      printf("I/O Error writing valData\n");
+	      //printf("I/O Error writing valData\n");
   	      return TSS_E_KEY_NOT_LOADED;
 	 }
 	 valData->ulDataLength=datalen;
@@ -192,7 +192,7 @@ TSS_RESULT ReadValidation(TSS_VALIDATION * valData,char * name)
    	 result = fread(&datalen,1,sizeof(UINT32),file);
   	 if (result != sizeof(UINT32))
      	 {
-	      printf("I/O Error writing valData\n");
+	      //printf("I/O Error writing valData\n");
   	      return TSS_E_KEY_NOT_LOADED;
       	 }
 
@@ -203,7 +203,7 @@ TSS_RESULT ReadValidation(TSS_VALIDATION * valData,char * name)
    	 result = fread((valData->rgbValidationData),1,datalen,file);
   	 if (result != datalen)
      	 {
-	      printf("I/O Error reading valData\n");
+	      //printf("I/O Error reading valData\n");
   	      return TSS_E_KEY_NOT_LOADED;
 	 }
 	 valData->ulValidationDataLength=datalen;
@@ -583,7 +583,7 @@ TSS_RESULT TESI_Local_GetPubKeyFromCA(TSS_HKEY * hCAKey,char * name)
 
 		// get the pub CA key
 	if ((size_n = BN_bn2bin(rsa->n, n)) <= 0) {
-		fprintf(stderr, "BN_bn2bin failed\n");
+		//fprintf(stderr, "BN_bn2bin failed\n");
 		RSA_free(rsa);
                 return 254;
         }
@@ -701,7 +701,7 @@ TSS_RESULT TESI_Local_GetPubEKWithUUID(char ** uuid,char * pwdo)
 	ret=calculate_sm3(temp_file,(UINT32 *)digest);
 	if(ret<0)
 	{
-		printf("calculate sm3 error!");
+		//printf("calculate sm3 error!");
 		return 0;
 	}
 	ret=digest_to_uuid(digest,ek_uuid);
@@ -946,13 +946,13 @@ TSS_RESULT WriteKeyBlob(BYTE * keyblob, int blobLength,char * keyname)
        blbfile = fopen(filename,"wb");
    if (blbfile == NULL)
       {
-      printf("Unable to create key file %s.\n",filename);
+      //printf("Unable to create key file %s.\n",filename);
       return TSS_E_KEY_NOT_LOADED;
       }
    result = fwrite(keyblob,1,blobLength,blbfile);
    if (result != blobLength)
       {
-      printf("I/O Error writing key file\n");
+      //printf("I/O Error writing key file\n");
       return TSS_E_KEY_NOT_LOADED;
       }
    fclose(blbfile);
@@ -992,7 +992,7 @@ TSS_RESULT ReadKeyBlob(BYTE ** Blob, int *blobLength,char * keyname)
    blbfile = fopen(filename,"rb");
    if (blbfile == NULL)
    {
-      printf("Unable to read key file %s.\n",filename);
+      //printf("Unable to read key file %s.\n",filename);
       return TSS_E_KEY_NOT_LOADED;
    }
     stat(filename,&sbuf);
@@ -1000,12 +1000,12 @@ TSS_RESULT ReadKeyBlob(BYTE ** Blob, int *blobLength,char * keyname)
     *Blob=(BYTE *)malloc(*blobLength);
     if(*Blob==NULL)
     {
-	    printf("Sign File: alloc memory error!\n");
+	    //printf("Sign File: alloc memory error!\n");
     }
     result = fread(*Blob,1,*blobLength,blbfile);
     if (result != (int)(*blobLength))
 	{
-	    printf("Unable to read key file\n");
+	    //printf("Unable to read key file\n");
 	    return TSS_E_KEY_NOT_LOADED;
 	}
     fclose(blbfile);
@@ -1162,31 +1162,31 @@ TSS_RESULT ReadPubKey(void ** rsa_data,char * keyname)
 
    if (rsa == NULL)
    {
-      printf("Error from ReadPubKey\n");
+      //printf("Error from ReadPubKey\n");
       return TSS_E_KEY_NOT_LOADED;
    }
 //   pkey = EVP_PKEY_new();
 //   if (pkey == NULL) {
-//         printf("Unable to create EVP_PKEY\n");
+//         //printf("Unable to create EVP_PKEY\n");
 //         return TSS_E_KEY_NOT_LOADED;
 //   }
    sprintf(filename,"%s.pem",keyname);
    keyfile = fopen(filename,"rb");
    if (keyfile == NULL)
       {
-      printf("Unable to create public key file\n");
+      //printf("Unable to create public key file\n");
       return TSS_E_KEY_NOT_LOADED;
       }
    pkey = PEM_read_PUBKEY(keyfile,NULL,NULL,NULL);
    if (pkey == NULL)
       {
-      printf("I/O Error read public key file\n");
+      //printf("I/O Error read public key file\n");
       return TSS_E_KEY_NOT_LOADED;
       }
    fclose(keyfile);
    tempRSA = EVP_PKEY_get1_RSA(pkey);
    if (tempRSA == NULL) {
-       printf("Unable to get pubkey from EVP_PKEY\n");
+       //printf("Unable to get pubkey from EVP_PKEY\n");
        return TSS_E_KEY_NOT_LOADED;
    }
    EVP_PKEY_free(pkey);
@@ -1204,30 +1204,30 @@ TSS_RESULT WritePubKey(void * rsa_data,char * keyname)
 
    if (rsa == NULL)
       {
-      printf("Error from TSS_convpubkey\n");
+      //printf("Error from TSS_convpubkey\n");
       return TSS_E_KEY_NOT_LOADED;
       }
    pkey = EVP_PKEY_new();
    if (pkey == NULL) {
-       printf("Unable to create EVP_PKEY\n");
+       //printf("Unable to create EVP_PKEY\n");
       return TSS_E_KEY_NOT_LOADED;
    }
    result = EVP_PKEY_assign_RSA(pkey,rsa);
    if (result == 0) {
-       printf("Unable to assign public key to EVP_PKEY\n");
+       //printf("Unable to assign public key to EVP_PKEY\n");
       return TSS_E_KEY_NOT_LOADED;
    }
    sprintf(filename,"%s.pem",keyname);
    keyfile = fopen(filename,"wb");
    if (keyfile == NULL)
       {
-      printf("Unable to create public key file\n");
+      //printf("Unable to create public key file\n");
       return TSS_E_KEY_NOT_LOADED;
       }
    result = PEM_write_PUBKEY(keyfile,pkey);
    if (result == 0)
       {
-      printf("I/O Error writing public key file\n");
+      //printf("I/O Error writing public key file\n");
       return TSS_E_KEY_NOT_LOADED;
       }
    fclose(keyfile);
@@ -1254,14 +1254,14 @@ TSS_RESULT ReadPrivKey(void ** rsa_data,char * keyname,char * pass_phrase)
 
    if (rsa == NULL)
    {
-      printf("Error from ReadPubKey\n");
+      //printf("Error from ReadPubKey\n");
       return TSS_E_KEY_NOT_LOADED;
    }
    sprintf(filename,"%s.key",keyname);
    bio=BIO_new_file(filename,"rb");
    if (bio == NULL)
    {
-      printf("Unable to create public key file\n");
+      //printf("Unable to create public key file\n");
       return TSS_E_KEY_NOT_LOADED;
    }
 
@@ -1269,9 +1269,9 @@ TSS_RESULT ReadPrivKey(void ** rsa_data,char * keyname,char * pass_phrase)
    *rsa=PEM_read_bio_RSAPrivateKey(bio,NULL,NULL,pass_phrase);
    if (*rsa == NULL)
    {
-        printf("I/O Error read private key file\n");
+        //printf("I/O Error read private key file\n");
 	ERR_error_string(ERR_get_error(),errstring);
-        printf("openssl error:%s\n",errstring);
+        //printf("openssl error:%s\n",errstring);
         return TSS_E_KEY_NOT_LOADED;
    }
    BIO_free(bio);
@@ -1297,14 +1297,14 @@ TSS_RESULT WritePrivKey(void * rsa_data,char * keyname,char * pass_phrase)
 
    if (rsa == NULL)
    {
-      printf("Error from WritePrivKey\n");
+      //printf("Error from WritePrivKey\n");
       return TSS_E_KEY_NOT_LOADED;
    }
    sprintf(filename,"%s.key",keyname);
    bio=BIO_new_file(filename,"wb");
    if (bio == NULL)
    {
-      printf("Unable to create private key file\n");
+      //printf("Unable to create private key file\n");
       return TSS_E_KEY_NOT_LOADED;
    }
 
@@ -1314,7 +1314,7 @@ TSS_RESULT WritePrivKey(void * rsa_data,char * keyname,char * pass_phrase)
    	ret = PEM_write_bio_RSAPrivateKey(bio,rsa,EVP_aes_128_cbc(),NULL,0,NULL,NULL);
    if (ret < 0)
    {
-        printf("I/O Error write private key file\n");
+        //printf("I/O Error write private key file\n");
         return TSS_E_KEY_NOT_LOADED;
    }
    BIO_free(bio);
@@ -1372,7 +1372,7 @@ TSS_RESULT TESI_Local_ReadPubKey(TSS_HKEY * hPubKey,char * name)
 
 		// get the pub CA key
 	if ((size_n = BN_bn2bin(rsa->n, n)) <= 0) {
-		fprintf(stderr, "BN_bn2bin failed\n");
+		//fprintf(stderr, "BN_bn2bin failed\n");
 		RSA_free(rsa);
                 return TSS_E_KEY_NOT_LOADED;
         }
@@ -1406,7 +1406,7 @@ TSS_RESULT TESI_Local_SignFile(char * filename,TSS_HKEY hSignKey,char * signname
    file = fopen(filename,"rb");
    if (file == NULL)
    {
-      printf("Unable to read key file %s.\n",filename);
+      //printf("Unable to read key file %s.\n",filename);
       return TSS_E_KEY_NOT_LOADED;
    }
     stat(filename,&sbuf);
@@ -1414,12 +1414,12 @@ TSS_RESULT TESI_Local_SignFile(char * filename,TSS_HKEY hSignKey,char * signname
     blob=(BYTE *)malloc(blobLength);
     if(blob==NULL)
     {
-	    printf("Sign File: alloc memory error!\n");
+	    //printf("Sign File: alloc memory error!\n");
     }
     result = fread(blob,1,blobLength,file);
     if (result != (int)blobLength)
 	{
-	    printf("Unable to read sign text file\n");
+	    //printf("Unable to read sign text file\n");
 	    return TSS_E_KEY_NOT_LOADED;
 	}
     fclose(file);
@@ -1478,13 +1478,13 @@ TSS_RESULT TESI_Local_SignFile(char * filename,TSS_HKEY hSignKey,char * signname
 	sigfile = fopen(sigfilename,"wb");
 	if (sigfile == NULL)
 	{
-		printf("Unable to write signature file %s.\n",sigfilename);
+		//printf("Unable to write signature file %s.\n",sigfilename);
 		return TSS_E_KEY_NOT_LOADED;
    	}
 	result=fwrite(sigdata,1,siglen,sigfile);
 	if(result !=(int)siglen)
 	{
-	    printf("Unable to write sign text file\n");
+	    //printf("Unable to write sign text file\n");
 	    return TSS_E_KEY_NOT_LOADED;
 	}
 	fclose(sigfile);
@@ -1552,7 +1552,7 @@ TSS_RESULT TESI_Local_VerifyFile(char * filename,TSS_HKEY hVerifyKey,char * sign
    file = fopen(filename,"rb");
    if (file == NULL)
    {
-      printf("Unable to read key file %s.\n",filename);
+      //printf("Unable to read key file %s.\n",filename);
       return TSS_E_KEY_NOT_LOADED;
    }
     stat(filename,&sbuf);
@@ -1560,12 +1560,12 @@ TSS_RESULT TESI_Local_VerifyFile(char * filename,TSS_HKEY hVerifyKey,char * sign
     blob=(BYTE *)malloc(blobLength);
     if(blob==NULL)
     {
-	    printf("Sign File: alloc memory error!\n");
+	    //printf("Sign File: alloc memory error!\n");
     }
     result = fread(blob,1,blobLength,file);
     if (result != (int)blobLength)
 	{
-	    printf("Unable to read sign text file\n");
+	    //printf("Unable to read sign text file\n");
 	    return TSS_E_KEY_NOT_LOADED;
 	}
     fclose(file);
@@ -1600,7 +1600,7 @@ TSS_RESULT TESI_Local_VerifyFile(char * filename,TSS_HKEY hVerifyKey,char * sign
 	sigfile = fopen(sigfilename,"rb");
 	if (sigfile == NULL)
 	{
-		printf("Unable to read signature file %s.\n",sigfilename);
+		//printf("Unable to read signature file %s.\n",sigfilename);
 		return TSS_E_KEY_NOT_LOADED;
    	}
 	stat(sigfilename,&sbuf);
@@ -1610,7 +1610,7 @@ TSS_RESULT TESI_Local_VerifyFile(char * filename,TSS_HKEY hVerifyKey,char * sign
 	result=fread(sigdata,1,siglen,sigfile);
 	if (result != (int)siglen)
 	{
-		printf("Unable to read sign file\n");
+		//printf("Unable to read sign file\n");
 		return TSS_E_KEY_NOT_LOADED;
 	}
 	fclose(sigfile);
@@ -1938,14 +1938,14 @@ TSS_RESULT TESI_Mig_CreateRewrapTicket(TSS_HKEY hMigKey,char * ticketname,char *
 	ticketfile = fopen(filename,"wb");
 	if (ticketfile == NULL)
 	{
-		printf("Unable to open ticket file file %s.\n",filename);
+		//printf("Unable to open ticket file file %s.\n",filename);
     		return TSS_E_KEY_NOT_LOADED;
   	}
 
 	result=fwrite(blob,1,blobLength,ticketfile);
 	if (result != (int)blobLength)
 	{
-		printf("Unable to write ticket file\n");
+		//printf("Unable to write ticket file\n");
 		return TSS_E_KEY_NOT_LOADED;
 	}
 	fclose(ticketfile);
@@ -2000,14 +2000,14 @@ TSS_RESULT TESI_Mig_CreateTicket(TSS_HKEY hMigKey,char * ticketname,char * pwdo)
 	ticketfile = fopen(filename,"wb");
 	if (ticketfile == NULL)
 	{
-		printf("Unable to open ticket file file %s.\n",filename);
+		//printf("Unable to open ticket file file %s.\n",filename);
     		return TSS_E_KEY_NOT_LOADED;
   	}
 
 	result=fwrite(blob,1,blobLength,ticketfile);
 	if (result != (int)blobLength)
 	{
-		printf("Unable to write ticket file\n");
+		//printf("Unable to write ticket file\n");
 		return TSS_E_KEY_NOT_LOADED;
 	}
 	fclose(ticketfile);
@@ -2038,7 +2038,7 @@ TSS_RESULT TESI_Mig_CreateKeyBlob(TSS_HKEY hKey,TSS_HKEY hParentKey,char * pwdk,
    ticketfile = fopen(filename,"rb");
    if (ticketfile == NULL)
    {
-      printf("Unable to read key file %s.\n",filename);
+      //printf("Unable to read key file %s.\n",filename);
       return TSS_E_KEY_NOT_LOADED;
    }
     stat(filename,&sbuf);
@@ -2046,12 +2046,12 @@ TSS_RESULT TESI_Mig_CreateKeyBlob(TSS_HKEY hKey,TSS_HKEY hParentKey,char * pwdk,
     ticketData=(BYTE *)malloc(ticketLength);
     if(ticketData==NULL)
     {
-	    printf("Create Mig Key blob: alloc memory error!\n");
+	    //printf("Create Mig Key blob: alloc memory error!\n");
     }
 	result = fread(ticketData,1,ticketLength,ticketfile);
   	if (result != (int)ticketLength)
 	{
-	    printf("Unable to read ticket file\n");
+	    //printf("Unable to read ticket file\n");
 	    return TSS_E_KEY_NOT_LOADED;
 	}
  	fclose(ticketfile);
@@ -2081,13 +2081,13 @@ TSS_RESULT TESI_Mig_CreateKeyBlob(TSS_HKEY hKey,TSS_HKEY hParentKey,char * pwdk,
 	blbfile = fopen(filename,"wb");
   	if (blbfile == NULL)
    	{
-   	   printf("Unable to write blb file %s.\n",filename);
+   	   //printf("Unable to write blb file %s.\n",filename);
    	   return TSS_E_KEY_NOT_LOADED;
   	 }
    	result = fwrite(blob,1,blobLength,blbfile);
   	 if (result != blobLength)
      	 {
-	      printf("I/O Error writing blob file\n");
+	      //printf("I/O Error writing blob file\n");
   	    return TSS_E_KEY_NOT_LOADED;
       	 }
 
@@ -2366,7 +2366,7 @@ TSS_RESULT  TESI_AIK_GenerateReq(TSS_HKEY hCAKey,int labelLen,BYTE * labelData, 
 	fd=open(filename,O_WRONLY|O_CREAT|O_TRUNC,S_IRUSR|S_IWUSR,0666);
 	if(fd<0)
 	{	
-		printf("open req blob file error!\n");
+		//printf("open req blob file error!\n");
 		return -EEXIST;
 	}
 	write(fd,rgbTCPAIdentityReq,ulTCPAIdentityReqLength);
@@ -2734,7 +2734,7 @@ TESI_AIK_CreateAIKCert(TSS_HKEY hIdentityKey,void * privkey,BYTE * data,int data
 
 	/* blob now contains the serialized TCPA_SYM_CA_ATTESTATION struct */
 	if ((b->symBlob = malloc(offset)) == NULL) {
-		fprintf(stderr, "malloc failed.");
+		//fprintf(stderr, "malloc failed.");
 		Tspi_Context_FreeMemory(hContext, asymContents.sessionKey.data);
 		return TSS_E_OUTOFMEMORY;
 	}
@@ -2919,7 +2919,7 @@ ca_create_credential(TSS_HKEY hIdentityKey,
 
 	/* blob now contains the serialized TCPA_SYM_CA_ATTESTATION struct */
 	if ((b->symBlob = malloc(offset)) == NULL) {
-		fprintf(stderr, "malloc failed.");
+		//fprintf(stderr, "malloc failed.");
 		Tspi_Context_FreeMemory(hContext, asymContents.sessionKey.data);
 		return TSS_E_OUTOFMEMORY;
 	}
@@ -3032,8 +3032,8 @@ TSS_RESULT TESI_AIK_VerifyReq(void * privkey,TSS_HKEY hCAKey, char * req,TSS_HKE
 			algID = TSS_ALG_AES;
 			break;
 		default:
-			fprintf(stderr, "symmetric blob encrypted with an "
-				"unknown cipher\n");
+			//fprintf(stderr, "symmetric blob encrypted with an "
+			//	"unknown cipher\n");
 			return result;
 			break;
 	}
@@ -3056,7 +3056,7 @@ TSS_RESULT TESI_AIK_VerifyReq(void * privkey,TSS_HKEY hCAKey, char * req,TSS_HKE
 	}
 
 
-	printf("create pub CA Key succeed!\n");
+	//printf("create pub CA Key succeed!\n");
 
 	// Get the IdentKey
 	offset=0;
@@ -3081,15 +3081,15 @@ TSS_RESULT TESI_AIK_VerifyReq(void * privkey,TSS_HKEY hCAKey, char * req,TSS_HKE
 		return result;
 	}
 
-	printf("set ident key Succeed!\n");
+	//printf("set ident key Succeed!\n");
 
 	/* verify the identity binding */
 	
 	if ((result = ca_verify_identity_binding(hCAKey,
 				*hAIKey, identityProof))) {
 		if (TSS_ERROR_CODE(result) == TSS_E_FAIL)
-			fprintf(stderr, "Identity Binding signature doesn't "
-				"match!\n");
+			//fprintf(stderr, "Identity Binding signature doesn't "
+		//		"match!\n");
 		print_error("ca_verify_identity_binding", result);
 		return result;
 	}
@@ -3142,7 +3142,7 @@ TSS_RESULT TESI_Local_Bind(char * plainname, TSS_HKEY hKey, char * ciphername)
 	file = fopen(plainname,"rb");
   	if (file == NULL)
    	{
-   	   printf("Unable to read plain file %s.\n",plainname);
+   	   //printf("Unable to read plain file %s.\n",plainname);
    	   return TSS_E_KEY_NOT_LOADED;
   	 }
 	 fseek(file,0,SEEK_END);
@@ -3158,7 +3158,7 @@ TSS_RESULT TESI_Local_Bind(char * plainname, TSS_HKEY hKey, char * ciphername)
   	 {
 			fclose(file);
 			free(rgbExternalData);
-			printf("I/O Error reading plain file\n");
+			//printf("I/O Error reading plain file\n");
 			return TSS_E_OUTOFMEMORY;
      	 }
 
@@ -3194,7 +3194,7 @@ TSS_RESULT TESI_Local_Bind(char * plainname, TSS_HKEY hKey, char * ciphername)
 		return result;
 	}
 	
-	printf("Data after encrypting:\n");
+	//printf("Data after encrypting:\n");
 	print_hex(rgbEncryptedData, ulEncryptedDataLength);
 	
 	oFile=fopen(ciphername,"wb");
@@ -3257,7 +3257,7 @@ TSS_RESULT TESI_Local_UnBind(char * ciphername, TSS_HKEY hKey, char * plainname)
 	file = fopen(ciphername,"rb");
   	if (file == NULL)
    	{
-   	   printf("Unable to read cinpher file %s.\n",ciphername);
+   	   //printf("Unable to read cinpher file %s.\n",ciphername);
    	   return TSS_E_KEY_NOT_LOADED;
   	}
 	 fseek(file,0,SEEK_END);
@@ -3273,7 +3273,7 @@ TSS_RESULT TESI_Local_UnBind(char * ciphername, TSS_HKEY hKey, char * plainname)
    	 {
 		 fclose(file);
 		 free(rgbExternalData);
-	      printf("I/O Error reading data cipher file\n");
+	      //printf("I/O Error reading data cipher file\n");
  	      return TSS_E_OUTOFMEMORY;
      	 }
 
@@ -3304,7 +3304,7 @@ TSS_RESULT TESI_Local_UnBind(char * ciphername, TSS_HKEY hKey, char * plainname)
 	result = Tspi_Data_Unbind( hEncData, hKey, &ulEncryptedDataLength,
 					&rgbEncryptedData );
 	
-	printf("Data after decrypting:\n");
+	//printf("Data after decrypting:\n");
 	print_hex(rgbEncryptedData, ulEncryptedDataLength);
 	
 	oFile=fopen(plainname,"wb");
@@ -3366,7 +3366,7 @@ TSS_RESULT TESI_Local_Seal(char * plainname, TSS_HKEY hKey, char * ciphername,TS
 	file = fopen(plainname,"rb");
   	if (file == NULL)
    	{
-   	   printf("Unable to read plain file %s.\n",plainname);
+   	   //printf("Unable to read plain file %s.\n",plainname);
    	   return TSS_E_KEY_NOT_LOADED;
   	 }
 	 fseek(file,0,SEEK_END);
@@ -3382,7 +3382,7 @@ TSS_RESULT TESI_Local_Seal(char * plainname, TSS_HKEY hKey, char * ciphername,TS
   	 {
 			fclose(file);
 			free(rgbExternalData);
-			printf("I/O Error reading plain file\n");
+			//printf("I/O Error reading plain file\n");
 			return TSS_E_OUTOFMEMORY;
      	 }
 
@@ -3418,7 +3418,7 @@ TSS_RESULT TESI_Local_Seal(char * plainname, TSS_HKEY hKey, char * ciphername,TS
 		return result;
 	}
 	
-	printf("Data after encrypting:\n");
+	//printf("Data after encrypting:\n");
 	print_hex(rgbEncryptedData, ulEncryptedDataLength);
 	
 	oFile=fopen(ciphername,"wb");
