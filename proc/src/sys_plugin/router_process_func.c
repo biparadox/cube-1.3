@@ -20,6 +20,7 @@
 #include "dispatch.h"
 #include "ex_module.h"
 
+#include "main_proc_func.h"
 #include "router_process_func.h"
 
 int read_dispatch_file(char * file_name,int is_aspect)
@@ -52,7 +53,6 @@ int read_dispatch_file(char * file_name,int is_aspect)
 		finishread=1;
 
 	leftlen=readlen;
-//	printf("%s\n",json_buffer);
 
 	json_offset=0;
 
@@ -61,7 +61,7 @@ int read_dispatch_file(char * file_name,int is_aspect)
 		ret=json_solve_str(&root_node,json_buffer);
 		if(ret<0)
 		{
-			printf("solve json str error!\n");
+			print_cubeerr("solve json str error!\n");
 			break;
 		}
 		json_offset+=ret;
@@ -83,13 +83,13 @@ int read_dispatch_file(char * file_name,int is_aspect)
 		policy=dispatch_read_policy(root_node);
 		if(policy==NULL)
 		{
-			printf("read %d file error!\n",count);
+			print_cubeerr("read %d file error!\n",count);
 			break;
 		}
 		if((dispatch_policy_getstate(policy)==POLICY_IGNORE)
 			||(dispatch_policy_getstate(policy)==POLICY_CLOSE))
 		{
-			printf("policy %s is ignored!\n",dispatch_policy_getname(policy));
+			print_cubeaudit("policy %s is ignored!\n",dispatch_policy_getname(policy));
 		}
 		else
 		{
@@ -100,7 +100,7 @@ int read_dispatch_file(char * file_name,int is_aspect)
 			count++;
 		}
 	}
-	printf("read %d policy succeed!\n",count);
+	print_cubeaudit("read %d policy succeed!\n",count);
 	close(fd);
 	return count;
 }
@@ -214,7 +214,7 @@ int proc_router_send_msg(void * message,char * local_uuid,char * proc_name)
 			{
 //				if(sec_subject_getprocstate(sec_sub)<SEC_PROC_START)
 //				{	
-//					printf("start process %s!\n",sec_subject_getname(sec_sub));
+//					print_cubeaudit("start process %s!\n",sec_subject_getname(sec_sub));
   //  					ret=sec_subject_start(sec_sub,NULL);
 //				}
 				send_ex_module_msg(sec_sub,message);
@@ -226,11 +226,11 @@ int proc_router_send_msg(void * message,char * local_uuid,char * proc_name)
 			ret=find_ex_module("connector_proc",&sec_sub);	
 			if(sec_sub==NULL)
 			{
-				printf("can't find conn process!\n");
+				print_cubeerr("can't find conn process!\n");
 				return -EINVAL;
 			}
 			send_ex_module_msg(sec_sub,message);
-			printf("send message to conn process!\n");
+			print_cubeaudit("send message to conn process!\n");
 				
 	}
 	return 0;
@@ -254,13 +254,13 @@ int proc_router_init(void * sub_proc,void * para)
     ret=read_dispatch_file(config_filename,0);	
     if(ret<=0)
     {
-	    printf("read router policy error %d!\n",ret);
+	    print_cubeerr("read router policy error %d!\n",ret);
 //	    return ret;
     }
     ret=read_dispatch_file(aspect_filename,1);	
     if(ret<=0)
     {
-	    printf("read aspect policy error %d!\n",ret);
+	    print_cubeerr("read aspect policy error %d!\n",ret);
 //	    return ret;
     }
 
@@ -338,7 +338,7 @@ int proc_router_start(void * sub_proc,void * para)
 			}
 			origin_proc=ex_module_getname(sub_proc);
 
-			printf("router get proc %.64s's message!\n",origin_proc); 
+			print_cubeaudit("router get proc %.64s's message!\n",origin_proc); 
 
 			router_dup_activemsg_info(message);
 			
@@ -384,7 +384,7 @@ int proc_router_start(void * sub_proc,void * para)
 					{
 
 						route_recover_route(message);
-						printf("recover from aspect\n");
+						print_cubeaudit("recover from aspect\n");
 					}	
 				}
 				else
@@ -397,7 +397,8 @@ int proc_router_start(void * sub_proc,void * para)
 							ret=router_find_aspect_policy(message,&aspect_policy,origin_proc);
 							if(ret<0)
 							{
-								printf("%s check aspect policy error!\n",sub_proc); 
+								print_cubeerr("%s check aspect policy error!\n",sub_proc); 
+
 								return ret;
 							}
 							ret=router_set_aspect_flow(message,aspect_policy);
@@ -426,7 +427,7 @@ int proc_router_start(void * sub_proc,void * para)
 							// we met the aspect's end, we should pop the src from stack
 								msg_head->state=MSG_FLOW_DELIVER;
 								router_pop_aspect_site(message,aspect_proc);
-								printf("begin to response aspect message");
+								print_cubeaudit("begin to response aspect message");
 								msg_head->flag|=MSG_FLAG_RESPONSE;
 								msg_head->flag&=~MSG_FLAG_LOCAL;
 								break;
@@ -445,7 +446,7 @@ int proc_router_start(void * sub_proc,void * para)
 					}	
 				}	
 				proc_audit_log(message);
-				printf("aspect message (%s) is send to %s!\n",message_get_typestr(message),message_get_receiver(message));
+				print_cubeaudit("aspect message (%s) is send to %s!\n",message_get_typestr(message),message_get_receiver(message));
 				ret=proc_router_send_msg(message,local_uuid,proc_name);
 				if(ret<0)
 					return ret;
@@ -493,13 +494,13 @@ int proc_router_start(void * sub_proc,void * para)
 								ret=router_find_policy_byname(&msg_policy,msg_head->route,msg_head->rjump,msg_head->ljump);
 								if(ret<0)
 								{
-									printf("can't find response message's route!\n");
+									print_cubeerr("can't find response message's route!\n");
 									continue;
 								}
 								ret=router_set_query_end(message,msg_policy);
 								if(ret<0)
 								{
-									printf("can't set response message!\n");
+									print_cubeerr("can't set response message!\n");
 									continue;
 								}	
 								ret=router_set_next_jump(message);
@@ -507,7 +508,7 @@ int proc_router_start(void * sub_proc,void * para)
 									return ret;
 								break;
 							}	
-							printf("begin to response query message");
+							print_cubeaudit("begin to response query message");
 							break;
 						}
 						else
@@ -515,7 +516,7 @@ int proc_router_start(void * sub_proc,void * para)
 							ret=router_find_route_policy(message,&msg_policy,origin_proc);	
 							if(ret<0)
 							{	
-								printf("%s get error message!\n",sub_proc); 
+								print_cubeerr("%s get error message!\n",sub_proc); 
 								return ret;
 							}
 							if(msg_policy==NULL)
@@ -550,7 +551,7 @@ int proc_router_start(void * sub_proc,void * para)
 								{
 									// if this message's flow is query, we should push it into the stack
 									router_pop_site(message);
-									printf("begin to response query message");
+									print_cubeaudit("begin to response query message");
 									msg_head->flag|=MSG_FLAG_RESPONSE;
 									// if the receiver uuid is a str in response mode, it should be a port module
 									// else, it should be a remote proc
@@ -570,7 +571,7 @@ int proc_router_start(void * sub_proc,void * para)
 							ret=router_find_route_policy(message,&msg_policy,origin_proc);	
 							if(ret<0)
 							{	
-								printf("%s get error message!\n",sub_proc); 
+								print_cubeerr("%s get error message!\n",sub_proc); 
 								return ret;
 							}
 							if(msg_policy==NULL)
@@ -596,7 +597,7 @@ int proc_router_start(void * sub_proc,void * para)
 				if(msg_head->flow==MSG_FLOW_FINISH)
 				{
 					proc_audit_log(message);
-					printf("message (%s) is discarded in FINISH state!\n",message_get_typestr(message));
+					print_cubeaudit("message (%s) is discarded in FINISH state!\n",message_get_typestr(message));
 					continue;
 				}
 
@@ -620,7 +621,7 @@ int proc_router_start(void * sub_proc,void * para)
 				ret=router_find_aspect_policy(message,&aspect_policy,origin_proc);
 				if(ret<0)
 				{
-					printf("%s check aspect policy error!\n",sub_proc); 
+					print_cubeerr("%s check aspect policy error!\n",sub_proc); 
 					return ret;
 				}
 				if(aspect_policy!=NULL)
@@ -630,7 +631,7 @@ int proc_router_start(void * sub_proc,void * para)
 						ret=router_store_route(message);
 						if(ret<0)
 						{
-							printf("router store route for aspect error!\n");
+							print_cubeerr("router store route for aspect error!\n");
 						}
 						ret=router_set_aspect_flow(message,aspect_policy);
 						if(ret>=0)
@@ -643,11 +644,11 @@ int proc_router_start(void * sub_proc,void * para)
 							if(ret>=0)
 							{
 								proc_audit_log(message);
-								printf("message (%s) is send to %s!\n",message_get_typestr(message),message_get_receiver(message));
+								print_cubeaudit("message (%s) is send to %s!\n",message_get_typestr(message),message_get_receiver(message));
 								ret=proc_router_send_msg(message,local_uuid,proc_name);
 								if(ret<0)
 								{
-									printf("send aspect message failed!\n");
+									print_cubeerr("send aspect message failed!\n");
 								}
 								continue;
 
@@ -664,11 +665,11 @@ int proc_router_start(void * sub_proc,void * para)
 							if(ret>=0)
 							{
 								proc_audit_log(new_msg);
-								printf("message (%s) is send to %s!\n",message_get_typestr(new_msg),message_get_receiver(new_msg));
+								print_cubeaudit("message (%s) is send to %s!\n",message_get_typestr(new_msg),message_get_receiver(new_msg));
 								ret=proc_router_send_msg(new_msg,local_uuid,proc_name);
 								if(ret<0)
 								{
-									printf("send dup message failed!\n");
+									print_cubeerr("send dup message failed!\n");
 								}
 							}		
 						}
@@ -676,11 +677,11 @@ int proc_router_start(void * sub_proc,void * para)
 					}
 				}	
 				proc_audit_log(message);
-				printf("message (%s) is send to %s!\n",message_get_typestr(message),message_get_receiver(message));
+				print_cubeaudit("message (%s) is send to %s!\n",message_get_typestr(message),message_get_receiver(message));
 				ret=proc_router_send_msg(message,local_uuid,proc_name);
 				if(ret<0)
 				{
-					printf("send message failed!\n");
+					print_cubeerr("send message failed!\n");
 					continue;
 				}
 			}

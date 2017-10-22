@@ -20,6 +20,7 @@
 #include "ex_module.h"
 #include "connector_value.h"
 #include "connector_process_func.h"
+#include "main_proc_func.h"
 
 struct  connector_config
 {
@@ -112,7 +113,7 @@ int message_read_from_conn(void ** message,void * conn)
 		ret=message_load_record(*message);
 		if(ret<0)
 		{
-			printf("load record failed in message_read_from_conn! use bin format\n");
+			print_cubeerr("load record failed in message_read_from_conn! use bin format\n");
 		}
 	}
 
@@ -130,7 +131,7 @@ int message_send(void * message,void * conn)
 	if(record_size<=0)
 		return record_size;
 	retval=temp_conn->conn_ops->write(temp_conn,blob,record_size);
-		printf("send %d data to conn!\n",record_size);
+		print_cubeaudit("send %d data to conn!\n",record_size);
 	return retval;
 }
 
@@ -223,7 +224,7 @@ int read_one_connector(void ** connector,void * json_node)
   	ret=conn->conn_ops->init(conn,temp_cfg->name,buffer);
 	if(ret<0)
 	{
-		printf("init conn %s failed!\n",temp_cfg->name);
+		print_cubeerr("init conn %s failed!\n",temp_cfg->name);
       		return -EINVAL;
 	}
 
@@ -237,7 +238,7 @@ int read_one_connector(void ** connector,void * json_node)
     {
 	    if(default_conn!=NULL)
 	    {
-		    printf("not unique default conn!\n");
+		    print_cubeerr("not unique default conn!\n");
 		    return -EINVAL;
 	    }
 	    default_conn=conn;
@@ -277,7 +278,7 @@ int connector_read_cfg(char * filename,void * hub)
                 fp=NULL;
             }
         }
-//      printf("conn %d is %s\n",conn_num+1,buffer);
+//      print_cubeaudit("conn %d is %s\n",conn_num+1,buffer);
 
         solve_offset=json_solve_str(&root,buffer);
         if(solve_offset<=0)
@@ -336,7 +337,7 @@ int proc_conn_init(void * sub_proc,void * para)
 //	if(ret<0)
 //		return ret;
 //    	conn_cfg_template=create_struct_template(&main_config_desc);
-//	printf("main template create succeed!\n");
+//	print_cubeaudit("main template create succeed!\n");
     	conn_cfg_template=create_struct_template(&connector_config_desc);
 	sub_proc_pointer=Salloc(sizeof(struct connector_proc_pointer));
 	if(sub_proc_pointer==NULL)
@@ -349,7 +350,7 @@ int proc_conn_init(void * sub_proc,void * para)
 	ret=connector_read_cfg(config_file,conn_hub);
 	if(ret<0)
 		return ret;
-	printf("read %d connector!\n",ret);
+	print_cubeaudit("read %d connector!\n",ret);
 
 	struct tcloud_connector * temp_conn;
 
@@ -364,10 +365,10 @@ int proc_conn_init(void * sub_proc,void * para)
   	 		ret=temp_conn->conn_ops->listen(temp_conn);
 			if(ret<0)
 			{
-				printf("conn server %s listen error!\n",connector_getname(temp_conn));
+				print_cubeerr("conn server %s listen error!\n",connector_getname(temp_conn));
 				return -EINVAL;
 			}
-			printf("conn server %s begin to listen!\n",connector_getname(temp_conn));
+			print_cubeaudit("conn server %s begin to listen!\n",connector_getname(temp_conn));
 
 		}	
 		temp_conn=hub_get_next_connector(conn_hub);
@@ -426,7 +427,7 @@ int proc_conn_start(void * sub_proc,void * para)
 			}
 			if(ret<0)
 			{
-				printf("client %s connect failed!\n",connector_getname(temp_conn));
+				print_cubeerr("client %s connect failed!\n",connector_getname(temp_conn));
 			}
 
 		}	
@@ -462,17 +463,17 @@ int proc_conn_start(void * sub_proc,void * para)
 					channel_conn=recv_conn->conn_ops->accept(recv_conn);
 					if(channel_conn==NULL)
 					{
-						printf("error: server connector accept error %x!\n",channel_conn);
+						print_cubeerr("error: server connector accept error %x!\n",channel_conn);
 						continue;
 					}
 					connector_setstate(channel_conn,CONN_CHANNEL_ACCEPT);
-					printf("create a new channel %x!\n",channel_conn);
+					print_cubeaudit("create a new channel %x!\n",channel_conn);
  
 					// build a server syn message with service name,uuid and proc_name
 					message_box=build_server_syn_message("trust_server",local_uuid,proc_name);
 					if((message_box == NULL) || IS_ERR(message_box))
 					{
-						printf("local_server reply syn message error!\n");
+						print_cubeerr("local_server reply syn message error!\n");
 						continue;
 					}
 			
@@ -485,7 +486,7 @@ int proc_conn_start(void * sub_proc,void * para)
 				{
 					while((ret=message_read_from_conn(&message_box,recv_conn))>0)
 					{
-						printf("proc conn client receive %d data!\n",ret);
+						print_cubeaudit("proc conn client receive %d data!\n",ret);
 
 						
 						message_head=message_get_head(message_box);
@@ -500,7 +501,7 @@ int proc_conn_start(void * sub_proc,void * para)
 							send_conn=recv_conn;
 							retval=message_send(message,send_conn);
 							connector_setstate(send_conn,CONN_CLIENT_RESPONSE);
-							printf("client %s send %d ack data to server !\n",connector_getname(send_conn),retval);
+							print_cubeaudit("client %s send %d ack data to server !\n",connector_getname(send_conn),retval);
 						
 						}
 						ex_module_sendmsg(sub_proc,message_box);
@@ -529,14 +530,14 @@ int proc_conn_start(void * sub_proc,void * para)
 						{
 							ret=receive_local_client_ack(message_box,recv_conn,hub);
 							ex_module_sendmsg(sub_proc,message_box);
-							printf("channel set name %s!\n",connector_getname(recv_conn));
+							print_cubeaudit("channel set name %s!\n",connector_getname(recv_conn));
 							continue;
 						}
 						// check if this message is for you or for others
-						printf("channel receive (%d %d) message from conn %s!\n",message_head->record_type,
+						print_cubeaudit("channel receive (%d %d) message from conn %s!\n",message_head->record_type,
 							message_head->record_subtype,connector_getname(recv_conn));
 						ex_module_sendmsg(sub_proc,message_box);
-						printf("client forward (%d %d) message to main proc!\n",message_head->record_type,
+						print_cubeaudit("client forward (%d %d) message to main proc!\n",message_head->record_type,
 							message_head->record_subtype);
 						continue;		
 
@@ -554,7 +555,7 @@ int proc_conn_start(void * sub_proc,void * para)
 			message_head=message_get_head(message_box);
 			if(message_head->flag & MSG_FLAG_LOCAL)
 			{
-				printf("error local message in conn proc!\n");
+				print_cubeerr("error local message in conn proc!\n");
 				message_free(message_box);
 				continue;
 			}
@@ -581,18 +582,18 @@ int proc_conn_start(void * sub_proc,void * para)
 
 			if(send_conn==NULL)
 			{
-				printf("can't find target, send message to default connector!\n");
+				print_cubeerr("can't find target, send message to default connector!\n");
 				send_conn=default_conn;
 			}
 
 			if(send_conn!=NULL)
 			{
 				ret=message_send(message_box,send_conn);
-				printf("send (%d  %d)message %d to conn %s!\n",message_head->record_type,message_head->record_subtype,
+				print_cubeaudit("send (%d  %d)message %d to conn %s!\n",message_head->record_type,message_head->record_subtype,
 					ret,connector_getname(send_conn));
 			}
 			else
-				printf("send (%d %d) message failed: no conn!\n",message_head->record_type,message_head->record_subtype);
+				print_cubeerr("send (%d %d) message failed: no conn!\n",message_head->record_type,message_head->record_subtype);
 
 		}	
 

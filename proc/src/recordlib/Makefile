@@ -1,5 +1,5 @@
 FLAGS= -g -shared -o
-INCLUDE= -I$(CUBELIBPATH)/include/ 
+INCLUDE= -I$(CUBESYSPATH)/include/ -I$(CUBELIBPATH)/include 
 CFLAGS= -g -c -fPIC -DUSER_MODE $(INCLUDE)
 CC=gcc
 CCP=g++

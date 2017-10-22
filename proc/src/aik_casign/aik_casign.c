@@ -103,7 +103,7 @@ int public_key_memdb_init()
 		retval=load_policy_pubek(namebuf);
 		if(IS_ERR(retval))
 			return retval;
-		printf("load pubek %s succeed!\n",namebuf);
+		print_cubeaudit("load pubek %s succeed!\n",namebuf);
 	}
 	return 0;
 }
@@ -130,7 +130,7 @@ int aik_casign_init(void * sub_proc,void * para)
 	result=TESI_Local_Reload();
 	if(result!=TSS_SUCCESS)
 	{
-		printf("open tpm error %d!\n",result);
+		print_cubeerr("open tpm error %d!\n",result);
 		return -ENFILE;
 	}
 
@@ -138,7 +138,7 @@ int aik_casign_init(void * sub_proc,void * para)
 	ReadPrivKey(&(aik_pointer->cakey),"privkey/CA",passwd);
 	if(aik_pointer->cakey == NULL)
 	{
-		printf("read rsa private key failed!\n");
+		print_cubeerr("read rsa private key failed!\n");
 		return 0;
 	}
 
@@ -160,7 +160,7 @@ int aik_casign_start(void * sub_proc,void * para)
 	int subtype;
 	int i;
 
-	printf("begin aik casign start!\n");
+	print_cubeaudit("begin aik casign start!\n");
 
 	for(i=0;i<3000*1000;i++)
 	{
@@ -180,7 +180,7 @@ int aik_casign_start(void * sub_proc,void * para)
 		}
 		if(!memdb_find_recordtype(type,subtype))
 		{
-			printf("message format (%d %d) is not registered!\n",
+			print_cubeerr("message format (%d %d) is not registered!\n",
 				message_get_type(recv_msg),message_get_subtype(recv_msg));
 			continue;
 		}
@@ -213,7 +213,7 @@ int proc_aik_casign(void * sub_proc,void * recv_msg)
 	ret=proc_share_data_getvalue("uuid",local_uuid);
 	ret=proc_share_data_getvalue("proc_name",proc_name);
 
-	printf("begin aik casign!\n");
+	print_cubeaudit("begin aik casign!\n");
 	char buffer[1024];
 	char filename[DIGEST_SIZE*3];
 	char digest[DIGEST_SIZE];
@@ -251,14 +251,14 @@ int proc_aik_casign(void * sub_proc,void * recv_msg)
 	
 	if(record==NULL)
 	{
-		printf("can't find pubek!\n");
+		print_cubeerr("can't find pubek!\n");
 		return -EINVAL;
 	}
 	pubek=record->record;
 	char * pubek_name;
 	pubek_name=dup_str(pubek->key_filename,128);
 	pubek_name[strlen(pubek_name)-4]=0;
-	printf("find pubek %s\n!",pubek_name);
+	print_cubeaudit("find pubek %s\n!",pubek_name);
 
 	// get the uuid of identity key and write it to user cert
 	TESI_Local_WritePubKey(hAIKey,"identkey");
@@ -267,14 +267,14 @@ int proc_aik_casign(void * sub_proc,void * recv_msg)
 
 	// get the usercert's blob 
 	blobsize=struct_2_blob(&certinfo,buffer,struct_template);
-	printf("create usercert succeed!\n");
+	print_cubeaudit("create usercert succeed!\n");
 	
 	if (result = TESI_AIK_CreateAIKCert(hAIKey,aik_pointer->cakey,buffer,blobsize,pubek_name,"cert/active")) {
-		printf("ca_create_credential %s", tss_err_string(result));
+		print_cubeerr("ca_create_credential %s", tss_err_string(result));
 		Free(pubek_name);
 		return result;
 	}
-	printf("create active.req succeed!\n");
+	print_cubeaudit("create active.req succeed!\n");
 	Free(pubek_name);
 
 	ret=convert_uuidname("cert/active",".req",digest,filename);

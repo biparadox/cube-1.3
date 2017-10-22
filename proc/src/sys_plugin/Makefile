@@ -1,9 +1,9 @@
 FLAGS= -g -shared -o 
-INCLUDE= -I$(CUBELIBPATH)/include/
+INCLUDE= -I$(CUBESYSPATH)/include/ -I$(CUBELIBPATH)/include 
 CFLAGS= -g -c -fPIC -DUSER_MODE $(INCLUDE)
 CC=gcc
 CCP=g++
-TEST_LIB= -L$(CUBELIBPATH)/lib -lexmodule -ldispatch -lmessage -lmemdb -lconnector -lstruct -lcrypto_func -ljson -lbasefunc -lstring -lalloc -lpthread
+TEST_LIB= -L$(CUBELIBPATH)/lib -lexmodule -ldispatch -lmessage -lmemdb -lconnector -lstruct -lcrypto_func -ljson -lbasefunc -lstring -lalloc -lpthread 
 
 main: libconnector_process_func.so librouter_process_func.so 
 libconnector_process_func.so: connector_process_func.o connector_process_func.h

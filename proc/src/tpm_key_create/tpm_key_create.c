@@ -25,6 +25,7 @@
 #include "ex_module.h"
 #include "tesi.h"
 
+#include "main_proc_func.h"
 #include "file_struct.h"
 #include "tesi_key.h"
 #include "tesi_aik_struct.h"
@@ -33,7 +34,7 @@
 static struct timeval time_val={0,50*1000};
 int print_error(char * str, int result)
 {
-	printf("%s %s",str,tss_err_string(result));
+	print_cubeerr("%s %s",str,tss_err_string(result));
 }
 
 int tpm_key_create_init(void * sub_proc,void * para)
@@ -45,7 +46,7 @@ int tpm_key_create_init(void * sub_proc,void * para)
 //	result=TESI_Local_ReloadWithAuth("ooo","sss");
 //	if(result!=TSS_SUCCESS)
 //	{
-//		printf("open tpm error %d!\n",result);
+//		print_cubeaudit("open tpm error %d!\n",result);
 //		return -ENFILE;
 //	}
 	return 0;
@@ -68,7 +69,7 @@ int tpm_key_create_start(void * sub_proc,void * para)
 	ret=proc_share_data_getvalue("uuid",local_uuid);
 	ret=proc_share_data_getvalue("proc_name",proc_name);
 
-	printf("begin tpm key create start!\n");
+	print_cubeaudit("begin tpm key create start!\n");
 
 	for(i=0;i<300*1000;i++)
 	{
@@ -108,7 +109,7 @@ int proc_tpm_key_generate(void * sub_proc,void * recv_msg)
 
 	char filename[DIGEST_SIZE*4];
 	
-	printf("begin tpm key generate!\n");
+	print_cubeaudit("begin tpm key generate!\n");
 	char buffer[1024];
 	char digest[DIGEST_SIZE];
 	int blobsize=0;
@@ -182,7 +183,7 @@ int proc_tpm_key_certify(void * sub_proc,void * recv_msg)
 	DB_RECORD * db_record;
 	char filename[DIGEST_SIZE*4];
 	
-	printf("begin tpm key certify!\n");
+	print_cubeaudit("begin tpm key certify!\n");
 	char buffer[1024];
 	char digest[DIGEST_SIZE];
 	int blobsize=0;
@@ -227,7 +228,7 @@ int proc_tpm_key_certify(void * sub_proc,void * recv_msg)
 			result=TESI_Report_CertifyKey(hKey,hAIK,"cert/key");	
 			if ( result != TSS_SUCCESS )
 			{
-				printf( "Certify key failed %s!\n",tss_err_string(result));
+				print_cubeerr( "Certify key failed %s!\n",tss_err_string(result));
 				TESI_Local_Fin();
 				return result;
 			}

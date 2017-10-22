@@ -160,7 +160,7 @@ int create_tpm_key(struct vTPM_wrappedkey * key_frame,struct vTPM_publickey ** p
 	}
 
 	if (result != TSS_SUCCESS) {
-		printf("Create AIK error %s!\n", tss_err_string(result));
+		print_cubeerr("Create AIK error %s!\n", tss_err_string(result));
 		exit(result);
 	}
 

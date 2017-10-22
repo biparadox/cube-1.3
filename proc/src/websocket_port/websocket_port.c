@@ -82,7 +82,7 @@ static int callback_cube_wsport(
 		case LWS_CALLBACK_ESTABLISHED:
 			ws_context->callback_interface=wsi;
 			ws_context->callback_context=this;
-			printf("connection established\n");
+			print_cubeaudit("connection established\n");
 			BYTE * buf= (unsigned char *)malloc(
 				LWS_SEND_BUFFER_PRE_PADDING+
 				ws_context->message_len+
@@ -149,7 +149,7 @@ int websocket_port_init(void * sub_proc,void * para)
  	
     if(init_para==NULL)
     {
-	   printf("can't find websocket port address!\n");
+	   print_cubeerr("can't find websocket port address!\n");
 	   return -EINVAL;
     }	
     websocketserver_addr=dup_str(init_para->ws_addr,0);				
@@ -198,8 +198,8 @@ int websocket_port_init(void * sub_proc,void * para)
 
     msg_box=build_server_syn_message(service,local_uuid,proc_name);  
     stroffset=message_output_json(msg_box,buffer);
-    printf("websocket message size is %d\n",stroffset);
-    printf("websocket message:%s\n",buffer);
+    print_cubeaudit("websocket message size is %d\n",stroffset);
+    print_cubeaudit("websocket message:%s\n",buffer);
 
     ret=json_2_message(buffer,&new_msg);
     if(ret<0)
@@ -211,7 +211,7 @@ int websocket_port_init(void * sub_proc,void * para)
     context = lws_create_context(&info);
     if(context==NULL)
     {
-	printf(" wsport context create error!\n");
+	print_cubeerr(" wsport context create error!\n");
 	return -EINVAL;
     }
     ws_context->server_context=context;
@@ -235,7 +235,7 @@ int websocket_port_start(void * sub_proc,void * para)
     memset(buffer,0,4096);
     int stroffset;
 	
-    printf("begin websocket server process!\n");
+    print_cubeaudit("begin websocket server process!\n");
     ret=proc_share_data_getvalue("uuid",local_uuid);
     if(ret<0)
         return ret;
@@ -244,7 +244,7 @@ int websocket_port_start(void * sub_proc,void * para)
     if(ret<0)
 	return ret;
 
-    printf("starting wsport server ...\n");
+    print_cubeaudit("starting wsport server ...\n");
 
     for(i=0;i<500*1000;i++)
     {
@@ -279,7 +279,7 @@ int websocket_port_start(void * sub_proc,void * para)
 		    	}
 			else
 			{
-				printf("resolve websocket message failed!\n");
+				print_cubeerr("resolve websocket message failed!\n");
 				ws_context->readlen=0;
 				break;
 			}

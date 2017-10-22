@@ -33,7 +33,7 @@ static char aspect_config_file[DIGEST_SIZE*2]="./aspect_policy.cfg";
 static char plugin_config_file[DIGEST_SIZE*2]="./plugin_config.cfg";
 static char main_config_file[DIGEST_SIZE*2]="./main_config.cfg";
 static char sys_config_file[DIGEST_SIZE*2]="./sys_config.cfg";
-static char audit_file[DIGEST_SIZE*2]="./message.log";
+static char msgaudit_file[DIGEST_SIZE*2]="./message.log";
 static char connector_plugin_file[DIGEST_SIZE*2]="libconnector_process_func.so";
 static char router_plugin_file[DIGEST_SIZE*2]="librouter_process_func.so";
 
@@ -93,25 +93,10 @@ int main(int argc,char **argv)
     start_para.argc=argc;
     start_para.argv=argv;	
 
+    int fd =open(msgaudit_file,O_CREAT|O_RDWR|O_TRUNC,0666);
+    close(fd);
+    audit_file_init();	
     sys_plugin=getenv("CUBE_SYS_PLUGIN");
-//    if(sys_plugin==NULL)
-//	return -EINVAL;		
-//    app_plugin=getenv("CUBE_APP_PLUGIN");
-    // process the command argument
-
-/*
-    if(argc>=2)
-    {
-	argv_offset=1;
-	if(argc%2!=1)
-	{
-		printf("error format! should be %s [-m main_cfgfile] [-p plugin_cfgfile]"
-			"[-c connect_cfgfile] [-r router_cfgfile] [-s aspect_cfgfile] [-a audit_file]!\n",argv[0]);
-		return -EINVAL;
-	}
-    }
-*/
-      
 //	alloc_init(alloc_buffer);
 	struct_deal_init();
 	memdb_init();
@@ -125,65 +110,13 @@ int main(int argc,char **argv)
 		ret=read_json_file(namebuffer);
 		if(ret<0)
 			return ret;
-		printf("read %d elem from file %s!\n",ret,namebuffer);
+		print_cubeaudit("read %d elem from file %s!\n",ret,namebuffer);
 	}
 
 	msgfunc_init();
 	dispatch_init();
 
 	ex_module_list_init();
-/*
-    for(argv_offset=1;argv_offset<argc;argv_offset+=2)
-    {
-	if((argv[argv_offset][0]!='-')
-		&&(strlen(argv[argv_offset])!=2))
-	{
-		printf("error format! should be %s [-m main_cfgfile] [-p plugin_cfgfile]"
-			"[-c connect_cfgfile] [-r router_cfgfile] [-s aspect_cfgfile] [-a audit_file]!\n",argv[0]);
-		return -EINVAL;
-	}
-	switch(argv[argv_offset][1])
-	{
-		case 'm':
-			if(Strlen(argv[argv_offset+1])>=DIGEST_SIZE*2)
-				return -EINVAL;
-			Strncpy(main_config_file,argv[argv_offset+1],DIGEST_SIZE*2);
-			break;			
-		case 'p':
-			if(Strlen(argv[argv_offset+1])>=DIGEST_SIZE*2)
-				return -EINVAL;
-			Strncpy(plugin_config_file,argv[argv_offset+1],DIGEST_SIZE*2);
-			break;			
-		case 'c':
-			if(Strlen(argv[argv_offset+1])>=DIGEST_SIZE*2)
-				return -EINVAL;
-			Strncpy(connector_config_file,argv[argv_offset+1],DIGEST_SIZE*2);
-			break;			
-		case 'r':
-			if(Strlen(argv[argv_offset+1])>=DIGEST_SIZE*2)
-				return -EINVAL;
-			Strncpy(router_config_file,argv[argv_offset+1],DIGEST_SIZE*2);
-			break;			
-		case 's':
-			if(Strlen(argv[argv_offset+1])>=DIGEST_SIZE*2)
-				return -EINVAL;
-			Strncpy(aspect_config_file,argv[argv_offset+1],DIGEST_SIZE*2);
-			break;			
-		case 'a':
-			if(Strlen(argv[argv_offset+1])>=DIGEST_SIZE*2)
-				return -EINVAL;
-			Strncpy(audit_file,argv[argv_offset+1],DIGEST_SIZE*2);
-			break;			
-		default:
-			printf("error format! should be %s [-m main_cfgfile] [-p plugin_cfgfile]"
-				"[-c connect_cfgfile] [-r router_cfgfile] [-a audit_file]!\n",argv[0]);
-			return -EINVAL;
-	
-	}
-    }	
-*/
-    int fd =open(audit_file,O_CREAT|O_RDWR|O_TRUNC,0666);
-    close(fd);
 
     // init system
     system("mkdir lib");
@@ -218,7 +151,9 @@ int main(int argc,char **argv)
 	return ret; 		
 
     ret=get_local_uuid(local_uuid);
-    printf("this machine's local uuid is %s\n",local_uuid);
+    digest_to_uuid(local_uuid,buffer);
+    buffer[64]=0;
+    print_cubeaudit("this machine's local uuid is %s\n",buffer);
     proc_share_data_setvalue("uuid",local_uuid);
 
     // init all the proc database
@@ -280,7 +215,7 @@ int main(int argc,char **argv)
 
     ex_module_init(router_proc,&router_init);
 	
-    printf("prepare the router proc\n");
+    print_cubeaudit("prepare the router proc\n");
     ret=add_ex_module(router_proc);
     if(ret<0)
 	    return ret;
@@ -305,7 +240,7 @@ int main(int argc,char **argv)
     }
   */   
     usleep(time_val.tv_usec);
-    printf("prepare the conn proc\n");
+    print_cubeaudit("prepare the conn proc\n");
     ret=ex_module_start(conn_proc,NULL);
     if(ret<0)
 	    return ret;
@@ -325,14 +260,14 @@ int main(int argc,char **argv)
   		ret=ex_module_start(ex_module,NULL);
 	  	if(ret<0)
   			return ret;
-		printf("monitor ex_modulec %s started successfully!\n",ex_module_getname(ex_module));
+		print_cubeaudit("monitor ex_modulec %s started successfully!\n",ex_module_getname(ex_module));
 	  }
 	  else if(ex_module_gettype(ex_module) == MOD_TYPE_START)
 	  {
   		ret=ex_module_start(ex_module,&start_para);
 	  	if(ret<0)
   			return ret;
-		printf("start ex_module %s started successfully!\n",ex_module_getname(ex_module));
+		print_cubeaudit("start ex_module %s started successfully!\n",ex_module_getname(ex_module));
 
 	  }
 	  	

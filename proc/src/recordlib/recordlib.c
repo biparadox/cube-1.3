@@ -84,7 +84,7 @@ int recordlib_start(void * sub_proc,void * para)
 		subtype=message_get_subtype(recv_msg);
 		if(!memdb_find_recordtype(type,subtype))
 		{
-			printf("message format (%d %d) is not registered!\n",
+			print_cubeerr("message format (%d %d) is not registered!\n",
 				message_get_type(recv_msg),message_get_subtype(recv_msg));
 			continue;
 		}
@@ -134,7 +134,7 @@ int proc_lib_init(void * sub_proc,void * para)
 
 	if ((dir = opendir("lib")) == NULL)
 	{
-		printf("Open lib's dir error...\n");
+		print_cubeerr("Open lib's dir error...\n");
 		return -EIO;
 	}
 	while ((ptr = readdir(dir)) != NULL)
@@ -154,7 +154,7 @@ int proc_lib_init(void * sub_proc,void * para)
 			fd=open(filename,O_RDONLY);
 			if(fd<0)
 			{
-				printf("read lib file %s error!\n",filename);
+				print_cubeerr("read lib file %s error!\n",filename);
 				continue;
 			}
 			recordcount=0;
@@ -163,18 +163,18 @@ int proc_lib_init(void * sub_proc,void * para)
 				ret=memdb_store_record(record);
 				if(ret<0)
 				{
-					printf("read %d record in lib file %s error!\n",recordcount,filename);
+					print_cubeerr("read %d record in lib file %s error!\n",recordcount,filename);
 					
 					break;
 				}
 				recordcount++;
 			}
-			printf("read %d record from lib file %s!\n",recordcount,filename);
+			print_cubeaudit("read %d record from lib file %s!\n",recordcount,filename);
 			filecount++;
 		}
 	}
 	closedir(dir);	
-	printf("read %d lib files!\n",filecount);
+	print_cubeaudit("read %d lib files!\n",filecount);
 	return filecount;
 }
 
@@ -184,7 +184,7 @@ int proc_store_message(void * sub_proc,void * message)
 	int subtype;
 	int i;
 	int ret;
-	printf("begin proc echo \n");
+	print_cubeaudit("recordlib begin proc store\n");
 
 	type=message_get_type(message);
 	subtype=message_get_subtype(message);

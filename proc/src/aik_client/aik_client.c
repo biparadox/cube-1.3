@@ -34,7 +34,7 @@
 static struct timeval time_val={0,50*1000};
 int print_error(char * str, int result)
 {
-	printf("%s %s",str,tss_err_string(result));
+	print_cubeerr("%s %s",str,tss_err_string(result));
 }
 
 struct aik_proc_pointer
@@ -70,7 +70,7 @@ int aik_client_start(void * sub_proc,void * para)
 	ret=proc_share_data_getvalue("uuid",local_uuid);
 	ret=proc_share_data_getvalue("proc_name",proc_name);
 
-	printf("begin aik process start!\n");
+	print_cubeaudit("begin aik process start!\n");
 
 	sleep(1);
 	proc_aik_keyinit(sub_proc,para);
@@ -116,13 +116,13 @@ int proc_aik_keyinit(void * sub_proc,void * para)
 //	result=TESI_Local_Reload();
 	if(result!=TSS_SUCCESS)
 	{
-		printf("open tpm error %d!\n",result);
+		print_cubeerr("open tpm error %d!\n",result);
 		return -ENFILE;
 	}
 	result= TESI_Local_GetPubEK("pubkey/pubek","ooo");
 	if(result!=TSS_SUCCESS)
 	{
-		printf("get pubek error %d!\n",result);
+		print_cubeerr("get pubek error %d!\n",result);
 		return -EIO;
 	}
 //	TESI_Local_Fin();
@@ -156,7 +156,7 @@ int proc_aik_request(void * sub_proc,void * recv_msg)
 	ret=proc_share_data_getvalue("uuid",local_uuid);//读取机器码
 	ret=proc_share_data_getvalue("proc_name",proc_name);
 
-	printf("begin aik request!\n");
+	print_cubeaudit("begin aik request!\n");
 	char buffer[1024];
 	char digest[DIGEST_SIZE];
 	int blobsize=0;
@@ -168,7 +168,7 @@ int proc_aik_request(void * sub_proc,void * recv_msg)
 	ret=calculate_sm3("pubkey/pubek.pem",reqinfo.pubkey_uuid);
 	if(ret<0)
 	{
-		printf("can't calculate pubek.pem's digest");
+		print_cubeerr("can't calculate pubek.pem's digest");
 		return -ENFILE;
 	}
 	Memcpy(reqinfo.machine_uuid,local_uuid,DIGEST_SIZE);
@@ -182,19 +182,19 @@ int proc_aik_request(void * sub_proc,void * recv_msg)
 	// Load the CA Key
 	result=TESI_Local_GetPubKeyFromCA(&hCAKey,"cert/CA");
 	if (result != TSS_SUCCESS) {
-		printf("Get pubkey error %s!\n", tss_err_string(result));
+		print_cubeerr("Get pubkey error %s!\n", tss_err_string(result));
 		exit(result);
 	}
 	
 	TESI_AIK_CreateIdentKey(&hAIKey,NULL,"sss","kkk"); 
 	if (result != TSS_SUCCESS) {
-		printf("Create AIK error %s!\n", tss_err_string(result));
+		print_cubeerr("Create AIK error %s!\n", tss_err_string(result));
 		exit(result);
 	}
 
 	result = TESI_AIK_GenerateReq(hCAKey,blobsize,buffer,hAIKey,"cert/aik");
 	if (result != TSS_SUCCESS){
-		printf("Generate aik failed%s!\n",tss_err_string(result));
+		print_cubeerr("Generate aik failed%s!\n",tss_err_string(result));
 		exit(result);
 	}
 	TESI_Local_WriteKeyBlob(hAIKey,"privkey/AIK");
@@ -224,7 +224,7 @@ int proc_aik_request(void * sub_proc,void * recv_msg)
 
 int proc_aik_activate(void * sub_proc,void * recv_msg)
 {
-	printf("begin aik activate!\n");
+	print_cubeaudit("begin aik activate!\n");
 	TSS_RESULT	result;
 	TSS_HKEY	hAIKey, hCAKey;
 	
@@ -306,12 +306,12 @@ int proc_aik_activate(void * sub_proc,void * recv_msg)
 	Memcpy(aipubkey->privatekey_uuid,digest,DIGEST_SIZE);
 	
 	Memcpy(manage_info.aik_pri_uuid , digest, sizeof(digest));//将私钥uuid存下来
-	printf("get privkey_uuid success\n");
-	printf(manage_info.aik_pri_uuid);
-	printf("\n");
+	print_cubeaudit("get privkey_uuid success\n");
+	print_cubeaudit(manage_info.aik_pri_uuid);
+	print_cubeaudit("\n");
 
 	if(ret>0)
-		printf("Generate AIK private key blob %s!\n",buffer);
+		print_cubeaudit("Generate AIK private key blob %s!\n",buffer);
 
 
 	result=TESI_Local_WritePubKey(hAIKey,"pubkey/AIK");
@@ -329,12 +329,12 @@ int proc_aik_activate(void * sub_proc,void * recv_msg)
 	Memcpy(aikey->pubkey_uuid,digest,DIGEST_SIZE);
 	
 	Memcpy(manage_info.aik_pub_uuid, digest, sizeof(digest));//将公钥uuid存下来
-	printf("get pubkey_uuid success\n");
-	printf(manage_info.aik_pub_uuid);
-	printf("\n");
+	print_cubeaudit("get pubkey_uuid success\n");
+	print_cubeaudit(manage_info.aik_pub_uuid);
+	print_cubeaudit("\n");
 
 	if(ret>0)
-		printf("Generate AIK public key blob %s!\n",buffer);
+		print_cubeaudit("Generate AIK public key blob %s!\n",buffer);
 
 	// verify the CA signed cert
 	result=TESI_AIK_VerifySignData(&signdata,"cert/CA");
@@ -356,19 +356,19 @@ int proc_aik_activate(void * sub_proc,void * recv_msg)
 	WriteSignDataToFile(&signdata,"cert/AIK");
 	ret=convert_uuidname("cert/AIK",".sda",digest,buffer);
 	Memcpy(manage_info.aik_cert_uuid, digest, sizeof(digest));//将证书uuid存下来
-	printf("get cert_uuid success\n");
-	printf(manage_info.aik_cert_uuid);
-	printf("\n");
+	print_cubeaudit("get cert_uuid success\n");
+	print_cubeaudit(manage_info.aik_cert_uuid);
+	print_cubeaudit("\n");
 	
 	manage_info.user_name = dup_str(cert_info.user_info.user_name, 0);//从证书信息中把用户名拎出来
-	printf("get user_name success\n");
-	printf(manage_info.user_name);
-	printf("\n");
+	print_cubeaudit("get user_name success\n");
+	print_cubeaudit(manage_info.user_name);
+	print_cubeaudit("\n");
 
 	Memcpy(manage_info.machine_uuid, cert_info.machine_uuid, DIGEST_SIZE);//机器码
-	printf("get machine_uuid success\n");
-	printf(manage_info.machine_uuid);
-	printf("\n");
+	print_cubeaudit("get machine_uuid success\n");
+	print_cubeaudit(manage_info.machine_uuid);
+	print_cubeaudit("\n");
 
 
 	//store the aik and aipubkey
@@ -377,7 +377,7 @@ int proc_aik_activate(void * sub_proc,void * recv_msg)
 	memdb_store(aipubkey,DTYPE_TESI_KEY_STRUCT,SUBTYPE_PUBLIC_KEY,NULL);
 
 	if(ret>0)
-		printf("Generate AIK sign data %s!\n",buffer);
+		print_cubeaudit("Generate AIK sign data %s!\n",buffer);
 
 	//发消息
 	void * send_msg;
@@ -386,7 +386,7 @@ int proc_aik_activate(void * sub_proc,void * recv_msg)
 		return -EINVAL;
 	message_add_record(send_msg, &manage_info);
 	ex_module_sendmsg(sub_proc, send_msg);
-	printf("send manage_info to aik_manage\n");
+	print_cubeaudit("send manage_info to aik_manage\n");
 
 	return 0;
 }

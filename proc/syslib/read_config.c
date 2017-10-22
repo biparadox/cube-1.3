@@ -212,7 +212,7 @@ int read_json_node(int fd, void ** node)
 	ret=json_solve_str(&root_node,json_buffer);
 	if(ret<0)
 	{
-		printf("solve json str error!\n");
+		print_cubeerr("solve json str error!\n");
 		return -EINVAL;
 	}
 	leftlen=readlen-ret;
@@ -250,14 +250,14 @@ int read_json_file(char * file_name)
 			ret=memdb_read_desc(root_node,uuid);
 			if(ret<0)
 			{	
-				printf("read %d record format failed!\n",struct_no);
+				print_cubeerr("read %d record format failed!\n",struct_no);
 				break;
 			}
 			struct_no++;
 			ret=read_json_node(fd,&root_node);
 			if(ret<0)
 			{
-				printf("read %d record json node failed!\n",struct_no);
+				print_cubeerr("read %d record json node failed!\n",struct_no);
 				break;
 			}
 			if(ret<32)
@@ -276,13 +276,13 @@ void * main_read_func(char * libname,char * sym)
     handle=dlopen(libname,RTLD_NOW);
      if(handle == NULL)		
      {
-    	fprintf(stderr, "Failed to open library %s error:%s\n", libname, dlerror());
+    	print_cubeerr("Failed to open library %s error:%s\n", libname, dlerror());
     	return NULL;
      }
      func=dlsym(handle,sym);
      if(func == NULL)		
      {
-    	fprintf(stderr, "Failed to open func %s error:%s\n", sym, dlerror());
+    	print_cubeerr("Failed to open func %s error:%s\n", sym, dlerror());
     	return NULL;
      }
      return func;
@@ -302,13 +302,13 @@ int read_sys_cfg(void ** lib_para_struct,void * root_node)
      void * struct_template=memdb_get_template(DTYPE_EXMODULE,SUBTYPE_LIB_PARA);
     if(struct_template==NULL)
     {
-	printf("Fatal error!\n");
+	print_cubeerr("Fatal error!,wrong lib para format!\n");
 	return -EINVAL;
     }
     ret=json_2_struct(root_node,lib_para,struct_template);
     if(ret<0)
     {
-	printf("sys config file format error!\n");
+	print_cubeerr("sys config file format error!\n");
 	return -EINVAL;
      }
  
@@ -328,11 +328,11 @@ int read_sys_cfg(void ** lib_para_struct,void * root_node)
 			ret=read_json_file(filename);
 			if(ret<0)
 			{
-				printf("read define file  %s failed!\n",json_get_valuestr(define_node));
+				print_cubeerr("read define file  %s failed!\n",json_get_valuestr(define_node));
 			}
 		}
 		if(ret>=0)
-			printf("read %d elem from file %s!\n",ret,json_get_valuestr(define_node));
+			print_cubeaudit("read %d elem from file %s!\n",ret,json_get_valuestr(define_node));
 	}
 	else if(json_get_type(define_node)==JSON_ELEM_ARRAY)
 	{
@@ -348,11 +348,11 @@ int read_sys_cfg(void ** lib_para_struct,void * root_node)
 				ret=read_json_file(filename);
 				if(ret<0)
 				{
-					printf("read define file  %s failed!\n",json_get_valuestr(define_file));
+					print_cubeerr("read define file  %s failed!\n",json_get_valuestr(define_file));
 				}
 			}
 			if(ret>=0)
-				printf("read %d elem from file %s!\n",ret,json_get_valuestr(define_file));
+				print_cubeaudit("read %d elem from file %s!\n",ret,json_get_valuestr(define_file));
 			define_file=json_get_next_child(define_node);
 		}
 	}	
@@ -578,7 +578,7 @@ int read_main_cfg(void * lib_para_struct,void * root_node)
 	{
 		ret=read_record_file(json_get_valuestr(record_list));
 		if(ret>0)
-			printf("read %d elem from file %s!\n",ret,json_get_valuestr(record_list));
+			print_cubeaudit("read %d elem from file %s!\n",ret,json_get_valuestr(record_list));
 	}
 	else if(json_get_type(record_list)==JSON_ELEM_ARRAY)
 	{
@@ -587,7 +587,7 @@ int read_main_cfg(void * lib_para_struct,void * root_node)
 		{
 			ret=read_record_file(json_get_valuestr(record_file));
 			if(ret>0)
-				printf("read %d elem from file %s!\n",ret,json_get_valuestr(record_file));
+				print_cubeaudit("read %d elem from file %s!\n",ret,json_get_valuestr(record_file));
 			record_file=json_get_next_child(record_list);
 		}
 	}	

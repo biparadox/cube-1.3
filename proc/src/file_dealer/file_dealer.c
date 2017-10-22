@@ -18,6 +18,7 @@
 #include "message.h"
 #include "ex_module.h"
 
+#include "main_proc_func.h"
 #include "file_dealer.h"
 #include "file_struct.h"
 
@@ -41,7 +42,7 @@ int file_dealer_start(void * sub_proc,void * para)
 	int type;
 	int subtype;
 
-	printf("begin file_dealer start process! \n");
+	print_cubeaudit("begin file_dealer start process! \n");
 
 	for(i=0;i<3000*1000;i++)
 	{
@@ -61,7 +62,7 @@ int file_dealer_start(void * sub_proc,void * para)
 		}
 		if(!memdb_find_recordtype(type,subtype))
 		{
-			printf("message format (%d %d) is not registered!\n",
+			print_cubeerr("message format (%d %d) is not registered!\n",
 				message_get_type(recv_msg),message_get_subtype(recv_msg));
 			ex_module_sendmsg(sub_proc,recv_msg);
 			continue;
@@ -149,8 +150,9 @@ int proc_file_receive(void * sub_proc,void * message)
 	struct policyfile_data * pfdata;
 	struct policyfile_store * storedata;
 	int ret;
+	void * send_msg;
 
-	printf("begin file receive!\n");
+	print_cubeaudit("begin file receive!\n");
 	char buffer[4096];
 	BYTE digest[DIGEST_SIZE];
 	int blobsize=0;
@@ -165,10 +167,22 @@ int proc_file_receive(void * sub_proc,void * message)
 		switch(ret=_is_samefile_exists(pfdata))
 		{
 			case 0:     // samefile exists
-				printf("file %s has existed!\n",pfdata->filename);
+				print_cubeerr("file %s has existed!\n",pfdata->filename);
+				struct policyfile_notice * pfnotice;
+				pfnotice=Talloc0(sizeof(struct policyfile_notice));
+				if(pfnotice==NULL)
+					return -ENOMEM;
+				Memcpy(pfnotice->uuid,pfdata->uuid,DIGEST_SIZE);
+				pfnotice->filename=dup_str(pfdata->filename,0);
+				pfnotice->result=0;	
+				send_msg=message_create(DTYPE_FILE_TRANS,SUBTYPE_FILE_NOTICE,message);
+				if(send_msg==NULL)
+					return -EINVAL;
+				message_add_record(send_msg,pfnotice);
+				ex_module_sendmsg(sub_proc,send_msg);
 				return 0;
 			case 1:
-				printf("overwrite the file %s!\n",pfdata->filename);
+				print_cubeaudit("overwrite the file %s!\n",pfdata->filename);
 				ret=remove(pfdata->filename);
 				if(ret<0)
 					return ret;
@@ -189,7 +203,7 @@ int proc_file_receive(void * sub_proc,void * message)
 				{
 					pfnotice->result=0;	
 				}
-				void * send_msg=message_create(DTYPE_FILE_TRANS,SUBTYPE_FILE_NOTICE,message);
+				send_msg=message_create(DTYPE_FILE_TRANS,SUBTYPE_FILE_NOTICE,message);
 				if(send_msg==NULL)
 					return -EINVAL;
 				message_add_record(send_msg,pfnotice);
@@ -213,10 +227,10 @@ int proc_file_receive(void * sub_proc,void * message)
 			switch(ret=_is_samefile_exists(pfdata))
 			{
 				case 0:     // samefile exists
-					printf("file %s has existed!\n",pfdata->filename);
+					print_cubeerr("file %s has existed!\n",pfdata->filename);
 					return 0;
 				case 1:
-					printf("overwrite the file %s!\n",pfdata->filename);
+					print_cubeaudit("overwrite the file %s!\n",pfdata->filename);
 					ret=remove(pfdata->filename);
 					if(ret<0)
 						return ret;
@@ -258,7 +272,7 @@ int proc_file_receive(void * sub_proc,void * message)
 	
 		if(bitmap_is_allset(storedata->marks,storedata->block_num))
 		{
-			printf("get file %s succeed!\n",pfdata->filename);
+			print_cubeaudit("get file %s succeed!\n",pfdata->filename);
 			struct policyfile_notice * pfnotice;
 			pfnotice=Talloc0(sizeof(struct policyfile_notice));
 			if(pfnotice==NULL)
@@ -273,7 +287,7 @@ int proc_file_receive(void * sub_proc,void * message)
 			{
 				pfnotice->result=0;	
 			}
-			void * send_msg=message_create(DTYPE_FILE_TRANS,SUBTYPE_FILE_NOTICE,message);
+			send_msg=message_create(DTYPE_FILE_TRANS,SUBTYPE_FILE_NOTICE,message);
 			if(send_msg==NULL)
 				return -EINVAL;
 			message_add_record(send_msg,pfnotice);
@@ -297,7 +311,7 @@ int proc_file_send(void * sub_proc,void * message)
 	BYTE digest[DIGEST_SIZE];
         struct stat statbuf;
 	void * send_msg;
-	printf("begin file send!\n");
+	print_cubeaudit("begin file send!\n");
 
 	ret=message_get_record(message,&reqdata,0);
 	if(ret<0)
@@ -310,7 +324,7 @@ int proc_file_send(void * sub_proc,void * message)
 		return fd;
         if(fstat(fd,&statbuf)<0)
         {
-                printf("fstat error\n");
+                print_cubeerr("fstat error\n");
                 return NULL;
         }
         total_size=statbuf.st_size;
@@ -342,7 +356,7 @@ int proc_file_send(void * sub_proc,void * message)
 
         	if(read(fd,pfdata->policy_data,pfdata->data_size)!=pfdata->data_size)
         	{
-                	printf("read vm list error! \n");
+                	print_cubeerr("read vm list error! \n");
                 	return NULL;
         	}
 
@@ -373,7 +387,7 @@ int proc_file_send(void * sub_proc,void * message)
 
         	if(read(fd,pfdata->policy_data,data_size)!=data_size)
         	{
-                	printf("read vm list error! \n");
+                	print_cubeerr("read vm list error! \n");
                 	return NULL;
         	}
 		send_msg=message_create(DTYPE_FILE_TRANS,SUBTYPE_FILE_DATA,message);
@@ -384,6 +398,6 @@ int proc_file_send(void * sub_proc,void * message)
 	}
 
 	close(fd);
-	printf("send file %s succeed!\n",reqdata->filename);
+	print_cubeaudit("send file %s succeed!\n",reqdata->filename);
 	return i;
 }
