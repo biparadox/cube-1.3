@@ -5,7 +5,7 @@ CC=gcc
 CCP=g++
 PLUGIN=aik_casign
 PLUGIN_OBJ=
-TEST_LIB= -L$(CUBELIBPATH)/lib -ltesi -ltspi -lcrypto -lmessage -lmemdb -lconnector -lstruct -lcrypto_func -ljson -lstring -lalloc -lpthread
+TEST_LIB= -L$(CUBELIBPATH)/lib -ltesi -ltspi -lsys_func -lcrypto -lmessage -lmemdb -lconnector -lstruct -lcrypto_func -ljson -lstring -lalloc -lpthread
 
 main: lib$(PLUGIN).so
 lib$(PLUGIN).so:  $(PLUGIN).o $(PLUGIN_PROC_OBJ) $(INIT_DB_OBJ)

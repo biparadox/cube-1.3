@@ -20,7 +20,7 @@
 #include "dispatch.h"
 #include "ex_module.h"
 
-#include "main_proc_func.h"
+#include "sys_func.h"
 #include "router_process_func.h"
 
 int read_dispatch_file(char * file_name,int is_aspect)

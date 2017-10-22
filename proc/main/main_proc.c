@@ -16,6 +16,7 @@
 #include "message.h"
 #include "connector.h"
 #include "ex_module.h"
+#include "sys_func.h"
 
 #include "main_proc_func.h"
 

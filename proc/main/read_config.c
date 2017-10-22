@@ -21,6 +21,7 @@
 
 #include "main_proc_func.h"
 
+/*
 static char * err_file="cube_err.log";
 static char * audit_file="cube_audit.log";
 
@@ -267,7 +268,7 @@ int read_json_file(char * file_name)
 	close(fd);
 	return struct_no;
 }
-
+*/
 void * main_read_func(char * libname,char * sym)
 {
     void * handle;	
@@ -470,6 +471,7 @@ int read_plugin_cfg(void ** plugin,void * root_node)
     *plugin=ex_module;	  
     return ret;
 }
+/*
 int read_record_file(char * record_file)
 {
 	int type,subtype;
@@ -550,7 +552,7 @@ int read_record_file(char * record_file)
 	close(fd);
 	return count; 	
 }
-
+*/
 int read_main_cfg(void * lib_para_struct,void * root_node)
 {
     struct lib_para_struct * lib_para=lib_para_struct;

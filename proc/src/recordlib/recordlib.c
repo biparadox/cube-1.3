@@ -19,6 +19,7 @@
 #include "memdb.h"
 #include "message.h"
 #include "ex_module.h"
+#include "sys_func.h"
 
 extern struct timeval time_val={0,50*1000};
 
