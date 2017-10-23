@@ -25,7 +25,7 @@
 #include "ex_module.h"
 #include "tesi.h"
 
-#include "main_proc_func.h"
+#include "sys_func.h"
 #include "file_struct.h"
 #include "tesi_key.h"
 #include "tesi_aik_struct.h"

@@ -18,7 +18,7 @@
 #include "message.h"
 #include "ex_module.h"
 
-#include "main_proc_func.h"
+#include "sys_func.h"
 #include "file_dealer.h"
 #include "file_struct.h"
 

@@ -5,7 +5,7 @@ LD=ld
 CCP=g++
 STRUCTOBJ= read_config.o
 LIBNAME=sys_func
-DEPENDLIB= -ljson -lalloc -lstring 
+DEPENDLIB= -lmessage -lmemdb -lstruct -lbasefunc -lcrypto_func -ljson -lalloc -lstring 
 
 main: ../lib/lib$(LIBNAME).so  test_main
 test_main: test_main.c ../lib/lib$(LIBNAME).so
