@@ -3,15 +3,16 @@ INCLUDE= -I$(CUBELIBPATH)/include
 CFLAGS= -g -c -fPIC -DUSER_MODE $(INCLUDE)
 CC=gcc
 CCP=g++
-DEPENDLIB= -L$(CUBELIBPATH)/lib -L$(CUBESYSPATH)/plugin -lread_config -lsys_func -lexmodule -ldispatch -lmessage -lmemdb -lconnector -lstruct -lcrypto_func -ljson -lbasefunc -lstring -lalloc -lpthread
+STRUCTOBJ=read_config.o
+DEPENDLIB= -L$(CUBELIBPATH)/lib -L$(CUBESYSPATH)/plugin -lsys_func -lexmodule -ldispatch -lmessage -lmemdb -lconnector -lstruct -lcrypto_func -ljson -lbasefunc -lstring -lalloc -lpthread
 
 main: main_proc lib_tool 
 main_proc:  main_proc.c main_proc_func.h $(STRUCTOBJ)
 	$(CC) $(FLAGS) main_proc main_proc.c $(STRUCTOBJ) $(INCLUDE) $(DEPENDLIB) -ldl
 lib_tool:  lib_tool.c lib_rw.c main_proc_func.h $(STRUCTOBJ)
 	$(CC) $(FLAGS) lib_tool lib_tool.c lib_rw.c $(STRUCTOBJ) $(INCLUDE) $(DEPENDLIB) -ldl
-#read_config.o:  read_config.c main_proc_func.h
-#	$(CC) $(CFLAGS) read_config.c
+read_config.o:  read_config.c main_proc_func.h
+	$(CC) $(CFLAGS) read_config.c
 
 clean:
 	rm -f *~ *.o *.a  main_proc lib_tool

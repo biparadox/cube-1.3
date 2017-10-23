@@ -125,7 +125,7 @@ int proc_aik_keyinit(void * sub_proc,void * para)
 		print_cubeerr("get pubek error %d!\n",result);
 		return -EIO;
 	}
-//	TESI_Local_Fin();
+	TESI_Local_Fin();
 	ret=ex_module_setpointer(sub_proc,aik_pointer);
 	if(ret<0)
 		return ret;
@@ -179,6 +179,12 @@ int proc_aik_request(void * sub_proc,void * recv_msg)
 		return -EINVAL;
 	blobsize=struct_2_blob(&reqinfo,buffer,struct_template);
 
+	result=TESI_Local_ReloadWithAuth("ooo","sss");
+	if(result!=TSS_SUCCESS)
+	{
+		print_cubeerr("open tpm error %d!\n",result);
+		return -ENFILE;
+	}
 	// Load the CA Key
 	result=TESI_Local_GetPubKeyFromCA(&hCAKey,"cert/CA");
 	if (result != TSS_SUCCESS) {
@@ -198,6 +204,7 @@ int proc_aik_request(void * sub_proc,void * recv_msg)
 		exit(result);
 	}
 	TESI_Local_WriteKeyBlob(hAIKey,"privkey/AIK");
+	TESI_Local_Fin();
 
 	ret=convert_uuidname("cert/aik",".req",digest,filename);
 
@@ -255,6 +262,12 @@ int proc_aik_activate(void * sub_proc,void * recv_msg)
 		return 0;
 	Strcpy(buffer,file_notice->filename);
 	buffer[Strlen(file_notice->filename)-4]=0;
+	result=TESI_Local_ReloadWithAuth("ooo","sss");
+	if(result!=TSS_SUCCESS)
+	{
+		print_cubeerr("open tpm error %d!\n",result);
+		return -ENFILE;
+	}
 
 	result=TESI_Local_ReadKeyBlob(&hAIKey,"privkey/AIK");
 	if ( result != TSS_SUCCESS )
@@ -369,6 +382,7 @@ int proc_aik_activate(void * sub_proc,void * recv_msg)
 	print_cubeaudit("get machine_uuid success\n");
 	print_cubeaudit(manage_info.machine_uuid);
 	print_cubeaudit("\n");
+	TESI_Local_Fin();
 
 
 	//store the aik and aipubkey
