@@ -1,0 +1,19 @@
+FLAGS= -g -o
+CFLAGS= -g -c -fPIC -Wall -DUSER_MODE -I../include
+CC=gcc
+LD=ld
+CCP=g++
+STRUCTOBJ= read_config.o
+LIBNAME=sys_func
+DEPENDLIB= -ljson -lalloc -lstring 
+
+main: ../lib/lib$(LIBNAME).so  test_main
+test_main: test_main.c ../lib/lib$(LIBNAME).so
+	$(CC) $(FLAGS) test_main test_main.c -L../lib -l$(LIBNAME) $(DEPENDLIB) 
+../lib/lib$(LIBNAME).so: $(STRUCTOBJ)
+	$(CC) -shared -o lib$(LIBNAME).so $(STRUCTOBJ)
+	mv   lib$(LIBNAME).so ../lib
+read_config.o:  read_config.c 
+	$(CC) $(CFLAGS) read_config.c
+clean:
+	rm -f test_main *~ *.a *.o ../lib/$(LIBNAME).so
