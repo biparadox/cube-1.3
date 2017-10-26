@@ -1444,6 +1444,7 @@ int message_add_expand_data(void * message,int type,int subtype,void * expand)
 	msg_expand->expand=expand;
 	return message_add_expand(message,msg_expand);
 }
+
 /*
 int message_add_expand_blob(void * message,void * expand)
 {
@@ -1499,7 +1500,6 @@ int message_record_blob2struct(void * message)
 	}
 	return 0;
 }
-
 int message_record_struct2blob(void * message)
 {
 	struct message_box * msg_box;
@@ -1516,7 +1516,7 @@ int message_record_struct2blob(void * message)
 	if(message==NULL)
 		return -EINVAL;
 
-	buffer=kmalloc(bufsize,GFP_KERNEL);
+	buffer=malloc(bufsize);
 	if(buffer==NULL)
 		return -ENOMEM;
 
@@ -1530,25 +1530,24 @@ int message_record_struct2blob(void * message)
 			ret=struct_2_blob(msg_box->precord[i],buffer,msg_box->record_template);
 			if(ret<0)
 			{
-				kfree(buffer);
+				free(buffer);
 				return ret;
 			}
 			msg_box->record_size[i]=ret;
 			msg_box->record[i]=kmalloc(ret,GFP_KERNEL);
 			if(msg_box->record[i]==NULL)
 			{
-				kfree(buffer);
+				free(buffer);
 				return -ENOMEM;
 			}
 			memcpy(msg_box->record[i],buffer,msg_box->record_size[i]);
 		}
 		record_size+=msg_box->record_size[i];
 	}
-	kfree(buffer);
+	free(buffer);
 	msg_box->head.record_size=record_size;
 	return record_size;
 }
-
 int message_expand_struct2blob(void * message)
 {
 	struct message_box * msg_box;
@@ -1609,7 +1608,7 @@ int message_expand_struct2blob(void * message)
 	msg_box->head.expand_size=expand_size;
 	return expand_size;
 }
-
+*/
 int message_output_record_blob(void * message, BYTE ** blob)
 {
 	struct message_box * msg_box;
@@ -1631,7 +1630,7 @@ int message_output_record_blob(void * message, BYTE ** blob)
 		return -EINVAL;
 	
 	record_size=0;
-	buffer=kmalloc(4096,GFP_KERNEL);
+	buffer=malloc(4096);
 	if(buffer==NULL)
 		return -ENOMEM;
 
@@ -1678,7 +1677,52 @@ int message_output_record_blob(void * message, BYTE ** blob)
 	memcpy(*blob,buffer,offset);
 	return offset;
 }
-*/
+int  message_read_record_blob(void * message,void * blob,int data_size)
+{
+	struct message_box * msg_box;
+	int ret;
+	MSG_HEAD * msg_head;
+	int current_offset;
+	int i;
+
+	msg_box=(struct message_box *)message;
+
+	if(message==NULL)
+		return -EINVAL;
+	if(blob==NULL)
+		return -EINVAL;
+	
+	if(data_size<=0)
+		return -EINVAL;
+
+	current_offset=0;
+	msg_head=&msg_box->head;
+
+  	  // choose the record's type
+	if(msg_box->record_template==NULL)
+    	{
+       		 if(!message_load_record_template(message))
+          	  return -EINVAL;
+    	}
+	//  __message_alloc_record_site(msg_box);
+	for(i=0;i<msg_head->record_num;i++)
+	{
+		msg_box->precord[i]=Dalloc0(struct_size(msg_box->record_template),msg_box);
+		if(msg_box->precord[i]==NULL)
+			return -ENOMEM;	
+		ret=blob_2_struct(blob+current_offset,msg_box->precord[i],msg_box->record_template);
+		if(ret<0)
+		{
+			struct_free(msg_box->precord[i],msg_box->record_template);
+			return ret;
+		}
+		if(ret+current_offset>data_size)
+			return -EINVAL;
+		current_offset+=ret;	
+	}
+	return 0;
+}
+
 int message_get_record(void * message,void ** msg_record, int record_no)
 {
 	struct message_box * msg_box;
