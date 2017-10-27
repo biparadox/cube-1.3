@@ -14,7 +14,8 @@ enum subtypelist_sys_conn
 enum    connector_type
 {
 	CONN_INVALID=1,
-	CONN_P2P,
+	CONN_P2P_SERVER,
+	CONN_P2P_CLIENT,
 	CONN_CLIENT,
 	CONN_CHANNEL,
 	CONN_SERVER,

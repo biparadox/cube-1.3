@@ -154,39 +154,61 @@ int  connector_af_inet_info_init (void * connector,char * addr)
 	Memset(base_info,0,sizeof(struct connector_af_inet_info));
 	this_conn->conn_base_info=base_info;
 	
-
-    	this_conn->conn_fd  = socket(AF_INET,SOCK_STREAM,0);
-	if(this_conn->conn_fd <0)
-		return this_conn->conn_fd;
-
-	int yes=1;
-	if(setsockopt(this_conn->conn_fd,SOL_SOCKET,SO_REUSEADDR,&yes,sizeof(int))==-1)
+	switch(this_conn->conn_type)
 	{
-			//printf("setsockopt reuseaddr error!\n");
-			return -EINVAL;
-	}
-	struct timeval timeout ={0,1000};   // we hope each read only delay 10 microsecond
-	if(setsockopt(this_conn->conn_fd,SOL_SOCKET,SO_RCVTIMEO,&timeout,sizeof(timeout))==-1)
-	{
-			//printf("setsockopt timeout error!\n");
-			return -EINVAL;
-	}
+
+		case CONN_SERVER:
+		case CONN_CLIENT:
+		{
+    			this_conn->conn_fd  = socket(AF_INET,SOCK_STREAM,0);
+			if(this_conn->conn_fd <0)
+				return this_conn->conn_fd;
+
+			int yes=1;
+			if(setsockopt(this_conn->conn_fd,SOL_SOCKET,SO_REUSEADDR,&yes,sizeof(int))==-1)
+			{
+				//printf("setsockopt reuseaddr error!\n");
+				return -EINVAL;
+			}
+			struct timeval timeout ={0,1000};   // we hope each read only delay 10 microsecond
+			if(setsockopt(this_conn->conn_fd,SOL_SOCKET,SO_RCVTIMEO,&timeout,sizeof(timeout))==-1)
+			{
+				//printf("setsockopt timeout error!\n");
+				return -EINVAL;
+			}
 /*
 * Form an AF_INET Address:
 */
 
-	af_inet_formaddr(&base_info->adr_inet,&base_info->len_inet,addr);
+			af_inet_formaddr(&base_info->adr_inet,&base_info->len_inet,addr);
 
 /*
 * Now bind the address to the socket:
 */
-	if(this_conn->conn_type==CONN_SERVER)
-	{
-		retval = bind(this_conn->conn_fd,
-			(struct sockaddr *)&(base_info->adr_inet),
-			base_info->len_inet);
-		if ( retval == -1 )
-			return -ENONET;
+			if(this_conn->conn_type==CONN_SERVER)
+			{
+				retval = bind(this_conn->conn_fd,
+					(struct sockaddr *)&(base_info->adr_inet),
+					base_info->len_inet);
+				if ( retval == -1 )
+					return -ENONET;
+			}
+			break;
+		}
+		case CONN_P2P:	
+		{
+    			this_conn->conn_fd  = socket(AF_INET,SOCK_DGRAM,0);
+			if(this_conn->conn_fd <0)
+				return this_conn->conn_fd;
+			af_inet_formaddr(&base_info->adr_inet,&base_info->len_inet,addr);
+			retval = bind(this_conn->conn_fd,(struct sockaddr *)&(base_info->adr_inet),base_info->len_inet);
+			if(retval==-1)
+				return -ENONET;
+	
+			break;
+		}
+		default:
+			return -EINVAL;
 	}
 
 	return this_conn->conn_fd;
@@ -493,6 +515,38 @@ void * connector_af_inet_get_server(void * connector)
 }
 
 
+int  connector_af_inet_p2p_read (void * connector,void * buf, size_t count)
+{
+
+	struct tcloud_connector * this_conn;
+	struct connector_af_inet_info * base_info;
+	int retval;
+
+	this_conn=(struct tcloud_connector *)connector;
+
+	base_info=(struct connector_af_inet_info * )this_conn->conn_base_info;
+
+	retval= read(this_conn->conn_fd,buf,count);
+	if(retval<0)
+		return retval;
+	if((this_conn->conn_type == CONN_CLIENT) &&(this_conn->conn_type == CONN_CLIENT_CONNECT))
+		this_conn->conn_state=CONN_CLIENT_RESPONSE;
+	return retval;
+
+}
+
+int  connector_af_inet_p2p_write (void * connector,void * buf,size_t count)
+{
+
+	struct tcloud_connector * this_conn;
+	struct connector_af_inet_info * base_info;
+	int retval;
+
+	this_conn=(struct tcloud_connector *)connector;
+
+	base_info=(struct connector_af_inet_info * )this_conn->conn_base_info;
+	return write(this_conn->conn_fd,buf,count);
+}
 struct connector_ops connector_af_inet_server_ops = 
 {
 	.conn_type = CONN_SERVER,
@@ -546,4 +600,24 @@ struct connector_ops connector_af_inet_channel_ops =
 	.wait=connector_af_inet_wait,	
 	.getserver=connector_af_inet_get_server,
 	.disconnect=connector_af_inet_disconnect	
+};
+
+struct connector_ops connector_af_inet_p2p_ops = 
+{
+	.conn_type = CONN_P2P,
+	.init=connector_af_inet_p2p_init,
+	.ioctl=NULL,	
+	.getname=connector_getname,	
+	.getaddr=connector_getaddr,	
+	.getpeeraddr=connector_getpeeraddr,	
+	.setname=connector_setname,	
+	.listen=NULL,	
+	.accept=NULL,	
+//	.connect=connector_af_inet_connect,	
+	.close_channel=connector_af_inet_close_channel,
+	.read=connector_af_inet_p2p_read,	
+	.write=connector_af_inet_p2p_write,	
+	.getfd=connector_getfd,	
+	.wait=connector_af_inet_wait,	
+	.disconnect=connector_af_inet_disconnect,	
 };
