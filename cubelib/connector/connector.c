@@ -224,6 +224,16 @@ void * get_connector(int type,int protocol)
 				connector->conn_ops= &connector_af_inet_channel_ops;
 				connector->conn_state=CONN_CHANNEL_INIT;
 				break;
+			case CONN_P2P_BIND:
+				connector->conn_type=type;
+				connector->conn_ops= &connector_af_inet_p2p_ops;
+				connector->conn_state=CONN_CHANNEL_INIT;
+				break;
+			case CONN_P2P_RAND:
+				connector->conn_type=type;
+				connector->conn_ops= &connector_af_inet_p2p_cli_ops;
+				connector->conn_state=CONN_CHANNEL_INIT;
+				break;
 			default:
 				return -EINVAL;
 		}

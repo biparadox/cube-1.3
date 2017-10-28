@@ -14,8 +14,8 @@ enum subtypelist_sys_conn
 enum    connector_type
 {
 	CONN_INVALID=1,
-	CONN_P2P_SERVER,
-	CONN_P2P_CLIENT,
+	CONN_P2P_BIND,
+	CONN_P2P_RAND,
 	CONN_CLIENT,
 	CONN_CHANNEL,
 	CONN_SERVER,
@@ -137,6 +137,7 @@ struct sysconn_peer_info
 	char * peer_addr;
 	char * conn_describe;
 } __attribute__((packed));
+
 void * get_connector(int type,int protocol);
 
 extern struct connector_ops connector_af_unix_server_ops; 
@@ -146,6 +147,8 @@ extern struct connector_ops connector_af_unix_channel_ops;
 extern struct connector_ops connector_af_inet_server_ops; 
 extern struct connector_ops connector_af_inet_client_ops; 
 extern struct connector_ops connector_af_inet_channel_ops; 
+extern struct connector_ops connector_af_inet_p2p_ops; 
+extern struct connector_ops connector_af_inet_p2p_cli_ops; 
 
 char * connector_getname(void *);
 int  connector_setstate(void *,int );
@@ -170,5 +173,9 @@ void * build_server_syn_message(char * service,char * local_uuid,char *proc_name
 void * build_client_ack_message(void * message,char * local_uuid,char *proc_name,void * conn);
 void * hub_get_connector_byreceiver(void * hub,char * uuid,char * name,char * service);
 void * hub_get_connector_bypeeruuid(void * hub,char * uuid);
+void * af_inet_p2p_getfirstpeer(void * conn);
+void * af_inet_p2p_getnextpeer(void * conn);
+void * af_inet_p2p_findpeer(void * conn,void * addr_in,int len);
+void * af_inet_p2p_addpeer(void * conn,void * addr_in,int len);
 
 #endif

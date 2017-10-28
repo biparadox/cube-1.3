@@ -31,6 +31,16 @@ struct connector_af_inet_info
 	void * sem_struct;
 };
 
+struct connector_af_inet_p2p_peer_info
+{
+	BYTE uuid[DIGEST_SIZE];
+	char proc_name[DIGEST_SIZE];
+	char user_name[DIGEST_SIZE];
+	struct sockaddr_in adr_inet;
+	int len_inet;
+	void * sem_struct;
+};
+
 struct connector_af_inet_server_info
 {
 	int channel_num;
@@ -41,6 +51,20 @@ struct connector_af_inet_server_info
 struct connector_af_inet_channel_info
 {
 	void * server;
+};
+
+struct connector_af_inet_p2p_bind_info
+{
+	int peer_num;
+	Record_List peer_list;
+	struct List_head * curr_peer;
+};
+
+struct connector_af_inet_p2p_rand_info
+{
+	int peer_num;
+	Record_List peer_list;
+	struct List_head * curr_peer;
 };
 
 void * create_channel_af_inet_info(void * server_info)
@@ -121,8 +145,147 @@ char *  af_inet_getaddrstring(struct sockaddr_in * adr_inet)
 	return addrstring;
 }
 
+void * af_inet_p2p_getfirstpeer(void * conn)
+{
+	struct tcloud_connector * this_conn=conn;
+	struct connector_af_inet_p2p_bind_info * bind_info;
+	struct connector_af_inet_p2p_rand_info * rand_info;
+	struct connector_af_inet_p2p_peer_info * peer_info=NULL;
+	switch(this_conn->conn_type)
+	{
+		case CONN_P2P_BIND:
+		{
+			Record_List * record_elem;
+			bind_info=this_conn->conn_var_info;
+			bind_info->curr_peer=bind_info->peer_list.list.next;
+			if(bind_info->curr_peer==&bind_info->peer_list.list)
+				return NULL;
+			record_elem=bind_info->curr_peer;
+			peer_info=record_elem->record;
+		}
+		break;
+		case CONN_P2P_RAND:
+		{
+			Record_List * record_elem;
+			rand_info=this_conn->conn_var_info;
+			rand_info->curr_peer=rand_info->peer_list.list.next;
+			if(rand_info->curr_peer==&rand_info->peer_list.list)
+				return NULL;
+			record_elem=rand_info->curr_peer;
+			peer_info=record_elem->record;
+
+		}
+		break;
+		default:
+			return NULL;
+	}
+	
+	return peer_info;
+}
+
+void * af_inet_p2p_getnextpeer(void * conn)
+{
+	struct tcloud_connector * this_conn=conn;
+	struct connector_af_inet_p2p_bind_info * bind_info;
+	struct connector_af_inet_p2p_rand_info * rand_info;
+	struct connector_af_inet_p2p_peer_info * peer_info=NULL;
+	switch(this_conn->conn_type)
+	{
+		case CONN_P2P_BIND:
+		{
+			Record_List * record_elem;
+			bind_info=this_conn->conn_var_info;
+			if(bind_info->curr_peer==bind_info->peer_list.list.prev)
+				return NULL;
+			bind_info->curr_peer=bind_info->curr_peer->next;
+			record_elem=bind_info->curr_peer;
+			peer_info=record_elem->record;
+		}
+		break;
+		case CONN_P2P_RAND:
+		{
+			Record_List * record_elem;
+			rand_info=this_conn->conn_var_info;
+			if(rand_info->curr_peer==rand_info->peer_list.list.prev)
+				return NULL;
+			rand_info->curr_peer=rand_info->curr_peer->next;
+			record_elem=rand_info->curr_peer;
+			peer_info=record_elem->record;
+		}
+		break;
+		default:
+			return NULL;
+	}
+	
+	return peer_info;
+}
+
+void * af_inet_p2p_findpeer(void * recv_conn,void * from_addr,int from_len)
+{
+	struct tcloud_connector * this_conn=recv_conn;
+	struct connector_af_inet_p2p_peer_info * peer_info;
+
+	peer_info=af_inet_p2p_getfirstpeer(recv_conn);
+	while(peer_info!=NULL)
+	{
+		if(from_len==peer_info->len_inet)
+		{
+			if(Memcmp(from_addr,&peer_info->adr_inet,from_len)==0)
+				break;		
+		}
+		af_inet_p2p_getnextpeer(recv_conn);
+	}
+	
+	return peer_info;
+}
+
+void * af_inet_p2p_addpeer(void * recv_conn,void * from_addr,int from_len)
+{
+	struct tcloud_connector * this_conn=recv_conn;
+	struct connector_af_inet_p2p_peer_info * peer_info;
+	struct connector_af_inet_p2p_bind_info * bind_info;
+	struct connector_af_inet_p2p_rand_info * rand_info;
+	Record_List * record_elem;
+
+	peer_info=af_inet_p2p_findpeer(recv_conn,from_addr,from_len);
+	if(peer_info!=NULL)
+		return NULL;
+
+	record_elem = Calloc(sizeof(Record_List));
+	if(record_elem==NULL)
+		return NULL;
+	INIT_LIST_HEAD(&(record_elem->list));
+
+	peer_info = Dalloc0(sizeof(*peer_info),this_conn);
+	if(peer_info==NULL)
+		return -EINVAL;
+	peer_info->len_inet=from_len;
+	Memcpy(&peer_info->adr_inet,from_addr,from_len);
+	record_elem->record=peer_info;
 
 
+	switch(this_conn->conn_type)
+	{
+		case CONN_P2P_BIND:
+		{
+			bind_info=this_conn->conn_var_info;
+			List_add_tail(&record_elem->list,&bind_info->peer_list.list);
+			bind_info->curr_peer=bind_info->peer_list.list.prev;
+		}
+		break;
+		case CONN_P2P_RAND:
+		{
+			rand_info=this_conn->conn_var_info;
+			List_add_tail(&record_elem->list,&rand_info->peer_list.list);
+			rand_info->curr_peer=rand_info->peer_list.list.prev;
+		}
+		break;
+		default:
+			return NULL;
+	}
+	
+	return peer_info;
+}
 
 int  connector_af_inet_info_init (void * connector,char * addr)
 {
@@ -137,10 +300,7 @@ int  connector_af_inet_info_init (void * connector,char * addr)
 	int i;
 	int namelen;
 	
-
-
 	this_conn=(struct tcloud_connector *)connector;
-
 
 	if(this_conn->conn_protocol!=AF_INET)
 		return -EINVAL;
@@ -195,7 +355,7 @@ int  connector_af_inet_info_init (void * connector,char * addr)
 			}
 			break;
 		}
-		case CONN_P2P:	
+		case CONN_P2P_BIND:	
 		{
     			this_conn->conn_fd  = socket(AF_INET,SOCK_DGRAM,0);
 			if(this_conn->conn_fd <0)
@@ -205,6 +365,43 @@ int  connector_af_inet_info_init (void * connector,char * addr)
 			if(retval==-1)
 				return -ENONET;
 	
+			break;
+		}
+		case CONN_P2P_RAND:	
+		{
+    			this_conn->conn_fd  = socket(AF_INET,SOCK_DGRAM,0);
+			if(this_conn->conn_fd <0)
+				return this_conn->conn_fd;
+			if(Strncmp(addr,"(null)",6)!=0)
+			{
+				struct connector_af_inet_p2p_peer_info * peer_info;
+				struct connector_af_inet_p2p_rand_info * rand_info;
+				Record_List * record_elem;
+				int ret;
+    				int so_broadcast = 1;  
+
+				rand_info=this_conn->conn_var_info;
+				peer_info = Dalloc0(sizeof(*peer_info),this_conn);
+				if(peer_info==NULL)
+					return -EINVAL;
+				ret=af_inet_formaddr(&peer_info->adr_inet,&peer_info->len_inet,addr);
+				if(ret<0)
+					return ret;
+    				//默认的套接字描述符sock是不支持广播，必须设置套接字描述符以支持广播  
+    				ret = setsockopt(this_conn->conn_fd, SOL_SOCKET, SO_BROADCAST, &so_broadcast,  
+            				sizeof(so_broadcast));  
+
+				record_elem = Calloc(sizeof(Record_List));
+				if(record_elem==NULL)
+					return NULL;
+				INIT_LIST_HEAD(&(record_elem->list));
+				record_elem->record=peer_info;
+					
+				List_add_tail(&record_elem->list,&rand_info->peer_list);
+			//  RAND need to broadcast to find peer
+			}
+				
+				
 			break;
 		}
 		default:
@@ -233,6 +430,73 @@ int  connector_af_inet_client_init (void * connector,char * name,char * addr)
 		return -ENOMEM;
 	strcpy(this_conn->conn_addr,addr);
 	
+	connector_af_inet_info_init (connector,addr);
+	
+	return 0;
+};
+
+int  connector_af_inet_p2p_bind_init (void * connector,char * name,char * addr)
+{
+
+	struct tcloud_connector * this_conn;
+	int retval;
+	struct connector_af_inet_p2p_bind_info * bind_info;
+
+	this_conn=(struct tcloud_connector *)connector;
+
+	this_conn->conn_name=Dalloc(strlen(name)+1,this_conn);
+	if(this_conn->conn_name==NULL)
+		return -ENOMEM;
+	strcpy(this_conn->conn_name,name);
+
+	this_conn->conn_addr=Dalloc(strlen(addr)+1,this_conn);
+	if(this_conn->conn_addr==NULL)
+		return -ENOMEM;
+	strcpy(this_conn->conn_addr,addr);
+	
+
+	bind_info=Dalloc0(sizeof(struct connector_af_inet_p2p_bind_info),this_conn);
+	if(bind_info==NULL)
+		return -ENOMEM;
+
+	INIT_LIST_HEAD(&(bind_info->peer_list.list));	
+	bind_info->curr_peer=&(bind_info->peer_list.list);
+
+	this_conn->conn_var_info=bind_info;
+	connector_af_inet_info_init (connector,addr);
+	
+	return 0;
+};
+
+int  connector_af_inet_p2p_rand_init (void * connector,char * name,char * addr)
+{
+
+	struct tcloud_connector * this_conn;
+	int retval;
+	struct connector_af_inet_p2p_rand_info * rand_info;
+	struct connector_af_inet_p2p_peer_info * peer_info;
+
+	this_conn=(struct tcloud_connector *)connector;
+
+	this_conn->conn_name=Dalloc(strlen(name)+1,this_conn);
+	if(this_conn->conn_name==NULL)
+		return -ENOMEM;
+	strcpy(this_conn->conn_name,name);
+
+	this_conn->conn_addr=Dalloc(strlen(addr)+1,this_conn);
+	if(this_conn->conn_addr==NULL)
+		return -ENOMEM;
+	strcpy(this_conn->conn_addr,addr);
+	
+	rand_info=Dalloc(sizeof(struct connector_af_inet_p2p_rand_info),this_conn);
+	if(rand_info==NULL)
+		return -ENOMEM;
+	memset(rand_info,0,sizeof(struct connector_af_inet_p2p_rand_info));
+
+	INIT_LIST_HEAD(&(rand_info->peer_list.list));	
+	rand_info->curr_peer=&(rand_info->peer_list.list);
+
+	this_conn->conn_var_info=rand_info;
 	connector_af_inet_info_init (connector,addr);
 	
 	return 0;
@@ -292,6 +556,23 @@ int  connector_af_inet_listen (void * connector)
 	base_info=(struct connector_af_inet_info * )this_conn->conn_base_info;
 	this_conn->conn_state=CONN_SERVER_LISTEN;
 	return listen(this_conn->conn_fd,10);
+}
+
+int  connector_af_inet_p2p_listen (void * connector)
+{
+
+	struct tcloud_connector * this_conn;
+	struct connector_af_inet_info * base_info;
+	int retval;
+
+	this_conn=(struct tcloud_connector *)connector;
+
+	if(this_conn->conn_type!=CONN_P2P_BIND)
+		return -EINVAL;
+	if(this_conn->conn_protocol!=AF_INET)
+		return -EINVAL;
+	base_info=(struct connector_af_inet_info * )this_conn->conn_base_info;
+	return 0;
 }
 
 void * connector_af_inet_accept (void * connector)
@@ -410,7 +691,6 @@ int connector_af_inet_close_channel(void * connector,void * channel)
 
 int  connector_af_inet_connect (void * connector)
 {
-
 	struct tcloud_connector * this_conn;
 	struct connector_af_inet_info * base_info;
 	int retval;
@@ -426,7 +706,37 @@ int  connector_af_inet_connect (void * connector)
 		return retval;
 	this_conn->conn_state=CONN_CLIENT_CONNECT;
 	return retval;
+}
 
+int  connector_af_inet_p2p_rand_connect (void * connector)
+{
+	struct tcloud_connector * this_conn;
+	struct connector_af_inet_info * base_info;
+	struct connector_af_inet_p2p_rand_info * rand_info;
+	struct connector_af_inet_p2p_peer_info * peer_info;
+	int retval;
+	Record_List * record_elem;
+	char * conn_str="P2P_UDP_INIT"; 
+
+	this_conn=(struct tcloud_connector *)connector;
+
+	if(this_conn->conn_type!=CONN_P2P_RAND)
+		return -EINVAL;
+
+	rand_info=(struct connector_af_inet_p2p_rand_info * )this_conn->conn_var_info;
+	if(rand_info==NULL)
+		return -EINVAL;
+	
+	record_elem=rand_info->peer_list.list.next;
+	if(record_elem ==NULL)
+		return -EINVAL;
+	peer_info=record_elem->record;
+	
+	retval = sendto(this_conn->conn_fd,conn_str,Strlen(conn_str),0,
+		&peer_info->adr_inet,peer_info->len_inet);
+	if(retval<0)
+		return retval;
+	return retval;
 }
 
 int  connector_af_inet_read (void * connector,void * buf, size_t count)
@@ -526,27 +836,38 @@ int  connector_af_inet_p2p_read (void * connector,void * buf, size_t count)
 
 	base_info=(struct connector_af_inet_info * )this_conn->conn_base_info;
 
-	retval= read(this_conn->conn_fd,buf,count);
+	retval= recvfrom(this_conn->conn_fd,buf,count,0,&base_info->adr_inet,&base_info->len_inet);
 	if(retval<0)
 		return retval;
-	if((this_conn->conn_type == CONN_CLIENT) &&(this_conn->conn_type == CONN_CLIENT_CONNECT))
-		this_conn->conn_state=CONN_CLIENT_RESPONSE;
 	return retval;
-
 }
 
 int  connector_af_inet_p2p_write (void * connector,void * buf,size_t count)
 {
 
 	struct tcloud_connector * this_conn;
-	struct connector_af_inet_info * base_info;
+	struct connector_af_inet_p2p_rand_info * rand_info;
+	struct connector_af_inet_p2p_peer_info * peer_info;
 	int retval;
+	Record_List * record_elem;
 
 	this_conn=(struct tcloud_connector *)connector;
 
-	base_info=(struct connector_af_inet_info * )this_conn->conn_base_info;
-	return write(this_conn->conn_fd,buf,count);
+	rand_info=(struct connector_af_inet_p2p_rand_info * )this_conn->conn_var_info;
+	record_elem=rand_info->curr_peer;
+	peer_info=record_elem->record;
+	if(peer_info==NULL)
+	{
+		rand_info->curr_peer=rand_info->peer_list.list.next;
+		peer_info=record_elem->record;
+		if(peer_info==NULL)
+			return -EINVAL;
+	}
+
+ 	retval=sendto(this_conn->conn_fd,buf,count,0,&peer_info->adr_inet,peer_info->len_inet); 
+	return retval;
 }
+
 struct connector_ops connector_af_inet_server_ops = 
 {
 	.conn_type = CONN_SERVER,
@@ -604,8 +925,28 @@ struct connector_ops connector_af_inet_channel_ops =
 
 struct connector_ops connector_af_inet_p2p_ops = 
 {
-	.conn_type = CONN_P2P,
-	.init=connector_af_inet_p2p_init,
+	.conn_type = CONN_P2P_BIND,
+	.init=connector_af_inet_p2p_bind_init,
+	.ioctl=NULL,	
+	.getname=connector_getname,	
+	.getaddr=connector_getaddr,	
+	.getpeeraddr=connector_getpeeraddr,	
+	.setname=connector_setname,	
+	.listen=connector_af_inet_p2p_listen,	
+	.accept=NULL,	
+//	.connect=connector_af_inet_connect,	
+	.close_channel=connector_af_inet_close_channel,
+	.read=connector_af_inet_p2p_read,	
+	.write=connector_af_inet_p2p_write,	
+	.getfd=connector_getfd,	
+	.wait=connector_af_inet_wait,	
+	.disconnect=connector_af_inet_disconnect,	
+};
+
+struct connector_ops connector_af_inet_p2p_cli_ops = 
+{
+	.conn_type = CONN_P2P_RAND,
+	.init=connector_af_inet_p2p_rand_init,
 	.ioctl=NULL,	
 	.getname=connector_getname,	
 	.getaddr=connector_getaddr,	
@@ -613,7 +954,7 @@ struct connector_ops connector_af_inet_p2p_ops =
 	.setname=connector_setname,	
 	.listen=NULL,	
 	.accept=NULL,	
-//	.connect=connector_af_inet_connect,	
+	.connect=connector_af_inet_p2p_rand_connect,	
 	.close_channel=connector_af_inet_close_channel,
 	.read=connector_af_inet_p2p_read,	
 	.write=connector_af_inet_p2p_write,	

@@ -7,7 +7,13 @@
 #include <sys/time.h>
 #include <fcntl.h>
 #include <sys/stat.h>
+#include <arpa/inet.h>  
+#include <netinet/in.h>  
+#include <netdb.h>  
+#include <sys/ioctl.h>  
+#include <net/if.h>  
 #include <sys/socket.h>
+  
 //#include <sys/un.h>
 
 #include "data_type.h"
@@ -371,6 +377,17 @@ int proc_conn_init(void * sub_proc,void * para)
 			print_cubeaudit("conn server %s begin to listen!\n",connector_getname(temp_conn));
 
 		}	
+		else if(connector_get_type(temp_conn)==CONN_P2P_BIND)
+		{
+			ret=temp_conn->conn_ops->listen(temp_conn);
+			if(ret<0)
+			{
+				print_cubeerr("conn p2p bind port %s bind error!\n",connector_getname(temp_conn));
+				return -EINVAL;
+			}
+			print_cubeaudit("conn server %s begin to listen!\n",connector_getname(temp_conn));
+	
+		}
 		temp_conn=hub_get_next_connector(conn_hub);
 	}
 	return 0;
@@ -415,6 +432,23 @@ int proc_conn_start(void * sub_proc,void * para)
 	while(temp_conn!=NULL)
 	{
 		if(connector_get_type(temp_conn)==CONN_CLIENT)
+		{
+			for(i=0;i<180;i++)
+			{
+   				ret=temp_conn->conn_ops->connect(temp_conn);
+				if(ret>=0)
+				{
+					break;
+				}
+				usleep(50);
+			}
+			if(ret<0)
+			{
+				print_cubeerr("client %s connect failed!\n",connector_getname(temp_conn));
+			}
+
+		}	
+		else if(connector_get_type(temp_conn)==CONN_P2P_RAND)
 		{
 			for(i=0;i<180;i++)
 			{
@@ -542,6 +576,90 @@ int proc_conn_start(void * sub_proc,void * para)
 						continue;		
 
 					}	
+				}
+				else if(connector_get_type(recv_conn)==CONN_P2P_BIND)
+				{
+	
+					char *init_str="P2P_UDP_INIT";
+					BYTE * head;
+					BYTE * buffer;
+    					struct sockaddr_in server_addr; //服务器端地址  
+    					struct sockaddr_in from_addr; //客户端地址  
+					int from_len;
+					MSG_HEAD * msg_head;
+					void * peer_info;
+
+					head=Talloc0(sizeof(MSG_HEAD));
+
+					ret=recvfrom(recv_conn->conn_fd,head,sizeof(MSG_HEAD),0,
+						(struct sockaddr_in *)(&from_addr),&from_len);
+					if(from_len<sizeof(MSG_HEAD))
+					{
+						if(Strncmp(head,init_str,Strlen(init_str))==0)
+						{
+							peer_info=af_inet_p2p_findpeer(recv_conn,&from_addr,from_len);
+							if(peer_info==NULL)
+							{
+								af_inet_p2p_addpeer(recv_conn,&from_addr,from_len);
+							}
+						}	
+						
+					}
+					else
+					{
+						msg_head=(MSG_HEAD *)(&head);
+					}
+					
+					// build a server syn message with service name,uuid and proc_name
+					message_box=build_server_syn_message("trust_server",local_uuid,proc_name);
+					if((message_box == NULL) || IS_ERR(message_box))
+					{
+						print_cubeerr("local_server reply syn message error!\n");
+						continue;
+					}
+			
+					retval=message_send(message_box,recv_conn);
+					if(retval<=0)
+						continue;
+				}
+				else if(connector_get_type(recv_conn)==CONN_P2P_RAND)
+				{
+	
+					BYTE head[sizeof(MSG_HEAD)+2];
+					BYTE * buffer;
+    					struct sockaddr_in server_addr; //服务器端地址  
+    					struct sockaddr_in from_addr; //客户端地址  
+					int from_len;
+					MSG_HEAD * msg_head;
+					void * peer_info;
+
+					ret=recvfrom(recv_conn->conn_fd,head,sizeof(MSG_HEAD),0,
+						(struct sockaddr *)&from_addr,&from_len);
+					peer_info=af_inet_p2p_findpeer(recv_conn,&from_addr,from_len);
+					if(peer_info==NULL)
+					{
+						af_inet_p2p_addpeer(recv_conn,&from_addr,from_len);
+					}
+					else
+					{
+						msg_head=(MSG_HEAD *)(&head);
+
+						if((msg_head->record_type==DTYPE_MESSAGE)
+							&&(msg_head->record_subtype==SUBTYPE_CONN_SYNI))
+						// do the handshake	
+						{
+							void * message=build_client_ack_message(message_box,local_uuid,proc_name,recv_conn);
+							if((message == NULL) || IS_ERR(message))
+								continue;
+						
+						}
+					}
+					
+					// build a server syn message with service name,uuid and proc_name
+			
+					retval=message_send(message_box,recv_conn);
+					if(retval<=0)
+						continue;
 				}
 
 			}while(1);
