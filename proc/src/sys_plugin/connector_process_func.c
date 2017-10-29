@@ -602,6 +602,7 @@ int proc_conn_start(void * sub_proc,void * para)
 							return ret;
 						if(ret==0)
 							continue;
+						buffer_size=ret;
 						if(Strncmp(buffer,init_str,Strlen(init_str))==0)
 						{
 							message_box=build_server_syn_message("trust_server",local_uuid,proc_name);
@@ -619,41 +620,45 @@ int proc_conn_start(void * sub_proc,void * para)
 						{
 							int flag;
 							buffer_size=ret;
-							ret=message_read_from_blob(&message_box,buffer,buffer_size);
-							if(ret<0)
-								continue;
-							flag=message_get_flag(message_box);
-							if(!(flag&MSG_FLAG_CRYPT))
+							while(buffer_size>0)
 							{
-								ret=message_load_record(message_box);
+								ret=message_read_from_blob(&message_box,buffer,buffer_size);
 								if(ret<0)
+									continue;
+								buffer_size-=ret;
+								flag=message_get_flag(message_box);
+								if(!(flag&MSG_FLAG_CRYPT))
 								{
-									print_cubeerr("load record failed in message_read_from_conn! use bin format\n");
+									ret=message_load_record(message_box);
+									if(ret<0)
+									{
+										print_cubeerr("load record failed in message_read_from_conn! use bin format\n");
+									}
 								}
-							}
 
-							ret=message_load_expand(message_box);
+								ret=message_load_expand(message_box);
 	
-							
-							message_head=message_get_head(message_box);
+								message_head=message_get_head(message_box);
 
 							// first: finish the handshake
-							if((message_head->record_type==DTYPE_MESSAGE)
-								&&(message_head->record_subtype==SUBTYPE_CONN_ACKI))
-							{
-								ret=receive_local_peer_ack(message_box,recv_conn,hub);
-								ex_module_sendmsg(sub_proc,message_box);
-								print_cubeaudit("bind port set name %s!\n",connector_getname(recv_conn));
-								continue;
-							}
+								if((message_head->record_type==DTYPE_MESSAGE)
+									&&(message_head->record_subtype==SUBTYPE_CONN_ACKI))
+								{
+									ret=receive_local_peer_ack(message_box,recv_conn,hub);
+									ex_module_sendmsg(sub_proc,message_box);
+									print_cubeaudit("bind port set name %s!\n",connector_getname(recv_conn));
+									continue;
+								}
 						// check if this message is for you or for others
-							print_cubeaudit("bind port receive (%d %d) message from conn %s!\n",message_head->record_type,
-							message_head->record_subtype,connector_getname(recv_conn));
-							ex_module_sendmsg(sub_proc,message_box);
-							print_cubeaudit("bind port forward (%d %d) message to main proc!\n",message_head->record_type,
-								message_head->record_subtype);
-							continue;		
+								print_cubeaudit("bind port receive (%d %d) message from conn %s!\n",message_head->record_type,
+								message_head->record_subtype,connector_getname(recv_conn));
+								ex_module_sendmsg(sub_proc,message_box);
+								print_cubeaudit("bind port forward (%d %d) message to main proc!\n",
+									message_head->record_type,
+									message_head->record_subtype);
+								continue;		
 
+							}
 						}	
 						
 					}while((peer_info=af_inet_p2p_getnextpeer(recv_conn))!=NULL);
