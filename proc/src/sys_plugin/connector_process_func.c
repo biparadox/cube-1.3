@@ -588,10 +588,76 @@ int proc_conn_start(void * sub_proc,void * para)
 					int from_len;
 					MSG_HEAD * msg_head;
 					void * peer_info;
+					int buffer_size;
 
-					head=Talloc0(sizeof(MSG_HEAD));
+					peer_info=af_inet_p2p_getfirstpeer(recv_conn);
+					do
+					{
+						buffer=Talloc0(4096);
+					
+						ret=recv_conn->conn_ops->read(recv_conn,buffer,4096);
+						if(ret<0)
+							return ret;
+						if(Strncmp(buffer,init_str,Strlen(init_str))==0)
+						{
+							message_box=build_server_syn_message("trust_server",local_uuid,proc_name);
+							if((message_box == NULL) || IS_ERR(message_box))
+							{
+								print_cubeerr("local_server reply syn message error!\n");
+								continue;
+							}
+			
+							retval=message_send(message_box,recv_conn);
+							if(retval<=0)
+								continue;
+						}
+						else
+						{
+							int flag;
+							buffer_size=ret;
+							ret=message_read_from_blob(&message_box,buffer,buffer_size);
+							if(ret<0)
+								continue;
+							flag=message_get_flag(message_box);
+							if(!(flag&MSG_FLAG_CRYPT))
+							{
+								ret=message_load_record(message_box);
+								if(ret<0)
+								{
+									print_cubeerr("load record failed in message_read_from_conn! use bin format\n");
+								}
+							}
 
-					ret=recvfrom(recv_conn->conn_fd,head,sizeof(MSG_HEAD),0,
+							ret=message_load_expand(message_box);
+	
+							
+							message_head=message_get_head(message_box);
+
+							// first: finish the handshake
+							if((message_head->record_type==DTYPE_MESSAGE)
+								&&(message_head->record_subtype==SUBTYPE_CONN_ACKI))
+							{
+								ret=receive_local_peer_ack(message_box,recv_conn,hub);
+								ex_module_sendmsg(sub_proc,message_box);
+								print_cubeaudit("bind port set name %s!\n",connector_getname(recv_conn));
+								continue;
+							}
+						// check if this message is for you or for others
+							print_cubeaudit("bind port receive (%d %d) message from conn %s!\n",message_head->record_type,
+							message_head->record_subtype,connector_getname(recv_conn));
+							ex_module_sendmsg(sub_proc,message_box);
+							print_cubeaudit("bind port forward (%d %d) message to main proc!\n",message_head->record_type,
+								message_head->record_subtype);
+							continue;		
+
+						}	
+						
+					}while((peer_info=af_inet_p2p_getnextpeer(recv_conn))!=NULL);
+					
+					//head=Talloc0(sizeof(MSG_HEAD));
+					/*
+
+					ret=recvfrom(recv_conn->conn_fd,head,1024,0,
 						(struct sockaddr_in *)(&from_addr),&from_len);
 					if(from_len<sizeof(MSG_HEAD))
 					{
@@ -609,18 +675,8 @@ int proc_conn_start(void * sub_proc,void * para)
 					{
 						msg_head=(MSG_HEAD *)(&head);
 					}
-					
+					*/
 					// build a server syn message with service name,uuid and proc_name
-					message_box=build_server_syn_message("trust_server",local_uuid,proc_name);
-					if((message_box == NULL) || IS_ERR(message_box))
-					{
-						print_cubeerr("local_server reply syn message error!\n");
-						continue;
-					}
-			
-					retval=message_send(message_box,recv_conn);
-					if(retval<=0)
-						continue;
 				}
 				else if(connector_get_type(recv_conn)==CONN_P2P_RAND)
 				{
@@ -629,25 +685,57 @@ int proc_conn_start(void * sub_proc,void * para)
 					BYTE * buffer;
     					struct sockaddr_in server_addr; //服务器端地址  
     					struct sockaddr_in from_addr; //客户端地址  
-					int from_len;
+					int from_len=sizeof(from_addr);
 					MSG_HEAD * msg_head;
 					void * peer_info;
 
-					ret=recvfrom(recv_conn->conn_fd,head,sizeof(MSG_HEAD),0,
-						(struct sockaddr *)&from_addr,&from_len);
-					peer_info=af_inet_p2p_findpeer(recv_conn,&from_addr,from_len);
-					if(peer_info==NULL)
+					af_inet_p2p_getfirstpeer(recv_conn);
+					while((ret=message_read_from_conn(&message_box,recv_conn))>0)
 					{
-						af_inet_p2p_addpeer(recv_conn,&from_addr,from_len);
+						print_cubeaudit("proc conn rand port receive %d data!\n",ret);
+
+						
+						message_head=message_get_head(message_box);
+
+						if((message_head->record_type==DTYPE_MESSAGE)
+							&&(message_head->record_subtype==SUBTYPE_CONN_SYNI))
+						// do the handshake	
+						{
+							void * message=build_peer_ack_message(message_box,local_uuid,proc_name,recv_conn);
+							if((message == NULL) || IS_ERR(message))
+								continue;
+							send_conn=recv_conn;
+							retval=message_send(message,send_conn);
+							connector_setstate(send_conn,CONN_CLIENT_RESPONSE);
+							print_cubeaudit("rand p2p port %s send %d ack data to server !\n",connector_getname(send_conn),retval);
+						
+						}
+						ex_module_sendmsg(sub_proc,message_box);
+					
+						continue;		
 					}
-					else
-					{
+
+				}
+				/*	
+					ret=this_conn->conn_ops->read(recv_conn->conn_fd,buffer,2048);
+					if(ret<0)
+						return ret;
 						msg_head=(MSG_HEAD *)(&head);
 
 						if((msg_head->record_type==DTYPE_MESSAGE)
 							&&(msg_head->record_subtype==SUBTYPE_CONN_SYNI))
 						// do the handshake	
 						{
+							int blob_size=sizeof(MSG_HEAD)+msg_head->record_size+msg_head->expand_size;
+							buffer =Talloc0(blob_size);
+							if(buffer==NULL)
+								return -EINVAL;
+							Memcpy(buffer,head,sizeof(MSG_HEAD));
+							ret=recv_conn->conn_ops->read(recv_conn,buffer+sizeof(MSG_HEAD),
+								msg_head->record_size+msg_head->expand_size);
+							if(ret!=blob_size-sizeof(MSG_HEAD))
+								return -EINVAL;
+							ret=message_read_from_blob(&message_box,buffer,blob_size);
 							void * message=build_client_ack_message(message_box,local_uuid,proc_name,recv_conn);
 							if((message == NULL) || IS_ERR(message))
 								continue;
@@ -661,7 +749,7 @@ int proc_conn_start(void * sub_proc,void * para)
 					if(retval<=0)
 						continue;
 				}
-
+				*/
 			}while(1);
 		}
 

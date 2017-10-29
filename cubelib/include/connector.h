@@ -171,11 +171,17 @@ void * hub_get_first_connector(void * hub);
 void * hub_get_next_connector(void * hub);
 void * build_server_syn_message(char * service,char * local_uuid,char *proc_name);
 void * build_client_ack_message(void * message,char * local_uuid,char *proc_name,void * conn);
+void * build_peer_ack_message(void * message,char * local_uuid,char *proc_name,void * conn);
+int    receive_local_client_ack(void * message_box,void * conn,void * hub);
 void * hub_get_connector_byreceiver(void * hub,char * uuid,char * name,char * service);
 void * hub_get_connector_bypeeruuid(void * hub,char * uuid);
 void * af_inet_p2p_getfirstpeer(void * conn);
 void * af_inet_p2p_getnextpeer(void * conn);
+void * af_inet_p2p_getcurrpeer(void * conn);
 void * af_inet_p2p_findpeer(void * conn,void * addr_in,int len);
+void * af_inet_p2p_findpeerbyuuid(void * conn,BYTE * uuid);
 void * af_inet_p2p_addpeer(void * conn,void * addr_in,int len);
+int    af_inet_p2p_setpeerexterninfo(void * peer,void * extern_info);
+void * af_inet_p2p_getpeerexterninfo(void * peer);
 
 #endif

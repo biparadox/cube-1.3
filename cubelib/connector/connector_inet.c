@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <unistd.h>
+#include <fcntl.h>
 #include <stdlib.h>
 #include <errno.h>
 #include <sys/select.h>
@@ -23,6 +24,7 @@
 #include "connector.h"
 
 #define MAX_CHANNEL_SIZE	1024 
+#define MAX_P2P_SIZE		1450 
 //struct connectorectod_ops connector_af_inet_info_ops;
 struct connector_af_inet_info
 {
@@ -33,12 +35,15 @@ struct connector_af_inet_info
 
 struct connector_af_inet_p2p_peer_info
 {
-	BYTE uuid[DIGEST_SIZE];
-	char proc_name[DIGEST_SIZE];
-	char user_name[DIGEST_SIZE];
+//	BYTE uuid[DIGEST_SIZE];
+//	BYTE peer_uuid[DIGEST_SIZE];
+//	char proc_name[DIGEST_SIZE];
+//	char user_name[DIGEST_SIZE];
 	struct sockaddr_in adr_inet;
 	int len_inet;
-	void * sem_struct;
+	int buf_size;
+	void * buf;
+	void * extern_info;
 };
 
 struct connector_af_inet_server_info
@@ -53,20 +58,27 @@ struct connector_af_inet_channel_info
 	void * server;
 };
 
-struct connector_af_inet_p2p_bind_info
+struct connector_af_inet_p2p_info
 {
 	int peer_num;
+	enum connector_type type;
 	Record_List peer_list;
 	struct List_head * curr_peer;
 };
 
-struct connector_af_inet_p2p_rand_info
-{
-	int peer_num;
-	Record_List peer_list;
-	struct List_head * curr_peer;
-};
 
+static void setnonblocking(int sockfd) {  
+	int flag = fcntl(sockfd, F_GETFL, 0);  
+	if (flag < 0) {  
+        	print_cubeerr("fcntl F_GETFL fail");  
+        	return;  
+    	}  
+    	if (fcntl(sockfd, F_SETFL, flag | O_NONBLOCK) < 0) {  
+        	print_cubeerr("fcntl F_SETFL fail");  
+    	}
+	return;  
+}
+ 
 void * create_channel_af_inet_info(void * server_info)
 {
 	struct connector_af_inet_info * src_info;
@@ -145,40 +157,33 @@ char *  af_inet_getaddrstring(struct sockaddr_in * adr_inet)
 	return addrstring;
 }
 
+int  af_inet_p2p_setpeerexterninfo(void * peer,void * extern_info)
+{
+	struct connector_af_inet_p2p_peer_info * peer_info=peer;
+	if(peer==NULL)
+		return -EINVAL;	
+	peer_info->extern_info=extern_info;
+}
+void * af_inet_p2p_getpeerexterninfo(void * peer)
+{
+	struct connector_af_inet_p2p_peer_info * peer_info=peer;
+	if(peer==NULL)
+		return NULL;	
+	return peer_info->extern_info;
+}
+
 void * af_inet_p2p_getfirstpeer(void * conn)
 {
 	struct tcloud_connector * this_conn=conn;
-	struct connector_af_inet_p2p_bind_info * bind_info;
-	struct connector_af_inet_p2p_rand_info * rand_info;
+	struct connector_af_inet_p2p_info * p2p_info;
 	struct connector_af_inet_p2p_peer_info * peer_info=NULL;
-	switch(this_conn->conn_type)
-	{
-		case CONN_P2P_BIND:
-		{
-			Record_List * record_elem;
-			bind_info=this_conn->conn_var_info;
-			bind_info->curr_peer=bind_info->peer_list.list.next;
-			if(bind_info->curr_peer==&bind_info->peer_list.list)
-				return NULL;
-			record_elem=bind_info->curr_peer;
-			peer_info=record_elem->record;
-		}
-		break;
-		case CONN_P2P_RAND:
-		{
-			Record_List * record_elem;
-			rand_info=this_conn->conn_var_info;
-			rand_info->curr_peer=rand_info->peer_list.list.next;
-			if(rand_info->curr_peer==&rand_info->peer_list.list)
-				return NULL;
-			record_elem=rand_info->curr_peer;
-			peer_info=record_elem->record;
-
-		}
-		break;
-		default:
-			return NULL;
-	}
+	Record_List * record_elem;
+	p2p_info=this_conn->conn_var_info;
+	p2p_info->curr_peer=p2p_info->peer_list.list.next;
+	if(p2p_info->curr_peer==&p2p_info->peer_list.list)
+		return NULL;
+	record_elem=p2p_info->curr_peer;
+	peer_info=record_elem->record;
 	
 	return peer_info;
 }
@@ -186,37 +191,33 @@ void * af_inet_p2p_getfirstpeer(void * conn)
 void * af_inet_p2p_getnextpeer(void * conn)
 {
 	struct tcloud_connector * this_conn=conn;
-	struct connector_af_inet_p2p_bind_info * bind_info;
-	struct connector_af_inet_p2p_rand_info * rand_info;
+	struct connector_af_inet_p2p_info * p2p_info;
 	struct connector_af_inet_p2p_peer_info * peer_info=NULL;
-	switch(this_conn->conn_type)
-	{
-		case CONN_P2P_BIND:
-		{
-			Record_List * record_elem;
-			bind_info=this_conn->conn_var_info;
-			if(bind_info->curr_peer==bind_info->peer_list.list.prev)
-				return NULL;
-			bind_info->curr_peer=bind_info->curr_peer->next;
-			record_elem=bind_info->curr_peer;
-			peer_info=record_elem->record;
-		}
-		break;
-		case CONN_P2P_RAND:
-		{
-			Record_List * record_elem;
-			rand_info=this_conn->conn_var_info;
-			if(rand_info->curr_peer==rand_info->peer_list.list.prev)
-				return NULL;
-			rand_info->curr_peer=rand_info->curr_peer->next;
-			record_elem=rand_info->curr_peer;
-			peer_info=record_elem->record;
-		}
-		break;
-		default:
-			return NULL;
-	}
-	
+	Record_List * record_elem;
+
+	p2p_info=this_conn->conn_var_info;
+	if(p2p_info->curr_peer==p2p_info->peer_list.list.prev)
+		return NULL;
+	p2p_info->curr_peer=p2p_info->curr_peer->next;
+	record_elem=p2p_info->curr_peer;
+	peer_info=record_elem->record;
+
+	return peer_info;
+}
+
+void * af_inet_p2p_getcurrpeer(void * conn)
+{
+	struct tcloud_connector * this_conn=conn;
+	struct connector_af_inet_p2p_info * p2p_info;
+	struct connector_af_inet_p2p_peer_info * peer_info=NULL;
+	Record_List * record_elem;
+
+	p2p_info=this_conn->conn_var_info;
+	if(p2p_info->curr_peer==&p2p_info->peer_list.list)
+		return NULL;
+	record_elem=p2p_info->curr_peer;
+	peer_info=record_elem->record;
+
 	return peer_info;
 }
 
@@ -233,18 +234,37 @@ void * af_inet_p2p_findpeer(void * recv_conn,void * from_addr,int from_len)
 			if(Memcmp(from_addr,&peer_info->adr_inet,from_len)==0)
 				break;		
 		}
-		af_inet_p2p_getnextpeer(recv_conn);
+		peer_info=af_inet_p2p_getnextpeer(recv_conn);
 	}
 	
 	return peer_info;
 }
 
+void * af_inet_p2p_findpeerbyuuid(void * recv_conn,BYTE * uuid)
+{
+	struct tcloud_connector * this_conn=recv_conn;
+	struct connector_af_inet_p2p_peer_info * peer_info;
+	struct sysconn_peer_info * sys_peer_info;
+
+	peer_info=af_inet_p2p_getfirstpeer(recv_conn);
+	while(peer_info!=NULL)
+	{
+		sys_peer_info=af_inet_p2p_getpeerexterninfo(peer_info);
+		if(sys_peer_info!=NULL)
+		{
+			if(Memcmp(sys_peer_info->uuid,uuid,DIGEST_SIZE)==0)
+				break;		
+		}
+		peer_info=af_inet_p2p_getnextpeer(recv_conn);
+	}
+	
+	return peer_info;
+}
 void * af_inet_p2p_addpeer(void * recv_conn,void * from_addr,int from_len)
 {
 	struct tcloud_connector * this_conn=recv_conn;
 	struct connector_af_inet_p2p_peer_info * peer_info;
-	struct connector_af_inet_p2p_bind_info * bind_info;
-	struct connector_af_inet_p2p_rand_info * rand_info;
+	struct connector_af_inet_p2p_info * p2p_info;
 	Record_List * record_elem;
 
 	peer_info=af_inet_p2p_findpeer(recv_conn,from_addr,from_len);
@@ -263,30 +283,36 @@ void * af_inet_p2p_addpeer(void * recv_conn,void * from_addr,int from_len)
 	Memcpy(&peer_info->adr_inet,from_addr,from_len);
 	record_elem->record=peer_info;
 
-
-	switch(this_conn->conn_type)
-	{
-		case CONN_P2P_BIND:
-		{
-			bind_info=this_conn->conn_var_info;
-			List_add_tail(&record_elem->list,&bind_info->peer_list.list);
-			bind_info->curr_peer=bind_info->peer_list.list.prev;
-		}
-		break;
-		case CONN_P2P_RAND:
-		{
-			rand_info=this_conn->conn_var_info;
-			List_add_tail(&record_elem->list,&rand_info->peer_list.list);
-			rand_info->curr_peer=rand_info->peer_list.list.prev;
-		}
-		break;
-		default:
-			return NULL;
-	}
+	p2p_info=this_conn->conn_var_info;
+	List_add_tail(&record_elem->list,&p2p_info->peer_list.list);
+	p2p_info->curr_peer=p2p_info->peer_list.list.prev;
 	
 	return peer_info;
 }
 
+void * af_inet_p2p_delpeer(void * recv_conn,void * peer)
+{
+	struct tcloud_connector * this_conn=recv_conn;
+	struct connector_af_inet_p2p_info * p2p_info;
+	struct connector_af_inet_p2p_peer_info * peer_info;
+	Record_List * record_elem;
+
+	record_elem=p2p_info->peer_list.list.next;
+	while(record_elem!=&p2p_info->peer_list.list)
+	{
+	
+		if(record_elem->record==peer)
+		{
+			List_del(&record_elem->list);
+			Free(record_elem);
+			return peer;
+		
+		}
+		record_elem=(Record_List *)record_elem->list.next;
+	}
+
+	return NULL;
+}
 int  connector_af_inet_info_init (void * connector,char * addr)
 {
 
@@ -299,6 +325,7 @@ int  connector_af_inet_info_init (void * connector,char * addr)
 	int retval;
 	int i;
 	int namelen;
+	struct timeval timeout ={0,1000};   // we hope each read only delay 10 microsecond
 	
 	this_conn=(struct tcloud_connector *)connector;
 
@@ -330,7 +357,6 @@ int  connector_af_inet_info_init (void * connector,char * addr)
 				//printf("setsockopt reuseaddr error!\n");
 				return -EINVAL;
 			}
-			struct timeval timeout ={0,1000};   // we hope each read only delay 10 microsecond
 			if(setsockopt(this_conn->conn_fd,SOL_SOCKET,SO_RCVTIMEO,&timeout,sizeof(timeout))==-1)
 			{
 				//printf("setsockopt timeout error!\n");
@@ -364,6 +390,7 @@ int  connector_af_inet_info_init (void * connector,char * addr)
 			retval = bind(this_conn->conn_fd,(struct sockaddr *)&(base_info->adr_inet),base_info->len_inet);
 			if(retval==-1)
 				return -ENONET;
+			setnonblocking(this_conn->conn_fd);
 	
 			break;
 		}
@@ -375,7 +402,7 @@ int  connector_af_inet_info_init (void * connector,char * addr)
 			if(Strncmp(addr,"(null)",6)!=0)
 			{
 				struct connector_af_inet_p2p_peer_info * peer_info;
-				struct connector_af_inet_p2p_rand_info * rand_info;
+				struct connector_af_inet_p2p_info * rand_info;
 				Record_List * record_elem;
 				int ret;
     				int so_broadcast = 1;  
@@ -399,6 +426,7 @@ int  connector_af_inet_info_init (void * connector,char * addr)
 					
 				List_add_tail(&record_elem->list,&rand_info->peer_list);
 			//  RAND need to broadcast to find peer
+				setnonblocking(this_conn->conn_fd);
 			}
 				
 				
@@ -440,7 +468,7 @@ int  connector_af_inet_p2p_bind_init (void * connector,char * name,char * addr)
 
 	struct tcloud_connector * this_conn;
 	int retval;
-	struct connector_af_inet_p2p_bind_info * bind_info;
+	struct connector_af_inet_p2p_info * bind_info;
 
 	this_conn=(struct tcloud_connector *)connector;
 
@@ -455,7 +483,7 @@ int  connector_af_inet_p2p_bind_init (void * connector,char * name,char * addr)
 	strcpy(this_conn->conn_addr,addr);
 	
 
-	bind_info=Dalloc0(sizeof(struct connector_af_inet_p2p_bind_info),this_conn);
+	bind_info=Dalloc0(sizeof(struct connector_af_inet_p2p_info),this_conn);
 	if(bind_info==NULL)
 		return -ENOMEM;
 
@@ -473,7 +501,7 @@ int  connector_af_inet_p2p_rand_init (void * connector,char * name,char * addr)
 
 	struct tcloud_connector * this_conn;
 	int retval;
-	struct connector_af_inet_p2p_rand_info * rand_info;
+	struct connector_af_inet_p2p_info * rand_info;
 	struct connector_af_inet_p2p_peer_info * peer_info;
 
 	this_conn=(struct tcloud_connector *)connector;
@@ -488,10 +516,9 @@ int  connector_af_inet_p2p_rand_init (void * connector,char * name,char * addr)
 		return -ENOMEM;
 	strcpy(this_conn->conn_addr,addr);
 	
-	rand_info=Dalloc(sizeof(struct connector_af_inet_p2p_rand_info),this_conn);
+	rand_info=Dalloc0(sizeof(struct connector_af_inet_p2p_info),this_conn);
 	if(rand_info==NULL)
 		return -ENOMEM;
-	memset(rand_info,0,sizeof(struct connector_af_inet_p2p_rand_info));
 
 	INIT_LIST_HEAD(&(rand_info->peer_list.list));	
 	rand_info->curr_peer=&(rand_info->peer_list.list);
@@ -712,7 +739,7 @@ int  connector_af_inet_p2p_rand_connect (void * connector)
 {
 	struct tcloud_connector * this_conn;
 	struct connector_af_inet_info * base_info;
-	struct connector_af_inet_p2p_rand_info * rand_info;
+	struct connector_af_inet_p2p_info * rand_info;
 	struct connector_af_inet_p2p_peer_info * peer_info;
 	int retval;
 	Record_List * record_elem;
@@ -723,7 +750,7 @@ int  connector_af_inet_p2p_rand_connect (void * connector)
 	if(this_conn->conn_type!=CONN_P2P_RAND)
 		return -EINVAL;
 
-	rand_info=(struct connector_af_inet_p2p_rand_info * )this_conn->conn_var_info;
+	rand_info=(struct connector_af_inet_p2p_info * )this_conn->conn_var_info;
 	if(rand_info==NULL)
 		return -EINVAL;
 	
@@ -827,18 +854,83 @@ void * connector_af_inet_get_server(void * connector)
 
 int  connector_af_inet_p2p_read (void * connector,void * buf, size_t count)
 {
-
 	struct tcloud_connector * this_conn;
-	struct connector_af_inet_info * base_info;
+	struct connector_af_inet_p2p_info * p2p_info;
+	struct connector_af_inet_p2p_peer_info * peer_info;
+	struct List_head * curr_peer;
 	int retval;
+	struct sockaddr_in adr_inet;
+	int len_inet;
+	char buffer[MAX_P2P_SIZE];
+	char * temp_buf;
+	int i;
+	int offset;
+	Record_List * record_elem;
 
+	len_inet=sizeof(adr_inet);
 	this_conn=(struct tcloud_connector *)connector;
+	p2p_info=this_conn->conn_var_info;
 
-	base_info=(struct connector_af_inet_info * )this_conn->conn_base_info;
+	curr_peer=p2p_info->curr_peer;
 
-	retval= recvfrom(this_conn->conn_fd,buf,count,0,&base_info->adr_inet,&base_info->len_inet);
-	if(retval<0)
-		return retval;
+	Memset(&adr_inet,0,sizeof(adr_inet));
+
+	i=0;
+	offset=0;
+	while((retval=recvfrom(this_conn->conn_fd,buffer,MAX_P2P_SIZE,0,&adr_inet,&len_inet))>0)
+	{
+		peer_info=af_inet_p2p_findpeer(this_conn,&adr_inet,len_inet);
+		if(peer_info==NULL)
+		{
+			peer_info=af_inet_p2p_addpeer(this_conn,&adr_inet,len_inet);
+		}
+		if(peer_info->buf==NULL)
+		{
+			peer_info->buf=Dalloc0(retval,this_conn);
+			if(peer_info->buf==NULL)
+				return -ENOMEM;
+			peer_info->buf_size=retval;
+			Memcpy(peer_info->buf,buffer,peer_info->buf_size);
+		}
+		else
+		{
+			temp_buf=Dalloc0(peer_info->buf_size+retval,this_conn);
+			if(temp_buf==NULL)
+				return -ENOMEM;
+			Memcpy(temp_buf,peer_info->buf,peer_info->buf_size);
+			Memcpy(temp_buf+peer_info->buf_size,buffer,retval);
+			Free(peer_info->buf);
+			peer_info->buf=temp_buf;
+			peer_info->buf_size+=retval;
+		}
+	}	
+	if(curr_peer==NULL)
+		p2p_info->curr_peer=curr_peer;
+	else
+		af_inet_p2p_getfirstpeer(this_conn);
+	peer_info =af_inet_p2p_getcurrpeer(this_conn);
+	if(peer_info==NULL)
+		return 0;
+	if(peer_info->buf_size<count)
+	{
+		retval=peer_info->buf_size;
+		Memcpy(buf,peer_info->buf,peer_info->buf_size);	
+		peer_info->buf_size=0;
+		Free(peer_info->buf);
+		peer_info->buf=NULL;		
+	}
+	else
+	{
+		retval=count;
+		Memcpy(buf,peer_info->buf,retval);
+		temp_buf=Dalloc0(peer_info->buf_size-retval,this_conn);
+		if(temp_buf==NULL)
+			return -ENOMEM;
+		peer_info->buf_size-=retval;
+		Memcpy(temp_buf,peer_info->buf+count,peer_info->buf_size);
+		Free(peer_info->buf);
+		peer_info->buf=temp_buf;
+	}
 	return retval;
 }
 
@@ -846,19 +938,19 @@ int  connector_af_inet_p2p_write (void * connector,void * buf,size_t count)
 {
 
 	struct tcloud_connector * this_conn;
-	struct connector_af_inet_p2p_rand_info * rand_info;
+	struct connector_af_inet_p2p_info * p2p_info;
 	struct connector_af_inet_p2p_peer_info * peer_info;
 	int retval;
 	Record_List * record_elem;
 
 	this_conn=(struct tcloud_connector *)connector;
 
-	rand_info=(struct connector_af_inet_p2p_rand_info * )this_conn->conn_var_info;
-	record_elem=rand_info->curr_peer;
+	p2p_info=(struct connector_af_inet_p2p_info * )this_conn->conn_var_info;
+	record_elem=p2p_info->curr_peer;
 	peer_info=record_elem->record;
 	if(peer_info==NULL)
 	{
-		rand_info->curr_peer=rand_info->peer_list.list.next;
+		p2p_info->curr_peer=p2p_info->peer_list.list.next;
 		peer_info=record_elem->record;
 		if(peer_info==NULL)
 			return -EINVAL;
