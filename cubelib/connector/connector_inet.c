@@ -33,6 +33,14 @@ struct connector_af_inet_info
 	void * sem_struct;
 };
 
+enum p2p_read_state
+{
+	P2P_WAIT_PEER=0x01,
+	P2P_READ_CONN,
+	P2P_READ_BUF,
+	P2P_READ_FIN
+};
+
 struct connector_af_inet_p2p_peer_info
 {
 //	BYTE uuid[DIGEST_SIZE];
@@ -62,6 +70,7 @@ struct connector_af_inet_p2p_info
 {
 	int peer_num;
 	enum connector_type type;
+	enum p2p_read_state read_state;
 	Record_List peer_list;
 	struct List_head * curr_peer;
 };
@@ -219,6 +228,44 @@ void * af_inet_p2p_getcurrpeer(void * conn)
 	peer_info=record_elem->record;
 
 	return peer_info;
+}
+
+int af_inet_p2p_islastpeer(void * recv_conn)
+{
+	struct tcloud_connector * this_conn=recv_conn;
+	struct connector_af_inet_p2p_info * p2p_info;
+	struct connector_af_inet_p2p_peer_info * peer_info=NULL;
+	Record_List * record_elem;
+
+	p2p_info=this_conn->conn_var_info;
+	if(p2p_info->curr_peer==p2p_info->peer_list.list.prev)
+		return 1;
+	return 0;
+}
+
+int af_inet_p2p_read_refresh(void * recv_conn)
+{
+	struct tcloud_connector * this_conn=recv_conn;
+	struct connector_af_inet_p2p_info * p2p_info;
+	p2p_info=this_conn->conn_var_info;
+	p2p_info->read_state=P2P_READ_CONN;
+	return 0;
+}
+int af_inet_p2p_read_hold(void * recv_conn)
+{
+	struct tcloud_connector * this_conn=recv_conn;
+	struct connector_af_inet_p2p_info * p2p_info;
+	p2p_info=this_conn->conn_var_info;
+	p2p_info->read_state=P2P_READ_BUF;
+	return 0;
+}
+int af_inet_p2p_read_fin(void * recv_conn)
+{
+	struct tcloud_connector * this_conn=recv_conn;
+	struct connector_af_inet_p2p_info * p2p_info;
+	p2p_info=this_conn->conn_var_info;
+	p2p_info->read_state=P2P_READ_BUF;
+	return 0;
 }
 
 void * af_inet_p2p_findpeer(void * recv_conn,void * from_addr,int from_len)
@@ -877,32 +924,42 @@ int  connector_af_inet_p2p_read (void * connector,void * buf, size_t count)
 
 	i=0;
 	offset=0;
-	while((retval=recvfrom(this_conn->conn_fd,buffer,MAX_P2P_SIZE,0,&adr_inet,&len_inet))>0)
+	
+	if((p2p_info->read_state==0)||(p2p_info->read_state==P2P_READ_FIN))
 	{
-		peer_info=af_inet_p2p_findpeer(this_conn,&adr_inet,len_inet);
-		if(peer_info==NULL)
+		p2p_info->read_state=P2P_READ_CONN;
+	}
+	if(p2p_info->read_state==P2P_READ_CONN)
+	{
+	
+		while((retval=recvfrom(this_conn->conn_fd,buffer,MAX_P2P_SIZE,0,&adr_inet,&len_inet))>0)
 		{
-			peer_info=af_inet_p2p_addpeer(this_conn,&adr_inet,len_inet);
-		}
-		if(peer_info->buf==NULL)
-		{
-			peer_info->buf=Dalloc0(retval,this_conn);
+			peer_info=af_inet_p2p_findpeer(this_conn,&adr_inet,len_inet);
+			if(peer_info==NULL)
+			{
+				peer_info=af_inet_p2p_addpeer(this_conn,&adr_inet,len_inet);
+			}
 			if(peer_info->buf==NULL)
-				return -ENOMEM;
-			peer_info->buf_size=retval;
-			Memcpy(peer_info->buf,buffer,peer_info->buf_size);
+			{
+				peer_info->buf=Dalloc0(retval,this_conn);
+				if(peer_info->buf==NULL)
+					return -ENOMEM;
+				peer_info->buf_size=retval;
+				Memcpy(peer_info->buf,buffer,peer_info->buf_size);
+			}
+			else
+			{
+				temp_buf=Dalloc0(peer_info->buf_size+retval,this_conn);
+				if(temp_buf==NULL)
+					return -ENOMEM;
+				Memcpy(temp_buf,peer_info->buf,peer_info->buf_size);
+				Memcpy(temp_buf+peer_info->buf_size,buffer,retval);
+				Free(peer_info->buf);
+				peer_info->buf=temp_buf;
+				peer_info->buf_size+=retval;
+			}
 		}
-		else
-		{
-			temp_buf=Dalloc0(peer_info->buf_size+retval,this_conn);
-			if(temp_buf==NULL)
-				return -ENOMEM;
-			Memcpy(temp_buf,peer_info->buf,peer_info->buf_size);
-			Memcpy(temp_buf+peer_info->buf_size,buffer,retval);
-			Free(peer_info->buf);
-			peer_info->buf=temp_buf;
-			peer_info->buf_size+=retval;
-		}
+		af_inet_p2p_read_hold(this_conn);
 	}	
 	if(curr_peer==NULL)
 		p2p_info->curr_peer=curr_peer;
@@ -911,15 +968,17 @@ int  connector_af_inet_p2p_read (void * connector,void * buf, size_t count)
 	peer_info =af_inet_p2p_getcurrpeer(this_conn);
 	if(peer_info==NULL)
 		return 0;
-	if(peer_info->buf_size<count)
+	if((peer_info->buf_size<=count)&&(peer_info->buf_size>0))
 	{
 		retval=peer_info->buf_size;
 		Memcpy(buf,peer_info->buf,peer_info->buf_size);	
 		peer_info->buf_size=0;
 		Free(peer_info->buf);
 		peer_info->buf=NULL;		
+		if(af_inet_p2p_islastpeer(this_conn))
+			af_inet_p2p_read_fin(this_conn);
 	}
-	else
+	else if(peer_info->buf_size>count)
 	{
 		retval=count;
 		Memcpy(buf,peer_info->buf,retval);

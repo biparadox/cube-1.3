@@ -183,5 +183,8 @@ void * af_inet_p2p_findpeerbyuuid(void * conn,BYTE * uuid);
 void * af_inet_p2p_addpeer(void * conn,void * addr_in,int len);
 int    af_inet_p2p_setpeerexterninfo(void * peer,void * extern_info);
 void * af_inet_p2p_getpeerexterninfo(void * peer);
+int af_inet_p2p_refresh(void * recv_conn);
+int af_inet_p2p_hold(void * recv_conn);
+int af_inet_p2p_fin(void * recv_conn);
 
 #endif
