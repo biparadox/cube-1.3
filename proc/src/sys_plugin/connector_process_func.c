@@ -589,6 +589,8 @@ int proc_conn_start(void * sub_proc,void * para)
 					MSG_HEAD * msg_head;
 					void * peer_info;
 					int buffer_size;
+		
+					af_inet_p2p_read_refresh(recv_conn);
 
 					peer_info=af_inet_p2p_getfirstpeer(recv_conn);
 					do
@@ -598,6 +600,8 @@ int proc_conn_start(void * sub_proc,void * para)
 						ret=recv_conn->conn_ops->read(recv_conn,buffer,4096);
 						if(ret<0)
 							return ret;
+						if(ret==0)
+							continue;
 						if(Strncmp(buffer,init_str,Strlen(init_str))==0)
 						{
 							message_box=build_server_syn_message("trust_server",local_uuid,proc_name);

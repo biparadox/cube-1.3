@@ -990,6 +990,10 @@ int  connector_af_inet_p2p_read (void * connector,void * buf, size_t count)
 		Free(peer_info->buf);
 		peer_info->buf=temp_buf;
 	}
+	else
+	{
+		retval=0;
+	}
 	return retval;
 }
 
