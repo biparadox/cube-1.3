@@ -454,9 +454,9 @@ int  connector_af_inet_info_init (void * connector,char * addr)
 
 			
 			af_inet_formaddr(&base_info->adr_inet,&base_info->len_inet,"0.0.0.0:1440");
-			retval = bind(this_conn->conn_fd,(struct sockaddr *)&(base_info->adr_inet),base_info->len_inet);
-			if(retval==-1)
-				return -ENONET;
+//			retval = bind(this_conn->conn_fd,(struct sockaddr *)&(base_info->adr_inet),base_info->len_inet);
+//			if(retval==-1)
+//				return -ENONET;
 			if(Strncmp(addr,"(null)",6)!=0)
 			{
 				struct connector_af_inet_p2p_peer_info * peer_info;
@@ -929,6 +929,7 @@ int  connector_af_inet_p2p_read (void * connector,void * buf, size_t count)
 	int i;
 	int offset;
 	Record_List * record_elem;
+	int total_read;
 
 	len_inet=sizeof(adr_inet);
 	this_conn=(struct tcloud_connector *)connector;
@@ -941,6 +942,7 @@ int  connector_af_inet_p2p_read (void * connector,void * buf, size_t count)
 	i=0;
 	offset=0;
 	
+	total_read=0;
 	if((p2p_info->read_state==0)||(p2p_info->read_state==P2P_READ_FIN))
 	{
 		p2p_info->read_state=P2P_READ_CONN;
@@ -974,6 +976,7 @@ int  connector_af_inet_p2p_read (void * connector,void * buf, size_t count)
 				peer_info->buf=temp_buf;
 				peer_info->buf_size+=retval;
 			}
+//			total_read+=retval;
 		}
 		af_inet_p2p_read_hold(this_conn);
 	}	

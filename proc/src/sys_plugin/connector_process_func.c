@@ -698,31 +698,35 @@ int proc_conn_start(void * sub_proc,void * para)
 					MSG_HEAD * msg_head;
 					void * peer_info;
 
-					af_inet_p2p_getfirstpeer(recv_conn);
 					af_inet_p2p_read_refresh(recv_conn);
-					while((ret=message_read_from_conn(&message_box,recv_conn))>0)
+
+					peer_info=af_inet_p2p_getfirstpeer(recv_conn);
+					while(peer_info!=NULL)
 					{
-						print_cubeaudit("proc conn rand port receive %d data!\n",ret);
-
-						
-						message_head=message_get_head(message_box);
-
-						if((message_head->record_type==DTYPE_MESSAGE)
-							&&(message_head->record_subtype==SUBTYPE_CONN_SYNI))
-						// do the handshake	
+						while((ret=message_read_from_conn(&message_box,recv_conn))>0)
 						{
-							void * message=build_peer_ack_message(message_box,local_uuid,proc_name,recv_conn);
-							if((message == NULL) || IS_ERR(message))
-								continue;
-							send_conn=recv_conn;
-							retval=message_send(message,send_conn);
-							connector_setstate(send_conn,CONN_CLIENT_RESPONSE);
-							print_cubeaudit("rand p2p port %s send %d ack data to server !\n",connector_getname(send_conn),retval);
+							print_cubeaudit("proc conn rand port receive %d data!\n",ret);
+
 						
+							message_head=message_get_head(message_box);
+
+							if((message_head->record_type==DTYPE_MESSAGE)
+								&&(message_head->record_subtype==SUBTYPE_CONN_SYNI))
+						// do the handshake	
+							{
+								void * message=build_peer_ack_message(message_box,local_uuid,proc_name,recv_conn);
+								if((message == NULL) || IS_ERR(message))
+									continue;
+								send_conn=recv_conn;
+								retval=message_send(message,send_conn);
+								connector_setstate(send_conn,CONN_CLIENT_RESPONSE);
+								print_cubeaudit("rand p2p port %s send %d ack data to server !\n",connector_getname(send_conn),retval);
+						
+							}	
+							ex_module_sendmsg(sub_proc,message_box);
+							continue;		
 						}
-						ex_module_sendmsg(sub_proc,message_box);
-					
-						continue;		
+						peer_info=af_inet_p2p_getnextpeer(recv_conn);
 					}
 
 				}
