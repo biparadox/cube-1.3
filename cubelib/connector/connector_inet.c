@@ -268,6 +268,24 @@ int af_inet_p2p_read_fin(void * recv_conn)
 	return 0;
 }
 
+int af_inet_p2p_setcurrpeer(void * recv_conn,void * peer_info)
+{
+	struct tcloud_connector * this_conn=recv_conn;
+	struct connector_af_inet_p2p_info * p2p_info;
+	Record_List * record_elem;
+
+	p2p_info=this_conn->conn_var_info;
+	p2p_info->curr_peer=p2p_info->peer_list.list.next;
+	while(p2p_info->curr_peer!=&p2p_info->peer_list.list)
+	{	
+		record_elem=p2p_info->curr_peer;
+		if(record_elem->record==peer_info)
+			return 0;
+		p2p_info->curr_peer=p2p_info->curr_peer->next;
+	}
+	
+	return -EINVAL;
+}
 void * af_inet_p2p_findpeer(void * recv_conn,void * from_addr,int from_len)
 {
 	struct tcloud_connector * this_conn=recv_conn;
@@ -920,7 +938,7 @@ int  connector_af_inet_p2p_read (void * connector,void * buf, size_t count)
 	struct tcloud_connector * this_conn;
 	struct connector_af_inet_p2p_info * p2p_info;
 	struct connector_af_inet_p2p_peer_info * peer_info;
-	struct List_head * curr_peer;
+	struct connector_af_inet_p2p_peer_info * curr_peer_info;
 	int retval;
 	struct sockaddr_in adr_inet;
 	int len_inet;
@@ -935,8 +953,9 @@ int  connector_af_inet_p2p_read (void * connector,void * buf, size_t count)
 	this_conn=(struct tcloud_connector *)connector;
 	p2p_info=this_conn->conn_var_info;
 
-	curr_peer=p2p_info->curr_peer;
+	curr_peer_info=af_inet_p2p_getcurrpeer(this_conn);
 
+	
 	Memset(&adr_inet,0,sizeof(adr_inet));
 
 	i=0;
@@ -980,13 +999,17 @@ int  connector_af_inet_p2p_read (void * connector,void * buf, size_t count)
 		}
 		af_inet_p2p_read_hold(this_conn);
 	}	
-	if(curr_peer==NULL)
-		p2p_info->curr_peer=curr_peer;
+	if(curr_peer_info==NULL)
+	{
+		curr_peer_info=af_inet_p2p_getfirstpeer(this_conn);
+		if(curr_peer_info==NULL)
+			return 0;
+	}
 	else
-		af_inet_p2p_getfirstpeer(this_conn);
-	peer_info =af_inet_p2p_getcurrpeer(this_conn);
-	if(peer_info==NULL)
-		return 0;
+	{
+		af_inet_p2p_setcurrpeer(this_conn,curr_peer_info);
+	}
+	peer_info=curr_peer_info;
 	if((peer_info->buf_size<=count)&&(peer_info->buf_size>0))
 	{
 		retval=peer_info->buf_size;
