@@ -471,7 +471,7 @@ int  connector_af_inet_info_init (void * connector,char * addr)
 				return this_conn->conn_fd;
 
 			
-			af_inet_formaddr(&base_info->adr_inet,&base_info->len_inet,"0.0.0.0:1440");
+//			af_inet_formaddr(&base_info->adr_inet,&base_info->len_inet,"0.0.0.0:1440");
 //			retval = bind(this_conn->conn_fd,(struct sockaddr *)&(base_info->adr_inet),base_info->len_inet);
 //			if(retval==-1)
 //				return -ENONET;
