@@ -699,6 +699,7 @@ int proc_conn_start(void * sub_proc,void * para)
 					void * peer_info;
 
 					af_inet_p2p_getfirstpeer(recv_conn);
+					af_inet_p2p_read_refresh(recv_conn);
 					while((ret=message_read_from_conn(&message_box,recv_conn))>0)
 					{
 						print_cubeaudit("proc conn rand port receive %d data!\n",ret);

@@ -430,22 +430,33 @@ int  connector_af_inet_info_init (void * connector,char * addr)
 		}
 		case CONN_P2P_BIND:	
 		{
-    			this_conn->conn_fd  = socket(AF_INET,SOCK_DGRAM,0);
+    			this_conn->conn_fd  = socket(AF_INET,SOCK_DGRAM|SOCK_CLOEXEC,0);
 			if(this_conn->conn_fd <0)
 				return this_conn->conn_fd;
 			af_inet_formaddr(&base_info->adr_inet,&base_info->len_inet,addr);
 			retval = bind(this_conn->conn_fd,(struct sockaddr *)&(base_info->adr_inet),base_info->len_inet);
 			if(retval==-1)
 				return -ENONET;
-			setnonblocking(this_conn->conn_fd);
+			if(setsockopt(this_conn->conn_fd,SOL_SOCKET,SO_RCVTIMEO,&timeout,sizeof(timeout))==-1)
+			{
+				//printf("setsockopt timeout error!\n");
+				return -EINVAL;
+			}
+			//setnonblocking(this_conn->conn_fd);
 	
 			break;
 		}
 		case CONN_P2P_RAND:	
 		{
-    			this_conn->conn_fd  = socket(AF_INET,SOCK_DGRAM,0);
+    			this_conn->conn_fd  = socket(AF_INET,SOCK_DGRAM|SOCK_CLOEXEC,0);
 			if(this_conn->conn_fd <0)
 				return this_conn->conn_fd;
+
+			
+			af_inet_formaddr(&base_info->adr_inet,&base_info->len_inet,"0.0.0.0:1440");
+			retval = bind(this_conn->conn_fd,(struct sockaddr *)&(base_info->adr_inet),base_info->len_inet);
+			if(retval==-1)
+				return -ENONET;
 			if(Strncmp(addr,"(null)",6)!=0)
 			{
 				struct connector_af_inet_p2p_peer_info * peer_info;
@@ -473,7 +484,12 @@ int  connector_af_inet_info_init (void * connector,char * addr)
 					
 				List_add_tail(&record_elem->list,&rand_info->peer_list);
 			//  RAND need to broadcast to find peer
-				setnonblocking(this_conn->conn_fd);
+				if(setsockopt(this_conn->conn_fd,SOL_SOCKET,SO_RCVTIMEO,&timeout,sizeof(timeout))==-1)
+				{
+					//printf("setsockopt timeout error!\n");
+					return -EINVAL;
+				}
+				//setnonblocking(this_conn->conn_fd);
 			}
 				
 				
