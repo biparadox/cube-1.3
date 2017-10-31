@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <stdlib.h>
@@ -362,12 +361,17 @@ void * af_inet_p2p_delpeer(void * recv_conn,void * peer)
 	struct connector_af_inet_p2p_peer_info * peer_info;
 	Record_List * record_elem;
 
+	p2p_info=this_conn->conn_var_info;
 	record_elem=p2p_info->peer_list.list.next;
 	while(record_elem!=&p2p_info->peer_list.list)
 	{
 	
 		if(record_elem->record==peer)
 		{
+			if(p2p_info->curr_peer==record_elem)
+			{
+				p2p_info->curr_peer=record_elem->list.next;
+			}
 			List_del(&record_elem->list);
 			Free(record_elem);
 			return peer;

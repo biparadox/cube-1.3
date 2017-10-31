@@ -442,7 +442,6 @@ int receive_local_peer_ack(void * message_box,void * conn,void * hub)
 	if(retval<0)
 		return -EINVAL;
 
-//	channel_conn->conn_ops->setname(channel_conn,client_ack->client_name);
 
 	BYTE conn_uuid[DIGEST_SIZE];
 
@@ -451,7 +450,16 @@ int receive_local_peer_ack(void * message_box,void * conn,void * hub)
 	old_peer_info = af_inet_p2p_findpeerbyuuid(conn,conn_uuid);
 	if(old_peer_info!=NULL)
 	{
-		af_inet_p2p_delpeer(old_peer_info);	
+		if(old_peer_info!=p2p_peer_info)
+		{
+			af_inet_p2p_delpeer(conn,old_peer_info);
+		}
+		else
+		{
+			void * extern_info=af_inet_p2p_getpeerexterninfo(old_peer_info);
+			if(extern_info!=NULL)
+				Free(extern_info);	
+		}
 	}
 	
 //	Memcpy(p2p_peer_info->uuid,conn_uuid,DIGEST_SIZE);
@@ -468,6 +476,8 @@ int receive_local_peer_ack(void * message_box,void * conn,void * hub)
 //	peer_info->peer_addr=dup_str(channel_conn->conn_peeraddr,DIGEST_SIZE*4);		
 	memdb_store(peer_info,DTYPE_SYS_CONN,SUBTYPE_PEER_INFO,connector_getname(conn));
 	af_inet_p2p_setpeerexterninfo(p2p_peer_info,peer_info);
+	
+
 	return 0;
 }
 

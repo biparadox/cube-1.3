@@ -58,15 +58,15 @@ int read_dispatch_file(char * file_name,int is_aspect)
 
 	while(leftlen>DIGEST_SIZE)
 	{
-		ret=json_solve_str(&root_node,json_buffer);
+		readlen=json_solve_str(&root_node,json_buffer);
 		if(ret<0)
 		{
 			print_cubeerr("solve json str error!\n");
 			break;
 		}
-		json_offset+=ret;
-		Memcpy(json_buffer,json_buffer+ret,leftlen-ret);
-		leftlen-=ret;
+		json_offset+=readlen;
+		Memcpy(json_buffer,json_buffer+readlen,leftlen-readlen);
+		leftlen-=readlen;
 		json_buffer[leftlen]=0;
 
 		if(finishread==0)
@@ -77,7 +77,7 @@ int read_dispatch_file(char * file_name,int is_aspect)
 			leftlen+=ret;	
 		}	
 	
-		if(ret<32)
+		if(readlen<32)
 			continue;
 
 		policy=dispatch_read_policy(root_node);
