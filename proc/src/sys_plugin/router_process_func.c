@@ -59,7 +59,7 @@ int read_dispatch_file(char * file_name,int is_aspect)
 	while(leftlen>DIGEST_SIZE)
 	{
 		readlen=json_solve_str(&root_node,json_buffer);
-		if(ret<0)
+		if(readlen<0)
 		{
 			print_cubeerr("solve json str error!\n");
 			break;
