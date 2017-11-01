@@ -98,6 +98,7 @@ void * hub_get_connector_byreceiver(void * hub, char * uuid, char * name, char *
 			while(p2p_peer!=NULL)
 			{
 				sys_peer=af_inet_p2p_getpeerexterninfo(p2p_peer);
+				p2p_peer=af_inet_p2p_getnextpeer(this_conn);
 				if(sys_peer!=NULL)
 				{
 					if(uuid!=NULL)
@@ -115,7 +116,6 @@ void * hub_get_connector_byreceiver(void * hub, char * uuid, char * name, char *
 					if(Strncmp(sys_peer->user_name,service,DIGEST_SIZE)==0)
 						return this_conn;		
 				}
-				p2p_peer=af_inet_p2p_getnextpeer(this_conn);
 			}
 			continue;
 		}

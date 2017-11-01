@@ -137,7 +137,7 @@ int message_send(void * message,void * conn)
 	if(record_size<=0)
 		return record_size;
 	retval=temp_conn->conn_ops->write(temp_conn,blob,record_size);
-		print_cubeaudit("send %d data to conn!\n",record_size);
+	print_cubeaudit("send %d data to conn %s!\n",record_size,connector_getname(temp_conn));
 	return retval;
 }
 
@@ -662,30 +662,7 @@ int proc_conn_start(void * sub_proc,void * para)
 						}	
 						
 					}while((peer_info=af_inet_p2p_getnextpeer(recv_conn))!=NULL);
-					
-					//head=Talloc0(sizeof(MSG_HEAD));
-					/*
 
-					ret=recvfrom(recv_conn->conn_fd,head,1024,0,
-						(struct sockaddr_in *)(&from_addr),&from_len);
-					if(from_len<sizeof(MSG_HEAD))
-					{
-						if(Strncmp(head,init_str,Strlen(init_str))==0)
-						{
-							peer_info=af_inet_p2p_findpeer(recv_conn,&from_addr,from_len);
-							if(peer_info==NULL)
-							{
-								af_inet_p2p_addpeer(recv_conn,&from_addr,from_len);
-							}
-						}	
-						
-					}
-					else
-					{
-						msg_head=(MSG_HEAD *)(&head);
-					}
-					*/
-					// build a server syn message with service name,uuid and proc_name
 				}
 				else if(connector_get_type(recv_conn)==CONN_P2P_RAND)
 				{
@@ -730,40 +707,6 @@ int proc_conn_start(void * sub_proc,void * para)
 					}
 
 				}
-				/*	
-					ret=this_conn->conn_ops->read(recv_conn->conn_fd,buffer,2048);
-					if(ret<0)
-						return ret;
-						msg_head=(MSG_HEAD *)(&head);
-
-						if((msg_head->record_type==DTYPE_MESSAGE)
-							&&(msg_head->record_subtype==SUBTYPE_CONN_SYNI))
-						// do the handshake	
-						{
-							int blob_size=sizeof(MSG_HEAD)+msg_head->record_size+msg_head->expand_size;
-							buffer =Talloc0(blob_size);
-							if(buffer==NULL)
-								return -EINVAL;
-							Memcpy(buffer,head,sizeof(MSG_HEAD));
-							ret=recv_conn->conn_ops->read(recv_conn,buffer+sizeof(MSG_HEAD),
-								msg_head->record_size+msg_head->expand_size);
-							if(ret!=blob_size-sizeof(MSG_HEAD))
-								return -EINVAL;
-							ret=message_read_from_blob(&message_box,buffer,blob_size);
-							void * message=build_client_ack_message(message_box,local_uuid,proc_name,recv_conn);
-							if((message == NULL) || IS_ERR(message))
-								continue;
-						
-						}
-					}
-					
-					// build a server syn message with service name,uuid and proc_name
-			
-					retval=message_send(message_box,recv_conn);
-					if(retval<=0)
-						continue;
-				}
-				*/
 			}while(1);
 		}
 
