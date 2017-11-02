@@ -619,12 +619,15 @@ int proc_conn_start(void * sub_proc,void * para)
 						else
 						{
 							int flag;
+							int buf_off=0;
 							buffer_size=ret;
 							while(buffer_size>0)
 							{
-								ret=message_read_from_blob(&message_box,buffer,buffer_size);
+
+								ret=message_read_from_blob(&message_box,buffer+buf_off,buffer_size);
 								if(ret<0)
 									break;
+								buf_off+=ret;
 								buffer_size-=ret;
 								flag=message_get_flag(message_box);
 								if(!(flag&MSG_FLAG_CRYPT))
