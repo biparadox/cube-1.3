@@ -11,7 +11,6 @@
 #include <pthread.h>
 
 #include "data_type.h"
-//#include "../include/kernel_comp.h"
 #include "list.h"
 #include "attrlist.h"
 #include "memfunc.h"
@@ -37,6 +36,7 @@ typedef struct proc_ex_module
 	void * send_queue;
 	void * slots;
 	void * socks;
+	int  state;
 	int  retval;
 }__attribute__((packed)) EX_MODULE;
 
@@ -535,6 +535,23 @@ int ex_module_join(void * ex_mod,int * retval)
 	}
 	ex_module = (EX_MODULE *)ex_mod;
 	ret=pthread_join(ex_module->proc_thread,&thread_return);
+	ex_module->retval=*thread_return;
+	*retval=*thread_return;
+	
+	return ret;
+}
+
+int ex_module_tryjoin(void * ex_mod,int * retval)
+{
+	int ret;
+	int * thread_return;
+	EX_MODULE * ex_module;
+	if(ex_mod==NULL)
+	{
+		return -EINVAL;
+	}
+	ex_module = (EX_MODULE *)ex_mod;
+	ret=pthread_tryjoin_np(ex_module->proc_thread,&thread_return);
 	ex_module->retval=*thread_return;
 	*retval=*thread_return;
 	

@@ -281,14 +281,32 @@ int main(int argc,char **argv)
     if(active_module_no==0)
 	return 0;
 
-    int thread_retval;
-   ret=ex_module_join(router_proc,&thread_retval);
-    // third loop:  join all the non_system module 
-  /*     	
+    // third loop:  test if any module exit
     int * thread_retval;
     thread_retval=malloc(sizeof(int)*active_module_no);
     if(thread_retval==NULL)
 	return NULL;
+    i=0;
+    while(1)
+    {		 
+	  usleep(time_val.tv_usec);		
+  	  ret=get_first_ex_module(&ex_module);
+
+   	  if(ret<0)
+		return ret;
+    	 while(ex_module!=NULL)
+         {
+		if(ex_module_tryjoin(ex_module,&thread_retval[i++])==0)
+		{
+			print_cubeaudit("monitor ex_modulec %s exited successfully!\n",ex_module_getname(ex_module));
+			return thread_retval[i-1];
+		}
+    	  	ret= get_next_ex_module(&ex_module);
+	  }
+	  	
+    }
+    // third loop:  join all the non_system module 
+  /*     	
    
     ret=get_first_ex_module(&ex_module);
 
