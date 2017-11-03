@@ -23,7 +23,7 @@
 #include "file_struct.h"
 
 
-static struct timeval time_val={0,50*1000};
+static struct timeval time_val={0,20*1000};
 static int block_size=512;
 
 
@@ -366,7 +366,7 @@ int proc_file_send(void * sub_proc,void * message)
 		message_add_record(send_msg,pfdata);
 
 		ex_module_sendmsg(sub_proc,send_msg);
-		usleep(100*1000);
+		usleep(50*1000);
 			
 	}
 
