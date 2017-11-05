@@ -303,6 +303,7 @@ int main(int argc,char **argv)
 		}
     	  	ret= get_next_ex_module(&ex_module);
 	  }
+	  i=0;
 	  	
     }
     // third loop:  join all the non_system module 

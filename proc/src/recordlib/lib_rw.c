@@ -16,7 +16,7 @@
 #include "struct_deal.h"
 #include "crypto_func.h"
 #include "memdb.h"
-#include "sys_func.h"
+//#include "sys_func.h"
 
 int lib_read(int fd,int type,int subtype,void ** record)
 {

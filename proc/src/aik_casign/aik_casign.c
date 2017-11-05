@@ -23,6 +23,7 @@
 #include "memdb.h"
 #include "message.h"
 #include "ex_module.h"
+#include "sys_func.h"
 #include "tesi.h"
 
 #include "file_struct.h"
@@ -30,7 +31,7 @@
 #include "tesi_aik_struct.h"
 #include "aik_casign.h"
 
-static struct timeval time_val={0,50*1000};
+//static struct timeval time_val={0,50*1000};
 static char passwd[DIGEST_SIZE];
 
 struct aik_proc_pointer

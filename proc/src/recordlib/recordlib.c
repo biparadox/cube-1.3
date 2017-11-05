@@ -21,7 +21,7 @@
 #include "ex_module.h"
 #include "sys_func.h"
 
-extern struct timeval time_val={0,50*1000};
+//extern struct timeval time_val={0,50*1000};
 
 int recordlib_init(void * sub_proc,void * para)
 {

@@ -10,5 +10,5 @@ struct router_init_para
 int proc_router_init(void * sub_proc,void * para);
 int proc_router_start(void * this_proc,void * para);
 
-static struct timeval time_val={0,50*1000};
+//static struct timeval time_val={0,50*1000};
 #endif

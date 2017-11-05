@@ -36,5 +36,4 @@ int read_json_file(char * file_name);
 void * main_read_func(char * libname,char * sym);
 int read_sys_cfg(void ** lib_para_struct,void * root_node);
 
-static struct timeval time_val={0,20*1000};
 #endif

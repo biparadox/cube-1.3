@@ -2252,7 +2252,7 @@ TSS_RESULT TESI_AIK_CreatePubIdentKey(TSS_HKEY * hKey)
 	TSS_FLAG initFlags;
 	TSS_RESULT result;
 
-	initFlags	= TSS_KEY_TYPE_IDENTITY | TSS_KEY_SIZE_2048  |
+	initFlags	= TSS_KEY_TYPE_IDENTITY | TSS_KEY_SIZE_1024  |
 			TSS_KEY_VOLATILE | TSS_KEY_NO_AUTHORIZATION |
 			TSS_KEY_NOT_MIGRATABLE;
 	return Tspi_Context_CreateObject(hContext,

@@ -23,6 +23,7 @@
 #include "memdb.h"
 #include "message.h"
 #include "ex_module.h"
+#include "sys_func.h"
 #include "tesi.h"
 
 #include "file_struct.h"
@@ -31,7 +32,7 @@
 #include "aik_client.h"
 //#include "key_manage_struct.h"
 
-static struct timeval time_val={0,50*1000};
+//static struct timeval time_val={0,50*1000};
 int print_error(char * str, int result)
 {
 	print_cubeerr("%s %s",str,tss_err_string(result));

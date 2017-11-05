@@ -23,7 +23,7 @@
 #include "file_struct.h"
 
 
-static struct timeval time_val={0,20*1000};
+//static struct timeval time_val={0,20*1000};
 static int block_size=512;
 
 

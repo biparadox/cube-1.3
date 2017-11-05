@@ -31,7 +31,7 @@
 #include "tesi_aik_struct.h"
 #include "tpm_key_create.h"
 
-static struct timeval time_val={0,50*1000};
+//static struct timeval time_val={0,50*1000};
 int print_error(char * str, int result)
 {
 	print_cubeerr("%s %s",str,tss_err_string(result));
