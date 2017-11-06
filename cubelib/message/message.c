@@ -1630,7 +1630,7 @@ int message_output_record_blob(void * message, BYTE ** blob)
 		return -EINVAL;
 	
 	record_size=0;
-	buffer=malloc(4096);
+	buffer=Talloc(4096);
 	if(buffer==NULL)
 		return -ENOMEM;
 
@@ -1662,7 +1662,7 @@ int message_output_record_blob(void * message, BYTE ** blob)
 		ret=message_record_struct2blob(message);
 		if(ret<0)
 		{
-			free(buffer);
+			Free(buffer);
 			return ret;
 		}
 		for(i=0;i<msg_box->head.record_num;i++)
@@ -1671,10 +1671,10 @@ int message_output_record_blob(void * message, BYTE ** blob)
 			offset+=msg_box->record_size[i];
 		}
 	}
-	*blob=malloc(offset);
+	*blob=Talloc(offset);
 	if(*blob==NULL)
 		return -ENOMEM;
-	memcpy(*blob,buffer,offset);
+	Memcpy(*blob,buffer,offset);
 	return offset;
 }
 int  message_read_record_blob(void * message,void * blob,int data_size)

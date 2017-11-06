@@ -286,6 +286,7 @@ int main(int argc,char **argv)
     thread_retval=malloc(sizeof(int)*active_module_no);
     if(thread_retval==NULL)
 	return NULL;
+/*
     i=0;
     while(1)
     {		 
@@ -306,8 +307,9 @@ int main(int argc,char **argv)
 	  i=0;
 	  	
     }
+*/
     // third loop:  join all the non_system module 
-  /*     	
+       	
    
     ret=get_first_ex_module(&ex_module);
 
@@ -333,6 +335,6 @@ int main(int argc,char **argv)
     }
 
     printf("thread return value %d!\n",thread_retval[0]);
-*/
+
     return ret;
 }

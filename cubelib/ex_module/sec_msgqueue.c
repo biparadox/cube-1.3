@@ -30,7 +30,7 @@ int message_queue_init(void ** msg_queue)
 {
 	int ret;
 	MESSAGE_QUEUE * queue;
-	queue=(MESSAGE_QUEUE *)kmalloc(sizeof(MESSAGE_QUEUE),GFP_KERNEL);
+	queue=(MESSAGE_QUEUE *)malloc(sizeof(MESSAGE_QUEUE));
 	if(queue==NULL)
 		return -ENOMEM;
 	Memset(queue,0,sizeof(MESSAGE_QUEUE));
@@ -56,7 +56,7 @@ int __message_queue_putmsg(void * msg_queue,void * msg)
 	if(recordhead==NULL)
 		return -ENOMEM;
 
-	newrecord = kmalloc(sizeof(Record_List),GFP_KERNEL);
+	newrecord = malloc(sizeof(Record_List));
 	if(newrecord==NULL)
 		return -ENOMEM;
 	INIT_LIST_HEAD(&(newrecord->list));
