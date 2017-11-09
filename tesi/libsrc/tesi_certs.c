@@ -664,11 +664,12 @@ TSS_RESULT TESI_Local_GetPubEKWithUUID(char ** uuid,char * pwdo)
 {
 	TSS_RESULT result;
 	TSS_HKEY   hPubKey;
+	int ret;
 
 	BYTE opass[20];
 	BYTE digest[DIGEST_SIZE];
-	char temp_file[DIGEST_SIZE*2+5];
-	char filename[DIGEST_SIZE*2+5];
+	char temp_file[DIGEST_SIZE*3];
+	char filename[DIGEST_SIZE*3];
 	
 	char * ek_uuid;
 
@@ -693,7 +694,7 @@ TSS_RESULT TESI_Local_GetPubEKWithUUID(char ** uuid,char * pwdo)
 	}
 
 	result = Tspi_TPM_GetRandom( hTPM, DIGEST_SIZE, &digest);
-	int ret;
+	Memset(temp_file,0,DIGEST_SIZE*3);
 	ret=digest_to_uuid(digest,temp_file);
 	result=TESI_Local_WritePubKey(hPubKey,temp_file);
 	strcat(temp_file,".pem");
@@ -705,6 +706,7 @@ TSS_RESULT TESI_Local_GetPubEKWithUUID(char ** uuid,char * pwdo)
 		return 0;
 	}
 	ret=digest_to_uuid(digest,ek_uuid);
+	Memset(filename,0,DIGEST_SIZE*3);
 	sprintf(filename,"%64s\.pem",ek_uuid);
 	*uuid=ek_uuid;
 	rename(temp_file,filename);
