@@ -19,6 +19,7 @@
 #include "basefunc.h"
 #include "memdb.h"
 #include "message.h"
+#include "sys_func.h"
 
 #include "connector.h"
 
@@ -975,6 +976,7 @@ int  connector_af_inet_p2p_read (void * connector,void * buf, size_t count)
 	
 		while((retval=recvfrom(this_conn->conn_fd,buffer,MAX_P2P_SIZE,0,&adr_inet,&len_inet))>0)
 		{
+			print_cubeaudit("p2p read %d data !\n",retval);
 			peer_info=af_inet_p2p_findpeer(this_conn,&adr_inet,len_inet);
 			if(peer_info==NULL)
 			{
@@ -1066,6 +1068,7 @@ int  connector_af_inet_p2p_write (void * connector,void * buf,size_t count)
 	}
 
  	retval=sendto(this_conn->conn_fd,buf,count,0,&peer_info->adr_inet,peer_info->len_inet); 
+	print_cubeaudit("p2p send %d data return value%d!\n",count,retval);
 	return retval;
 }
 

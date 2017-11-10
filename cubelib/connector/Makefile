@@ -5,7 +5,7 @@ LD=ld
 CCP=g++
 STRUCTOBJ= connector.o connector_inet.o connector_hub.o connect_message.o
 LIBNAME=connector
-DEPENDLIB= -lmessage -lmemdb -lbasefunc -lcrypto_func -lstruct -ljson -lalloc -lstring
+DEPENDLIB= -lsys_func -lmessage -lmemdb -lbasefunc -lcrypto_func -lstruct -ljson -lalloc -lstring
 
 main: ../lib/lib$(LIBNAME).so 
 test_main: test_main.c ../lib/lib$(LIBNAME).so 
