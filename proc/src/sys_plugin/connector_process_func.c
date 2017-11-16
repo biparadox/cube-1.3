@@ -27,6 +27,7 @@
 #include "connector_value.h"
 #include "connector_process_func.h"
 #include "sys_func.h"
+#include "conn_struct.h"
 
 struct  connector_config
 {
@@ -67,7 +68,7 @@ static struct struct_elem_attr connector_config_desc[] =
     {"attr",CUBE_TYPE_ENUM,sizeof(int),&connector_attr_valuelist,NULL},
     {NULL,CUBE_TYPE_ENDDATA,0,NULL,NULL}
 };
-
+/*
 struct connect_ack
 {
 	char uuid[DIGEST_SIZE];    //client's uuid
@@ -91,7 +92,7 @@ struct connect_syn
 	int  flags;
 	char nonce[DIGEST_SIZE];
 }__attribute__((packed));
-
+*/
 static void * default_conn=NULL;
  
 static void * conn_cfg_template=NULL;
