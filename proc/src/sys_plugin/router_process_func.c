@@ -450,7 +450,6 @@ int proc_router_start(void * sub_proc,void * para)
 				ret=proc_router_send_msg(message,local_uuid,proc_name);
 				if(ret<0)
 					return ret;
-				
 			}
 			else
 			{
@@ -567,6 +566,7 @@ int proc_router_start(void * sub_proc,void * para)
 							}
 						}
 						else
+						// 为本地新消息查找匹配策略
 						{
 							ret=router_find_route_policy(message,&msg_policy,origin_proc);	
 							if(ret<0)

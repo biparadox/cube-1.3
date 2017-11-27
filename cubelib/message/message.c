@@ -2017,6 +2017,7 @@ int message_read_typestr(char * str, int  * type, int * subtype)
 	}	
 		
 	// get typestr 
+	i=0;
 	while((str[offset]!=',')&&(str[offset]!=')'))
 	{
 		buffer[i++]=str[offset++];
