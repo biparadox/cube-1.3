@@ -18,6 +18,7 @@
 #include "message.h"
 #include "connector.h"
 #include "ex_module.h"
+#include "sys_func.h"
 
 static char * err_file="cube_err.log";
 static char * audit_file="cube_audit.log";

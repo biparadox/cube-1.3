@@ -52,7 +52,7 @@ EX_MODULE * main_module;
 
 void * ex_module_addslot(void * ex_mod,void * slot_port)
 {
-	EX_MODULE * ex_module=ex_mod;
+	EX_MODULE * ex_module=*(EX_MODULE **)ex_mod;
 	if(ex_mod==NULL)
 		return NULL;
 	return slot_list_addslot(ex_module->slots,slot_port);
@@ -60,7 +60,7 @@ void * ex_module_addslot(void * ex_mod,void * slot_port)
 
 void * ex_module_addsock(void * ex_mod,void * sock)
 {
-	EX_MODULE * ex_module=ex_mod;
+	EX_MODULE * ex_module=*(EX_MODULE **)ex_mod;
 	if(ex_mod==NULL)
 		return NULL;
 	return slot_list_addslot(ex_module->socks,sock);
@@ -68,7 +68,7 @@ void * ex_module_addsock(void * ex_mod,void * sock)
 
 void * ex_module_removesock(void * ex_mod,BYTE * uuid)
 {
-	EX_MODULE * ex_module=ex_mod;
+	EX_MODULE * ex_module=*(EX_MODULE **)ex_mod;
 	if(ex_mod==NULL)
 		return NULL;
 	return slot_list_removesock(ex_module->socks,uuid);
@@ -76,7 +76,7 @@ void * ex_module_removesock(void * ex_mod,BYTE * uuid)
 
 void * ex_module_findport(void * ex_mod,char *name)
 {
-	EX_MODULE * ex_module=ex_mod;
+	EX_MODULE * ex_module=*(EX_MODULE **)ex_mod;
 	if(ex_mod==NULL)
 		return NULL;
 	return slot_list_findport(ex_module->slots,name);
@@ -84,7 +84,7 @@ void * ex_module_findport(void * ex_mod,char *name)
 
 void * ex_module_findsock(void * ex_mod,BYTE * uuid)
 {
-	EX_MODULE * ex_module=ex_mod;
+	EX_MODULE * ex_module=*(EX_MODULE **)ex_mod;
 	if(ex_mod==NULL)
 		return NULL;
 	return slot_list_findsock(ex_module->socks,uuid);
@@ -189,7 +189,7 @@ int find_ex_module(char * name,void ** ex_mod)
 	}
 	record_elem=List_entry(curr_head,Record_List,list);
 	pthread_rwlock_unlock(&(ex_module_list->rwlock));
-	*ex_mod=record_elem->record;
+	*ex_mod=&(record_elem->record);
 	return 1;	
 }
 
@@ -212,7 +212,7 @@ int get_first_ex_module(void **ex_mod)
 	ex_module_list->curr = curr_head;
 	newrecord = List_entry(curr_head,Record_List,list);
 	pthread_rwlock_unlock(&(ex_module_list->rwlock));
-	*ex_mod=newrecord->record;
+	*ex_mod=&(newrecord->record);
 	return 1;
 }
 
@@ -222,24 +222,20 @@ int get_next_ex_module(void **ex_mod)
 	Record_List * newrecord;
 	struct List_head * curr_head;
 
+	if((ex_mod == NULL) ||(*ex_mod==NULL))
+		return -EINVAL;
+
 	recordhead = &(ex_module_list->head);
-	if(recordhead==NULL)
-	{
-		*ex_mod=NULL;
-		return 0;
-	}
-	pthread_rwlock_rdlock(&(ex_module_list->rwlock));
-	curr_head = ex_module_list->curr->next;
+	newrecord = List_entry(*ex_mod,Record_List,record);
+
+	curr_head = newrecord->list.next;
 	if(curr_head==recordhead)
 	{
-		pthread_rwlock_unlock(&(ex_module_list->rwlock));
 		*ex_mod=NULL;
 		return 0;
 	}
-	ex_module_list->curr = curr_head;
 	newrecord = List_entry(curr_head,Record_List,list);
-	pthread_rwlock_unlock(&(ex_module_list->rwlock));
-	*ex_mod=newrecord->record;
+	*ex_mod=&(newrecord->record);
 	return 1;
 }
 
@@ -252,11 +248,8 @@ int add_ex_module(void * ex_module)
 	if(recordhead==NULL)
 		return -ENOMEM;
 
-	newrecord = malloc(sizeof(Record_List));
-	if(newrecord==NULL)
-		return -ENOMEM;
-	INIT_LIST_HEAD(&(newrecord->list));
-	newrecord->record=ex_module;
+	newrecord=List_entry(ex_module,Record_List,record);
+
 	pthread_rwlock_wrlock(&(ex_module_list->rwlock));
 	List_add_tail(&(newrecord->list),recordhead);
 	pthread_rwlock_unlock(&(ex_module_list->rwlock));
@@ -284,7 +277,7 @@ int remove_ex_module(char * name,void **ex_mod)
 	record_elem=List_entry(curr_head,Record_List,list);
 	List_del(curr_head);
 	pthread_rwlock_unlock(&(ex_module_list->rwlock));
-	record=record_elem->record;
+	record=&(record_elem->record);
 	free(record_elem);
         *ex_mod=record;	
 	return 1;
@@ -294,15 +287,26 @@ int ex_module_create(char * name,int type,struct struct_elem_attr *  context_des
 {
 	int ret;
 	EX_MODULE * ex_module;
+	Record_List * module_record;
 	if(name==NULL)
 		return -EINVAL;
 
+	
 
 	// alloc mem for ex_module
-	ex_module=malloc(sizeof(EX_MODULE));
+	ex_module=Calloc(sizeof(EX_MODULE));
 	if(ex_module==NULL)
 		return -ENOMEM;
-	memset(ex_module,0,sizeof(EX_MODULE));
+	Memset(ex_module,0,sizeof(EX_MODULE));
+
+	// alloc mem for module's head
+	module_record=Calloc(sizeof(*module_record));
+	if(module_record==NULL)
+		return -EINVAL;
+	
+	INIT_LIST_HEAD(&(module_record->list));
+	module_record->record=ex_module;
+	*ex_mod=&(module_record->record);
 
 	// assign some  value for ex_module
 	strncpy(ex_module->head.name,name,DIGEST_SIZE*2);
@@ -335,7 +339,6 @@ int ex_module_create(char * name,int type,struct struct_elem_attr *  context_des
 		return -EINVAL;
 	}
 
-	*ex_mod=ex_module;		
 
 	pthread_attr_init(&(ex_module->thread_attr));
 	ex_module->head.type=type;
@@ -350,7 +353,6 @@ int ex_module_create(char * name,int type,struct struct_elem_attr *  context_des
 	ex_module->socks=slot_list_init();
 	if(ex_module->socks==NULL)
 		return -EINVAL;
-
 	
 	// init the proc's mutex and the cond
 	ret=pthread_mutex_init(&(ex_module->mutex),NULL);
@@ -361,10 +363,14 @@ int ex_module_create(char * name,int type,struct struct_elem_attr *  context_des
 int ex_module_setinitfunc(void * ex_mod,void * init)
 {
 	int ret;
-	EX_MODULE * ex_module=(EX_MODULE *)ex_mod;
+	EX_MODULE * ex_module;
 	if(ex_mod==NULL)
 	{
 		ex_module=main_module;
+	}
+	else
+	{
+		ex_module=*(EX_MODULE **)ex_mod;
 	}
 	ex_module->init=init;
 	return 0;
@@ -378,7 +384,7 @@ int ex_module_setstartfunc(void * ex_mod,void * start)
 	EX_MODULE * ex_module;
 	if(ex_mod==NULL)
 		return -EINVAL;
-	ex_module = (EX_MODULE *)ex_mod;
+	ex_module = *(EX_MODULE **)ex_mod;
 	ex_module->start=start;
 	return 0;
 }
@@ -389,7 +395,7 @@ char * ex_module_getname(void * ex_mod)
 	EX_MODULE * ex_module;
 	if(ex_mod==NULL)
 		return NULL;
-	ex_module = (EX_MODULE *)ex_mod;
+	ex_module = *(EX_MODULE **)ex_mod;
 
 	return &ex_module->head.name;
 }
@@ -400,7 +406,7 @@ int ex_module_setname(void * ex_mod,char * name)
 	EX_MODULE * ex_module;
 	if(ex_mod==NULL)
 		return -EINVAL;
-	ex_module = (EX_MODULE *)ex_mod;
+	ex_module = *(EX_MODULE **)ex_mod;
 	strncpy(ex_module->head.name,name,DIGEST_SIZE);
 
 	return &ex_module->head.name;
@@ -412,7 +418,7 @@ int ex_module_setpointer(void * ex_mod,void * pointer)
 	EX_MODULE * ex_module;
 	if(ex_mod==NULL)
 		return -EINVAL;
-	ex_module = (EX_MODULE *)ex_mod;
+	ex_module = *(EX_MODULE **)ex_mod;
 	ex_module->pointer=pointer;
 
 	return 0;
@@ -424,7 +430,7 @@ void * ex_module_getpointer(void * ex_mod)
 	EX_MODULE * ex_module;
 	if(ex_mod==NULL)
 		return NULL;
-	ex_module = (EX_MODULE *)ex_mod;
+	ex_module = *(EX_MODULE **)ex_mod;
 
 	return ex_module->pointer;
 }
@@ -435,7 +441,9 @@ int ex_module_getcontext(void * ex_mod,void ** context)
 	EX_MODULE * ex_module;
 	if(ex_mod==NULL)
 		return -EINVAL;
-	ex_module = (EX_MODULE *)ex_mod;
+	ex_module = *(EX_MODULE **)ex_mod;
+	if(ex_module==NULL)
+		return -EINVAL;
 	*context=ex_module->context;
 	return 0;
 }
@@ -446,7 +454,9 @@ int ex_module_gettype(void * ex_mod)
 	EX_MODULE * ex_module;
 	if(ex_mod==NULL)
 		return -EINVAL;
-	ex_module = (EX_MODULE *)ex_mod;
+	ex_module = *(EX_MODULE **)ex_mod;
+	if(ex_module==NULL)
+		return -EINVAL;
 
 	return ex_module->head.type;
 }
@@ -454,27 +464,42 @@ int _ex_module_passpara(void * pointer)
 {
 	struct subject_para_struct
 	{
-		EX_MODULE * ex_module;
+		void  * ex_mod;
 		void * para;
 		int (*start)(void *,void *);
 	};
 	
 	struct subject_para_struct * trans_pointer=pointer;
+
+	EX_MODULE * ex_module;
+
 	
 	if((trans_pointer==NULL) ||IS_ERR(trans_pointer))
 	pthread_exit((void *)-EINVAL);
-	trans_pointer->ex_module->retval=trans_pointer->start(trans_pointer->ex_module,trans_pointer->para);
-	pthread_exit((void *)&(trans_pointer->ex_module->retval));
+	if(trans_pointer->ex_mod==NULL)
+	{
+		ex_module=main_module;
+	}
+	else
+	{
+		ex_module=*(EX_MODULE **)(trans_pointer->ex_mod);
+	}
+	ex_module->retval=trans_pointer->start(trans_pointer->ex_mod,trans_pointer->para);
+	pthread_exit((void *)&(ex_module->retval));
 
 }
 
 int ex_module_init(void * ex_mod,void * para)
 {
 	int ret=0;
-	EX_MODULE * ex_module=(EX_MODULE *)ex_mod;
+	EX_MODULE * ex_module;
 	if(ex_mod==NULL)
 	{
 		ex_module=main_module;
+	}
+	else
+	{
+		ex_module=*(EX_MODULE **)ex_mod;
 	}
 
 	// judge if the ex_module's state is right
@@ -482,7 +507,7 @@ int ex_module_init(void * ex_mod,void * para)
 	{
 		return ret;
 	}
-	ret=ex_module->init(ex_module,para);
+	ret=ex_module->init(ex_mod,para);
 
 	return ret;
 }
@@ -491,7 +516,7 @@ int ex_module_start(void * ex_mod,void * para)
 {
 	struct subject_para_struct
 	{
-		EX_MODULE * ex_module;
+		void * ex_mod;
 		void * para;
 		int (*start)(void *,void *);
 	};
@@ -500,7 +525,7 @@ int ex_module_start(void * ex_mod,void * para)
 
 	int ret;
 	
-	EX_MODULE * ex_module=(EX_MODULE *)ex_mod;
+	EX_MODULE * ex_module=*(EX_MODULE **)ex_mod;
 	if(ex_mod==NULL)
 		return -EINVAL;
 	if(ex_module->start==NULL)
@@ -514,8 +539,7 @@ int ex_module_start(void * ex_mod,void * para)
 	}
 
 
-	ex_module = (EX_MODULE *)ex_mod;
-	trans_pointer->ex_module=ex_mod;
+	trans_pointer->ex_mod=ex_mod;
 	trans_pointer->para=para;
 	trans_pointer->start=ex_module->start;
 	
@@ -533,7 +557,7 @@ int ex_module_join(void * ex_mod,int * retval)
 	{
 		return -EINVAL;
 	}
-	ex_module = (EX_MODULE *)ex_mod;
+	ex_module = *(EX_MODULE **)ex_mod;
 	ret=pthread_join(ex_module->proc_thread,&thread_return);
 	ex_module->retval=*thread_return;
 	*retval=*thread_return;
@@ -550,7 +574,7 @@ int ex_module_tryjoin(void * ex_mod,int * retval)
 	{
 		return -EINVAL;
 	}
-	ex_module = (EX_MODULE *)ex_mod;
+	ex_module = *(EX_MODULE **)ex_mod;
 	ret=pthread_tryjoin_np(ex_module->proc_thread,&thread_return);
 	ex_module->retval=*thread_return;
 	*retval=*thread_return;
@@ -587,7 +611,7 @@ int ex_module_proc_getpara(void * arg,void ** ex_mod,void ** para)
 int ex_module_sendmsg(void * ex_mod,void *msg)
 {
 	int ret;
-	EX_MODULE * ex_module=(EX_MODULE *)ex_mod;
+	EX_MODULE * ex_module=*(EX_MODULE **)ex_mod;
 	if(ex_mod==NULL)
 		return -EINVAL;
 	if(msg==NULL)
@@ -604,7 +628,7 @@ int ex_module_sendmsg(void * ex_mod,void *msg)
 int ex_module_recvmsg(void * ex_mod,void **msg)
 {
 	int ret;
-	EX_MODULE * ex_module=(EX_MODULE *)ex_mod;
+	EX_MODULE * ex_module=*(EX_MODULE **)ex_mod;
 	if(ex_mod==NULL)
 		return -EINVAL;
 	*msg=NULL;
@@ -616,7 +640,7 @@ int ex_module_recvmsg(void * ex_mod,void **msg)
 int send_ex_module_msg(void * ex_mod,void * msg)
 {
 	int ret;
-	EX_MODULE * ex_module=(EX_MODULE *)ex_mod;
+	EX_MODULE * ex_module=*(EX_MODULE **)ex_mod;
 	if(ex_mod==NULL)
 		return -EINVAL;
 
@@ -626,7 +650,7 @@ int send_ex_module_msg(void * ex_mod,void * msg)
 int recv_ex_module_msg(void * ex_mod,void ** msg)
 {
 	int ret;
-	EX_MODULE * ex_module=(EX_MODULE *)ex_mod;
+	EX_MODULE * ex_module=*(EX_MODULE **)ex_mod;
 	if(ex_mod==NULL)
 		return -EINVAL;
 
@@ -639,7 +663,7 @@ void ex_module_destroy(void * ex_mod)
 	EX_MODULE * ex_module;
 	if(ex_mod==NULL)
 		return ;
-	ex_module = (EX_MODULE *)ex_mod;
+	ex_module = *(EX_MODULE **)ex_mod;
 	pthread_mutex_destroy(&(ex_module->mutex));
 	free(ex_module);
 	return;

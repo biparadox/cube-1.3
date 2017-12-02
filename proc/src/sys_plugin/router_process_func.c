@@ -305,6 +305,9 @@ int proc_router_start(void * sub_proc,void * para)
 		char aspect_proc[DIGEST_SIZE*2];
 		char * origin_proc;
 
+		if(proc_share_data_getstate()<PROC_LOCAL_START)
+			continue;
+
 		// throughout all the sub_proc
 		ret=get_first_ex_module(&sub_proc);
 		msg_policy=NULL;

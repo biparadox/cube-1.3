@@ -18,6 +18,7 @@
 #include "message.h"
 #include "connector.h"
 #include "ex_module.h"
+//#include "sys_func.h"
 
 #include "main_proc_func.h"
 
@@ -141,7 +142,10 @@ int read_plugin_cfg(void ** plugin,void * root_node)
 
     temp_node=json_find_elem("libname",root_node);
     if(temp_node==NULL)
+    {
+	print_cubeerr("wrong plugin format!\n");
 	return -EINVAL;
+    }
 
     libname=json_get_valuestr(temp_node);
     Strcpy(filename,libname);
@@ -168,26 +172,41 @@ int read_plugin_cfg(void ** plugin,void * root_node)
     		Strcat(filename,".cfg");
     		fd=open(filename,O_RDONLY);
 		if(fd<0)
+		{
+			print_cubeerr("can't find plugin %s!\n",libname);
 			return -EIO;
+		}
 	}
     }	
 
     ret=read_json_node(fd,&lib_node);
     if(ret<0)
+    {
+	print_cubeerr("plugin %s's config file read failed!",libname);
 	return ret;	
+    }
     close(fd);
 
     ret=read_sys_cfg(&lib_para,lib_node);
     if(ret<0)
-	return ret;		    	
+    {
+	print_cubeerr("plugin %s read failed!",libname);
+	return ret;		 
+    }   	
     temp_node=json_find_elem("name",root_node);
     if(temp_node==NULL)
 	return -EINVAL;	
     ret=ex_module_create(json_get_valuestr(temp_node),lib_para->type,NULL,&ex_module);
     if(ret<0)
+    {
+	print_cubeerr("create plugin %s failed!\n",libname);
 	return -EINVAL;
+    }
     if(lib_para->dynamic_lib==NULL)
+    {
+	print_cubeerr("plugin %s's dynamic lib do not exists!\n",libname);
 	return -EINVAL;
+    }
  
     if(plugin_dir==NULL)
     {	
@@ -202,11 +221,19 @@ int read_plugin_cfg(void ** plugin,void * root_node)
 
     init=main_read_func(filename,lib_para->init_func);
     if(init==NULL)
+    {
+	print_cubeerr("plugin %s's dynamic lib %s  read init func %s failed!\n",
+		libname,filename,lib_para->init_func);
 	return -EINVAL;
+    }
     ex_module_setinitfunc(ex_module,init);
     start=main_read_func(filename,lib_para->start_func);
     if(init==NULL)
+    {
+	print_cubeerr("plugin %s's dynamic lib %s  read init func %s failed!\n",
+		libname,filename,lib_para->init_func);
 	return -EINVAL;
+    }
     ex_module_setstartfunc(ex_module,start);
     init_para=NULL;
     temp_node=json_find_elem("init_para",root_node);
@@ -217,7 +244,10 @@ int read_plugin_cfg(void ** plugin,void * root_node)
 		return -ENOMEM;
 	ret=json_2_struct(temp_node,init_para,lib_para->para_template);
 	if(ret<0)
+	{
+		print_cubeerr("set plugin %s's init para failed!\n",libname);
 		return -EINVAL;
+        }
     }
     ret=ex_module_init(ex_module,init_para);
     *plugin=ex_module;	  

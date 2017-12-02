@@ -281,6 +281,8 @@ int main(int argc,char **argv)
     if(active_module_no==0)
 	return 0;
 
+    proc_share_data_setstate(PROC_LOCAL_START);
+
     // third loop:  test if any module exit
     int * thread_retval;
     thread_retval=malloc(sizeof(int)*active_module_no);
@@ -310,7 +312,6 @@ int main(int argc,char **argv)
 */
     // third loop:  join all the non_system module 
        	
-   
     ret=get_first_ex_module(&ex_module);
 
     if(ret<0)
@@ -325,7 +326,11 @@ int main(int argc,char **argv)
 		{
     			ret=ex_module_join(ex_module,&thread_retval[i++]);
 	  		if(ret<0)
+			{
+				print_cubeerr("%s module exit!\n",ex_module_getname(ex_module));
   				return ret;
+			}
+			print_cubeaudit("%s module exit!\n",ex_module_getname(ex_module));
 		}
 	  }
 	  	
@@ -335,6 +340,5 @@ int main(int argc,char **argv)
     }
 
     printf("thread return value %d!\n",thread_retval[0]);
-
     return ret;
 }
