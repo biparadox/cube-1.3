@@ -320,7 +320,8 @@ int main(int argc,char **argv)
     while(ex_module!=NULL)
     {
 	  if((ex_module_gettype(ex_module) == MOD_TYPE_MONITOR)
-	  	||(ex_module_gettype(ex_module) == MOD_TYPE_PORT))
+	  	||(ex_module_gettype(ex_module) == MOD_TYPE_PORT)
+	  	||(ex_module_gettype(ex_module) == MOD_TYPE_START))
 	  {
 		if(Strcmp(ex_module_getname(ex_module),"router_proc")!=0)
 		{
