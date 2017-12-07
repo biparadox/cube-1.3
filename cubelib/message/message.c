@@ -1311,15 +1311,14 @@ int message_get_uuid(void * message,BYTE * uuid)
 }
 // message add functions
 
-/*
 int message_add_record_blob(void * message,int record_size, BYTE * record)
 {
 	struct message_box * msg_box;
 	int ret;
 	MSG_HEAD * msg_head;
+        int curr_site;
 	BYTE * data;
-    int curr_site;
-	
+
 	msg_box=(struct message_box *)message;
 
 	msg_head=&(msg_box->head);
@@ -1328,22 +1327,22 @@ int message_add_record_blob(void * message,int record_size, BYTE * record)
 	if(record==NULL)
 		return -EINVAL;
 	
-//	if(msg_box->box_state!=MSG_BOX_ADD_RECORD)
-//		return -EINVAL;
+    	int record_no=msg_head->record_num;
+
+    	for(curr_site=0;curr_site<record_no;curr_site++)
+    	{
+        	if((msg_box->precord[curr_site]==NULL)
+                    	&&(msg_box->record[curr_site]==NULL))
+        	break;
+    	}
+    	if(curr_site==record_no)
+        	ret=__message_add_record_site(message,1);
+    	if(ret<0)
+	    	return ret;
+
 	
-	int record_no=msg_head->record_num;
-
-    for(curr_site=0;curr_site<record_no;curr_site++)
-    {
-        if((msg_box->precord[curr_site]==NULL)
-                    &&(msg_box->record[curr_site]==NULL))
-        break;
-    }
-    if(curr_site==record_no)
-        __message_add_record_site(message,1);
-
     // malloc new record's space
-	data=kmalloc(record_size,GFP_KERNEL);
+	data=Dalloc(record_size,msg_box);
 	if(data==NULL)
 		return -ENOMEM;
 	memcpy(data,record,record_size);
@@ -1351,10 +1350,10 @@ int message_add_record_blob(void * message,int record_size, BYTE * record)
 
 	msg_box->record_size[record_no]=record_size;
 	msg_box->head.record_size+=record_size;
-    msg_box->box_state=MSG_BOX_ADD;
+    	msg_box->box_state=MSG_BOX_ADD;
 	return ret;
 }
-*/
+
 int __message_add_expand_site(void * message,int increment)
 {
 	struct message_box * msg_box;

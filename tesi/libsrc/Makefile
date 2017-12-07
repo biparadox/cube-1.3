@@ -1,5 +1,5 @@
 FLAGS= -g -o 
-CFLAGS= -g -c -fPIC -DUSER_MOD -I$(CUBELIBPATH)/include
+CFLAGS= -g -c -fPIC -DUSER_MOD -I$(CUBELIBPATH)/include -I//usr/local/include
 CC=gcc
 CCP=g++
 STRUCTOBJ= common.o tesi_certs.o key_certify.o

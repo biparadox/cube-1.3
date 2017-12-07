@@ -495,12 +495,9 @@ int ex_module_init(void * ex_mod,void * para)
 	EX_MODULE * ex_module;
 	if(ex_mod==NULL)
 	{
-		ex_module=main_module;
+		ex_mod=&main_module;
 	}
-	else
-	{
-		ex_module=*(EX_MODULE **)ex_mod;
-	}
+	ex_module=*(EX_MODULE **)ex_mod;
 
 	// judge if the ex_module's state is right
 	if(ex_module->init ==NULL)
