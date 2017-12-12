@@ -201,9 +201,9 @@ int read_json_node(int fd, void ** node)
 	int json_offset;
 
 	void * root_node;
-	char json_buffer[1025];
+	char json_buffer[4097];
 
-	readlen=read(fd,json_buffer,1024);
+	readlen=read(fd,json_buffer,4096);
 	if(readlen<0)
 		return -EIO;
 	json_buffer[readlen]=0;
