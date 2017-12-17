@@ -1346,7 +1346,7 @@ int _setvaluefromjson(void * addr,void * node,void * elem)
 {
 	struct elem_template * curr_elem=elem;
 	int ret;
-	char buf[DIGEST_SIZE*16];
+	char buf[DIGEST_SIZE*32];
 	switch(json_get_type(node))
 	{
 		case JSON_ELEM_STRING:
