@@ -182,8 +182,7 @@ int subtype_get_text_value(void * addr,char * text,void * elem){
 	int defvalue;
 
 	enum_value=*(int *)addr;
-	if(enum_value<0)
-		return -EINVAL;
+
 	if(enum_value==0)
 	{
 		len=Strlen(nulstring);
