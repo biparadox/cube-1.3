@@ -3,6 +3,10 @@
 
 #ifndef NULL
 	#define NULL 0
+
+#define Struct_elem_addr(ptr,type,member) \
+	((void *)((char *)(ptr)+(unsigned long)(&((type *)0)->member)))
+
 #endif
 void * Memcpy(void * dest,void * src, unsigned int count);
 void * Memset(void * s,int c, int n);
