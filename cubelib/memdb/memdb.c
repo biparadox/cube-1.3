@@ -329,8 +329,6 @@ int memdb_read_desc(void * root, BYTE * uuid)
 	char * typestr;
 	DB_RECORD * db_record;
 	
-
-
 	head_node=json_find_elem("head",root);
 	if(head_node==NULL)
 	{
@@ -380,6 +378,10 @@ int memdb_read_desc(void * root, BYTE * uuid)
 	{
 		ret=read_default_json_desc(record_node,db_record);
 
+	}
+	if(ret<0)
+	{
+		printf("read record %s failed!\n",db_record->head.name);
 	}
 
 	return ret;
