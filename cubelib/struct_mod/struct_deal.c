@@ -1036,7 +1036,7 @@ int struct_comp_elem_value(char * name,void * addr, void * elem_value,void * tem
 {
 	struct elem_template * elem;
 	void * elem_addr;
-	BYTE value[DIGEST_SIZE*32];
+	BYTE value[DIGEST_SIZE*64];
 	int ret;
 
 	ret=struct_read_elem(name,addr,value,template);
@@ -1346,7 +1346,7 @@ int _setvaluefromjson(void * addr,void * node,void * elem)
 {
 	struct elem_template * curr_elem=elem;
 	int ret;
-	char buf[DIGEST_SIZE*32];
+	char buf[DIGEST_SIZE*64];
 	switch(json_get_type(node))
 	{
 		case JSON_ELEM_STRING:

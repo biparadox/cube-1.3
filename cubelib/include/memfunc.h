@@ -4,6 +4,12 @@
 #ifndef NULL
 	#define NULL 0
 
+#define Struct_elem_offset(ptr,type,member) \
+	((unsigned long)(&((type *)0)->member))
+
+#define Struct_elemtail_offset(ptr,type,member) \
+	((unsigned long)(&((type *)0)->member)+sizeof(((type *)ptr)->member))
+
 #define Struct_elem_addr(ptr,type,member) \
 	((void *)((char *)(ptr)+(unsigned long)(&((type *)0)->member)))
 
