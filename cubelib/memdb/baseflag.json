@@ -1,23 +1,26 @@
 {
-	"info-type":"namelist",
 	"head":
 	{
 		"name":"baseflag",
+		"type":"NAMELIST"
 	}
-	"elem_no":12,
-	"elemlist":
-	[
-		"INDEX=0x01",
-		"KEY=0x02",
-		"INPUT=0x04",
-		"DESC=0x10",
-		"TEMP1=0x1000",
-		"TEMP2=0x2000",
-		"TEMP3=0x4000",
-		"TEMP4=0x8000",
-		"TEMP5=0x10000",
-		"TEMP6=0x20000",
-		"TEMP7=0x40000",
-		"TEMP8=0x80000",
-	]
+	"record":
+	{
+		"elem_no":12,
+		"elemlist":
+		[
+			"INDEX=0x01",
+			"KEY=0x02",
+			"INPUT=0x04",
+			"DESC=0x10",
+			"TEMP1=0x1000",
+			"TEMP2=0x2000",
+			"TEMP3=0x4000",
+			"TEMP4=0x8000",
+			"TEMP5=0x10000",
+			"TEMP6=0x20000",
+			"TEMP7=0x40000",
+			"TEMP8=0x80000",
+		]
+	}
 }
