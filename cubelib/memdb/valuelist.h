@@ -54,6 +54,7 @@ NAME2VALUE elem_attr_flaglist_array[] =
 {
     {"INDEX",CUBE_ELEM_FLAG_INDEX},
     {"KEY",CUBE_ELEM_FLAG_KEY},
+    {"INPUT",CUBE_ELEM_FLAG_INPUT},
     {"DESC",CUBE_ELEM_FLAG_DESC},
     {NULL,0}
 };
