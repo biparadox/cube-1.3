@@ -11,6 +11,7 @@
 #include <pthread.h>
 
 #include "data_type.h"
+#include "alloc.h"
 #include "list.h"
 #include "attrlist.h"
 #include "memfunc.h"
