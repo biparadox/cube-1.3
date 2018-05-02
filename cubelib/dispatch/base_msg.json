@@ -101,3 +101,23 @@
 		}
 	}
 }
+{
+	"head":
+	{
+		"name":"sized_bindata",
+		"type":"RECORDTYPE"
+	},
+	"record":
+	{
+		"type":"MESSAGE",
+		"subtype":"SIZED_BINDATA",
+		"struct_desc":
+		{
+			"elem_desc":
+			[
+				{"name":"size","type":"INT"},
+				{"name":"bindata","type":"DEFINE","def":"size"}
+			]
+		}
+	}
+}

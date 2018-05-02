@@ -27,7 +27,8 @@ enum subtypelist_message
 	SUBTYPE_BASE_MSG,
 	SUBTYPE_UUID_RECORD,
 	SUBTYPE_CTRL_MSG,
-	SUBTYPE_TYPES
+	SUBTYPE_TYPES,
+	SUBTYPE_SIZED_BINDATA
 };
 
 enum subtypelist_msg_expand
@@ -128,9 +129,16 @@ struct basic_message  // record (MESSAGE,BASIC_MSG)
 	char * message;
 }__attribute__((packed));
 
-struct uuid_record    // record (MESSAGE,UUID)
+struct uuid_record    // record (MESSAGE,UUID_RECORD)
 {
 	BYTE uuid[DIGEST_SIZE];
+
+}__attribute__((packed));
+
+struct sized_bindata    // record (MESSAGE,UUID)
+{
+	int size;
+	BYTE * bindata;
 
 }__attribute__((packed));
 
