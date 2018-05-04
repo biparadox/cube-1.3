@@ -34,6 +34,6 @@ char *  get_temp_filename(char * tag );
 int get_local_uuid(BYTE * uuid);
 int read_json_file(char * file_name);
 void * main_read_func(char * libname,char * sym);
-int read_sys_cfg(void ** lib_para_struct,void * root_node);
+int read_sys_cfg(void ** lib_para_struct,void * root_node,char * plugin_dir);
 
 #endif

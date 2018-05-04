@@ -135,7 +135,7 @@ int main(int argc,char **argv)
     	 close(fd);
 	
 
-    	 ret=read_sys_cfg(&lib_para,root_node);
+    	 ret=read_sys_cfg(&lib_para,root_node,NULL);
     	 if(ret<0)
 		return ret;
     }	 		
