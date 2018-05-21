@@ -1983,10 +1983,17 @@ char * message_get_typestr(void * message)
 	typestr=memdb_get_typestr(msg_head->record_type);
 	if(typestr==NULL)
 		return NULL;
-	subtypestr=memdb_get_subtypestr(msg_head->record_type,msg_head->record_subtype);
-	if(subtypestr==NULL)
+	if(msg_head->record_subtype==0)
 	{
-		return dup_str(typestr,0);
+		subtypestr=dup_str("NULL",0);
+	}
+	else
+	{
+		subtypestr=memdb_get_subtypestr(msg_head->record_type,msg_head->record_subtype);
+		if(subtypestr==NULL)
+		{
+			return dup_str(typestr,0);
+		}
 	}
 	Strncpy(buffer,typestr,DIGEST_SIZE);
 	Strcat(buffer," ");

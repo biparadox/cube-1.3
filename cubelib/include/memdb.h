@@ -100,13 +100,13 @@ int memdb_free_record(void * record);
 void * memdb_find(void * data,int type,int subtype);
 void * memdb_find_first(int type,int subtype, char * name,void * value);
 void * memdb_find_byname(char * name,int type,int subtype);
+
 int memdb_find_recordtype(int type,int subtype);
-
-
 int memdb_set_template(int type, int subtype, void * struct_template);
 void * memdb_get_template(int type, int subtype);
 int  memdb_set_index(int type,int subtype,int flag,char * elem_list);
 int memdb_store_index(void * record,char * name,int flag);
+
 INDEX_ELEM * memdb_find_index_byuuid(BYTE* uuid);
 
 int memdb_get_elem_type(void * elem);
