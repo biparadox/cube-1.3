@@ -44,7 +44,7 @@ struct struct_elem_attr struct_typelist_desc[] =
 
 struct struct_elem_attr struct_subtypelist_desc[] =
 {
-	{"type",CUBE_TYPE_ENUM,sizeof(int),NULL},
+	{"type",CUBE_TYPE_RECORDTYPE,sizeof(int),NULL},
 	{"elem_no",CUBE_TYPE_INT,sizeof(int),NULL,NULL},
 	{"uuid",CUBE_TYPE_UUID,DIGEST_SIZE,NULL,NULL},
 	{NULL,CUBE_TYPE_ENDDATA,0,NULL,NULL}

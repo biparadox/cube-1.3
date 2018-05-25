@@ -44,12 +44,6 @@ int struct_manage_start(void * sub_proc,void * para)
 
 	sleep(1);
 
-	{
-		struct types_pair test_types;
-		void * send_msg;
-		test_types.type=DB_SUBTYPELIST;
-		test_types.type=0;
-	}
 
 
 
@@ -65,6 +59,21 @@ int struct_manage_start(void * sub_proc,void * para)
 		{
 			action=1;
 			__proc_output_describe(sub_proc,DB_TYPELIST,0,NULL,NULL);
+			{
+				struct types_pair test_types;
+				void * send_msg;
+				// test subtypelist
+				test_types.type=DB_SUBTYPELIST;
+				test_types.subtype=0;
+				send_msg=message_create(DTYPE_MESSAGE,SUBTYPE_TYPES,NULL);
+				if(send_msg==NULL)
+					return -EINVAL;
+				message_add_record(send_msg,&test_types);
+				test_types.type=DTYPE_MESSAGE;
+				message_add_expand_data(send_msg,DTYPE_MESSAGE,SUBTYPE_TYPES,&test_types);
+				ex_module_sendmsg(sub_proc,send_msg);
+				sleep(1);
+			}
 		}
 		
 		type=message_get_type(recv_msg);
@@ -78,6 +87,27 @@ int struct_manage_start(void * sub_proc,void * para)
 		if((type==DTYPE_MESSAGE)&&(subtype==SUBTYPE_TYPES))
 		{
 			ret=proc_output_describe(sub_proc,recv_msg);
+/*
+			if(action==1)
+			{
+				action=2;
+				struct types_pair test_types;
+				void * send_msg;
+
+				// test recordtype
+				test_types.type=DB_RECORDTYPE;
+				test_types.subtype=0;
+				send_msg=message_create(DTYPE_MESSAGE,SUBTYPE_TYPES,NULL);
+				if(send_msg==NULL)
+					return -EINVAL;
+				message_add_record(send_msg,&test_types);
+				test_types.type=DTYPE_MESSAGE;
+				test_types.subtype=SUBTYPE_TYPES;
+				message_add_expand_data(send_msg,DTYPE_MESSAGE,SUBTYPE_TYPES,&test_types);
+				ex_module_sendmsg(sub_proc,send_msg);
+				sleep(1);
+			}
+*/
 		}
 		
 	}
