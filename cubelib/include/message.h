@@ -28,7 +28,8 @@ enum subtypelist_message
 	SUBTYPE_UUID_RECORD,
 	SUBTYPE_CTRL_MSG,
 	SUBTYPE_TYPES,
-	SUBTYPE_SIZED_BINDATA
+	SUBTYPE_SIZED_BINDATA,
+	SUBTYPE_MODULE_STATE
 };
 
 enum subtypelist_msg_expand
@@ -140,6 +141,12 @@ struct sized_bindata    // record (MESSAGE,UUID)
 	int size;
 	BYTE * bindata;
 
+}__attribute__((packed));
+
+struct module_state
+{
+	char name[DIGEST_SIZE];
+	int state;
 }__attribute__((packed));
 
 struct types_pair     // record (MESSAGE,TYPES)

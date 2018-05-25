@@ -43,7 +43,7 @@
 	"record":
 	{
 		"type":"MESSAGE",
-		"elem_no":10,
+		"elem_no":11,
 		"elemlist":
 		[
 			"HEAD=0x01",
@@ -55,7 +55,8 @@
 			"UUID_RECORD",
 			"CTRL",
 			"TYPES",
-			"SIZED_BINDATA"
+			"SIZED_BINDATA",
+			"MODULE_STATE"
 		]
 	}
 }

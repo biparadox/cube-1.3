@@ -121,3 +121,23 @@
 		}
 	}
 }
+{
+	"head":
+	{
+		"name":"module_state",
+		"type":"RECORDTYPE"
+	},
+	"record":
+	{
+		"type":"MESSAGE",
+		"subtype":"MODULE_STATE",
+		"struct_desc":
+		{
+			"elem_desc":
+			[
+				{"name":"name","type":"STRING","size":32},
+				{"name":"state","type":"INT"}
+			]
+		}
+	}
+}
