@@ -115,6 +115,12 @@ int  _convert_frame_func (void *addr, void * data, void * struct_template,
 			{
 				if(curr_elem->limit==0)
 				{
+					// add func for json string exit
+					if(funcs->exitstruct!=NULL)
+						ret=funcs->exitstruct(addr,data,curr_elem,para);
+					if(ret<0)
+						return ret;
+                                        //
 					curr_node->temp_var++;
 					continue;
 				}
@@ -1432,14 +1438,23 @@ int _tojson_enterstruct(void * addr,void * data, void * elem,void * para)
 			if(curr_elem->limit==0)
 				curr_elem->limit=1;
 		}
-		if(curr_elem->limit>1)
+	}
+
+	if(curr_elem->limit==0)
+	{
+		*(json_str+my_para->offset)='[';
+		my_para->offset++;
+	}
+	else if(curr_elem->limit>1)
+	{
+		if(curr_elem->index==0)
 		{
 			*(json_str+my_para->offset)='[';
 			my_para->offset++;
 		}
+		*(json_str+my_para->offset)='{';
+		my_para->offset++;
 	}
-	*(json_str+my_para->offset)='{';
-	my_para->offset++;
 	return my_para->offset;
 }
 int _tojson_exitstruct(void * addr,void * data, void * elem,void * para)
@@ -1448,14 +1463,24 @@ int _tojson_exitstruct(void * addr,void * data, void * elem,void * para)
 	char * json_str=data;
 	struct elem_template * curr_elem=elem;
 
-	*(json_str+my_para->offset)='}';
-	my_para->offset++;
-	
-	if((curr_elem->limit>1)&&
-		(curr_elem->index>=curr_elem->limit))
+	if(curr_elem->limit==0)
 	{
 		*(json_str+my_para->offset)=']';
 		my_para->offset++;
+	}
+	else
+	{
+		my_para->offset--;
+	
+		*(json_str+my_para->offset)='}';
+		my_para->offset++;
+	
+		if((curr_elem->limit>1)&&
+			(curr_elem->index>=curr_elem->limit))
+		{
+			*(json_str+my_para->offset)=']';
+			my_para->offset++;
+		}
 	}
 	*(json_str+my_para->offset)=',';
 	my_para->offset++;
