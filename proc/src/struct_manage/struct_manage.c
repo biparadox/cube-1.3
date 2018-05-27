@@ -58,7 +58,7 @@ int struct_manage_start(void * sub_proc,void * para)
 		if(action==0)
 		{
 			action=1;
-//			__proc_output_describe(sub_proc,DB_TYPELIST,0,NULL,NULL);
+			__proc_output_describe(sub_proc,DB_TYPELIST,0,NULL,NULL);
 			{
 
 				struct types_pair test_types;
