@@ -450,6 +450,28 @@ int dispatch_match_message(void * policy,void * message)
 					result = 0;
 			}
 		}
+		else if(match_rule->area==MATCH_AREA_EXPAND)
+		{
+			MSG_EXPAND * msg_expand;			
+			void * expand_template;
+			ret=message_get_define_expand(message,&msg_expand,match_rule->type,match_rule->subtype);
+			if(msg_expand==NULL)
+				result=0;
+			else
+			{
+			//	expand_template=memdb_get_template(match_rule->type,match_rule->subtype);
+				if(match_rule->match_template==NULL)
+					result=0;
+				else
+				{
+					if(!struct_part_compare(match_rule->value,msg_expand->expand,
+							match_rule->match_template,match_flag))
+						result = 1;
+					else
+						result = 0;
+				}
+			}	
+		}
 		else
 		{
 			result = 0;
