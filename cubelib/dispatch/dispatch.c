@@ -457,6 +457,8 @@ int dispatch_match_message(void * policy,void * message)
 			ret=message_get_define_expand(message,&msg_expand,match_rule->type,match_rule->subtype);
 			if(msg_expand==NULL)
 				result=0;
+			if(match_rule->value==NULL)
+				result=1;
 			else
 			{
 			//	expand_template=memdb_get_template(match_rule->type,match_rule->subtype);
