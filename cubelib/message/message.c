@@ -917,6 +917,8 @@ int message_load_record(void * message)
             return -EINVAL;
     }
 
+    if(msg_box->record==NULL)
+	__message_alloc_record_site(msg_box);
 
 //  __message_alloc_record_site(msg_box);
 //  msg_box->current_offset=msg_box->head_size;

@@ -868,7 +868,7 @@ int router_dup_activemsg_info (void * message)
 	new_msg_head=message_get_head(message);
 	message_set_flow(msg_box,msg_head->flow);
 	message_set_state(msg_box,msg_head->state);
-	message_set_flag(msg_box,msg_head->flag);
+//	message_set_flag(msg_box,msg_head->flag);
 	message_set_route(msg_box,msg_head->route);
 	new_msg_head->ljump=msg_head->ljump;	
 	new_msg_head->rjump=msg_head->rjump;	
