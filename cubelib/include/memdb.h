@@ -97,6 +97,10 @@ int memdb_remove_byname(char * name,int type,int subtype);
 void * memdb_remove_record(void * record);
 int memdb_free_record(void * record);
 
+int memdb_output_blob(void * record,BYTE * blob,int type,int subtype);
+int memdb_read_blob(BYTE * blob,void * record,int type,int subtype);
+
+
 void * memdb_find(void * data,int type,int subtype);
 void * memdb_find_first(int type,int subtype, char * name,void * value);
 void * memdb_find_byname(char * name,int type,int subtype);

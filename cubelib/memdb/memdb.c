@@ -387,3 +387,25 @@ int memdb_read_desc(void * root, BYTE * uuid)
 	return ret;
 	
 }
+
+int memdb_output_blob(void * record,BYTE * blob,int type,int subtype)
+{
+	int ret;
+	void * record_template;
+	record_template=memdb_get_template(type,subtype);
+	if(record_template==NULL)
+		return -EINVAL;
+	ret=struct_2_blob(record,blob,record_template);
+	return ret;
+}
+
+int memdb_read_blob(BYTE * blob,void * record,int type,int subtype)
+{
+	int ret;
+	void * record_template;
+	record_template=memdb_get_template(type,subtype);
+	if(record_template==NULL)
+		return -EINVAL;
+	ret=blob_2_struct(blob,record,record_template);
+	return ret;
+}
