@@ -60,7 +60,7 @@ int struct_manage_start(void * sub_proc,void * para)
 			action=1;
 			__proc_output_describe(sub_proc,DB_TYPELIST,0,NULL,NULL);
 			{
-
+/*
 				struct types_pair test_types;
 				void * send_msg;
 				// test subtypelist
@@ -74,6 +74,7 @@ int struct_manage_start(void * sub_proc,void * para)
 				message_add_expand_data(send_msg,DTYPE_MESSAGE,SUBTYPE_TYPES,&test_types);
 				ex_module_sendmsg(sub_proc,send_msg);
 				sleep(1);
+*/
 			}
 		}
 		
@@ -88,7 +89,7 @@ int struct_manage_start(void * sub_proc,void * para)
 		if((type==DTYPE_MESSAGE)&&(subtype==SUBTYPE_TYPES))
 		{
 			ret=proc_output_describe(sub_proc,recv_msg);
-
+/*
 			if(action==1)
 			{
 				action=2;
@@ -108,6 +109,7 @@ int struct_manage_start(void * sub_proc,void * para)
 				ex_module_sendmsg(sub_proc,send_msg);
 				sleep(1);
 			}
+*/
 
 		}
 		

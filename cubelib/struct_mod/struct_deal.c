@@ -1445,6 +1445,16 @@ int _tojson_enterstruct(void * addr,void * data, void * elem,void * para)
 		*(json_str+my_para->offset)='[';
 		my_para->offset++;
 	}
+	else if(curr_elem->limit==1)
+	{
+		if(_isdefineelem(curr_elem->elem_desc->type))
+		{
+			*(json_str+my_para->offset)='[';
+			my_para->offset++;
+		}	
+		*(json_str+my_para->offset)='{';
+		my_para->offset++;
+	}
 	else if(curr_elem->limit>1)
 	{
 		if(curr_elem->index==0)
@@ -1475,7 +1485,13 @@ int _tojson_exitstruct(void * addr,void * data, void * elem,void * para)
 		*(json_str+my_para->offset)='}';
 		my_para->offset++;
 	
-		if((curr_elem->limit>1)&&
+		if((curr_elem->limit==1)&&
+			_isdefineelem(curr_elem->elem_desc->type))
+		{
+			*(json_str+my_para->offset)=']';
+			my_para->offset++;
+		}
+		else if((curr_elem->limit>1)&&
 			(curr_elem->index>=curr_elem->limit))
 		{
 			*(json_str+my_para->offset)=']';

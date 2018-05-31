@@ -234,6 +234,7 @@ int websocket_port_start(void * sub_proc,void * para)
     char buffer[4096];
     memset(buffer,0,4096);
     int stroffset;
+    int str_size;
 	
     print_cubeaudit("begin websocket server process!\n");
     ret=proc_share_data_getvalue("uuid",local_uuid);
@@ -259,6 +260,7 @@ int websocket_port_start(void * sub_proc,void * para)
 			ret=json_2_message(ws_context->read_buf+offset,&message);
 		   	if(ret>=0)
 		    	{
+				str_size=ret;
 				if(message_get_state(message)==0)
 					message_set_state(message,MSG_FLOW_INIT);
 				msg_head=message_get_head(message);
@@ -270,7 +272,7 @@ int websocket_port_start(void * sub_proc,void * para)
 				}	
 				message_set_sender(message,local_uuid);
 	    	    		ex_module_sendmsg(sub_proc,message);	
-				offset+=ret;
+				offset+=str_size;
 				if(ws_context->readlen-offset<sizeof(MSG_HEAD))
 				{
 					ws_context->readlen=0;
