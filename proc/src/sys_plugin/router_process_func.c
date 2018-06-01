@@ -15,8 +15,9 @@
 #include "basefunc.h"
 #include "struct_deal.h"
 #include "crypto_func.h"
-#include "message.h"
+#include "basefunc.h"
 #include "memdb.h"
+#include "message.h"
 #include "dispatch.h"
 #include "ex_module.h"
 

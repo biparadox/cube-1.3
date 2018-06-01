@@ -16,6 +16,8 @@
 #include "attrlist.h"
 #include "string.h"
 #include "struct_deal.h"
+#include "basefunc.h"
+#include "memdb.h"
 #include "message.h"
 
 typedef struct message_queue//审计信息结构体

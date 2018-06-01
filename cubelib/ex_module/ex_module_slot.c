@@ -17,8 +17,8 @@
 #include "string.h"
 #include "struct_deal.h"
 #include "basefunc.h"
-#include "message.h"
 #include "memdb.h"
+#include "message.h"
 
 enum entity_type
 {
