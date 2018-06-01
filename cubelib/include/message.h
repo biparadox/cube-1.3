@@ -14,8 +14,8 @@
 
 enum dynamic_message_typelist
 {
-	DTYPE_MESSAGE=0x200,
-	DTYPE_MSG_EXPAND,
+	TYPE(MESSAGE)=0x200,
+	TYPE(MSG_EXPAND),
 };
 enum subtypelist_message
 {
@@ -39,6 +39,20 @@ enum subtypelist_msg_expand
 	SUBTYPE_ROUTE_RECORD
 };
 
+enum subtypelist_message_new
+{
+	SUBTYPE(MESSAGE,HEAD)=0x01,
+	SUBTYPE(MESSAGE,EXPAND),
+	SUBTYPE(MESSAGE,EXPAND_HEAD),
+	SUBTYPE(MESSAGE,CONN_SYNI),
+	SUBTYPE(MESSAGE,CONN_ACKI),
+	SUBTYPE(MESSAGE,BASE_MSG),
+	SUBTYPE(MESSAGE,UUID_RECORD),
+	SUBTYPE(MESSAGE,CTRL_MSG),
+	SUBTYPE(MESSAGE,TYPES),
+	SUBTYPE(MESSAGE,SIZED_BINDATA),
+	SUBTYPE(MESSAGE,MODULE_STATE)
+};
 enum message_flow_type
 {
     MSG_FLOW_INIT=0x01,
@@ -100,6 +114,7 @@ typedef struct tagMessage_Head  //强制访问控制标记
    int  expand_size;
    BYTE nonce[DIGEST_SIZE];
 } __attribute__((packed)) MSG_HEAD;
+typedef MSG_HEAD RECORD(MESSAGE,HEAD);
 
 typedef struct tagMessage_Expand_Data_Head //general expand 's head struct
 {
@@ -108,6 +123,8 @@ typedef struct tagMessage_Expand_Data_Head //general expand 's head struct
    int  subtype;      //expand data's type
 } __attribute__((packed)) MSG_EXPAND_HEAD;
 
+typedef MSG_EXPAND_HEAD RECORD(MESSAGE,EXPAND_HEAD);
+
 typedef struct tagMessage_Expand_Data  //general expand data struct
 {
    int  data_size;   //this expand data's size
@@ -115,6 +132,7 @@ typedef struct tagMessage_Expand_Data  //general expand data struct
    int  subtype;      //expand data's type
    void * expand;
 } __attribute__((packed)) MSG_EXPAND;
+typedef MSG_EXPAND RECORD(MESSAGE,MSG_EXPAND);
 
 typedef struct expand_extra_info  //expand data struct to store one or more DIGEST_SIZE info
 {
@@ -125,41 +143,47 @@ typedef struct expand_extra_info  //expand data struct to store one or more DIGE
 
 int message_get_state(void * message);
 
-struct basic_message  // record (MESSAGE,BASIC_MSG)
+typedef struct basic_message  // record (MESSAGE,BASIC_MSG)
 {
 	char * message;
-}__attribute__((packed));
+}__attribute__((packed))
+RECORD (MESSAGE,BASE_MSG);
 
-struct uuid_record    // record (MESSAGE,UUID_RECORD)
+typedef struct uuid_record    // record (MESSAGE,UUID_RECORD)
 {
 	BYTE uuid[DIGEST_SIZE];
 
-}__attribute__((packed));
+}__attribute__((packed))
+RECORD(MESSAGE,UUID_RECORD);
 
-struct sized_bindata    // record (MESSAGE,UUID)
+typedef struct sized_bindata    // record (MESSAGE,UUID)
 {
 	int size;
 	BYTE * bindata;
 
-}__attribute__((packed));
+}__attribute__((packed))
+RECORD(MESSAGE,SIZED_BINDATA);
 
-struct module_state
+typedef struct module_state
 {
 	char name[DIGEST_SIZE];
 	int state;
-}__attribute__((packed));
+}__attribute__((packed))
+RECORD(MESSAGE,MODULE_STATE);
 
-struct types_pair     // record (MESSAGE,TYPES)
+typedef struct types_pair     // record (MESSAGE,TYPES)
 {
 	int type;
 	int subtype;
-}__attribute__((packed));
+}__attribute__((packed))
+RECORD(MESSAGE,TYPES);
 
-struct ctrl_message     // record (MESSAGE,CTRL)
+typedef struct ctrl_message     // record (MESSAGE,CTRL)
 {
 	enum message_ctrl ctrl;
 	char * name;
-}__attribute__((packed));
+}__attribute__((packed))
+RECORD(MESSAGE,CTRL_MSG);
 
 
 struct expand_flow_trace

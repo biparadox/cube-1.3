@@ -529,7 +529,8 @@ int json_solve_str(void ** root, char *str)
 			Memcpy(child_node->value_str,value_buffer,ret);
 		}
 		// if this value is a num
-		else if((str[offset] >='0') && (str[offset]<='9'))
+		else if((str[offset]=='-') ||
+				((str[offset] >='0') && (str[offset]<='9')))
 		{
                 	ret=json_get_numvalue(value_buffer,str+offset);
                 	if(ret<0)
