@@ -16,9 +16,9 @@
 #define MAX_RECORD_NUM 65536
 
 #define TYPE(type) DTYPE_##type
-#define SUBTYPE(type,subtype) SUBTYPE_##type##subtype
-#define TYPE_PAIR(type,subtype) DTYPE_##type,SUBTYPE_##type##subtype
-#define RECORD(type,subtype) record_##type##subtype
+#define SUBTYPE(type,subtype) SUBTYPE_##type##_##subtype
+#define TYPE_PAIR(type,subtype) DTYPE_##type,SUBTYPE_##type##_##subtype
+#define RECORD(type,subtype) record_##type##_##subtype
 
 enum dynamic_memdb_typelist
 {

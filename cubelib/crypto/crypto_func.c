@@ -13,6 +13,7 @@
 #include <unistd.h>
 
 #include "../include/data_type.h"
+#include "../include/alloc.h"
 #include "../include/memfunc.h"
 #include "../include/errno.h"
 //#include "../list.h"
@@ -166,6 +167,129 @@ int sm4_context_decrypt( BYTE * input, BYTE ** output, int size,char * passwd)
 	*output=out_blob;
 	return out_size;
 }
+
+void sm4_data_prepare(int input_len,BYTE * input_data,int * output_len,BYTE * output_data)
+{
+	int pad_len;
+	BYTE pad_value;
+        const int block_size=16;   
+
+	pad_len=block_size-(input_len%block_size);
+	pad_value=(BYTE)pad_len;
+
+	*output_len=input_len+pad_len;
+	Memcpy(output_data,input_data,input_len);
+	Memset(output_data+input_len,pad_value,pad_len);
+	return;
+}
+
+int sm4_data_recover(int input_len,BYTE * input_data,int * output_len,BYTE * output_data)
+{
+	int pad_len;
+	BYTE pad_value;
+        const int block_size=16;  
+
+	pad_value=input_data[input_len-1];
+        if(pad_value>=block_size)
+		return -EINVAL;
+	pad_len=(int)pad_value; 
+             
+	*output_len=input_len-pad_len;
+	Memcpy(output_data,input_data,*output_len);
+	return *output_len;
+}
+
+int sm4_text_crypt( BYTE * input, BYTE ** output,BYTE * passwd)
+{
+	int i;
+	int ret;
+	int in_size;
+	int crypt_size;
+	int out_size;
+        sm4_context ctx;
+	const int blocksize=16;
+	char keypass[DIGEST_SIZE];
+	BYTE *crypt_buf;
+	char * output_buf;
+	
+	in_size=Strlen(input)+1;
+	if(in_size==0)
+		return 0;
+		
+	crypt_size=((in_size/blocksize)+1)*blocksize;
+	out_size=bin_to_radix64_len(crypt_size)+1;
+	
+	output_buf=Dalloc0(out_size,output);
+	if(output_buf==NULL)
+		return -EINVAL;
+	crypt_buf=Talloc0(crypt_size);
+	if(crypt_buf==NULL)
+		return -EINVAL;
+	sm4_data_prepare(in_size,input,&ret,output_buf);
+	if(ret!=crypt_size)
+		return -EINVAL;
+	memset(keypass,0,DIGEST_SIZE);
+	Strncpy(keypass,passwd,DIGEST_SIZE);
+
+	sm4_setkey_enc(&ctx,keypass);
+	for(i=0;i<=crypt_size-16;i+=16)
+	{
+		sm4_crypt_ecb(&ctx,1,16,output_buf+i,crypt_buf+i);
+	}	
+	ret=bin_to_radix64(output_buf,crypt_size,crypt_buf);
+	if(ret!=out_size-1)
+	{
+		return -EINVAL;
+	}
+	output_buf[out_size-1]=0;
+	Free(crypt_buf);
+	*output=output_buf;
+	return out_size;
+}
+
+int sm4_text_decrypt( BYTE * input, BYTE ** output,BYTE * passwd)
+{
+	int i;
+	int ret;
+	int in_size;
+	int crypt_size;
+	int out_size;
+        sm4_context ctx;
+	const int blocksize=16;
+	char keypass[DIGEST_SIZE];
+	BYTE *crypt_buf;
+	BYTE *decrypt_buf;
+	char * output_buf;
+	
+	in_size=Strlen(input);
+	if(in_size==0)
+		return 0;
+	crypt_size=radix_to_bin_len(in_size);
+	if(crypt_size%16!=0)
+		return -EINVAL;
+	
+	crypt_buf=Talloc0(crypt_size*2);
+	if(crypt_buf==NULL)
+		return -EINVAL;
+	
+	decrypt_buf=crypt_buf+crypt_size;
+
+	sm4_setkey_dec(&ctx,keypass);
+	for(i=0;i<=crypt_size-16;i+=16)
+	{
+		sm4_crypt_ecb(&ctx,1,16,crypt_buf+i,decrypt_buf+i);
+	}	
+	ret=sm4_data_recover(crypt_size,decrypt_buf,&out_size,crypt_buf);
+	if(ret<0)
+		return ret;
+	output_buf=Dalloc0(out_size,output);
+	if(output_buf==NULL)
+		return -ENOMEM;
+	Memcpy(output_buf,crypt_buf,out_size);
+	*output=output_buf;
+	return out_size;	
+}
+
 int calculate_sm3(char* filename, UINT32 *SM3_hash)
 {
     int fd1;

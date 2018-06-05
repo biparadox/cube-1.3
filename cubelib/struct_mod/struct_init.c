@@ -1081,6 +1081,7 @@ int _elem_set_text_value(void * addr,char * text,void * elem)
 			repeat_num=_elem_get_defvalue(curr_elem,addr);
 			if(repeat_num<0)
 				return repeat_num;
+			*(BYTE **)elem_src=Dalloc0(repeat_num*unitsize,elem_src);
 		}
 		else
 		{
@@ -1088,7 +1089,8 @@ int _elem_set_text_value(void * addr,char * text,void * elem)
 		}
 		if(_isarrayelem(type))
 		{
-			*(BYTE **)elem_src=Dalloc0(repeat_num*unitsize,elem_src);
+			if(!_isdefineelem(type))
+				*(BYTE **)elem_src=Dalloc0(repeat_num*unitsize,elem_src);
 			if(*(BYTE**)elem_src==NULL)
 				return -ENOMEM;
 			curr_elem->index=0;	
