@@ -41,6 +41,9 @@ typedef struct tube_channel
 	char name[DIGEST_SIZE];
 	int  type;
 	int  state;
+	void * module;
+	void * info; 
+	
 
 	void * read_buf;
 	void * write_buf;
@@ -49,8 +52,11 @@ typedef struct tube_channel
 
 }CHANNEL;
 
+void channel_init();
 void * channel_create(char * name,int type);
-void * channel_register(char * name, int type);
+void * channel_register(char * name, int type,void * module);
+void * channel_find(char * name);
+
 int channel_write(void * channel,BYTE * data, int size);
 int channel_read(void * channel,BYTE * data, int size);
 
@@ -58,5 +64,8 @@ int channel_inner_read(void * channel,BYTE * data,int size);
 int channel_inner_write(void * channel,BYTE * data,int size);
 void * channel_get(char * name);
 void * channel_get_byuuid(BYTE * uuid);
+
+void * channel_get_info(void * channel);
+void * channel_set_info(void * channel);
 
 #endif

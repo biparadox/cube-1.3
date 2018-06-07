@@ -5,8 +5,10 @@
 
 #include "../include/data_type.h"
 #include "../include/list.h"
-#include "../include/string.h"
+#include "../include/attrlist.h"
 #include "../include/alloc.h"
+#include "../include/string.h"
+#include "../include/string.h"
 #include "../include/json.h"
 #include "../include/struct_deal.h"
 #include "../include/basefunc.h"
@@ -15,6 +17,26 @@
 #include "../include/channel.h"
 
 #define CHANNEL_BUF_SIZE 4000
+
+static struct tagchannel_list
+{
+	Record_List head;
+	int state;
+	int channel_num;
+	void * curr;
+} channel_list;
+
+
+void  channel_init( )
+{
+        int ret;
+        Memset(&channel_list,0,sizeof(channel_list));
+        INIT_LIST_HEAD(&(channel_list.head.list));
+        channel_list.head.record=NULL;
+        channel_list.channel_num=0;
+        return ;
+}
+
 
 void * channel_create(char * name,int type)
 {
@@ -52,6 +74,55 @@ void * channel_create(char * name,int type)
 		}
 	}
 	return new_channel;
+}
+
+void * channel_register(char * name,int type,void * module)
+{
+	CHANNEL * new_channel;
+	new_channel=channel_create(name,type);
+	if(new_channel==NULL)
+		return NULL;
+	Record_List * channel_head=Dalloc0(sizeof(*channel_head),module);
+	if(channel_head==NULL)
+		return NULL;
+			
+        INIT_LIST_HEAD(&(channel_list.head.list));
+
+	channel_head->record=new_channel;
+	List_add_tail(&channel_head->list,&(channel_list.head.list));
+	
+	return new_channel;
+}
+
+int _channel_comp_name(void * List_head, void * name)
+{
+        struct List_head * head;
+        CHANNEL * comp_channel;
+        head=(struct List_head *)List_head;
+        if(head==NULL)
+                return -EINVAL;
+        Record_List * record;
+        char * string;
+        string=(char *)name;
+        record = List_entry(head,Record_List,list);
+        comp_channel = (CHANNEL *) record->record;
+        if(comp_channel == NULL)
+                return -EINVAL;
+        if(comp_channel->name==NULL)
+                return -EINVAL;
+        return Strncmp(comp_channel->name,string,DIGEST_SIZE);
+}
+
+void * channel_find(char * name)
+{
+	struct List_head * curr_head;
+	Record_List * record_elem;
+	curr_head = find_elem_with_tag(&channel_list.head.list,
+		_channel_comp_name,name);
+	if(curr_head==NULL)
+		return NULL;
+        record_elem=List_entry(curr_head,Record_List,list);
+	return record_elem->record;	
 }
 
 void channel_free(void * channel)

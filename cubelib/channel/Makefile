@@ -5,7 +5,7 @@ LD=ld
 CCP=g++
 STRUCTOBJ= channel_buf.o  channel.o
 LIBNAME=channel
-DEPENDLIB= -lbasefunc -lstruct -lcrypto_func -ljson -lalloc -lstring
+DEPENDLIB= -lchannel -lmemdb -lbasefunc -lstruct -lcrypto_func -ljson -lalloc -lstring
 
 main: ../lib/lib$(LIBNAME).so  test_main
 test_main: test_main.c ../lib/lib$(LIBNAME).so

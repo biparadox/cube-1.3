@@ -119,6 +119,7 @@ int main(int argc,char **argv)
 
 	msgfunc_init();
 	dispatch_init();
+	channel_init();
 
 	ex_module_list_init();
 
