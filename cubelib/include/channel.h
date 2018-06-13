@@ -24,6 +24,7 @@ enum channel_type
 };
 
 
+#define CHANNEL_BUF_SIZE 4000
 #define CHANNEL_DIRECT_MASK  0x0F
 #define CHANNEL_STREAM_MASK  0xF0
 

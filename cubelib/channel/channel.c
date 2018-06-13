@@ -16,7 +16,6 @@
 #include "../include/message.h"
 #include "../include/channel.h"
 
-#define CHANNEL_BUF_SIZE 4000
 
 static struct tagchannel_list
 {
