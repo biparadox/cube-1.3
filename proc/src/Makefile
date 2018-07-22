@@ -1,4 +1,4 @@
-dirs= echo_plugin file_dealer hello recordlib symm_crypt sys_plugin tpm_key_create aik_casign aik_client websocket_port
+dirs= echo_plugin file_dealer hello recordlib symm_crypt sys_plugin tpm_key_create aik_casign aik_client websocket_port websocket_channel echo_channel
 all:
 	$(foreach N,$(dirs),make -C $(N);)
 clean:
