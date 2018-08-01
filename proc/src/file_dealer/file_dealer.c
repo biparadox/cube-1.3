@@ -134,6 +134,12 @@ int get_filedata_from_message(void * message)
 	{
 		return -EINVAL;
 	}
+
+	if(message_get_flag(message) &MSG_FLAG_CRYPT)
+	{
+		print_err("error! filedata message is crypted!\n");
+		return -EINVAL;
+	}
 	retval=message_get_record(message,&pfdata,0);
 
 	fd=open(pfdata->filename,O_CREAT|O_WRONLY,0666);
