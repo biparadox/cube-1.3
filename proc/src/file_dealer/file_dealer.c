@@ -137,7 +137,7 @@ int get_filedata_from_message(void * message)
 
 	if(message_get_flag(message) &MSG_FLAG_CRYPT)
 	{
-		print_err("error! filedata message is crypted!\n");
+		print_cubeerr("error! filedata message is crypted!\n");
 		return -EINVAL;
 	}
 	retval=message_get_record(message,&pfdata,0);
@@ -163,6 +163,12 @@ int proc_file_receive(void * sub_proc,void * message)
 	BYTE digest[DIGEST_SIZE];
 	int blobsize=0;
 	int fd;
+
+	if(message_get_flag(message) &MSG_FLAG_CRYPT)
+	{
+		print_cubeerr("error! filedata message is crypted!\n");
+		return -EINVAL;
+	}
 
 	ret=message_get_record(message,&pfdata,0);
 	if(ret<0)
