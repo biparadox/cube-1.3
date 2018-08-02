@@ -1215,7 +1215,7 @@ int router_set_dup_flow(void * message,void * policy)
 	Memset(msg_head->route,0,DIGEST_SIZE);
 	if(msg_policy->newname!=NULL)
 		Strncpy(msg_head->route,msg_policy->newname,DIGEST_SIZE);
-	msg_head->ljump=1;
+	msg_head->ljump=0;
 	msg_head->rjump=0;
 	msg_head->flow=MSG_FLOW_DELIVER;
 //	msg_head->flag=msg_policy->flag;
