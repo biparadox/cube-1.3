@@ -66,14 +66,22 @@ int hexstr_2_bin(BYTE * hex,int size,BYTE * bin)
         for(i=0;i<len;i++)
         {
                 if((hex[i]>='0') &&(hex[i]<='9'))
-                        var+=hex[i]-'0';
+                        var=hex[i]-'0';
                 else if((hex[i]>='a')&&(hex[i]<='f'))
-                        var+=hex[i]-'a';
+                        var=hex[i]-'a'+10;
                 else if((hex[i]>='A')&&(hex[i]<='F'))
-                        var+=hex[i]-'A';
+                        var=hex[i]-'A'+10;
 		else if(flip==1)
 			return -EINVAL;
-                else if(hex[i]!=' ')
+		else if(hex[i]=='\n')
+		{
+			if(flip!=0)
+				return -EINVAL;
+			break;
+		}
+                else if(hex[i]==' ')
+			continue;
+		else
                         return -EINVAL;
 		flip++;
 		if(flip==1)
@@ -113,8 +121,7 @@ int output_channel_start(void * sub_proc,void * para)
 
     char local_uuid[DIGEST_SIZE];
     char proc_name[DIGEST_SIZE];
-    int stroffset;
-    int str_size;
+    int out_offset;
 	 int offset=0;
     char line[DIGEST_SIZE*8];
     FILE * fp;		
@@ -164,7 +171,7 @@ int output_channel_start(void * sub_proc,void * para)
 		{
 			if(line[0]=='#')
 				continue;
-			ret=hexstr_2_bin(line,Buffer+offset,len);
+			ret=hexstr_2_bin(line,len,Buffer+offset);
 			if(offset>0)
 			{
 				if(ret==0)
@@ -181,34 +188,39 @@ int output_channel_start(void * sub_proc,void * para)
 		}
 	}while(1);	
 
-	if((flip>0)&&(flip<=3))
+	if((flip>=0)&&(flip<=3))
 	{
-		print_cubeaudit("write %d data!\n",offset);
-		ret=channel_write(output_channel,Buffer,offset);	
-		flop=1;
-		if(flip==3)
-			flip++;
+		if(offset>0)
+		{
+			print_cubeaudit("write %d data!\n",offset);
+			ret=channel_inner_write(output_channel,Buffer,offset);	
+			flop=1;
+			if(flip==3)
+				flip++;
+			offset=0;
+		}
 	}
 	// send message to the remote
-	offset=0;
+	if(flop==0)
+		out_offset=0;
 	if(flop>=1)
 	{
 		
-		ret=channel_read(output_channel,Buffer+offset,DIGEST_SIZE*16);
-		if(ret==0)
+		ret=channel_inner_read(output_channel,Buffer+out_offset,DIGEST_SIZE*16);
+		if((flop==0)&&(ret==0))
 			continue;	
 		if(flop==1)
 		{
-			offset+=ret;
+			out_offset+=ret;
 			flop++;
 		}
-		if(flop==2)
+		else if(flop==2)
 		{
 			flop=0;
-			offset+=ret;
-			print_cubeaudit("echo %d data!\n",offset);
+			out_offset+=ret;
+			print_cubeaudit("echo %d data!\n",out_offset);
+			print_bin_data(Buffer,out_offset,8);	
 		}
-		print_bin_data(Buffer,8,offset);	
 	}			
 
 	
