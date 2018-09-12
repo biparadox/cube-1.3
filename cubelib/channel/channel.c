@@ -52,6 +52,8 @@ void * channel_create(char * name,int type)
 	new_channel->state=CHANNEL_INIT;
 	new_channel->type=type;
 
+	if(type&CHANNEL_FIXMEM)
+		return -EINVAL;
 	if(type&CHANNEL_READ)
 	{
 		new_channel->read_buf=channel_buf_create(CHANNEL_BUF_SIZE);
@@ -75,10 +77,70 @@ void * channel_create(char * name,int type)
 	return new_channel;
 }
 
+void * channel_create_fixmem(char * name,int type,int size,void * readaddr,void * writeaddr)
+{
+	int ret;
+	CHANNEL * new_channel;
+	if(type<=0)
+		return NULL;
+	if(type>CHANNEL_SHUTDOWN)
+		return NULL;
+	new_channel=Salloc0(sizeof(CHANNEL));
+	if(new_channel==NULL)
+		return NULL;
+	Strncpy(new_channel->name,name,DIGEST_SIZE);
+	new_channel->state=CHANNEL_INIT;
+	new_channel->type=type;
+
+	if(!(type&CHANNEL_FIXMEM))
+		return -EINVAL;
+	if(type&CHANNEL_READ)
+	{
+		new_channel->read_buf=channel_membuf_create(size,readaddr);
+		if(new_channel->read_buf==NULL)
+		{
+			Free(new_channel);
+			return NULL;
+		}
+	}
+	if(type&CHANNEL_WRITE)
+	{
+		new_channel->write_buf=channel_membuf_create(size,writeaddr);
+		if(new_channel->write_buf==NULL)
+		{
+			if(new_channel->read_buf!=NULL)
+				channel_membuf_free(new_channel->read_buf);
+			Free(new_channel);
+			return NULL;
+		}
+	}
+	return new_channel;
+}
+
 void * channel_register(char * name,int type,void * module)
 {
 	CHANNEL * new_channel;
 	new_channel=channel_create(name,type);
+	if(new_channel==NULL)
+		return NULL;
+	Record_List * channel_head=Dalloc0(sizeof(*channel_head),module);
+	if(channel_head==NULL)
+		return NULL;
+			
+        INIT_LIST_HEAD(&(channel_list.head.list));
+
+	channel_head->record=new_channel;
+	List_add_tail(&channel_head->list,&(channel_list.head.list));
+	
+	return new_channel;
+}
+
+void * channel_register_fixmem(char * name,int type,void * module,int size,void * readaddr,void * writeaddr)
+{
+	CHANNEL * new_channel;
+	if(!(type&CHANNEL_FIXMEM))
+		return -EINVAL;
+	new_channel=channel_create_fixmem(name,type,size,readaddr,writeaddr);
 	if(new_channel==NULL)
 		return NULL;
 	Record_List * channel_head=Dalloc0(sizeof(*channel_head),module);

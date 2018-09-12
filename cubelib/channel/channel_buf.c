@@ -46,10 +46,38 @@ void * channel_buf_create(int size)
 	return new_buf;
 }
 
+void * channel_membuf_create(int size,void * buf)
+{
+	int ret;
+	CHANNEL_BUF * new_buf;
+	if(size<sizeof(CHANNEL_BUF))
+		return NULL;
+	if(size>32767)
+		return NULL;
+
+	new_buf=(CHANNEL_BUF *)buf;
+	if(new_buf==NULL)
+		return NULL;
+	new_buf->bufsize=size-sizeof(new_buf);		
+	new_buf->buf=buf+sizeof(new_buf);
+
+	if(new_buf->buf==NULL)
+	{
+		return NULL;	
+	}
+	return new_buf;
+}
+
 void channel_buf_free(void * buf)
 {
 	CHANNEL_BUF * old_buf=buf;
 	Free(old_buf->buf);
+	Free(old_buf);	
+}
+
+void channel_membuf_free(void * buf)
+{
+	CHANNEL_BUF * old_buf=buf;
 	Free(old_buf);	
 }
 

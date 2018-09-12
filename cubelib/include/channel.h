@@ -20,6 +20,7 @@ enum channel_type
     CHANNEL_BIN=0x10,
     CHANNEL_JSON=0x20,
     CHANNEL_BLK=0x30,
+    CHANNEL_FIXMEM=0x100,
     CHANNEL_SHUTDOWN=0x1000,   // finishing the msg's loading
 };
 

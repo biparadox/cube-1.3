@@ -7,9 +7,11 @@ STRUCTOBJ= channel_buf.o  channel.o
 LIBNAME=channel
 DEPENDLIB= -lchannel -lmemdb -lbasefunc -lstruct -lcrypto_func -ljson -lalloc -lstring
 
-main: ../lib/lib$(LIBNAME).so  test_main
+main: ../lib/lib$(LIBNAME).so  test_main fixmem_channel
 test_main: test_main.c ../lib/lib$(LIBNAME).so
 	$(CC) $(FLAGS) test_main test_main.c -L../lib $(DEPENDLIB) -l$(LIBNAME)  
+fixmem_channel: fixmem_channel.c ../lib/lib$(LIBNAME).so
+	$(CC) $(FLAGS) fixmem_channel fixmem_channel.c -L../lib $(DEPENDLIB) -l$(LIBNAME)  
 ../lib/lib$(LIBNAME).so: $(STRUCTOBJ)
 	$(CC) -shared -o lib$(LIBNAME).so $(STRUCTOBJ)
 	mv   lib$(LIBNAME).so ../lib
