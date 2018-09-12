@@ -220,6 +220,7 @@ int output_channel_start(void * sub_proc,void * para)
 			out_offset+=ret;
 			print_cubeaudit("echo %d data!\n",out_offset);
 			print_bin_data(Buffer,out_offset,8);	
+			out_offset=0;
 		}
 	}			
 
