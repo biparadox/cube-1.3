@@ -192,7 +192,8 @@ int output_channel_start(void * sub_proc,void * para)
 	{
 		if(offset>0)
 		{
-			print_cubeaudit("write %d data!\n",offset);
+			//print_cubeaudit("write %d data!\n",offset);
+			printf("write %d data!\n",offset);
 			ret=channel_inner_write(output_channel,Buffer,offset);	
 			flop=1;
 			if(flip==3)
@@ -207,7 +208,7 @@ int output_channel_start(void * sub_proc,void * para)
 	{
 		
 		ret=channel_inner_read(output_channel,Buffer+out_offset,DIGEST_SIZE*16);
-		if((flop==0)&&(ret==0))
+		if((out_offset==0)&&(ret==0))
 			continue;	
 		if(flop==1)
 		{
@@ -218,7 +219,8 @@ int output_channel_start(void * sub_proc,void * para)
 		{
 			flop=0;
 			out_offset+=ret;
-			print_cubeaudit("echo %d data!\n",out_offset);
+			//print_cubeaudit("echo %d data!\n",out_offset);
+			printf("output_channel echo %d data!\n",out_offset);
 			print_bin_data(Buffer,out_offset,8);	
 			out_offset=0;
 		}
