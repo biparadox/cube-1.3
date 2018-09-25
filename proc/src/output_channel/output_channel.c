@@ -223,6 +223,7 @@ int output_channel_start(void * sub_proc,void * para)
 			printf("output_channel echo %d data!\n",out_offset);
 			print_bin_data(Buffer,out_offset,8);	
 			out_offset=0;
+			flip=0;
 		}
 	}			
 
