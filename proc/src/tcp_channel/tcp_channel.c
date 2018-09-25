@@ -78,7 +78,7 @@ int _channel_set_recv_conn(BYTE * Buf,void * conn,int size)
 		channel_head=(struct default_channel_head *)Buf;
 		channel_head->conn_no=conn_index->conn_no;
 		channel_head->size=size;
-		return size+sizeof(channel_head);
+		return size+sizeof(*channel_head);
 	}
 	return 0;
 }
