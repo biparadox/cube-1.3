@@ -11,4 +11,8 @@ int read_record_file(char * record_file);
 
 struct timeval time_val={0,20*1000};
 
+int set_semvalue(int semid,int value);
+void del_semvalue(int semid);
+int semaphore_p(int semid,int value);
+int semaphore_v(int semid,int value);
 #endif
