@@ -18,10 +18,10 @@
 typedef struct cube_channel_buf
 {
 	UINT16 bufsize;
-	BYTE * buf;
+	UINT16 offset;
 	UINT16 last_read_tail;
 	UINT16 last_write_tail;
-}CHANNEL_BUF; 
+}__attribute__((packed)) CHANNEL_BUF; 
 
 
 void * channel_buf_create(int size)
@@ -33,16 +33,11 @@ void * channel_buf_create(int size)
 	if(size>32767)
 		return NULL;
 
-	new_buf=Calloc0(sizeof(CHANNEL_BUF));
+	new_buf=Dalloc0(size+sizeof(CHANNEL_BUF),NULL);
 	if(new_buf==NULL)
 		return NULL;
 	new_buf->bufsize=size;		
-	new_buf->buf=Dalloc0(size,new_buf);
-	if(new_buf->buf==NULL)
-	{
-		Free(new_buf);
-		return NULL;	
-	}
+	new_buf->offset=sizeof(CHANNEL_BUF);
 	return new_buf;
 }
 
@@ -59,19 +54,15 @@ void * channel_membuf_create(int size,void * buf)
 	if(new_buf==NULL)
 		return NULL;
 	new_buf->bufsize=size-sizeof(new_buf);		
-	new_buf->buf=buf+sizeof(new_buf);
+	new_buf->offset=sizeof(CHANNEL_BUF);
 
-	if(new_buf->buf==NULL)
-	{
-		return NULL;	
-	}
 	return new_buf;
 }
 
 void channel_buf_free(void * buf)
 {
 	CHANNEL_BUF * old_buf=buf;
-	Free(old_buf->buf);
+	Memset(buf,0,old_buf->bufsize);
 	Free(old_buf);	
 }
 
@@ -94,13 +85,13 @@ int channel_buf_read(void * buf,BYTE * data,int size)
 		left_data=curr_buf->last_write_tail-curr_buf->last_read_tail;
 		if(size<left_data)
 		{
-			Memcpy(data,curr_buf->buf+curr_buf->last_read_tail,size);
+			Memcpy(data,((void *)curr_buf)+curr_buf->offset+curr_buf->last_read_tail,size);
 			curr_buf->last_read_tail+=size;		
 			ret=size;
 		}
 		else
 		{
-			Memcpy(data,curr_buf->buf+curr_buf->last_read_tail,left_data);
+			Memcpy(data,((void *)curr_buf)+curr_buf->offset+curr_buf->last_read_tail,left_data);
 			curr_buf->last_read_tail=curr_buf->last_write_tail;		
 			ret=left_data;
 		}
@@ -112,23 +103,23 @@ int channel_buf_read(void * buf,BYTE * data,int size)
 		int tail_block_size=curr_buf->bufsize-curr_buf->last_read_tail;
 		if(size<tail_block_size)
 		{
-			Memcpy(data,curr_buf->buf+curr_buf->last_read_tail,size);
+			Memcpy(data,((void *)curr_buf)+curr_buf->offset+curr_buf->last_read_tail,size);
 			curr_buf->last_read_tail+=size;		
 			ret=size;
 		}
 		else
 		{
-			Memcpy(data,curr_buf->buf+curr_buf->last_read_tail,tail_block_size);
+			Memcpy(data,((void *)curr_buf)+curr_buf->offset+curr_buf->last_read_tail,tail_block_size);
 			if(size<left_data)
 			{
-				Memcpy(data+tail_block_size,curr_buf->buf,size-tail_block_size);
+				Memcpy(data+tail_block_size,((void *)curr_buf)+curr_buf->offset,size-tail_block_size);
 				curr_buf->last_read_tail=size-tail_block_size;
 				ret=size;	
 
 			}
 			else
 			{
-				Memcpy(data+tail_block_size,curr_buf->buf,left_data-tail_block_size);
+				Memcpy(data+tail_block_size,((void *)curr_buf)+curr_buf->offset,left_data-tail_block_size);
 				curr_buf->last_read_tail=curr_buf->last_write_tail;		
 				ret=left_data;	
 
@@ -151,13 +142,13 @@ int channel_buf_write(void * buf,BYTE * data,int size)
 		left_data=curr_buf->last_read_tail-1-curr_buf->last_write_tail;
 		if(size<left_data)
 		{
-			Memcpy(curr_buf->buf+curr_buf->last_write_tail,data,size);
+			Memcpy(((void *)curr_buf)+curr_buf->offset+curr_buf->last_write_tail,data,size);
 			curr_buf->last_write_tail+=size;		
 			ret=size;
 		}
 		else
 		{
-			Memcpy(curr_buf->buf+curr_buf->last_write_tail,data,left_data);
+			Memcpy(((void *)curr_buf)+curr_buf->offset+curr_buf->last_write_tail,data,left_data);
 			curr_buf->last_write_tail=curr_buf->last_read_tail-1;		
 			ret=left_data;
 		}
@@ -169,23 +160,23 @@ int channel_buf_write(void * buf,BYTE * data,int size)
 		int tail_block_size=curr_buf->bufsize-curr_buf->last_write_tail;
 		if(size<tail_block_size)
 		{
-			Memcpy(curr_buf->buf+curr_buf->last_write_tail,data,size);
+			Memcpy(((void *)curr_buf)+curr_buf->offset+curr_buf->last_write_tail,data,size);
 			curr_buf->last_write_tail+=size;		
 			ret=size;
 		}
 		else
 		{
-			Memcpy(curr_buf->buf+curr_buf->last_write_tail,data,tail_block_size);
+			Memcpy(((void *)curr_buf)+curr_buf->offset+curr_buf->last_write_tail,data,tail_block_size);
 			if(size<left_data)
 			{
-				Memcpy(curr_buf->buf,data+tail_block_size,size-tail_block_size);
+				Memcpy(((void *)curr_buf)+curr_buf->offset,data+tail_block_size,size-tail_block_size);
 				curr_buf->last_write_tail=size-tail_block_size;
 				ret=size;	
 
 			}
 			else
 			{
-				Memcpy(curr_buf->buf,data+tail_block_size,left_data-tail_block_size);
+				Memcpy(((void *)curr_buf)+curr_buf->offset,data+tail_block_size,left_data-tail_block_size);
 				curr_buf->last_write_tail=curr_buf->last_read_tail-1;		
 				ret=left_data;	
 

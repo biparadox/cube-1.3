@@ -56,8 +56,12 @@ typedef struct tube_channel
 
 void channel_init();
 void * channel_create(char * name,int type);
+void * channel_create_fixmem(char * name,int type,int size,void * readaddr,void * writeaddr);
 void * channel_register(char * name, int type,void * module);
+void * channel_register_fixmem(char * name,int type,void * module,int size,void * readaddr,void * writeaddr);
 void * channel_find(char * name);
+void * channel_buf_create(int size);
+void * channel_membuf_create(int size,void *buf);
 
 int channel_write(void * channel,BYTE * data, int size);
 int channel_read(void * channel,BYTE * data, int size);
