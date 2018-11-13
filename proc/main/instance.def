@@ -1,0 +1,7 @@
+{
+	"CUBE_PATH":"/root/cube-1.3"
+}
+{
+	"INSTANCE":"example/hello",
+	"OUTPUT":"vtcm.log"
+}
