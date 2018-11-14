@@ -12,6 +12,7 @@
 #include "alloc.h"
 #include "memfunc.h"
 #include "basefunc.h"
+#include "json.h"
 #include "struct_deal.h"
 #include "crypto_func.h"
 #include "memdb.h"
@@ -32,7 +33,6 @@ int main(int argc,char **argv)
     int ret;
     int retval;
     int i,j;
-    int argv_offset;	
     char namebuffer[DIGEST_SIZE*4];
     void * main_proc; // point to the main proc's subject struct
 
@@ -44,21 +44,23 @@ int main(int argc,char **argv)
     char * instance;
 
     char json_buffer[4096];
-    char print_buffer[4096];
     int readlen;
     int offset;
     int instance_count=0;	
-    void * memdb_template ;
     BYTE uuid[DIGEST_SIZE];
     char local_uuid[DIGEST_SIZE*2];
 
     FILE * fp;
-    char audit_text[4096];
-    char buffer[4096];
+    char buffer[1024];
     void * define_node;
     void * define_elem;
     int fd;	
+    int cube_argc;
+    char *cube_argv[10];
+    int argv_offset=0;
+    char argv_buffer[DIGEST_SIZE*16];
 
+/*
     char * baseconfig[] =
     {
 	    "namelist.json",
@@ -74,7 +76,7 @@ int main(int argc,char **argv)
 	    "exmoduledefine.json",
 	    NULL
     };
-
+*/
     if(argc!=2)
     {
 	    printf("error format! should be %s [instance define file]\n",argv[0]);
@@ -214,6 +216,8 @@ int main(int argc,char **argv)
 
     while(define_node!=NULL)
     {
+
+	// get application's path, if it is empty,use CUBE_PATH
     	define_elem=json_find_elem("CUBE_APP_PATH",define_node);
     	if(define_elem==NULL)
     	{
@@ -232,6 +236,7 @@ int main(int argc,char **argv)
 		instance=json_buffer+offset;
 		Strcpy(instance,app_path);
 	}
+	// get instance name
     	define_elem=json_find_elem("INSTANCE",define_node);
     	if(define_elem==NULL)
     	{
@@ -249,6 +254,58 @@ int main(int argc,char **argv)
 	ret=Strlen(instance);
 	offset+=ret+1;	
 
+	// get param list
+	cube_argc=1;
+	cube_argv[0]=argv_buffer;
+	cube_argv[1]=NULL;
+	sprintf(argv_buffer,"%s/proc/main/main_proc",cube_path);
+	argv_offset=Strlen(argv_buffer)+1;
+
+
+    	define_elem=json_find_elem("PARAMS",define_node);
+    	if(define_elem!=NULL)
+    	{
+		if(json_get_type(define_elem)==JSON_ELEM_STRING)
+		{
+   			ret=json_node_getvalue(define_elem,argv_buffer+argv_offset,DIGEST_SIZE*4);
+			if(ret<0)
+			{
+				printf("instance %s has error argv format!\n",instance);
+				return -EINVAL;
+			}
+			cube_argv[cube_argc++]=argv_buffer+argv_offset;
+			cube_argv[cube_argc]=NULL;
+			argv_offset+=ret+1;			
+		}
+		else if(json_get_type(define_elem)==JSON_ELEM_ARRAY)
+		{
+			void * argv_node;
+			while(argv_node!=NULL)
+			{		
+   				ret=json_node_getvalue(define_elem,argv_buffer+argv_offset,DIGEST_SIZE*4);
+	
+				if(ret<0)
+				{
+					printf("instance %s has error argv format!\n",instance);
+					return -EINVAL;
+				}
+				cube_argv[cube_argc++]=argv_buffer+argv_offset;
+				argv_offset+=ret+1;			
+				if(cube_argc>=10)
+				{
+					printf("instance %s too many argv params!\n",instance);
+					return -EINVAL;
+				}
+				cube_argv[cube_argc]=NULL;
+			}
+		}
+
+		if(ret<=0)
+		{
+			printf("INSTANCE format error!\n");
+			return -EINVAL;
+		}
+	}
     	// set CUBE_APP_PLUGIN environment
 	if(app_path != NULL)
 	{
@@ -295,16 +352,30 @@ int main(int argc,char **argv)
 		ret=chdir(instance);
 		printf("change path %s %d!\n",instance,ret);
 		sprintf(json_buffer+offset,"%s/proc/main/main_proc",cube_path);
-		ret=execv(json_buffer+offset,NULL);
+		printf("prepare exec %s ",json_buffer+offset);
+		for(i=0;cube_argv[i]!=NULL;i++)
+		{
+			printf(" %s",cube_argv[i]);
+		}
+		printf("\n");
+
+		if(cube_argc==0)
+			ret=execv(json_buffer+offset,NULL);
+		else
+			ret=execv(json_buffer+offset,cube_argv);
 		perror("execv");
 		exit(0);
 	}
 
         read_json_node(fd,&define_node);
-	sleep(2);
+	sleep(1);
 			
     }
 
 
     return ret;
 }
+
+
+
+

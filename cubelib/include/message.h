@@ -114,6 +114,7 @@ typedef struct tagMessage_Head  //强制访问控制标记
    int  expand_size;
    BYTE nonce[DIGEST_SIZE];
 } __attribute__((packed)) MSG_HEAD;
+
 typedef MSG_HEAD RECORD(MESSAGE,HEAD);
 
 typedef struct tagMessage_Expand_Data_Head //general expand 's head struct

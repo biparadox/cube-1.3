@@ -68,7 +68,7 @@ struct struct_recordtype
 	BYTE uuid[DIGEST_SIZE];
 	int flag_no;
 	struct flag_index * index;
-}__attribute__((packed));
+}__attribute__((packed)) ;
 
 
 // the 2 init namelist

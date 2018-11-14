@@ -18,6 +18,7 @@
 #include "message.h"
 #include "connector.h"
 #include "ex_module.h"
+#include "sys_func.h"
 
 #include "main_proc_func.h"
 
@@ -151,7 +152,7 @@ int main(int argc,char **argv)
 		ret=read_json_file(namebuffer);
 		if(ret<0)
 			return ret;
-		printf("read %d elem from file %s!\n",ret,namebuffer);
+		print_cubeaudit("read %d elem from file %s!\n",ret,namebuffer);
 	}
 
 
@@ -189,7 +190,7 @@ int main(int argc,char **argv)
 	return ret; 		
 
     ret=get_local_uuid(local_uuid);
-    printf("this machine's local uuid is %s\n",local_uuid);
+    print_cubeaudit("this machine's local uuid is %s\n",local_uuid);
     proc_share_data_setvalue("uuid",local_uuid);
 
 
@@ -211,7 +212,7 @@ int main(int argc,char **argv)
 
 		if((fd=open(argv[2],O_RDONLY))<0)
 		{
-			printf("Error! memdb (%d,%d) does not exist!\n",typeno,subtypeno);
+			print_cubeerr("Error! memdb (%d,%d) does not exist!\n",typeno,subtypeno);
 			return -EINVAL;
 		}
 
@@ -249,7 +250,7 @@ int main(int argc,char **argv)
 
 		if((fd=open(argv[2],O_RDONLY))<0)
 		{
-			printf("Error! memdb (%d,%d) does not exist!\n",typeno,subtypeno);
+			print_cubeerr("Error! memdb (%d,%d) does not exist!\n",typeno,subtypeno);
 			return -EINVAL;
 		}
 
@@ -292,7 +293,7 @@ int main(int argc,char **argv)
 
 		if((fd=open(argv[2],O_WRONLY|O_TRUNC))<0)
 		{
-			printf("Error! memdb (%d,%d) can't be write!\n",typeno,subtypeno);
+			print_cubeerr("Error! memdb (%d,%d) can't be write!\n",typeno,subtypeno);
 			return -EINVAL;
 		}
 
