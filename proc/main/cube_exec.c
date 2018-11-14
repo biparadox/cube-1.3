@@ -42,6 +42,7 @@ int main(int argc,char **argv)
     char * sys_plugin;		
     char * app_plugin=NULL;		
     char * instance;
+    char * cube_define_path;
 
     char json_buffer[4096];
     int readlen;
@@ -113,7 +114,6 @@ int main(int argc,char **argv)
     cube_path=json_buffer; 	
     offset++;	
 
-    ld_library_path=json_buffer+offset;
     // set CUBE_PATH environment
     setenv("CUBE_BASE_DEFINE",namebuffer,1);
 
@@ -138,17 +138,19 @@ int main(int argc,char **argv)
     define_elem=json_find_elem("CUBE_DEFINE_PATH",define_node);
     if(define_elem==NULL)
     {	
-	    Strncpy(namebuffer,cube_path,DIGEST_SIZE*3);
-	    Strcat(namebuffer,"/proc/define");
-	    setenv("CUBE_DEFINE_PATH",namebuffer,1);
+	    Strncpy(json_buffer+offset,cube_path,DIGEST_SIZE*3);
+	    Strcat(json_buffer+offset,"/proc/define");
     }
     else
     {
-	    ret=json_node_getvalue(define_elem,namebuffer,DIGEST_SIZE*4);
+	    ret=json_node_getvalue(define_elem,json_buffer+offset,DIGEST_SIZE*4);
 	    if(ret<=0)
 		    return -EINVAL;
-	    setenv("CUBE_DEFINE_PATH",namebuffer,1);
     }
+    cube_define_path=json_buffer+offset;
+    setenv("CUBE_DEFINE_PATH",json_buffer+offset,1);
+    ret=Strlen(json_buffer+offset);
+    offset+=ret+1;
 
     // set CUBE_SYS_PLUGIN environment
     define_elem=json_find_elem("CUBE_SYS_PLUGIN",define_node);
@@ -184,6 +186,7 @@ int main(int argc,char **argv)
 
     // set LD_LIBRARY_PATH
     //Strcat(ld_library_path,getenv("LD_LIBRARY_PATH"));
+    ld_library_path=json_buffer+offset;
     Strcpy(ld_library_path,getenv("LD_LIBRARY_PATH"));
     ret=Strlen(ld_library_path);
     offset+=ret+1;
@@ -314,6 +317,34 @@ int main(int argc,char **argv)
     		setenv("CUBE_APP_PLUGIN",namebuffer,1);
 	}
 
+    	// reset CUBE_DEFINE_PATH for app
+
+	if(app_path  == NULL)
+		setenv("CUBE_DEFINE_PATH",cube_define_path,1);
+	else
+	{
+    		define_elem=json_find_elem("CUBE_DEFINE_PATH",define_node);
+    		if(define_elem==NULL)
+    		{
+			sprintf(namebuffer,"%s/define/:%s",app_path,cube_define_path);
+			setenv("CUBE_DEFINE_PATH",namebuffer,1);
+    		}
+		else
+		{
+   			ret=json_node_getvalue(define_elem,namebuffer,DIGEST_SIZE*4);
+			if(ret<=0)
+			{
+				printf("CUBE_DEFINE_PATH format error!\n");
+				return -EINVAL;
+			}
+    			Strcat(json_buffer+offset,namebuffer);
+    			Strcat(json_buffer+offset,":");
+    			Strcat(json_buffer+offset,cube_define_path);
+    			setenv("CUBE_DEFINE_PATH",json_buffer+offset,1);
+		}
+	}
+
+    	printf("instance %s's LD_LIBRARY_PATH is %s\n",instance,getenv("LD_LIBRARY_PATH"));
     	// reset LD_LIBRARY_PATH_FOR_app
 
 	if(app_path  == NULL)
@@ -344,6 +375,7 @@ int main(int argc,char **argv)
 
     	printf("instance %s's LD_LIBRARY_PATH is %s\n",instance,getenv("LD_LIBRARY_PATH"));
 	instance_count++;
+        read_json_node(fd,&define_node);
 
 	int pid=fork();
 
@@ -367,7 +399,6 @@ int main(int argc,char **argv)
 		exit(0);
 	}
 
-        read_json_node(fd,&define_node);
 	sleep(1);
 			
     }

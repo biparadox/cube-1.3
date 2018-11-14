@@ -49,7 +49,11 @@ int read_sys_cfg(void ** lib_para_struct,void * root_node,char * plugin_dir)
     struct lib_para_struct * lib_para;
     int json_offset;	
     int ret;
+    int i,j;
     char filename[DIGEST_SIZE*8];
+    char * define_path[10];
+    char * define_path_env;
+    char * define_buf;
 	
     lib_para=Salloc0(sizeof(*lib_para));
     if(lib_para==NULL)
@@ -68,7 +72,30 @@ int read_sys_cfg(void ** lib_para_struct,void * root_node,char * plugin_dir)
 	return -EINVAL;
      }
  
-    char * define_path=getenv("CUBE_DEFINE_PATH");	
+    define_path_env=getenv("CUBE_DEFINE_PATH");	
+    define_buf=Talloc0(Strlen(define_path_env)+1);
+    if(define_buf==NULL)
+	return -ENOMEM;    	
+    Strcpy(define_buf,define_path_env);
+    	
+    j=0;
+    define_path[0]=define_buf;
+    define_path[1]=NULL;	
+	
+    for(i=0;i<Strlen(define_buf);i++)
+    {
+	if(define_buf[i]==':')
+	{
+		define_buf[i]='\0';
+		if(define_buf[i+1]!='\0')
+		{
+			j++;
+			define_path[j]=define_buf+i+1;
+			define_path[j+1]=NULL;
+		}
+	}
+    }
+    	
 
     void * define_node=json_find_elem("define_file",root_node);	    
     if(define_node!=NULL)
@@ -78,14 +105,21 @@ int read_sys_cfg(void ** lib_para_struct,void * root_node,char * plugin_dir)
 		ret=read_json_file(json_get_valuestr(define_node));
 		if(ret<0)
 		{
-			Strcpy(filename,define_path);
-			Strcat(filename,"/");
-			Strcat(filename,json_get_valuestr(define_node));					
-			ret=read_json_file(filename);
-			if(ret<0)
+			j=0;
+			while(define_path[j]!=NULL)
 			{
-				print_cubeerr("read define file  %s failed!\n",json_get_valuestr(define_node));
+				Strcpy(filename,define_path[j]);
+				Strcat(filename,"/");
+				Strcat(filename,json_get_valuestr(define_node));					
+				ret=read_json_file(filename);
+				if(ret>=0)
+				{
+					break;
+				}
+				j++;
 			}
+			if(define_path[j]==NULL)
+				print_cubeerr("read define file  %s failed!\n",json_get_valuestr(define_node));
 		}
 		if(ret>=0)
 			print_cubeaudit("read %d elem from file %s!\n",ret,json_get_valuestr(define_node));
@@ -95,18 +129,27 @@ int read_sys_cfg(void ** lib_para_struct,void * root_node,char * plugin_dir)
 		void * define_file=json_get_first_child(define_node);
 		while(define_file!=NULL)
 		{
-			ret=read_json_file(json_get_valuestr(define_file));
+	        	ret=read_json_file(json_get_valuestr(define_file));
 			if(ret<0)
 			{
-				Strcpy(filename,define_path);
-				Strcat(filename,"/");
-				Strcat(filename,json_get_valuestr(define_file));					
-				ret=read_json_file(filename);
-				if(ret<0)
+				j=0;
+				while(define_path[j]!=NULL)
+				{
+					Strcpy(filename,define_path[j]);
+					Strcat(filename,"/");
+					Strcat(filename,json_get_valuestr(define_file));					
+					ret=read_json_file(filename);
+					if(ret>0)
+					{
+						break;
+					}
+					j++;
+				}
+				if(define_path[j]==NULL)
 				{
 					print_cubeerr("read define file  %s failed!\n",json_get_valuestr(define_file));
 				}
-			}
+			}	
 			if(ret>=0)
 				print_cubeaudit("read %d elem from file %s!\n",ret,json_get_valuestr(define_file));
 			define_file=json_get_next_child(define_node);

@@ -209,6 +209,13 @@ int read_json_node(int fd, void ** node)
 	readlen=read(fd,json_buffer,4096);
 	if(readlen<0)
 		return -EIO;
+
+	if(readlen<2)
+	{
+		*node=NULL;
+		return 0;
+	}
+
 	json_buffer[readlen]=0;
 
 	ret=json_solve_str(&root_node,json_buffer);
