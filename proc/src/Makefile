@@ -1,4 +1,4 @@
-dirs= echo_plugin file_dealer hello recordlib symm_crypt sys_plugin tcp_channel tcp_client websocket_port websocket_channel echo_channel output_channel
+dirs= echo_plugin file_dealer hello recordlib symm_crypt sys_plugin tcp_channel tcp_client websocket_port websocket_channel echo_channel output_channel msgrecord_store
 all:
 	$(foreach N,$(dirs),make -C $(N);)
 clean:

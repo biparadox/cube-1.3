@@ -50,6 +50,7 @@ int read_sys_cfg(void ** lib_para_struct,void * root_node,char * plugin_dir)
     int json_offset;	
     int ret;
     int i,j;
+    int len;	
     char filename[DIGEST_SIZE*8];
     char * define_path[10];
     char * define_path_env;
@@ -81,8 +82,9 @@ int read_sys_cfg(void ** lib_para_struct,void * root_node,char * plugin_dir)
     j=0;
     define_path[0]=define_buf;
     define_path[1]=NULL;	
-	
-    for(i=0;i<Strlen(define_buf);i++)
+   
+    len=Strlen(define_buf);	
+    for(i=0;i<len;i++)
     {
 	if(define_buf[i]==':')
 	{
@@ -213,37 +215,41 @@ int read_plugin_cfg(void ** plugin,void * root_node)
     {
 	char * Buf;
 	// check if the cfg file is in an cube_app dir
-    	Buf=getenv("CUBE_APP_PLUGIN");
-	if(Buf==NULL)
-		return -EINVAL;
     	plugin_dir=Talloc0(DIGEST_SIZE*8);
 	int offset=0;
-	do
-	{	
-		ret=Getfiledfromstr(plugin_dir,Buf+offset,':',DIGEST_SIZE*8);
-		if(ret>0)
-		{
-       			Strcpy(filename,plugin_dir);
-			Strcat(filename,"/");
-			Strcat(filename,libname);
-    			Strcat(filename,".cfg");
-    			fd=open(filename,O_RDONLY);
-		}
-		if(fd>0)
-			break;
-		offset+=ret;
-		if(Buf[offset]==0)
-		{
-			ret=0;
-			break;
-		}
-		offset++;
-	}while(ret>0);
+    	Buf=getenv("CUBE_APP_PLUGIN");
+	ret=0;
+	if(Buf!=NULL)
+	{
+		do
+		{	
+			ret=Getfiledfromstr(plugin_dir,Buf+offset,':',DIGEST_SIZE*8);
+			if(ret>0)
+			{
+       				Strcpy(filename,plugin_dir);
+				Strcat(filename,"/");
+				Strcat(filename,libname);
+    				Strcat(filename,".cfg");
+    				fd=open(filename,O_RDONLY);
+			}
+			if(fd>0)
+				break;
+			offset+=ret;
+			if(Buf[offset]==0)
+			{
+				ret=0;
+				break;
+			}
+			offset++;
+		}while(ret>0);
+	}	
 		
 	// if not, check if it is in the cube sys dir
 	if(ret<=0)
 	{
     		Buf=getenv("CUBE_SYS_PLUGIN");
+		if(Buf==NULL)
+			return -EINVAL;
 		ret=Getfiledfromstr(plugin_dir,Buf,':',DIGEST_SIZE*8);
 		if(ret>0)
 		{
