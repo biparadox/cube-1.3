@@ -107,6 +107,8 @@ int proc_msgfile_send(void * sub_proc, char * filename,void * recv_msg)
 	int ret;
 	void * record_template;
 	void * new_msg;
+	int  mode=0;
+	
 	fd=open(filename,O_RDONLY);
 	if(fd<0)
 		return -EIO;
@@ -115,6 +117,8 @@ int proc_msgfile_send(void * sub_proc, char * filename,void * recv_msg)
 		return -EINVAL;
 	if(head_node==NULL)
 		return -EINVAL;
+
+	// get message's type
 	elem_node=json_find_elem("type",head_node);
 	if(elem_node==NULL)
 	{
@@ -127,6 +131,7 @@ int proc_msgfile_send(void * sub_proc, char * filename,void * recv_msg)
 		close(fd);
 		return -EINVAL;
 	} 			
+	// get message's subtype
 	elem_node=json_find_elem("subtype",head_node);
 	if(elem_node==NULL)
 	{
@@ -139,13 +144,43 @@ int proc_msgfile_send(void * sub_proc, char * filename,void * recv_msg)
 		close(fd);
 		return -EINVAL;
 	} 
-
+	// get record template
 	record_template=memdb_get_template(type,subtype);
 	if(record_template==NULL)
 	{
 		close(fd);
 		return -EINVAL;
 	}		
+
+	// get message send mode
+	elem_node=json_find_elem("mode",head_node);
+	if(elem_node==NULL)
+	{
+		mode=0;
+	}
+	else
+	{
+		char * modestr=json_get_valuestr(elem_node);
+		if(modestr==NULL)
+		{
+			print_cubeerr("error msg send mode!\n");
+			return -EINVAL;
+		}
+		if(Strcmp(modestr,"INT")==0)
+		{
+			mode=1;
+		}
+		else if(Strcmp(modestr,"SEP")==0)
+		{
+			mode=0;
+		}
+		else
+		{
+			print_cubeerr("error msg send mode define!\n");
+			return -EINVAL;
+		}
+		
+	}
 	
 	ret=read_json_node(fd,&record_node);
 	int record_size=struct_size(record_template);	
@@ -155,27 +190,33 @@ int proc_msgfile_send(void * sub_proc, char * filename,void * recv_msg)
 	{
 		if(record==NULL)
 			record=Talloc(record_size);
+		new_msg=message_create(type,subtype,recv_msg);
 		if(record_node!=NULL)
 		{
 			ret=json_2_struct(record_node,record,record_template);
 			if(ret>=0)
 			{
-				new_msg=message_create(type,subtype,recv_msg);
 				if(new_msg==NULL)
 				{
 					printf("create message (%d %d) error!\n",type,subtype);
 					return -EINVAL;	
 				}	
 				message_add_record(new_msg,record);
-				ex_module_sendmsg(sub_proc,new_msg);
+				if(mode==0)
+				{
+					ex_module_sendmsg(sub_proc,new_msg);
+					new_msg=message_create(type,subtype,recv_msg);
+					sleep(1);
+				}
 				count++;
 			}
 		}	
 		ret=read_json_node(fd,&record_node);
-		if(record_node!=NULL)
-		{
-			sleep(1);
-		}
+	}
+	if(mode==1)
+	{
+		if(count>0)
+			ex_module_sendmsg(sub_proc,new_msg);
 	}
 	close(fd);
 	return count;
