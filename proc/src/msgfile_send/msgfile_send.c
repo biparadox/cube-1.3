@@ -186,11 +186,11 @@ int proc_msgfile_send(void * sub_proc, char * filename,void * recv_msg)
 	int record_size=struct_size(record_template);	
 	void * record=NULL;
 
+	new_msg=message_create(type,subtype,recv_msg);
 	while(ret>0)
 	{
 		if(record==NULL)
 			record=Talloc(record_size);
-		new_msg=message_create(type,subtype,recv_msg);
 		if(record_node!=NULL)
 		{
 			ret=json_2_struct(record_node,record,record_template);
