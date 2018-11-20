@@ -54,6 +54,7 @@ int main(int argc,char **argv)
     char * sys_plugin;		
     char * app_plugin;		
     char * base_define;
+    char * cube_output;
 
 
     char json_buffer[4096];

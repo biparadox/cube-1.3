@@ -44,9 +44,11 @@ int main(int argc,char **argv)
     char * instance;
     char * cube_define_path;
 
-    char json_buffer[4096];
+    char json_buffer[2048];
     int readlen;
     int offset;
+    int instance_offset;
+    char instance_buffer[1024];
     int instance_count=0;	
     BYTE uuid[DIGEST_SIZE];
     char local_uuid[DIGEST_SIZE*2];
@@ -59,6 +61,7 @@ int main(int argc,char **argv)
     int cube_argc;
     char *cube_argv[10];
     int argv_offset=0;
+    char * output_file;
     char argv_buffer[DIGEST_SIZE*16];
 
     if(argc!=2)
@@ -181,11 +184,12 @@ int main(int argc,char **argv)
 
     read_json_node(fd,&define_node);
 
-    instance=json_buffer+offset;
 
     while(define_node!=NULL)
     {
 
+	instance_offset=0;
+    	instance=instance_buffer+instance_offset;
 	// get application's path, if it is empty,use CUBE_PATH
     	define_elem=json_find_elem("CUBE_APP_PATH",define_node);
     	if(define_elem==NULL)
@@ -194,15 +198,15 @@ int main(int argc,char **argv)
     	}			
 	else
 	{
-		app_path=json_buffer+offset;
+		app_path=instance_buffer+instance_offset;
     		ret=json_node_getvalue(define_elem,app_path,DIGEST_SIZE*4);
 		if(ret<=0)
 		{
 			printf("CUBE_APP_PATH format error!\n");
 			return -EINVAL;
 		}
-		offset+=ret+1;
-		instance=json_buffer+offset;
+		instance_offset+=ret+1;
+		instance=instance_buffer+instance_offset;
 		Strcpy(instance,app_path);
 	}
 	// get instance name
@@ -221,7 +225,7 @@ int main(int argc,char **argv)
 	Strcat(instance,"/");			
 	Strcat(instance,namebuffer);
 	ret=Strlen(instance);
-	offset+=ret+1;	
+	instance_offset+=ret+1;	
 
 	// get param list
 	cube_argc=1;
@@ -296,8 +300,8 @@ int main(int argc,char **argv)
 				printf("CUBE_APP_PLUGIN format error!\n");
 				return -EINVAL;
 			}
-    			Strcat(json_buffer+offset,namebuffer);
-    			setenv("CUBE_APP_PLUGIN",json_buffer+offset,1);
+    			Strcat(instance_buffer+instance_offset,namebuffer);
+    			setenv("CUBE_APP_PLUGIN",instance_buffer+instance_offset,1);
 		}
 	}
 
@@ -321,10 +325,10 @@ int main(int argc,char **argv)
 				printf("CUBE_DEFINE_PATH format error!\n");
 				return -EINVAL;
 			}
-    			Strcat(json_buffer+offset,namebuffer);
-    			Strcat(json_buffer+offset,":");
-    			Strcat(json_buffer+offset,cube_define_path);
-    			setenv("CUBE_DEFINE_PATH",json_buffer+offset,1);
+    			Strcat(instance_buffer+instance_offset,namebuffer);
+    			Strcat(instance_buffer+instance_offset,":");
+    			Strcat(instance_buffer+instance_offset,cube_define_path);
+    			setenv("CUBE_DEFINE_PATH",instance_buffer+instance_offset,1);
 		}
 	}
 
@@ -348,17 +352,30 @@ int main(int argc,char **argv)
 				printf("CUBE_APP_LIB format error!\n");
 				return -EINVAL;
 			}
-    			Strncpy(json_buffer+offset,app_path,DIGEST_SIZE*3);
-    			Strcat(json_buffer+offset,"/");
-    			Strcat(json_buffer+offset,namebuffer);
-    			Strcat(json_buffer+offset,":");
-    			Strcat(json_buffer+offset,ld_library_path);
-    			setenv("LD_LIBRARY_PATH",json_buffer+offset,1);
+    			Strncpy(instance_buffer+instance_offset,app_path,DIGEST_SIZE*3);
+    			Strcat(instance_buffer+instance_offset,"/");
+    			Strcat(instance_buffer+instance_offset,namebuffer);
+    			Strcat(instance_buffer+instance_offset,":");
+    			Strcat(instance_buffer+instance_offset,ld_library_path);
+    			setenv("LD_LIBRARY_PATH",instance_buffer+instance_offset,1);
 		}
 	}
 
     	printf("instance %s's LD_LIBRARY_PATH is %s\n",instance,getenv("LD_LIBRARY_PATH"));
 	instance_count++;
+    	// set OUTPUT file
+    	define_elem=json_find_elem("CUBE_OUTPUT",define_node);
+	if(define_elem==NULL)
+	{
+		unsetenv("CUBE_OUTPUT");
+	}
+	else
+    	{	
+	    ret=json_node_getvalue(define_elem,instance_buffer+instance_offset,DIGEST_SIZE*4);
+	    if(ret<=0)
+		    return -EINVAL;
+	    setenv("CUBE_OUTPUT",instance_buffer+instance_offset,1);
+        }
         read_json_node(fd,&define_node);
 
 	int pid=fork();
@@ -367,18 +384,35 @@ int main(int argc,char **argv)
 	{
 		ret=chdir(instance);
 		printf("change path %s %d!\n",instance,ret);
-		sprintf(json_buffer+offset,"%s/proc/main/main_proc",cube_path);
-		printf("prepare exec %s ",json_buffer+offset);
-		for(i=0;cube_argv[i]!=NULL;i++)
-		{
-			printf(" %s",cube_argv[i]);
-		}
-		printf("\n");
+		sprintf(instance_buffer+instance_offset,"%s/proc/main/main_proc",cube_path);
+
+		printf("prepare exec %s ",instance_buffer+instance_offset);
 
 		if(cube_argc==0)
-			ret=execv(json_buffer+offset,NULL);
+		{
+			ret=execv(instance_buffer+instance_offset,NULL);
+		}
 		else
-			ret=execv(json_buffer+offset,cube_argv);
+		{
+			for(i=0;cube_argv[i]!=NULL;i++)
+			{
+				printf(" %s",cube_argv[i]);
+			}
+			printf("\n");
+			if(output_file==NULL)
+				ret=execv(instance_buffer+instance_offset,cube_argv);
+			else
+			{
+				FILE * fd;
+				fd=freopen(output_file,"w+",stdout);
+				if(fd==NULL)
+				{
+					print_cubeerr("open stdout file %s failed!\n",output_file);
+					return -EINVAL;
+				}
+				ret=execv(instance_buffer+instance_offset,cube_argv);
+			}
+		}
 		perror("execv");
 		exit(0);
 	}
