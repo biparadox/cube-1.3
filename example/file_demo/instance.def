@@ -3,9 +3,8 @@
 }
 {
 	"INSTANCE":"example/file_demo/file_receiver",
-	"OUTPUT":"vtcm.log"
 }
 {
 	"INSTANCE":"example/file_demo/file_sender",
-	"OUTPUT":"vtcm.log"
+	"PARAMS":"request.txt"
 }
