@@ -245,6 +245,11 @@ int _memdb_record_add_name(void * record,char * name)
 	
 	if(record_db->names==NULL)
 	{
+		if(record_db->head.name[0]==0)
+			record_db->name_no=0;
+		else
+			record_db->name_no=1;
+
 		record_db->names=Dalloc0(sizeof(char *),record_db);
 		if(record_db->names==NULL)
 			return -ENOMEM;
@@ -257,7 +262,7 @@ int _memdb_record_add_name(void * record,char * name)
 	namelist_no=record_db->name_no;
 	if(record_db->head.name[0]!=0)
 		namelist_no--;
-	namelist_no++;
+//	namelist_no++;
 		
 	new_namearray=Dalloc0(sizeof(char *)*namelist_no,record_db);
 	if(new_namearray==NULL)
