@@ -63,7 +63,6 @@ int proc_msgrecord_print(void * sub_proc,void * recv_msg)
 	int i;
 	int ret;
 	char record_buf[DIGEST_SIZE*32];
-	printf("begin proc echo \n");
 
 	type=message_get_type(recv_msg);
 	subtype=message_get_subtype(recv_msg);

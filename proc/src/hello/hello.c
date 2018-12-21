@@ -42,7 +42,6 @@ int proc_hello_message(void * sub_proc,void * para)
 {
 	int ret;
 	int i;
-	printf("begin proc hello \n");
 
 	struct start_para * start_para=para;
 
