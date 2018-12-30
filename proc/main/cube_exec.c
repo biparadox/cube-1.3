@@ -168,9 +168,20 @@ int main(int argc,char **argv)
 
     // set LD_LIBRARY_PATH
     ld_library_path=json_buffer+offset;
-    Strcpy(ld_library_path,getenv("LD_LIBRARY_PATH"));
-    ret=Strlen(ld_library_path);
-    offset+=ret+1;
+    if(getenv("LD_LIBRARY_PATH")==NULL)
+    {
+	Strcpy(ld_library_path,cube_path);
+	Strcat(ld_library_path,"/cubelib/lib");
+	offset+=Strlen(ld_library_path)+1;
+    }
+    else
+    {		
+   	Strcpy(ld_library_path,getenv("LD_LIBRARY_PATH"));
+	Strcat(ld_library_path,cube_path);
+	Strcat(ld_library_path,"/cubelib/lib");
+    	ret=Strlen(ld_library_path);
+    	offset+=ret+1;
+    }
 
 
     printf("new LD_LIBRARY_PATH is %s\n",ld_library_path);

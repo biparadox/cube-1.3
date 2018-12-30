@@ -5,7 +5,7 @@ CC=gcc
 CCP=g++
 STRUCTOBJ=read_config.o
 DEPENDLIB= -L$(CUBELIBPATH)/lib -L$(CUBESYSPATH)/plugin -lsys_func -lexmodule -ldispatch -lchannel -lmessage -lmemdb -lconnector -lstruct -lcrypto_func -ljson -lbasefunc -lstring -lalloc -lpthread
-EXECLIB= -L$(CUBELIBPATH)/lib -lsys_func -lexmodule -ldispatch -lmessage -lmemdb -lstruct -lcrypto_func -ljson -lbasefunc -lstring -lalloc -lpthread
+EXECLIB= -L$(CUBELIBPATH)/lib -lpthread -Wl,-Bstatic -lsys_func -lexmodule -ldispatch -lmessage -lmemdb -lstruct -lcrypto_func -ljson -lbasefunc -lstring -lalloc -Wl,-Bdynamic
 
 main: main_proc lib_tool cube_exec
 main_proc:  main_proc.c main_proc_func.h $(STRUCTOBJ)
