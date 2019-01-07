@@ -5,5 +5,6 @@ clean:
 	$(foreach N,$(dirs),make clean -C $(N);)
 	rm -f *~
 	rm -f lib/*.so
+	rm -f lib/*.a
 
 

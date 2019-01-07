@@ -1,5 +1,5 @@
 FLAGS= -g -o
-INCLUDE= $(CUBELIBPATH)/include/ 
+INCLUDE= ../include/ 
 CFLAGS= -g -c -fPIC -Wall -DUSER_MODE -I$(INCLUDE)
 CC=gcc
 LD=ld
