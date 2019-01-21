@@ -12,7 +12,11 @@ typedef struct
   UINT32 total_bytes_High;
   UINT32 total_bytes_Low;
   UINT32 vector[8];
-  BYTE  buffer[64];     /* 64 byte buffer                            */
+  BYTE  buffer[64];     // 64 byte buffer
+
+  BYTE ipad[64];       // HMAC: inner padding
+  BYTE opad[64];       // HMAC: outer padding	
+  
 } SM3_context;
 
 

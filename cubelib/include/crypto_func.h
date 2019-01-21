@@ -19,4 +19,21 @@ int sm4_text_crypt( BYTE * input, BYTE ** output, BYTE * passwd);
 int sm4_text_decrypt( BYTE * input, BYTE ** output, BYTE * passwd);
 void sm4_data_prepare(int input_len,BYTE * input_data,int * output_len,BYTE * output_data);
 int sm4_data_recover(int input_len,BYTE * input_data,int * output_len,BYTE * output_data);
+
+typedef struct
+{
+  UINT32 total_bytes_High;
+  UINT32 total_bytes_Low;
+  UINT32 vector[8];
+  BYTE  buffer[64];     /* 64 byte buffer                            */
+
+  BYTE ipad[64];       // HMAC: inner padding
+  BYTE opad[64];       // HMAC: outer padding	
+} sm3_context;
+
+int SM3_init(sm3_context *index);
+int SM3_update(sm3_context *index, BYTE *chunk_data, UINT32 chunk_length);
+int SM3_final(sm3_context *index, UINT32 *SM3_hash);
+void SM3_hmac(BYTE * key,int keylen, BYTE * input, int ilen,BYTE * output);
+
 #endif

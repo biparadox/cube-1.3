@@ -1,10 +1,13 @@
 #define _GNU_SOURCE
 
 #include "../include/data_type.h"
+#include "../include/crypto_func.h"
 #include "sm3.h"
 #define DIGEST_SIZE 32
 
-int SM3_init(SM3_context *index)
+
+
+int SM3_init(sm3_context *index)
 {
   if ( index == NULL )
   {
@@ -25,7 +28,7 @@ int SM3_init(SM3_context *index)
   return 0;
 }
 
-static void SM3_CF(SM3_context *index, BYTE *byte_64_block )
+static void SM3_CF(sm3_context *index, BYTE *byte_64_block )
 {
 UINT32 j,temp,W[68];
 
@@ -124,7 +127,7 @@ index->vector[7] ^= H;
 
 }
 
-int SM3_update(SM3_context *index, BYTE *chunk_data, UINT32 chunk_length)
+int SM3_update(sm3_context *index, BYTE *chunk_data, UINT32 chunk_length)
 {
 
   UINT32 left, fill;
@@ -176,7 +179,7 @@ int SM3_update(SM3_context *index, BYTE *chunk_data, UINT32 chunk_length)
   }
 
 
-int SM3_final(SM3_context *index, UINT32 *SM3_hash)
+int SM3_final(sm3_context *index, UINT32 *SM3_hash)
 {
 
   UINT32 last, padn;
@@ -218,7 +221,7 @@ int calculate_by_context(char **buffer,int countline,UINT32 *SM3_hash)
     int result;
     int bytes_to_copy = 0;
     int filesize = 0;
-	SM3_context index;
+	sm3_context index;
     char sm3buffer[4096];
 
     /* Initialise sm3-Context */
@@ -253,7 +256,7 @@ int calculate_context_sm3(char* context, int context_size, UINT32 *SM3_hash)
 {
    
     int result;
-     SM3_context index;
+     sm3_context index;
      result = SM3_init(&index);
     if (result)
     {
@@ -270,3 +273,76 @@ int calculate_context_sm3(char* context, int context_size, UINT32 *SM3_hash)
     return 0;
 }
 
+/*
+ * SM3 HMAC context setup
+ */
+void SM3_hmac_init( sm3_context *ctx, BYTE *key, int keylen )
+{
+    int i;
+    unsigned char sum[DIGEST_SIZE*2];
+
+    if( keylen > DIGEST_SIZE*2 )
+    {
+	memset(sum+DIGEST_SIZE,0,DIGEST_SIZE);
+        calculate_context_sm3( key, keylen, sum );
+        keylen = DIGEST_SIZE;
+        key = sum;
+    }
+    else if(keylen<DIGEST_SIZE*2)
+    {
+	memset(sum,0,DIGEST_SIZE*2);	
+	memcpy(sum,key,keylen);
+	key=sum;
+    }	
+
+    memset( ctx->ipad, 0x36, 64 );
+    memset( ctx->opad, 0x5C, 64 );
+
+    for( i = 0; i < keylen; i++ )
+    {
+        ctx->ipad[i] = (BYTE)( ctx->ipad[i] ^ key[i] );
+        ctx->opad[i] = (BYTE)( ctx->opad[i] ^ key[i] );
+    }
+
+    SM3_init( ctx);
+    SM3_update( ctx, ctx->ipad, 64 );
+    memset( sum, 0, sizeof( sum ) );
+}
+
+/*
+ * SM3 HMAC process buffer
+ */
+void SM3_hmac_update( sm3_context *ctx, BYTE *input, int ilen )
+{
+    SM3_update( ctx, input, ilen );
+}
+
+/*
+ * SM3 HMAC final digest
+ */
+void SM3_hmac_finish( sm3_context *ctx, BYTE * output)
+{
+    int hlen;
+    BYTE tmpbuf[32];
+
+    //is224 = ctx->is224;
+    hlen =  32;
+
+    SM3_finish( ctx, tmpbuf );
+    SM3_init( ctx);
+    SM3_update( ctx, ctx->opad,DIGEST_SIZE*2);
+    SM3_update( ctx, tmpbuf,DIGEST_SIZE);
+    SM3_finish( ctx, output );
+    memset( tmpbuf, 0, sizeof( tmpbuf ) );
+}
+
+void SM3_hmac(BYTE * key,int keylen, BYTE * input, int ilen,BYTE * output)
+{
+    sm3_context ctx;
+
+    SM3_hmac_init( &ctx, key, keylen);
+    SM3_hmac_update( &ctx, input, ilen);
+    SM3_hmac_finish( &ctx, output);
+
+    memset( &ctx, 0, sizeof( sm3_context ) );
+}
