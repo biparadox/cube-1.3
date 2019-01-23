@@ -328,11 +328,11 @@ void SM3_hmac_finish( sm3_context *ctx, BYTE * output)
     //is224 = ctx->is224;
     hlen =  32;
 
-    SM3_finish( ctx, tmpbuf );
+    SM3_final( ctx, tmpbuf );
     SM3_init( ctx);
     SM3_update( ctx, ctx->opad,DIGEST_SIZE*2);
     SM3_update( ctx, tmpbuf,DIGEST_SIZE);
-    SM3_finish( ctx, output );
+    SM3_final( ctx, output );
     memset( tmpbuf, 0, sizeof( tmpbuf ) );
 }
 
