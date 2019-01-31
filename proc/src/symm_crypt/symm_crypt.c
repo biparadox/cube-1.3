@@ -46,7 +46,7 @@ int symm_crypt_start(void * sub_proc,void * para)
 	int subtype;
 
 
-	for(i=0;i<3000*1000;i++)
+	while(1)
 	{
 		usleep(time_val.tv_usec);
 		ret=ex_module_recvmsg(sub_proc,&recv_msg);

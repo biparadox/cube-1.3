@@ -141,7 +141,7 @@ int output_channel_start(void * sub_proc,void * para)
    int flip=0; // 0 start or a segment finished 1 read first char 2 read next char 3 read file finished
    int flop=0; // 0 ready to send data 1 send data 2 return data
     
-    for(i=0;i<500*1000;i++)
+    while(1)
     {
         usleep(time_val.tv_usec);
         // read ex_channel 

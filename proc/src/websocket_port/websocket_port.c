@@ -247,7 +247,7 @@ int websocket_port_start(void * sub_proc,void * para)
 
     print_cubeaudit("starting wsport server ...\n");
 
-    for(i=0;i<500*1000;i++)
+    while(1)
     {
 	 lws_service(ws_context->server_context,50);
 	 // check if there is something to read

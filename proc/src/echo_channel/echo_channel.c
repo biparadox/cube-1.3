@@ -72,7 +72,7 @@ int echo_channel_start(void * sub_proc,void * para)
     if(ret<0)
 	return ret;
 
-    for(i=0;i<500*1000;i++)
+    while(1)
     {
         usleep(time_val.tv_usec);
         // read ex_channel 
