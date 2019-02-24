@@ -7,6 +7,7 @@
 #include "struct_ops.h"
 #include "struct_attr.h"
 
+int deep_debug=0;
 struct struct_deal_ops
 {
 	int (*start)(void * addr, void * data,void *elem,void * para);
@@ -67,7 +68,9 @@ int  _convert_frame_func (void *addr, void * data, void * struct_template,
 		if(curr_node->temp_var == curr_node->elem_no)
 		{
 			if(curr_node==root_node)
+			{
 				break;
+			}
 			temp_node=curr_node;
 			curr_node=curr_node->parent;
 			curr_elem=&curr_node->elem_list[curr_node->temp_var];
@@ -809,6 +812,7 @@ int struct_2_part_blob(void * addr,void * blob, void * struct_template,int flag)
 
 int blob_2_struct_enterstruct(void * addr, void * data, void * elem,void * para)
 {
+	
 	int ret;
 	struct default_para  * my_para = para;
 	struct elem_template	* curr_elem=elem;
@@ -871,7 +875,7 @@ int blob_2_struct(void * blob, void * addr, void * struct_template)
 	};	
 	static struct default_para my_para;
 	my_para.offset=0;
-	ret = _convert_frame_func(addr,blob,struct_template,&blob_2_struct_ops,		&my_para);
+	ret = _convert_frame_func(addr,blob,struct_template,&blob_2_struct_ops,&my_para);
 	if(ret<0)
 		return ret;
 	return my_para.offset;

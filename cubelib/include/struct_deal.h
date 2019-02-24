@@ -164,4 +164,5 @@ int json_2_struct(void * root, void * addr, void * struct_template);
 int json_2_part_struct(void * root, void * addr, void * struct_template,int flag);
 int json_marked_struct(void * root, void * struct_template,int flag);
 
+extern int deep_debug;
 #endif
