@@ -23,6 +23,7 @@
 
 #include "sys_func.h"
 #include "router_process_func.h"
+struct timeval debug_time;
 
 int read_dispatch_file(char * file_name,int is_aspect)
 {
@@ -139,6 +140,9 @@ int 	proc_audit_init()
 
 int     proc_audit_log (void * message)
 {
+	if(deep_debug==0)
+		return 0;
+
 	int ret;
 	char *isostr="\n************************************************************\n";
 	char audit_text[4096];
@@ -342,7 +346,10 @@ int proc_router_start(void * sub_proc,void * para)
 			}
 			origin_proc=ex_module_getname(sub_proc);
 
-			print_cubeaudit("router get proc %.64s's message!\n",origin_proc); 
+
+        		gettimeofday( &debug_time, NULL );
+			print_cubeaudit("action time: %d.%d!\n",debug_time.tv_sec,debug_time.tv_usec); 
+			print_cubeaudit("router get proc %.64s's message \n",origin_proc); 
 
 			router_dup_activemsg_info(message);
 			
@@ -450,6 +457,8 @@ int proc_router_start(void * sub_proc,void * para)
 					}	
 				}	
 				proc_audit_log(message);
+        			gettimeofday( &debug_time, NULL );
+				print_cubeaudit("action time: %d.%d!\n",debug_time.tv_sec,debug_time.tv_usec); 
 				print_cubeaudit("aspect message (%s) is send to %s!\n",message_get_typestr(message),message_get_receiver(message));
 				ret=proc_router_send_msg(message,local_uuid,proc_name);
 				if(ret<0)
@@ -601,6 +610,8 @@ int proc_router_start(void * sub_proc,void * para)
 				if(msg_head->flow==MSG_FLOW_FINISH)
 				{
 					proc_audit_log(message);
+        				gettimeofday( &debug_time, NULL );
+					print_cubeaudit("action time: %d.%d!\n",debug_time.tv_sec,debug_time.tv_usec); 
 					print_cubeaudit("message (%s) is discarded in FINISH state!\n",message_get_typestr(message));
 					continue;
 				}
@@ -648,6 +659,8 @@ int proc_router_start(void * sub_proc,void * para)
 							if(ret>=0)
 							{
 								proc_audit_log(message);
+        							gettimeofday( &debug_time, NULL );
+								print_cubeaudit("action time: %d.%d!\n",debug_time.tv_sec,debug_time.tv_usec); 
 								print_cubeaudit("message (%s) is send to %s!\n",message_get_typestr(message),message_get_receiver(message));
 								ret=proc_router_send_msg(message,local_uuid,proc_name);
 								if(ret<0)
@@ -669,6 +682,8 @@ int proc_router_start(void * sub_proc,void * para)
 							if(ret>=0)
 							{
 								proc_audit_log(new_msg);
+        							gettimeofday( &debug_time, NULL );
+								print_cubeaudit("action time: %d.%d!\n",debug_time.tv_sec,debug_time.tv_usec); 
 								print_cubeaudit("message (%s) is send to %s!\n",message_get_typestr(new_msg),message_get_receiver(new_msg));
 								ret=proc_router_send_msg(new_msg,local_uuid,proc_name);
 								if(ret<0)

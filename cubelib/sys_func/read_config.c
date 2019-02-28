@@ -23,7 +23,7 @@
 #include "ex_module.h"
 #include "sys_func.h"
 
-struct timeval time_val={0,20*1000};
+struct timeval time_val={0,1000};
 static char * err_file="cube_err.log";
 static char * audit_file="cube_audit.log";
 
