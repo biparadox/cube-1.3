@@ -140,8 +140,8 @@ int 	proc_audit_init()
 
 int     proc_audit_log (void * message)
 {
-	if(deep_debug==0)
-		return 0;
+//	if(deep_debug==0)
+//		return 0;
 
 	int ret;
 	char *isostr="\n************************************************************\n";
