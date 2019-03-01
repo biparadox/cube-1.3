@@ -23,9 +23,10 @@
 #include "ex_module.h"
 #include "sys_func.h"
 
-struct timeval time_val={0,1000};
+struct timeval time_val={0,5*1000};
 static char * err_file="cube_err.log";
 static char * audit_file="cube_audit.log";
+struct timeval debug_time;
 
 int audit_file_init()
 {
@@ -67,9 +68,15 @@ int print_cubeaudit(char * format,...)
 	int len;
 	int ret;
 	char buffer[DIGEST_SIZE*32];
+	int offset=0;
   	va_list args;
+
+       	gettimeofday( &debug_time, NULL );
+	sprintf(buffer,"time: %d.%d :",debug_time.tv_sec,debug_time.tv_usec); 
+	offset=Strlen(buffer);
+
   	va_start (args, format);
-  	vsprintf (buffer,format, args);
+  	vsprintf (buffer+offset,format, args);
   	va_end (args);
 	len=Strnlen(buffer,DIGEST_SIZE*32);
 	
