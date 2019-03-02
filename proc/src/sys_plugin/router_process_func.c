@@ -85,13 +85,13 @@ int read_dispatch_file(char * file_name,int is_aspect)
 		policy=dispatch_read_policy(root_node);
 		if(policy==NULL)
 		{
-			print_cubeerr("read %d file error!\n",count);
+			print_cubeerr("read %d file error!",count);
 			break;
 		}
 		if((dispatch_policy_getstate(policy)==POLICY_IGNORE)
 			||(dispatch_policy_getstate(policy)==POLICY_CLOSE))
 		{
-			print_cubeaudit("policy %s is ignored!\n",dispatch_policy_getname(policy));
+			print_cubeaudit("policy %s is ignored!",dispatch_policy_getname(policy));
 		}
 		else
 		{
@@ -102,7 +102,7 @@ int read_dispatch_file(char * file_name,int is_aspect)
 			count++;
 		}
 	}
-	print_cubeaudit("read %d policy succeed!\n",count);
+	print_cubeaudit("read %d policy succeed!",count);
 	close(fd);
 	return count;
 }
@@ -235,7 +235,7 @@ int proc_router_send_msg(void * message,char * local_uuid,char * proc_name)
 				return -EINVAL;
 			}
 			send_ex_module_msg(sec_sub,message);
-			print_cubeaudit("send message to conn process!\n");
+			print_cubeaudit("send message to conn process!");
 				
 	}
 	return 0;
@@ -347,7 +347,7 @@ int proc_router_start(void * sub_proc,void * para)
 			origin_proc=ex_module_getname(sub_proc);
 
 
-			print_cubeaudit("router get proc %.64s's message \n",origin_proc); 
+			print_cubeaudit("router get proc %.64s's message ",origin_proc); 
 
 			router_dup_activemsg_info(message);
 			
@@ -393,7 +393,7 @@ int proc_router_start(void * sub_proc,void * para)
 					{
 
 						route_recover_route(message);
-						print_cubeaudit("recover from aspect\n");
+						print_cubeaudit("recover from aspect");
 					}	
 				}
 				else
@@ -455,7 +455,8 @@ int proc_router_start(void * sub_proc,void * para)
 					}	
 				}	
 				proc_audit_log(message);
-				print_cubeaudit("aspect message (%s) is send to %s!\n",message_get_typestr(message),message_get_receiver(message));
+				debug_message(message,"aspect message prepare to send");
+				//print_cubeaudit("aspect message (%s) is send to %s!\n",message_get_typestr(message),message_get_receiver(message));
 				ret=proc_router_send_msg(message,local_uuid,proc_name);
 				if(ret<0)
 					return ret;
@@ -606,7 +607,8 @@ int proc_router_start(void * sub_proc,void * para)
 				if(msg_head->flow==MSG_FLOW_FINISH)
 				{
 					proc_audit_log(message);
-					print_cubeaudit("message (%s) is discarded in FINISH state!\n",message_get_typestr(message));
+					debug_message(message,"discard message:");
+					//print_cubeaudit("message (%s) is discarded in FINISH state!\n",message_get_typestr(message));
 					continue;
 				}
 
@@ -653,7 +655,8 @@ int proc_router_start(void * sub_proc,void * para)
 							if(ret>=0)
 							{
 								proc_audit_log(message);
-								print_cubeaudit("message (%s) is send to %s!\n",message_get_typestr(message),message_get_receiver(message));
+								debug_message(message," prepare to send:");
+								//print_cubeaudit("message (%s) is send to %s!\n",message_get_typestr(message),message_get_receiver(message));
 								ret=proc_router_send_msg(message,local_uuid,proc_name);
 								if(ret<0)
 								{
@@ -674,7 +677,8 @@ int proc_router_start(void * sub_proc,void * para)
 							if(ret>=0)
 							{
 								proc_audit_log(new_msg);
-								print_cubeaudit("message (%s) is send to %s!\n",message_get_typestr(new_msg),message_get_receiver(new_msg));
+								debug_message(new_msg,"duplicate message prepare to send:");
+								//print_cubeaudit("message (%s) is send to %s!\n",message_get_typestr(new_msg),message_get_receiver(new_msg));
 								ret=proc_router_send_msg(new_msg,local_uuid,proc_name);
 								if(ret<0)
 								{
@@ -686,7 +690,8 @@ int proc_router_start(void * sub_proc,void * para)
 					}
 				}	
 				proc_audit_log(message);
-				print_cubeaudit("message (%s) is send to %s!\n",message_get_typestr(message),message_get_receiver(message));
+				debug_message(message,"normal message prepare to send:");
+				//print_cubeaudit("message (%s) is send to %s!\n",message_get_typestr(message),message_get_receiver(message));
 				ret=proc_router_send_msg(message,local_uuid,proc_name);
 				if(ret<0)
 				{

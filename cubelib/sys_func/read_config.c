@@ -23,9 +23,10 @@
 #include "ex_module.h"
 #include "sys_func.h"
 
-struct timeval time_val={0,5*1000};
+struct timeval time_val={0,5*100};
 static char * err_file="cube_err.log";
 static char * audit_file="cube_audit.log";
+struct timeval first_time={0,0};
 struct timeval debug_time;
 
 int audit_file_init()
@@ -71,21 +72,53 @@ int print_cubeaudit(char * format,...)
 	int offset=0;
   	va_list args;
 
-       	gettimeofday( &debug_time, NULL );
-	sprintf(buffer,"time: %d.%d :",debug_time.tv_sec,debug_time.tv_usec); 
-	offset=Strlen(buffer);
+        gettimeofday( &debug_time, NULL );
+        if(first_time.tv_sec==0)
+        {
+                first_time.tv_sec=debug_time.tv_sec;
+                first_time.tv_usec=debug_time.tv_usec;
+                sprintf(buffer,"time: 0.0 :");
+        }
+        else
+        {
+                debug_time.tv_sec-=first_time.tv_sec;
+                if(debug_time.tv_usec<first_time.tv_usec)
+                        debug_time.tv_usec+=1000000-first_time.tv_usec;
+                else
+                        debug_time.tv_usec-=first_time.tv_usec;
 
-  	va_start (args, format);
-  	vsprintf (buffer+offset,format, args);
-  	va_end (args);
-	len=Strnlen(buffer,DIGEST_SIZE*32);
-	
+                sprintf(buffer,"time: %d.%6.6d :",debug_time.tv_sec,debug_time.tv_usec);
+        }
+        offset=Strlen(buffer);
+
+        va_start (args, format);
+        vsprintf (buffer+offset,format, args);
+        va_end (args);
+        len=Strnlen(buffer,DIGEST_SIZE*32);
+        buffer[len++]='\n';
+
 	fd=open(audit_file,O_WRONLY|O_APPEND);
 	if(fd<0)
 		return -EINVAL;
 	ret=write(fd,buffer,len);
 	close(fd);
 	return ret;
+}
+
+int debug_message(void * msg,char * info)
+{
+        char Buf[256];
+        int offset;
+        MSG_HEAD * msg_head;
+        Buf[128]=0;
+        Strncpy(Buf,info,128);
+        offset=Strlen(Buf);
+        msg_head=message_get_head(msg);
+
+        sprintf(Buf+offset," message %x type %s to %s",*((UINT32 *)msg_head->nonce),message_get_typestr(msg),message_get_receiver(msg));
+        print_cubeaudit("%s",Buf);
+        return 0;
+
 }
 
 char *  get_temp_filename(char * tag )
