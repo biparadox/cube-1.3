@@ -171,7 +171,8 @@ int websocket_port_init(void * sub_proc,void * para)
 //    info.iface=NULL;
     info.iface=websocketserver_addr;
     info.protocols=protocols;
-    info.extensions=lws_get_internal_extensions();
+  //info.extensions=lws_get_internal_extensions();
+    info.extensions=NULL;
     info.ssl_cert_filepath=NULL;
     info.ssl_private_key_filepath=NULL;
     info.gid=-1;
