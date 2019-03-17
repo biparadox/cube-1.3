@@ -336,6 +336,7 @@ int main(int argc,char **argv)
 				printf("CUBE_DEFINE_PATH format error!\n");
 				return -EINVAL;
 			}
+			sprintf(instance_buffer+instance_offset,"%s/define/:",app_path);
     			Strcat(instance_buffer+instance_offset,namebuffer);
     			Strcat(instance_buffer+instance_offset,":");
     			Strcat(instance_buffer+instance_offset,cube_define_path);
@@ -363,8 +364,8 @@ int main(int argc,char **argv)
 				printf("CUBE_APP_LIB format error!\n");
 				return -EINVAL;
 			}
-    			Strncpy(instance_buffer+instance_offset,app_path,DIGEST_SIZE*3);
-    			Strcat(instance_buffer+instance_offset,"/");
+			sprintf(instance_buffer+instance_offset,"%s/locallib/bin/:",app_path);
+    			Strcat(instance_buffer+instance_offset,":");
     			Strcat(instance_buffer+instance_offset,namebuffer);
     			Strcat(instance_buffer+instance_offset,":");
     			Strcat(instance_buffer+instance_offset,ld_library_path);

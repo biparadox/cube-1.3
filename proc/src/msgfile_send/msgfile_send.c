@@ -52,6 +52,7 @@ int msgfile_send_start(void * sub_proc, void * para)
 			}
 		}	
 	}	
+	sleep(1);
 
 	while(1)
 	{
