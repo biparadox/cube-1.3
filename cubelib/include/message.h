@@ -157,7 +157,7 @@ typedef struct uuid_record    // record (MESSAGE,UUID_RECORD)
 }__attribute__((packed))
 RECORD(MESSAGE,UUID_RECORD);
 
-typedef struct sized_bindata    // record (MESSAGE,UUID)
+typedef struct sized_bindata    // record (MESSAGE,BINDATA)
 {
 	int size;
 	BYTE * bindata;
