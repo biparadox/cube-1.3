@@ -1,5 +1,5 @@
 #!/bin/bash
-cd cube-1.3/cubelib
+cd cubelib
 make
 cd ../proc/main
 make
