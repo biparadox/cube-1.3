@@ -259,6 +259,7 @@ int websocket_channel_start(void * sub_proc,void * para)
 					    if(len>0)
 					    {
 						    ws_umask(Buf,len,head.masking_key);
+						    printf("read Data %s!\n",Buf);
 						    ret=channel_inner_write(websocket_channel,Buf,len);	
 					    }
 					    if(ret<len)
@@ -568,7 +569,8 @@ int websocket_send_func(void * pointer)
 	      head.payload_length=len;
 	      printf("send fin=%d\nopcode=0x%X\nmask=%d\npayload_len=%llu\n",head.fin,head.opcode,head.mask,head.payload_length);
 	      send_frame_head(send_para.ws_conn,&head);	
-	      ret=send_para.ws_conn->conn_ops->write(send_para.ws_conn,ReadBuf+sizeof(struct default_channel_head),len);
+	      printf("send Data %s!\n",ReadBuf);
+	      ret=send_para.ws_conn->conn_ops->write(send_para.ws_conn,ReadBuf,len);
 	      if(ret<len)
 			return -EINVAL;
 	      len=ret+sizeof(struct default_channel_head);
