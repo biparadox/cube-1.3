@@ -1,0 +1,106 @@
+{
+	"head":
+	{
+		"name":"dtype_websocket_process",
+		"type":"TYPELIST"
+	},
+	"record":
+	{
+		"elem_no":1,
+		"elemlist":
+		[
+			"WEBSOCKET_CUBE=0x321"
+		]
+	}
+}
+{
+	"head":
+	{
+		"name":"subtype_websocket_cube",
+		"type":"SUBTYPELIST"
+	},
+	"record":
+	{
+		"type":"WEBSOCKET_CUBE",
+		"elem_no":2,
+		"elemlist":
+		[
+			"WS_FRAME_FIXHEAD=0x01",
+			"WS_FRAME_HEAD"
+		]
+	}
+}
+{
+	"head":
+	{
+		"name":"flag_websocket_fin",
+		"type":"NAMELIST"
+	},
+	"record":
+	{
+		"elem_no":5,
+		"elemlist":
+		[
+			"OPMASK=0x0F",
+			"RSV3=0x10",
+			"RSV2=0x20",
+			"RSV1=0x40",
+			"FIN=0x80"
+		]
+	}
+}
+{
+	"head":
+	{
+		"name":"websocket_frame_fixhead",
+		"type":"RECORDTYPE"
+	},
+	"record":
+	{
+		"type":"WEBSOCKET_CUBE",
+		"subtype":"WS_FRAME_FIXHEAD",
+		"struct_desc":
+		{
+			"elem_desc":
+			[
+				{"name":"fin_opcode","type":"BENUM","ref_name":"flag_websocket_fin"},
+				{"name":"payload","type":"UCHAR"}
+			]
+		}
+	}
+}
+{
+	"head":
+	{
+		"name":"websocket_frame_head",
+		"type":"RECORDTYPE"
+	}
+	"record":
+	{
+		"type":"WEBSOCKET_CUBE",
+		"subtype":"WS_FRAME_HEAD",
+		"struct_desc":
+		{
+			"elem_desc":
+			[
+				{"name":"fin_opcode","type":"BENUM","ref_name":"flag_websocket_fin"},
+				{"name":"payload","type":"UCHAR"},
+				{"name":"payload_slen","type":"UINT16"},
+				{"name":"payload_len","type":"UINT64"},
+				{"name":"masking_key","type":"STRING","size":4}
+			]
+		}
+		"flag_no":2,
+		"index":
+                [
+                        {
+                                "flag":"KEY",
+                                "elemlist":"fin_opcode,payload,payload_slen,masking_key"
+                        },
+                        {
+                                "flag":"INPUT",
+                                "elemlist":"fin_opcode,payload,payload_len,masking_key"
+                        }
+                ]
+	}
+}

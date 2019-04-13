@@ -76,6 +76,7 @@ typedef struct tcloud_connector
 	int conn_type;				//connector's type, such as client,server or channel builded by server	
 	int conn_protocol;             		//connector's protocol, such as AF_UNIX,AF_INET,etc;
 	int conn_state;				//connector's current state
+	int conn_mode;                          //connector's mode,such as BLOCK, REUSEADDR,RCVTIMEO,etc. set to 1 means block mode
 	int conn_fd;
 	char * conn_name;			//name of this connector
 	char * conn_addr;			//address for this connector
