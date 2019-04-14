@@ -442,10 +442,14 @@ int recv_frame_head(void * conn,frame_head* head)
 	struct tcloud_connector *channel_conn=conn;
 	/*read fin and op code*/
 	len=channel_conn->conn_ops->read(channel_conn,&one_char,1);	
-	if (len<=0)
+	if (len<0)
 	{
 		perror("read fin");
 		return -1;
+	}
+	if(len==0)
+	{
+		return 0;
 	}
 	head->fin = (one_char & 0x80) == 0x80;
 	head->opcode = one_char & 0x0F;
