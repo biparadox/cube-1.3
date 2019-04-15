@@ -252,14 +252,14 @@ int websocket_channel_start(void * sub_proc,void * para)
 				    if(rc<0)
 					    break;
 				    memcpy(&send_para.head,&head,sizeof(head));
-				    printf("fin=%d\nopcode=0x%X\nmask=%d\npayload_len=%llu\n",head.fin,head.opcode,head.mask,head.payload_length);
+//				    printf("fin=%d\nopcode=0x%X\nmask=%d\npayload_len=%llu\n",head.fin,head.opcode,head.mask,head.payload_length);
 
 				    do{
 					    len=recv_conn->conn_ops->read(recv_conn,Buf,BUFFER_SIZE);
 					    if(len>0)
 					    {
 						    ws_umask(Buf,len,head.masking_key);
-						    printf("read Data %s!\n",Buf);
+						    //printf("read Data %s!\n",Buf);
 						    ret=channel_inner_write(websocket_channel,Buf,len);	
 					    }
 					    if(ret<len)
@@ -388,8 +388,8 @@ int shakehands(void * conn)
 		conn_hub->hub_ops->del_connector(conn_hub, channel_conn);
 		return -EINVAL;
 	}	
-	printf("request\n");
-	printf("%s\n",buffer);
+//	printf("request\n");
+//	printf("%s\n",buffer);
 
 	do {
 		memset(linebuf,0,sizeof(linebuf));
@@ -405,7 +405,7 @@ int shakehands(void * conn)
 
 			bin_to_radix64(sec_accept,SHA_DIGEST_LENGTH,sha1_data);
 			strcat(sec_accept,"=");	
-			printf("radix64:%s\n",sec_accept);
+			//printf("radix64:%s\n",sec_accept);
 			//          base64_encode(sha1_data,SHA_DIGEST_LENGTH,sec_accept);
 			//          printf("base64:%s\n",sec_accept);
 			/* write the response */
@@ -416,7 +416,7 @@ int shakehands(void * conn)
 					"\r\n",sec_accept);
 
 			printf("response\n");
-			printf("%s",head);
+			//printf("%s",head);
 			len=channel_conn->conn_ops->write(channel_conn,head,strlen(head));
 			if(len<0)
 			{
@@ -571,9 +571,9 @@ int websocket_send_func(void * pointer)
 	 if(len >0)
 	 {
 	      head.payload_length=len;
-	      printf("send fin=%d\nopcode=0x%X\nmask=%d\npayload_len=%llu\n",head.fin,head.opcode,head.mask,head.payload_length);
+	 //   printf("send fin=%d\nopcode=0x%X\nmask=%d\npayload_len=%llu\n",head.fin,head.opcode,head.mask,head.payload_length);
 	      send_frame_head(send_para.ws_conn,&head);	
-	      printf("send Data %s!\n",ReadBuf);
+	      //printf("send Data %s!\n",ReadBuf);
 	      ret=send_para.ws_conn->conn_ops->write(send_para.ws_conn,ReadBuf,len);
 	      if(ret<len)
 			return -EINVAL;

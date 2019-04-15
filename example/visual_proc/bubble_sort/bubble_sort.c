@@ -79,14 +79,19 @@ int proc_bubble_sort(void * sub_proc,void * message)
 	type=message_get_type(message);
 	subtype=message_get_subtype(message);
 
-	const int size=10;
-	int   value[size];
+	int size=10;
+	int   * value;
 	printf("begin proc bubble_sort \n");
 
 	struct visual_req * req_data;
 	
 	ret=message_get_record(message,&req_data,0);
-		
+	
+	size=req_data->size;	
+
+	value=(int *)malloc(sizeof(int)*size);
+	if(value==NULL)
+		return -EINVAL;
 
 	for(i=0;i<size;i++)
 	{
@@ -98,11 +103,12 @@ int proc_bubble_sort(void * sub_proc,void * message)
 	// web visual debug end
 
 	sleep(2);
-	ret=bubble_sort(size,value,sub_proc);
+	ret=bubble_sort(size,value,sub_proc,req_data->interval);
+	free(value);
 	return ret;
 }
 
-int bubble_sort(int size, int * value,void * sub_proc)
+int bubble_sort(int size, int * value,void * sub_proc,int interval)
 {
 	int index[2];
 	int i,j;
@@ -132,9 +138,9 @@ int bubble_sort(int size, int * value,void * sub_proc)
 				//web visual debug end
 			}
 */
-			usleep(1000*500);
+			usleep(1000*interval);
 		}	
-		usleep(1000*500);
+		usleep(1000*interval);
 	}
 	return ret;
 }
