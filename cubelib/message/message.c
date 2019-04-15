@@ -267,7 +267,10 @@ void * message_create(int type,int subtype,void * active_msg)
 
 	msg_box=(struct message_box *)message_init();
 	if((msg_box==NULL) || IS_ERR(msg_box))
-		return -EINVAL;
+	{
+//		print_cubeerr("message create: message init failed!\n");
+		return NULL;
+	}
 
 	message_head=&msg_box->head;
 
@@ -288,7 +291,10 @@ void * message_create(int type,int subtype,void * active_msg)
 	{
 		ret=get_random_uuid(message_head->nonce);
 		if(ret<=0)
-			return -EINVAL;
+		{
+//			print_cubeerr("Message Create: get random uuid failed!\n");
+			return NULL;
+		}
 	}
 	else
 	{

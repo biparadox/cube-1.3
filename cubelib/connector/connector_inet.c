@@ -421,16 +421,19 @@ int  connector_af_inet_info_init (void * connector,char * addr)
 			if(this_conn->conn_fd <0)
 				return this_conn->conn_fd;
 
-			int yes=1;
-			if(setsockopt(this_conn->conn_fd,SOL_SOCKET,SO_REUSEADDR,&yes,sizeof(int))==-1)
+				int yes=1;
+				if(setsockopt(this_conn->conn_fd,SOL_SOCKET,SO_REUSEADDR,&yes,sizeof(int))==-1)
+				{
+					//printf("setsockopt reuseaddr error!\n");
+					return -EINVAL;
+				}
+			if(this_conn->conn_mode != 1)
 			{
-				//printf("setsockopt reuseaddr error!\n");
-				return -EINVAL;
-			}
-			if(setsockopt(this_conn->conn_fd,SOL_SOCKET,SO_RCVTIMEO,&timeout,sizeof(timeout))==-1)
-			{
-				//printf("setsockopt timeout error!\n");
-				return -EINVAL;
+				if(setsockopt(this_conn->conn_fd,SOL_SOCKET,SO_RCVTIMEO,&timeout,sizeof(timeout))==-1)
+				{
+					//printf("setsockopt timeout error!\n");
+					return -EINVAL;
+				}
 			}
 /*
 * Form an AF_INET Address:

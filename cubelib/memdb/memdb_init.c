@@ -35,17 +35,6 @@ static struct InitElemInfo_struct MemdbElemInfo[] =
 
 };
 
-/*
-struct struct_elem_attr struct_index_desc[] =
-{
-	{"head",CUBE_TYPE_SUBSTRUCT,1,&uuid_head_desc,NULL},
-	{"flag",CUBE_TYPE_INT,sizeof(int),NULL,NULL},
-	{"uuid",CUBE_TYPE_UUID,DIGEST_SIZE,NULL,NULL},
-	{NULL,CUBE_TYPE_ENDDATA,0,NULL,NULL}
-};
-
-*/
-
 void * _alloc_dynamic_db(int type,int subtype);
 int _namelist_tail_func(void * memdb,void * record)
 {
@@ -366,10 +355,21 @@ void * _struct_octet_to_attr(void * octet_array,int elem_no)
 			if(elem_desc_octet->ref_name!=NULL)
 			{
 				child_desc_record=memdb_find_byname(elem_desc_octet->ref_name,DB_STRUCT_DESC,0);
+				// add substruct's type name
+				if((elem_desc_octet->type==CUBE_TYPE_SUBSTRUCT))
+					elem_desc->def=dup_str(elem_desc_octet->ref_name,0);
 			}
 			else
 			{
 				child_desc_record=memdb_find(elem_desc_octet->ref,DB_STRUCT_DESC,0);
+				// add substruct's type name
+				if((elem_desc_octet->type==CUBE_TYPE_SUBSTRUCT))
+				{
+					if(child_desc_record->head.name[0]!=0)	
+						elem_desc->def=dup_str(child_desc_record->head.name,0);
+					else
+						elem_desc->def=NULL;
+				}
 			}
 			if(child_desc_record==NULL)
 				return NULL;
