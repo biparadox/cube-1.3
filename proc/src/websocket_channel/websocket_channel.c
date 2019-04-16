@@ -165,7 +165,7 @@ int websocket_channel_init(void * sub_proc,void * para)
     Strcat(Buf,":");
     Itoa(init_para->ws_port,Buf+Strlen(Buf));
 
-   server_conn->conn_mode=1;
+//  server_conn->conn_mode=1;
 
     ret=server_conn->conn_ops->init(server_conn,"websocket_channer_server",Buf);
     if(ret<0)
@@ -245,6 +245,7 @@ int websocket_channel_start(void * sub_proc,void * para)
 				    send_para.ws_conn=channel_conn;
 
 			    }
+			
 			    else if (connector_get_type(recv_conn) == CONN_CHANNEL)
 			    {
 
@@ -315,34 +316,6 @@ void printAllConnect(struct tcloud_connector_hub *hub)
 		}
 		conn = hub_get_next_connector(hub);
 	}
-}
-
-
-int passive_server(int port,int queue)
-{
-	///定义sockfd
-	int server_sockfd = socket(AF_INET,SOCK_STREAM, 0);
-
-	///定义sockaddr_in
-	struct sockaddr_in server_sockaddr;
-	server_sockaddr.sin_family = AF_INET;
-	server_sockaddr.sin_port = htons(port);
-	server_sockaddr.sin_addr.s_addr = htonl(INADDR_ANY);
-
-	///bind，成功返回0，出错返回-1
-	if(bind(server_sockfd,(struct sockaddr *)&server_sockaddr,sizeof(server_sockaddr))==-1)
-	{
-		perror("bind");
-		exit(1);
-	}
-	///listen，成功返回0，出错返回-1
-	if(listen(server_sockfd,queue) == -1)
-	{
-		perror("listen");
-		exit(1);
-	}
-	printf("监听%d端口\n",port);
-	return server_sockfd;
 }
 
 int _readline(char* allbuf,int level,char* linebuf)

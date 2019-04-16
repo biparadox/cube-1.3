@@ -96,11 +96,12 @@ int msg2channel_start(void * sub_proc,void * para)
 			if(readbuf_len-offset<sizeof(MSG_HEAD))
 			{
 					readbuf_len=0;
+					offset=0;
 			}
 		}
 		else
 		{
-			print_cubeerr("resolve websocket message failed!\n");
+			print_cubeerr("resolve channel message failed!\n");
 			readbuf_len=0;
 		}
 	}
