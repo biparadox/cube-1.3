@@ -69,14 +69,10 @@ int term_io_start(void * sub_proc,void * para)
 			}
 		}
 
-		if(state == 0)
-		{
-			state=1;
-			ret=proc_term_io_start(sub_proc,para);
-			if(ret<0)
-				return ret;
-			continue;
-		}
+		ret=proc_term_io_start(sub_proc,para);
+		if(ret<0)
+			return ret;
+		continue;
 
 /*
 		if((type==DTYPE_TAC_KEY_MANAGE)&&(subtype==SUBTYPE_SESSION_KEYBLOB))
@@ -113,6 +109,14 @@ int proc_term_io_start(void * sub_proc,void * para)
 //	ret=proc_share_data_getvalue("proc_name",proc_name);
 
 	fgets(buf,DIGEST_SIZE*8,stdin);
+	for(i=0;i<Strlen(buf);i++)
+	{
+		if(buf[i]=='\n')
+		{
+			buf[i]=0;
+			break;
+		}
+	}
 
 	inputs.message=buf;	
 
