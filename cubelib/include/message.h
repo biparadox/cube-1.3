@@ -148,7 +148,7 @@ typedef struct basic_message  // record (MESSAGE,BASIC_MSG)
 {
 	char * message;
 }__attribute__((packed))
-RECORD (MESSAGE,BASE_MSG);
+RECORD(MESSAGE,BASE_MSG);
 
 typedef struct uuid_record    // record (MESSAGE,UUID_RECORD)
 {

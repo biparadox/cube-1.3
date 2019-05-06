@@ -75,12 +75,6 @@ int term_io_start(void * sub_proc,void * para)
 		continue;
 
 /*
-		if((type==DTYPE_TAC_KEY_MANAGE)&&(subtype==SUBTYPE_SESSION_KEYBLOB))
-		{
-			// the last step of key exchange
-			proc_session_keyblob(sub_proc,recv_msg);
-			continue;
-		}
 		if((type==DTYPE_TAC_KEY_MANAGE)&&(subtype==SUBTYPE_QUOTE_REPORT))
 		{
 			// the beginning of integrity check

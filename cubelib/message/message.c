@@ -1772,7 +1772,8 @@ int message_get_record(void * message,void ** msg_record, int record_no)
 		return -EINVAL;
 	return 0;
 }
-int message_get_expand(void * message,void ** msg_record, int record_no)
+
+int message_get_expand(void * message,void ** msg_expand, int expand_no)
 {
 	struct message_box * msg_box;
 	MSG_HEAD * msg_head;
@@ -1784,49 +1785,54 @@ int message_get_expand(void * message,void ** msg_record, int record_no)
 
 	if(message==NULL)
 		return -EINVAL;
-	*msg_record=NULL;
+	*msg_expand=NULL;
 	
 	msg_head=message_get_head(message);
 	if((msg_head==NULL) || IS_ERR(msg_head))
 		return -EINVAL;
-	if(record_no<0)
+	if(expand_no<0)
 		return -EINVAL;
-	if(record_no>=msg_head->expand_num)
+	if(expand_no>=msg_head->expand_num)
 		return 0;
         struct_template=memdb_get_template(DTYPE_MESSAGE,SUBTYPE_EXPAND);
-	if(msg_box->precord[record_no]==NULL)
+	if(msg_box->pexpand[expand_no]==NULL)
 	{
-
-		expand_head=Talloc0(struct_size(struct_template));
+		expand_head=Talloc0(sizeof(*expand_head));
 		if(expand_head==NULL)
-			return NULL;
-		ret=blob_2_struct(expand_head,msg_box->record[record_no],struct_template);
+			return -ENOMEM;
+		
+		ret=blob_2_struct(expand_head,msg_box->expand[expand_no],struct_template);
 		if(ret<0)
 			return ret;
 		struct_template=memdb_get_template(expand_head->type,expand_head->subtype);
 		if(struct_template==NULL)
 			return -EINVAL;
 		
-		msg_box->precord[record_no]=Talloc0(struct_size(struct_template));
-		if(msg_box->precord[record_no]==NULL)
+		msg_box->pexpand[expand_no]=Talloc0(sizeof(MSG_EXPAND));
+		if(msg_box->pexpand[expand_no]==NULL)
 			return -ENOMEM;	
-		ret=blob_2_struct(msg_box->precord[record_no],msg_box->record[record_no],struct_template);
+		ret=blob_2_struct(msg_box->pexpand[expand_no],msg_box->expand[expand_no],struct_template);
 		if(ret<0)
 		{
-			struct_free(msg_box->precord[record_no],msg_box->record_template);
 			return ret;
 		}
-		msg_box->record_size[record_no]=ret;
+		msg_box->expand_size[expand_no]=ret;
 	}
 	else
 	{
-		expand_head=msg_box->precord[record_no];
+		expand_head=msg_box->pexpand[expand_no];
 		struct_template=memdb_get_template(expand_head->type,expand_head->subtype);
 		if(struct_template==NULL)
 			return -EINVAL;
 	}
-	*msg_record=clone_struct(msg_box->precord[record_no],msg_box->record_template);
-	if(*msg_record==NULL)
+
+	*msg_expand=Talloc0(sizeof(MSG_EXPAND));
+	if(*msg_expand==NULL)
+		return -ENOMEM;
+
+	Memcpy(*msg_expand,expand_head,sizeof(MSG_EXPAND_HEAD));
+	((MSG_EXPAND *)(*msg_expand))->expand=clone_struct(expand_head->expand,struct_template);
+	if(*msg_expand==NULL)
 		return -EINVAL;
 	return 0;
 }
