@@ -69,7 +69,7 @@ int term_io_start(void * sub_proc,void * para)
 			}
 		}
 
-		ret=proc_term_io_start(sub_proc,para);
+		ret=proc_term_io_start(sub_proc,recv_msg);
 		if(ret<0)
 			return ret;
 		continue;

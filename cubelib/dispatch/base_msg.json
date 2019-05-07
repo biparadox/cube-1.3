@@ -141,3 +141,27 @@
 		}
 	}
 }
+{
+	"head":
+	{
+		"name":"base_number",
+		"type":"RECORDTYPE"
+	},
+	"record":
+	{
+		"type":"MESSAGE",
+		"subtype":"NUMBER",
+		"struct_desc":
+		{
+			"elem_desc":
+			[
+				{"name":"number","type":"INT"}
+			]
+		},
+		"index":
+		{
+			"flag":"INDEX",
+			"elemlist":"number"
+		}
+	}
+}

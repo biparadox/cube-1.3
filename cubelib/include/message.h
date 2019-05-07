@@ -29,7 +29,8 @@ enum subtypelist_message
 	SUBTYPE_CTRL_MSG,
 	SUBTYPE_TYPES,
 	SUBTYPE_SIZED_BINDATA,
-	SUBTYPE_MODULE_STATE
+	SUBTYPE_MODULE_STATE,
+	SUBTYPE_NUMBER
 };
 
 enum subtypelist_msg_expand
@@ -51,7 +52,8 @@ enum subtypelist_message_new
 	SUBTYPE(MESSAGE,CTRL_MSG),
 	SUBTYPE(MESSAGE,TYPES),
 	SUBTYPE(MESSAGE,SIZED_BINDATA),
-	SUBTYPE(MESSAGE,MODULE_STATE)
+	SUBTYPE(MESSAGE,MODULE_STATE),
+	SUBTYPE(MESSAGE,NUMBER)
 };
 enum message_flow_type
 {
@@ -149,6 +151,12 @@ typedef struct basic_message  // record (MESSAGE,BASIC_MSG)
 	char * message;
 }__attribute__((packed))
 RECORD(MESSAGE,BASE_MSG);
+
+typedef struct basic_number  // record (MESSAGE,BASIC_MSG)
+{
+	int number
+}__attribute__((packed))
+RECORD(MESSAGE,NUMBER);
 
 typedef struct uuid_record    // record (MESSAGE,UUID_RECORD)
 {
