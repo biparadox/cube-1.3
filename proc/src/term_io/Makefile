@@ -10,8 +10,8 @@ TEST_LIB= -L$(CUBELIBPATH)/lib -lsys_func -lexmodule -lmessage -lmemdb -lconnect
 main: lib$(PLUGIN).so
 lib$(PLUGIN).so:  $(PLUGIN).o $(PLUGIN_PROC_OBJ) $(INIT_DB_OBJ)
 	$(CC) $(FLAGS) lib$(PLUGIN).so $(PLUGIN).o $(PLUGIN_OBJ) $(TEST_LIB)
-	mv lib$(PLUGIN).so $(CUBEAPPPATH)/plugin
-	cp $(PLUGIN).cfg $(CUBEAPPPATH)/plugin
+	mv lib$(PLUGIN).so $(CUBESYSPATH)/plugin
+	cp $(PLUGIN).cfg $(CUBESYSPATH)/plugin
 $(PLUGIN).o: $(PLUGIN).c $(PLUGIN).h
 	$(CC) $(CFLAGS) $(PLUGIN).c
 clean:
