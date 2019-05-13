@@ -67,13 +67,13 @@ int file_dealer_start(void * sub_proc,void * para)
 			ex_module_sendmsg(sub_proc,recv_msg);
 			continue;
 		}
-		if(type==DTYPE_FILE_TRANS)
+		if(type==TYPE(FILE_TRANS))
 		{
-			if(subtype==SUBTYPE_FILE_DATA)
+			if(subtype==SUBTYPE(FILE_TRANS,FILE_DATA))
 			{
 				proc_file_receive(sub_proc,recv_msg);
 			}
-			else if(subtype==SUBTYPE_FILE_REQUEST)
+			else if(subtype==SUBTYPE(FILE_TRANS,REQUEST))
 			{
 				proc_file_send(sub_proc,recv_msg);
 			}
@@ -130,7 +130,7 @@ int get_filedata_from_message(void * message)
 	
 	type=message_get_type(message);
 	subtype=message_get_subtype(message);
-	if((type!=DTYPE_FILE_TRANS) && (subtype!=SUBTYPE_FILE_DATA))
+	if((type!=TYPE(FILE_TRANS)) && (subtype!=SUBTYPE(FILE_TRANS,FILE_DATA)))
 	{
 		return -EINVAL;
 	}
@@ -187,7 +187,7 @@ int proc_file_receive(void * sub_proc,void * message)
 				Memcpy(pfnotice->uuid,pfdata->uuid,DIGEST_SIZE);
 				pfnotice->filename=dup_str(pfdata->filename,0);
 				pfnotice->result=0;	
-				send_msg=message_create(DTYPE_FILE_TRANS,SUBTYPE_FILE_NOTICE,message);
+				send_msg=message_create(TYPE_PAIR(FILE_TRANS,FILE_NOTICE),message);
 				if(send_msg==NULL)
 					return -EINVAL;
 				message_add_record(send_msg,pfnotice);
@@ -215,7 +215,7 @@ int proc_file_receive(void * sub_proc,void * message)
 				{
 					pfnotice->result=0;	
 				}
-				send_msg=message_create(DTYPE_FILE_TRANS,SUBTYPE_FILE_NOTICE,message);
+				send_msg=message_create(TYPE_PAIR(FILE_TRANS,FILE_NOTICE),message);
 				if(send_msg==NULL)
 					return -EINVAL;
 				message_add_record(send_msg,pfnotice);
@@ -229,7 +229,7 @@ int proc_file_receive(void * sub_proc,void * message)
 	else
 	{
 		DB_RECORD * record;
-		record=memdb_find_first(DTYPE_FILE_TRANS,SUBTYPE_FILE_STORE,"uuid",pfdata->uuid);
+		record=memdb_find_first(TYPE_PAIR(FILE_TRANS,FILE_STORE),"uuid",pfdata->uuid);
 		if(record==NULL)
 			storedata=NULL;
 		else
@@ -272,7 +272,7 @@ int proc_file_receive(void * sub_proc,void * message)
 		bitmap_set(storedata->marks,site);
 		if(record==NULL)
 		{
-			memdb_store(storedata,DTYPE_FILE_TRANS,SUBTYPE_FILE_STORE,NULL);	
+			memdb_store(storedata,TYPE_PAIR(FILE_TRANS,FILE_STORE),NULL);	
 		}
 		else
 		{
@@ -299,7 +299,7 @@ int proc_file_receive(void * sub_proc,void * message)
 			{
 				pfnotice->result=0;	
 			}
-			send_msg=message_create(DTYPE_FILE_TRANS,SUBTYPE_FILE_NOTICE,message);
+			send_msg=message_create(TYPE_PAIR(FILE_TRANS,FILE_NOTICE),message);
 			if(send_msg==NULL)
 				return -EINVAL;
 			message_add_record(send_msg,pfnotice);
@@ -372,7 +372,7 @@ int proc_file_send(void * sub_proc,void * message)
                 	return NULL;
         	}
 
-		send_msg=message_create(DTYPE_FILE_TRANS,SUBTYPE_FILE_DATA,message);
+		send_msg=message_create(TYPE_PAIR(FILE_TRANS,FILE_DATA),message);
 		if(send_msg==NULL)
 			return -EINVAL;
 		message_add_record(send_msg,pfdata);
@@ -403,7 +403,7 @@ int proc_file_send(void * sub_proc,void * message)
                 	print_cubeerr("read vm list error! \n");
                 	return NULL;
         	}
-		send_msg=message_create(DTYPE_FILE_TRANS,SUBTYPE_FILE_DATA,message);
+		send_msg=message_create(TYPE_PAIR(FILE_TRANS,FILE_DATA),message);
 		if(send_msg==NULL)
 			return -EINVAL;
 		message_add_record(send_msg,pfdata);

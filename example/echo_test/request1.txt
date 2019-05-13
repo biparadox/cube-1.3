@@ -1,0 +1,8 @@
+{
+	"type":"FILE_TRANS",
+	"subtype":"REQUEST"
+}
+{
+	"filename":"hello.txt",
+	"requestor":"message_send"
+}

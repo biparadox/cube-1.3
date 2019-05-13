@@ -65,6 +65,8 @@ int  _convert_frame_func (void *addr, void * data, void * struct_template,
 
 
 	do{
+		if(curr_node->temp_var>curr_node->elem_no)
+			break;
 		if(curr_node->temp_var == curr_node->elem_no)
 		{
 			if(curr_node==root_node)

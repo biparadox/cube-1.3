@@ -3,19 +3,19 @@
 
 enum dtype_file_process
 {
-	DTYPE_FILE_TRANS=0x301,
+	TYPE(FILE_TRANS)=0x301,
 };
 
 enum subtype_file_trans
 {
-	SUBTYPE_FILE_INFO=0x01,
-	SUBTYPE_FILE_DATA,
-	SUBTYPE_FILE_REQUEST,
-	SUBTYPE_FILE_STORE,
-	SUBTYPE_FILE_NOTICE
+	SUBTYPE(FILE_TRANS,FILE_INFO)=0x01,
+	SUBTYPE(FILE_TRANS,FILE_DATA),
+	SUBTYPE(FILE_TRANS,REQUEST),
+	SUBTYPE(FILE_TRANS,FILE_STORE),
+	SUBTYPE(FILE_TRANS,FILE_NOTICE)
 };
 
-struct policy_file
+typedef struct policy_file
 {
 	BYTE uuid[DIGEST_SIZE];
 	int  type;
@@ -25,9 +25,9 @@ struct policy_file
 	char * file_path;
 	BYTE file_uuid[DIGEST_SIZE];
 	char * file_describe;
-}__attribute__((packed));
+}__attribute__((packed)) RECORD(FILE_TRANS,FILE_INFO); 
 
-struct policyfile_data
+typedef struct policyfile_data
 {
 	BYTE uuid[DIGEST_SIZE];
 	char * filename;
@@ -36,17 +36,17 @@ struct policyfile_data
 	int offset;
 	int data_size;
 	BYTE * policy_data; //the file data
-}__attribute__((packed));
+}__attribute__((packed)) RECORD(FILE_TRANS,FILE_DATA);
 
-struct policyfile_req
+typedef struct policyfile_req
 {
 	char uuid[DIGEST_SIZE];
 	char * filename;
 	char * requestor;
-}__attribute__((packed));
+}__attribute__((packed)) RECORD(FILE_TRANS,REQUEST);
 
 //the struct of policy file data request: use type FILS
-struct policyfile_store
+typedef struct policyfile_store
 {
 	char uuid[DIGEST_SIZE];
 	char * filename;
@@ -55,14 +55,14 @@ struct policyfile_store
 	int block_num;
 	int mark_len;
 	BYTE * marks;
-}__attribute__((packed));
+}__attribute__((packed)) RECORD(FILE_TRANS,FILE_STORE);
 
 
 //the struct of policy file data notice message: use type FILN
-struct policyfile_notice
+typedef struct policyfile_notice
 {
 	char uuid[DIGEST_SIZE];
 	char * filename;
 	int result;
-}__attribute__((packed));
+}__attribute__((packed)) RECORD(FILE_TRANS,FILE_NOTICE);
 #endif

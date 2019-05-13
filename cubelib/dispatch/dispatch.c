@@ -854,7 +854,7 @@ int router_dup_activemsg_info (void * message)
 	if(message==NULL)
 		return -EINVAL;
 
-	void * active_msg=message_get_activemsg(message);
+	struct message_box * active_msg=message_get_activemsg(message);
 	if(active_msg==NULL)
 		return 0;
 	if(active_msg==message)
@@ -875,6 +875,19 @@ int router_dup_activemsg_info (void * message)
 
 	MSG_EXPAND * old_expand;
 	MSG_EXPAND * new_expand;
+
+	int i=0;
+	do{
+		ret = message_get_expand(active_msg,&old_expand,i++);
+		if(ret<0)
+			return ret;
+		if(old_expand==NULL)
+			break;
+		ret=message_add_expand(message,old_expand);
+		if(ret<0)
+			return ret;
+	}while(1);	
+/*
 	void * flow_expand;
 	ret=message_get_define_expand(active_msg,&old_expand,DTYPE_MSG_EXPAND,SUBTYPE_FLOW_TRACE);
 	if(old_expand!=NULL) 
@@ -910,6 +923,7 @@ int router_dup_activemsg_info (void * message)
 		new_expand->expand = clone_struct(old_expand->expand,struct_template);
 		message_add_expand(message,new_expand);
 	}
+        */
 	message_set_policy(message,message_get_policy(active_msg));
 
 	return 1;

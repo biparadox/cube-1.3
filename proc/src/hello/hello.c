@@ -33,7 +33,7 @@ int hello_start(void * sub_proc,void * para)
 {
 	proc_hello_message(sub_proc,para);
 	sleep(2);
-	proc_exit_message(sub_proc,NULL);
+//	proc_exit_message(sub_proc,NULL);
 	sleep(2);
 	return 0;
 };

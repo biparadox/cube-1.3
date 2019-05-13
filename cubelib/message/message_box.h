@@ -28,7 +28,7 @@ struct message_box
 	void ** precord;         // a pointer array to store the pointers which point to the record struct in memory
 	int * record_size;       // an int value array to store each record's bin blob size 
 	BYTE ** expand;   // a fixed size pointer array to store the expand(bin blob format),most time it should be null
-	BYTE ** pexpand;  // a fixed size pointer array to store the pointers which point to the expand struct in memory
+	void ** pexpand;  // a fixed size pointer array to store the pointers which point to the expand struct in memory
 	int * expand_size;  // an int value array to store each expand's bin blob size
 	void * blob;             // the data blob of the message record and/or the message expand, do not include the head.
 	int current_offset;      // an int value to show the current offset of the data blob. used when we deal with the data blob  
