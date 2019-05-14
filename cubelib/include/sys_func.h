@@ -16,4 +16,11 @@ int set_semvalue(int semid,int value);
 void del_semvalue(int semid);
 int semaphore_p(int semid,int value);
 int semaphore_v(int semid,int value);
+
+// debug functions
+
+void  set_cubeerrinfo(char * errinfo);
+char *get_cubeerrinfo();
+void set_cubeerrnum(int err_num,int site);
+int get_cubeerrnum(int site);
 #endif
