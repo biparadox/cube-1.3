@@ -428,7 +428,7 @@ int bitmap_get(BYTE * bitmap,int site)
 {
 	unsigned char c=1;
 	c<<=site%8;
-        return bitmap[site/8+1] &c;
+        return bitmap[site/8] &c;
 }
 
 int bitmap_is_allset(BYTE * bitmap,int size)
