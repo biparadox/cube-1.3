@@ -28,6 +28,45 @@ static char * err_file="cube_err.log";
 static char * audit_file="cube_audit.log";
 struct timeval first_time={0,0};
 struct timeval debug_time;
+char buffer[DIGEST_SIZE*32];
+
+char errinfo_buf[DIGEST_SIZE*8];
+int  err_para[10];
+
+void  set_cubeerrinfo(char * errinfo)
+{
+	Strncpy(errinfo_buf,errinfo,DIGEST_SIZE*8);	
+	return;
+}
+
+char *get_cubeerrinfo()
+{
+	char * err_info;
+	int errinfo_len;
+	errinfo_len=Strnlen(errinfo_buf,DIGEST_SIZE*8);
+	if(errinfo_len==0)
+		return NULL;
+	err_info=Talloc0(errinfo_len+1);
+	if(err_info==NULL)
+		return NULL;
+	Memcpy(err_info,errinfo_buf,errinfo_len);
+	return err_info;
+}
+
+void set_cubeerrnum(int err_num,int site)
+{
+	if((site<0)|| (site>=10))
+		return;
+	err_para[site]=err_num;
+	return;
+}  
+
+int get_cubeerrnum(int site)
+{
+	if((site<0)|| (site>=10))
+		return 0;
+	return err_para[site];
+}
 
 int audit_file_init()
 {
@@ -49,8 +88,29 @@ int print_cubeerr(char * format,...)
 	int fd;
 	int len;
 	int ret;
-	char buffer[DIGEST_SIZE*32];
+	int offset=0;
+
   	va_list args;
+        gettimeofday( &debug_time, NULL );
+        if(first_time.tv_sec==0)
+        {
+                first_time.tv_sec=debug_time.tv_sec;
+                first_time.tv_usec=debug_time.tv_usec;
+                sprintf(buffer,"time: 0.0 :");
+        }
+        else
+        {
+                debug_time.tv_sec-=first_time.tv_sec;
+                if(debug_time.tv_usec<first_time.tv_usec)
+                        debug_time.tv_usec+=1000000-first_time.tv_usec;
+                else
+                        debug_time.tv_usec-=first_time.tv_usec;
+
+                sprintf(buffer,"time: %d.%6.6d :",debug_time.tv_sec,debug_time.tv_usec);
+        }
+        offset=Strlen(buffer);
+	sprintf(buffer+offset,"errinfo: %s %d :", get_cubeerrinfo(),get_cubeerrnum(0));
+
   	va_start (args, format);
   	vsprintf (buffer,format, args);
   	va_end (args);
@@ -68,7 +128,6 @@ int print_cubeaudit(char * format,...)
 	int fd;
 	int len;
 	int ret;
-	char buffer[DIGEST_SIZE*32];
 	int offset=0;
   	va_list args;
 
@@ -226,6 +285,11 @@ int get_local_uuid(BYTE * uuid)
 		Strncpy(filename,libpath,DIGEST_SIZE*3);
 		Strcat(filename,"/uuid");
 		fi=fopen(filename,"r");
+		if(fi==NULL)
+		{
+			print_cubeerr("can't get node's machine uuid,perhaps you need buildi"
+				"an uuid file in cube-1.3/proc/plugin\n");
+		}
 		memset(uuidstr,0,DIGEST_SIZE);
 		len=fread(uuidstr,1,36,fi);
 		if(len<=0)
