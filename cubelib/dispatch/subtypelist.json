@@ -43,7 +43,7 @@
 	"record":
 	{
 		"type":"MESSAGE",
-		"elem_no":12,
+		"elem_no":13,
 		"elemlist":
 		[
 			"HEAD=0x01",
@@ -57,7 +57,8 @@
 			"TYPES",
 			"SIZED_BINDATA",
 			"MODULE_STATE",
-			"NUMBER"
+			"NUMBER",
+			"INSTANCE_INFO"
 		]
 	}
 }
