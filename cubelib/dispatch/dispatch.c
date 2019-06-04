@@ -1205,6 +1205,7 @@ int router_set_aspect_flow(void * message,void * policy)
 		msg_head->ljump=1;
 		msg_head->rjump=1;
 		msg_head->flow=msg_policy->type;
+		msg_head->flag &=~MSG_FLAG_RESPONSE;
 	}
 	Memset(msg_head->receiver_uuid,0,DIGEST_SIZE);
 	message_set_policy(message,policy);
