@@ -165,3 +165,29 @@
 		}
 	}
 }
+{
+	"head":
+	{
+		"name":"record_instance_info",
+		"type":"RECORDTYPE"
+	},
+	"record":
+	{
+		"type":"MESSAGE",
+		"subtype":"INSTANCE_INFO",
+		"struct_desc":
+		{
+			"elem_desc":
+			[
+				{"name":"proc_name","type":"STRING","size":32},
+				{"name":"node_uuid","type":"UUID"},
+				{"name":"user_name","type":"STRING","size":32}
+			]
+		},
+		"index":
+		{
+			"flag":"INDEX",
+			"elemlist":"proc_name,node_uuid,user_name"
+		}
+	}
+}
