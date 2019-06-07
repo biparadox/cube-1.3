@@ -25,10 +25,10 @@
 
 #include "sys_func.h"
 
-
 //static struct timeval time_val={0,50*1000};
 
-static int  state=0;
+static int  state=0; // 0 is empty start
+		     // 1 is echo message
 
 int get_password(const char *prompt,char * passwd);   
 
@@ -45,7 +45,7 @@ int term_io_start(void * sub_proc,void * para)
 {
 	int ret;
 	int retval;
-	void * recv_msg;
+	void * recv_msg=NULL;
 	void * send_msg;
 	void * context;
 	void * sock;
@@ -60,35 +60,56 @@ int term_io_start(void * sub_proc,void * para)
 	{
 		usleep(time_val.tv_usec);
 		ret=ex_module_recvmsg(sub_proc,&recv_msg);
-		if(ret>0)
+		if(ret>=0)
 		{
 			if(recv_msg!=NULL)
 			{
  				type=message_get_type(recv_msg);
 				subtype=message_get_subtype(recv_msg);
+				state=1;
+			}
+
+			if((type==DTYPE_MESSAGE)&&(subtype==SUBTYPE(MESSAGE,BASE_MSG)))
+			{
+				// the beginning of integrity check
+				ret=proc_output_base_msg(sub_proc,recv_msg);
+				if(ret<0)
+					continue;
 			}
 		}
+		if(state==1)
+		{
+			ret=proc_term_io_start(sub_proc,recv_msg);
+			if(ret<0)
+				return ret;
+			state=0;
+			recv_msg=NULL;
+		}
 
-		ret=proc_term_io_start(sub_proc,recv_msg);
-		if(ret<0)
-			return ret;
 		continue;
 
-/*
-		if((type==DTYPE_TAC_KEY_MANAGE)&&(subtype==SUBTYPE_QUOTE_REPORT))
-		{
-			// the beginning of integrity check
-			ex_module_sendmsg(sub_proc,recv_msg);
-			continue;
-		}
-*/
 	}
 
 	return 0;
 };
 
+int proc_output_base_msg(void * sub_proc,void * recv_msg)
+{
+	int ret;
+	RECORD(MESSAGE,BASE_MSG) * recv_info;
+	ret=message_get_record(recv_msg,&recv_info,0);
+	if(ret<0)
+		return ret;
 
-int proc_term_io_start(void * sub_proc,void * para)
+	if(recv_info==NULL)
+		return -EINVAL;
+
+	printf("%s\n",recv_info->message);
+	printf("\n");
+	return 0;
+}
+
+int proc_term_io_start(void * sub_proc,void * recv_msg)
 {
 	int ret;
 	int i;
@@ -96,12 +117,15 @@ int proc_term_io_start(void * sub_proc,void * para)
 
 	BYTE  buf[DIGEST_SIZE*16];
 	void * send_msg;
+	int type;
+	int subtype;
 	RECORD(MESSAGE,BASE_MSG) inputs;
 
 	print_cubeaudit("begin proc term_io start\n");
 
 //	ret=proc_share_data_getvalue("proc_name",proc_name);
 
+	usleep(time_val.tv_usec);
 	fgets(buf,DIGEST_SIZE*8,stdin);
 	for(i=0;i<Strlen(buf);i++)
 	{
@@ -113,8 +137,16 @@ int proc_term_io_start(void * sub_proc,void * para)
 	}
 
 	inputs.message=buf;	
+ 	type=message_get_type(recv_msg);
+	subtype=message_get_subtype(recv_msg);
 
-	send_msg=message_create(DTYPE_MESSAGE,SUBTYPE_BASE_MSG,NULL);
+	if(((type==TYPE(MESSAGE))&& (subtype==SUBTYPE(MESSAGE,CONN_SYNI)))
+		|| ((type==TYPE(MESSAGE))&& (subtype==SUBTYPE(MESSAGE,CONN_ACKI))))
+	{
+		send_msg=message_create(DTYPE_MESSAGE,SUBTYPE_BASE_MSG,NULL);
+	}
+	else
+		send_msg=message_create(DTYPE_MESSAGE,SUBTYPE_BASE_MSG,recv_msg);
 	if(send_msg==NULL)
 		return -EINVAL;
 	message_add_record(send_msg,&inputs);
