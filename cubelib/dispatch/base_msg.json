@@ -191,3 +191,23 @@
 		}
 	}
 }
+{
+	"head":
+	{
+		"name":"record_string_array",
+		"type":"RECORDTYPE"
+	},
+	"record":
+	{
+		"type":"MESSAGE",
+		"subtype":"STRING_ARRAY",
+		"struct_desc":
+		{
+			"elem_desc":
+			[
+				{"name":"num","type":"INT"},
+				{"name":"strings","type":"DEFSTRARRAY","size":32,"def":"num"}
+			]
+		}
+	}
+}

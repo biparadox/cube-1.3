@@ -31,7 +31,8 @@ enum subtypelist_message
 	SUBTYPE_SIZED_BINDATA,
 	SUBTYPE_MODULE_STATE,
 	SUBTYPE_NUMBER,
-	SUBTYPE_INSTANCE_INFO
+	SUBTYPE_INSTANCE_INFO,
+	SUBTYPE_STRING_ARRAY
 };
 
 enum subtypelist_msg_expand
@@ -55,7 +56,8 @@ enum subtypelist_message_new
 	SUBTYPE(MESSAGE,SIZED_BINDATA),
 	SUBTYPE(MESSAGE,MODULE_STATE),
 	SUBTYPE(MESSAGE,NUMBER),
-	SUBTYPE(MESSAGE,INSTANCE_INFO)
+	SUBTYPE(MESSAGE,INSTANCE_INFO),
+	SUBTYPE(MESSAGE,STRINGARRAY),
 };
 enum message_flow_type
 {
@@ -167,6 +169,13 @@ typedef struct record_instance_info // record (MESSAGE,INSTANCE_INFO)
 	char user_name[DIGEST_SIZE];
 }__attribute__((packed))
 RECORD(MESSAGE,INSTANCE_INFO);
+
+typedef struct record_string_array // record (MESSAGE,STRING_ARRAY)
+{
+	int num;
+	BYTE *strings;// string length is 32
+}__attribute__((packed))
+RECORD(MESSAGE,STRING_ARRAY);
 
 typedef struct uuid_record    // record (MESSAGE,UUID_RECORD)
 {
