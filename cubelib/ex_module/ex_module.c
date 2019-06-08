@@ -16,7 +16,7 @@
 #include "attrlist.h"
 #include "memfunc.h"
 #include "struct_deal.h"
-#include "connector.h"
+//#include "connector.h"
 #include "ex_module.h"
 
 #include "slot_list.h"
