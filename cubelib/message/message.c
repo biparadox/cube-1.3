@@ -1411,6 +1411,7 @@ int message_add_expand(void * message,void * expand)
 	MSG_HEAD * msg_head;
 	int curr_site;
 	MSG_EXPAND * msg_expand=expand;
+	void * expand_template;
 	if(message==NULL)
 		return -EINVAL;
 	if(expand==NULL)
@@ -1423,7 +1424,20 @@ int message_add_expand(void * message,void * expand)
 	ret=__message_add_expand_site(message,1);
 	if(ret<0)
 		return -EINVAL;
-	msg_box->pexpand[curr_site]=msg_expand;
+	MSG_EXPAND * new_expand=Dalloc0(sizeof(MSG_EXPAND),message);
+	if(new_expand==NULL)
+		return -ENOMEM;
+	expand_template=memdb_get_template(msg_expand->type,msg_expand->subtype);
+	if(expand_template==NULL)
+		return -ENOMEM;
+	new_expand->type=msg_expand->type;
+	new_expand->subtype=msg_expand->subtype;
+	new_expand->expand=Dalloc0(struct_size(expand_template),new_expand);
+	ret=struct_clone(msg_expand->expand,new_expand->expand,expand_template);
+	if(ret<0)
+		return ret;
+
+	msg_box->pexpand[curr_site]=new_expand;
         msg_box->box_state=MSG_BOX_EXPAND;
 
 	return ret;
