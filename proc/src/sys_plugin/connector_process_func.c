@@ -29,7 +29,7 @@
 #include "connector_value.h"
 #include "connector_process_func.h"
 #include "sys_func.h"
-#include "conn_struct.h"
+//#include "conn_struct.h"
 
 struct  connector_config
 {
