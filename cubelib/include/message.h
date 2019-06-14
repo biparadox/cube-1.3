@@ -158,7 +158,7 @@ RECORD(MESSAGE,BASE_MSG);
 
 typedef struct basic_number  // record (MESSAGE,BASIC_MSG)
 {
-	int number
+	int number;
 }__attribute__((packed))
 RECORD(MESSAGE,NUMBER);
 

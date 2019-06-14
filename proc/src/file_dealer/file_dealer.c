@@ -325,93 +325,97 @@ int proc_file_send(void * sub_proc,void * message)
 	void * send_msg;
 	print_cubeaudit("begin file send!\n");
 
-	ret=message_get_record(message,&reqdata,0);
+	int record_no=0;
+
+	ret=message_get_record(message,&reqdata,record_no++);
 	if(ret<0)
 		return -EINVAL;
-	
-	if(reqdata->filename==NULL)
-		return -EINVAL;
-	fd=open(reqdata->filename,O_RDONLY);
-	if(fd<0)
-		return fd;
-        if(fstat(fd,&statbuf)<0)
-        {
-                print_cubeerr("fstat error\n");
-                return NULL;
-        }
-        total_size=statbuf.st_size;
-	close(fd);
-
-	calculate_sm3(reqdata->filename,digest);
-
-	int i;
-		
-	fd=open(reqdata->filename,O_RDONLY);
-	if(fd<0)
-		return fd;
-		
-	for(i=0;i<total_size/block_size;i++)
+	while(reqdata!=NULL)
 	{
-		
-        	pfdata=Talloc0(sizeof(struct policyfile_data));
-		if(pfdata==NULL)
+		if(reqdata->filename!=NULL)
 		{
-			return NULL;
+			fd=open(reqdata->filename,O_RDONLY);
+			if(fd<0)
+				return fd;
+        		if(fstat(fd,&statbuf)<0)
+        		{
+                		print_cubeerr("fstat error\n");
+                		return -EINVAL;
+        		}
+        		total_size=statbuf.st_size;
+			close(fd);
+
+			calculate_sm3(reqdata->filename,digest);
+
+			fd=open(reqdata->filename,O_RDONLY);
+			if(fd<0)
+				return fd;
+			int i;
+		
+			for(int i=0;i<total_size/block_size;i++)
+			{
+		
+        			pfdata=Talloc0(sizeof(struct policyfile_data));
+				if(pfdata==NULL)
+				{
+					return -ENOMEM;
+				}
+        			Memcpy(pfdata->uuid,digest,DIGEST_SIZE);
+        			pfdata->filename=dup_str(reqdata->filename,0);
+        			pfdata->record_no=i;
+        			pfdata->offset=i*block_size;
+        			pfdata->total_size=total_size;
+        			pfdata->data_size=block_size;
+				pfdata->policy_data=(BYTE *)Talloc0(sizeof(char)*pfdata->data_size);
+
+        			if(read(fd,pfdata->policy_data,pfdata->data_size)!=pfdata->data_size)
+        			{
+               			 	print_cubeerr("read vm list error! \n");
+                			return -EINVAL;
+        			}
+
+				send_msg=message_create(TYPE_PAIR(FILE_TRANS,FILE_DATA),message);
+				if(send_msg==NULL)
+					return -EINVAL;
+				message_add_record(send_msg,pfdata);
+
+				ex_module_sendmsg(sub_proc,send_msg);
+				usleep(50*1000);
+			}	
+			if((data_size=total_size%block_size)!=0)
+			{
+        			pfdata=Talloc0(sizeof(struct policyfile_data));
+				if(pfdata==NULL)
+				{
+					return -ENOMEM;
+				}
+        			Memcpy(pfdata->uuid,digest,DIGEST_SIZE);
+        			pfdata->filename=dup_str(reqdata->filename,0);
+        			pfdata->record_no=i;
+        			pfdata->offset=i*block_size;
+        			pfdata->total_size=total_size;
+        			pfdata->data_size=data_size;
+				pfdata->policy_data=(BYTE *)Talloc(sizeof(char)*data_size);
+
+        			if(read(fd,pfdata->policy_data,data_size)!=data_size)
+        			{
+               			 	print_cubeerr("read vm list error! \n");
+                			return NULL;
+        			}
+				send_msg=message_create(TYPE_PAIR(FILE_TRANS,FILE_DATA),message);
+				if(send_msg==NULL)
+					return -EINVAL;
+				message_add_record(send_msg,pfdata);
+				ex_module_sendmsg(sub_proc,send_msg);
+				usleep(100*1000);
+			}
+			close(fd);
+			print_cubeaudit("send file %s succeed!\n",reqdata->filename);
 		}
-        	Memcpy(pfdata->uuid,digest,DIGEST_SIZE);
-        	pfdata->filename=dup_str(reqdata->filename,0);
-        	pfdata->record_no=i;
-        	pfdata->offset=i*block_size;
-        	pfdata->total_size=total_size;
-        	pfdata->data_size=block_size;
-		pfdata->policy_data=(BYTE *)Talloc0(sizeof(char)*pfdata->data_size);
-
-        	if(read(fd,pfdata->policy_data,pfdata->data_size)!=pfdata->data_size)
-        	{
-                	print_cubeerr("read vm list error! \n");
-                	return NULL;
-        	}
-
-		send_msg=message_create(TYPE_PAIR(FILE_TRANS,FILE_DATA),message);
-		if(send_msg==NULL)
+		ret=message_get_record(message,&reqdata,record_no++);
+		if(ret<0)
 			return -EINVAL;
-		message_add_record(send_msg,pfdata);
-
-		ex_module_sendmsg(sub_proc,send_msg);
-		usleep(50*1000);
-			
 	}
 
-
-	if((data_size=total_size%block_size)!=0)
-	{
-        	pfdata=Talloc0(sizeof(struct policyfile_data));
-		if(pfdata==NULL)
-		{
-			return NULL;
-		}
-        	Memcpy(pfdata->uuid,digest,DIGEST_SIZE);
-        	pfdata->filename=dup_str(reqdata->filename,0);
-        	pfdata->record_no=i;
-        	pfdata->offset=i*block_size;
-        	pfdata->total_size=total_size;
-        	pfdata->data_size=data_size;
-		pfdata->policy_data=(BYTE *)Talloc(sizeof(char)*data_size);
-
-        	if(read(fd,pfdata->policy_data,data_size)!=data_size)
-        	{
-                	print_cubeerr("read vm list error! \n");
-                	return NULL;
-        	}
-		send_msg=message_create(TYPE_PAIR(FILE_TRANS,FILE_DATA),message);
-		if(send_msg==NULL)
-			return -EINVAL;
-		message_add_record(send_msg,pfdata);
-		ex_module_sendmsg(sub_proc,send_msg);
-		usleep(100*1000);
-	}
-
-	close(fd);
-	print_cubeaudit("send file %s succeed!\n",reqdata->filename);
-	return i;
+	return 0;
 }
