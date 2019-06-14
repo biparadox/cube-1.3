@@ -118,3 +118,37 @@
 		}
 	}	
 }
+{
+	"head":
+	{
+		"name":"msg_nodefile_head",
+		"type":"RECORDTYPE"
+	},
+	"record":
+	{
+		"type":"MESSAGE",
+		"subtype":"NODEFINE_HEAD",
+		"struct_desc":{
+			"elem_desc":
+			[
+				{"name":"tag","type":"STRING","size":4},
+				{"name":"version","type":"INT"},
+				{"name":"sender_uuid","type":"UUID"},
+				{"name":"receiver_uuid","type":"UUID"},
+				{"name":"route","type":"STRING","size":32},
+				{"name":"flow","type":"ENUM","ref_name":"message_flow_type"},
+				{"name":"state","type":"ENUM","ref_name":"message_flow_type"},
+				{"name":"flag","type":"FLAG","ref_name":"message_flag_type"},
+				{"name":"ljump","type":"INT"},
+				{"name":"rjump","type":"INT"},
+				{"name":"record_type","type":"INT"},
+				{"name":"record_subtype","type":"INT"},
+				{"name":"record_num","type":"INT"},
+				{"name":"record_size","type":"INT"},
+				{"name":"expand_num","type":"INT"},
+				{"name":"expand_size","type":"INT"},
+				{"name":"msg_uuid","type":"UUID"}
+			]
+		}
+	}
+}

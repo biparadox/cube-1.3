@@ -622,7 +622,16 @@ int message_output_json(void * message, char * text)
 	// output head text
 	Strcpy(text,"{ \"HEAD\":");
 	offset=Strlen(text);
-	ret=struct_2_json(msg_head,text+offset,msg_kits->head_template);
+
+	if(msg_box->record_template!=NULL)
+		ret=struct_2_json(msg_head,text+offset,msg_kits->head_template);
+	else
+	{
+		void * head_nodefine_template=memdb_get_template(TYPE_PAIR(MESSAGE,NODEFINE_HEAD));
+		if(head_nodefine_template==NULL)
+			return -EINVAL;
+		ret=struct_2_json(msg_head,text+offset,head_nodefine_template);
+	}
 	if(ret<0)
 		return ret;
 	offset+=ret;

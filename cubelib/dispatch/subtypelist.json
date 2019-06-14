@@ -43,7 +43,7 @@
 	"record":
 	{
 		"type":"MESSAGE",
-		"elem_no":14,
+		"elem_no":15,
 		"elemlist":
 		[
 			"HEAD=0x01",
@@ -59,7 +59,8 @@
 			"MODULE_STATE",
 			"NUMBER",
 			"INSTANCE_INFO",
-			"STRING_ARRAY"
+			"STRING_ARRAY",
+			"NODEFINE_HEAD=0x100"
 		]
 	}
 }
