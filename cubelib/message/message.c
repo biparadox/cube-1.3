@@ -235,8 +235,6 @@ int message_record_init(void * message)
         message_head=&(msg_box->head);
         msg_box->record_template=memdb_get_template(message_head->record_type,
 		message_head->record_subtype);
-        if(msg_box->record_template == NULL)
-            return -EINVAL;
         if(IS_ERR(msg_box->record_template))
             return msg_box->record_template;
 
@@ -2134,7 +2132,8 @@ void * message_clone(void * message)
 
 	
 	int flag=message_get_flag(src_msg);
-	if(flag &MSG_FLAG_CRYPT)
+	if((flag &MSG_FLAG_CRYPT)||
+		(new_msg->record_template==NULL))
 	{
 		if(src_msg->blob == NULL)
 			return NULL;

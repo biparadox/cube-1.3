@@ -877,16 +877,19 @@ int router_dup_activemsg_info (void * message)
 	MSG_EXPAND * new_expand;
 
 	int i=0;
-	do{
-		ret = message_get_expand(active_msg,&old_expand,i++);
-		if(ret<0)
-			return ret;
-		if(old_expand==NULL)
-			break;
-		ret=message_add_expand(message,old_expand);
-		if(ret<0)
-			return ret;
-	}while(1);	
+	if(!(new_msg_head->flag & MSG_FLAG_FOLLOW))
+	{
+		do{
+			ret = message_get_expand(active_msg,&old_expand,i++);
+			if(ret<0)
+				return ret;
+			if(old_expand==NULL)
+				break;
+			ret=message_add_expand(message,old_expand);
+			if(ret<0)
+				return ret;
+		}while(1);	
+	}
 /*
 	void * flow_expand;
 	ret=message_get_define_expand(active_msg,&old_expand,DTYPE_MSG_EXPAND,SUBTYPE_FLOW_TRACE);

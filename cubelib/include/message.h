@@ -89,6 +89,7 @@ enum message_flag
 	MSG_FLAG_SIGN=0x20,
 	MSG_FLAG_ZIP=0x40,
 	MSG_FLAG_VERIFY=0x80,
+	MSG_FLAG_FOLLOW=0x100,
 };
 
 enum message_ctrl

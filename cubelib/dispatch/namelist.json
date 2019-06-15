@@ -28,7 +28,7 @@
 	},
 	"record":
 	{
-		"elem_no":6,
+		"elem_no":7,
 		"elemlist":
 		[
 			"LOCAL=0x01",
@@ -37,6 +37,7 @@
 			"SIGN=0x20",
 			"ZIP=0x40",
 			"VERIFY=0x80",
+			"FOLLOW=0x100"
 		]
 	}
 }
