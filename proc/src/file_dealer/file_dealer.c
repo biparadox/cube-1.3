@@ -350,9 +350,9 @@ int proc_file_send(void * sub_proc,void * message)
 			fd=open(reqdata->filename,O_RDONLY);
 			if(fd<0)
 				return fd;
-			int i;
+			int i=0;
 		
-			for(int i=0;i<total_size/block_size;i++)
+			for(i=0;i<total_size/block_size;i++)
 			{
 		
         			pfdata=Talloc0(sizeof(struct policyfile_data));
