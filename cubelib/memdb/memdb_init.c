@@ -704,7 +704,7 @@ void * memdb_get_template(int type, int subtype)
 	struct memdb_desc * db_list;
 	DB_RECORD * db_record;
 	if(type<=0)
-		return -EINVAL;
+		return NULL;
 	if(type<DB_BASEEND)
 	{
 		db_list=memdb_get_dblist(type,subtype);

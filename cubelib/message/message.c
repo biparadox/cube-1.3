@@ -682,29 +682,44 @@ int message_output_json(void * message, char * text)
 	{
 		MSG_EXPAND * expand;
 		expand=msg_box->pexpand[i];
-		void * expand_template=memdb_get_template(expand->type,
-			expand->subtype);
-		if(expand_template==NULL)
+		if(expand==NULL)
 		{
-			ret=struct_2_json(msg_box->pexpand[i],text+offset,msg_kits->expand_bin_template);
-			
+			expand=Talloc0(sizeof(MSG_EXPAND));
+			if(expand==NULL)
+				return -ENOMEM;
+			ret=blob_2_struct(msg_box->expand[i],expand,msg_kits->expand_bin_template);
+			if(ret<0)
+				return ret;
+			ret=struct_2_json(expand,text+offset,msg_kits->expand_bin_template);
+			offset+=ret;
+				
 		}
 		else
 		{
-			ret=struct_2_json(msg_box->pexpand[i],text+offset,msg_kits->expand_head_template);
-			if(ret<0)
-				return ret;
-			offset+=ret-1;
-			Strcpy(buffer,",\"expand\":");
-			Strcpy(text+offset,buffer);
-			offset+=Strlen(buffer);
-			msg_expand=(MSG_EXPAND *)msg_box->pexpand[i];
-			ret=struct_2_json(msg_expand->expand,text+offset,expand_template);
-			if(ret<0)
-				return ret;
-			offset+=ret;
-			text[offset++]='}';
-			text[offset]='\0';
+			void * expand_template=memdb_get_template(expand->type,
+				expand->subtype);
+			if(expand_template==NULL)
+			{
+				ret=struct_2_json(msg_box->pexpand[i],text+offset,msg_kits->expand_bin_template);
+			
+			}
+			else
+			{
+				ret=struct_2_json(msg_box->pexpand[i],text+offset,msg_kits->expand_head_template);
+				if(ret<0)
+					return ret;
+				offset+=ret-1;
+				Strcpy(buffer,",\"expand\":");
+				Strcpy(text+offset,buffer);
+				offset+=Strlen(buffer);
+				msg_expand=(MSG_EXPAND *)msg_box->pexpand[i];
+				ret=struct_2_json(msg_expand->expand,text+offset,expand_template);
+				if(ret<0)
+					return ret;
+				offset+=ret;
+				text[offset++]='}';
+				text[offset]='\0';
+			}
 		}
 		text[offset++]=',';
 	}
@@ -1827,7 +1842,10 @@ int message_get_expand(void * message,void ** msg_expand, int expand_no)
 			return ret;
 		struct_template=memdb_get_template(expand_head->type,expand_head->subtype);
 		if(struct_template==NULL)
-			return -EINVAL;
+		{
+			*msg_expand=NULL;
+			return 0;
+		}
 		
 		msg_box->pexpand[expand_no]=Talloc0(sizeof(MSG_EXPAND));
 		if(msg_box->pexpand[expand_no]==NULL)

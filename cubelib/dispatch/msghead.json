@@ -40,8 +40,8 @@
 		"elem_desc":
 		[
 			{"name":"data_size","type":"INT","size":4},
-			{"name":"type","type":"TYPE"},
-			{"name":"subtype","type":"SUBTYPE","def":"type"},
+			{"name":"type","type":"INT"},
+			{"name":"subtype","type":"INT"},
 			{"name":"BIN_DATA","type":"DEFINE","def":"data_size"},
 		]
 	}
