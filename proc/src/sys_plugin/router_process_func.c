@@ -308,7 +308,7 @@ int proc_router_start(void * sub_proc,void * para)
 		void * msg_policy;
 		void * aspect_policy;
 		char aspect_proc[DIGEST_SIZE*2];
-		char * origin_proc;
+		char  origin_proc[DIGEST_SIZE];
 
 		if(proc_share_data_getstate()<PROC_LOCAL_START)
 			continue;
@@ -344,7 +344,7 @@ int proc_router_start(void * sub_proc,void * para)
 				get_next_ex_module(&sub_proc);
 				continue;	
 			}
-			origin_proc=ex_module_getname(sub_proc);
+			Strncpy(origin_proc,ex_module_getname(sub_proc),DIGEST_SIZE);
 
 
 			print_cubeaudit("router get proc %.64s's message ",origin_proc); 
@@ -411,16 +411,23 @@ int proc_router_start(void * sub_proc,void * para)
 								return ret;
 							}
 							ret=router_set_aspect_flow(message,aspect_policy);
-							if((msg_head->state ==MSG_FLOW_DELIVER)
-								&&!(msg_head->flag & MSG_FLAG_RESPONSE))	
-							{
+							//if((msg_head->state ==MSG_FLOW_DELIVER)
+							//	&&!(msg_head->flag & MSG_FLAG_RESPONSE))	
+							//{
 						//		msg_head->rjump++;
 						//		route_push_aspect_site(message,origin_proc,conn_uuid);
-							}
+							//}
 							msg_head->ljump=1;
 							ret=router_set_next_jump(message);
 							if(ret<0)
 								continue;
+							if((msg_head->state ==MSG_FLOW_DELIVER)
+								&&!(msg_head->flag &MSG_FLAG_LOCAL)
+								&&!(msg_head->flag & MSG_FLAG_RESPONSE))	
+							{
+								route_push_aspect_site(message,origin_proc,conn_uuid);
+								break;
+							}
 							break;
 						}
 						case MOD_TYPE_MONITOR:
