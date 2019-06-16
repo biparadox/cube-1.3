@@ -463,7 +463,7 @@ int message_expand_struct2blob(void * message)
 			if(msg_box->expand[i]==NULL)
 				return -EINVAL;
 			MSG_EXPAND * curr_expand=(MSG_EXPAND *)(msg_box->expand[i]);
-			msg_box->expand_size[i]=curr_expand->data_size;
+			msg_box->expand_size[i]=curr_expand->data_size+sizeof(MSG_EXPAND_HEAD);
 			expand_size+=msg_box->expand_size[i];
 			continue;
 		}

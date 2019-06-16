@@ -139,6 +139,7 @@ int message_send(void * message,void * conn)
 	int record_size=message_output_blob(message,&blob);	
 	if(record_size<=0)
 		return record_size;
+
 	retval=temp_conn->conn_ops->write(temp_conn,blob,record_size);
 	print_cubeaudit("send %d data to conn %s!\n",record_size,connector_getname(temp_conn));
 	return retval;
