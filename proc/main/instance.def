@@ -1,5 +1,5 @@
 {
-	"CUBE_PATH":"/root/cube-1.3"
+	"CUBE_PATH":"/root/centoscloud/cube-1.3"
 }
 {
 	"INSTANCE":"example/hello",
