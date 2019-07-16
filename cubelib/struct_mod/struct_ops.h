@@ -101,4 +101,5 @@ STRUCT_NODE * _get_root_node(STRUCT_NODE * start_node);
 char * _get_next_name(char * name,char * buffer);
 void * _get_elem_by_name(void * start_node, char * name);
 
+extern void ** struct_deal_ops;
 #endif

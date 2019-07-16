@@ -7,7 +7,6 @@
 #include "struct_ops.h"
 #include "struct_attr.h"
 
-
 static struct InitElemInfo_struct InitElemInfo [] =
 {
 	{CUBE_TYPE_STRING,&string_convert_ops,ELEM_ATTR_VALUE,-1},
@@ -46,7 +45,7 @@ static struct InitElemInfo_struct InitElemInfo [] =
 	{CUBE_TYPE_ENDDATA,NULL,ELEM_ATTR_EMPTY,0},
 };
 
-static void ** struct_deal_ops;
+void ** struct_deal_ops;
 int * struct_deal_flag;
 int * struct_deal_offset;
 static void * ops_list[CUBE_TYPE_ENDDATA];
@@ -142,7 +141,7 @@ ELEM_OPS * _elem_get_ops(void * elem)
 	if((curr_elem->elem_desc->type<0)|| (curr_elem->elem_desc->type>CUBE_TYPE_ENDDATA))
 		return NULL;
 	int index=curr_elem->elem_desc->type;
-	return struct_deal_ops[index];  
+	return ops_list[index];  
 
 }
 

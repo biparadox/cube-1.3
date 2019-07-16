@@ -15,7 +15,7 @@ lib_tool:  lib_tool.c lib_rw.c main_proc_func.h $(STRUCTOBJ)
 cube_exec:  cube_exec.c $(STRUCTOBJ)
 	$(CC) $(FLAGS) cube_exec cube_exec.c $(INCLUDE) $(EXECLIB) 
 envset_proc:  envset_proc.c $(STRUCTOBJ) envset_func.o
-	$(CC) $(FLAGS) envset_proc envset_proc.c $(STRUCTOBJ) $(INCLUDE) envset_func.o $(EXECLIB) -ldl
+	$(CC) $(FLAGS) envset_proc envset_proc.c $(STRUCTOBJ) $(INCLUDE) envset_func.o $(DEPENDLIB) -ldl
 read_config.o:  read_config.c main_proc_func.h
 	$(CC) $(CFLAGS) read_config.c
 envset_func.o:  envset_func.c

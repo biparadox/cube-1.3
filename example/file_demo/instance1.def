@@ -1,0 +1,7 @@
+{
+	"CUBE_PATH":"/root/centoscloud/cube-1.3"
+}
+{
+	"INSTANCE":"example/file_demo/file_sender",
+	"PARAMS":"request.txt"
+}
