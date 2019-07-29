@@ -28,8 +28,8 @@ void * Memcpy(void * dest,void * src, unsigned int count)
 {
 	if(dest == src)
 		return src;
-	char * d=(char *)dest;
-	char * s=(char *)src;
+	unsigned char * d=(char *)dest;
+	unsigned char * s=(char *)src;
 	while(count-->0)
 		*d++=*s++;
 	return dest;
@@ -37,8 +37,8 @@ void * Memcpy(void * dest,void * src, unsigned int count)
 
 int    Memcmp(const void *s1,const void *s2,int n)
 {
-	char * buf1=s1;
-	char * buf2 =s2;
+	unsigned char * buf1=s1;
+	unsigned char * buf2 =s2;
 	
 	while(--n && *buf1 == *buf2)
 	{

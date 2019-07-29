@@ -522,3 +522,60 @@ int semaphore_v(int sem_id,int value)
     }
     return 1;
 }
+
+int get_short_uuidstr(int len,BYTE * digest,char * uuidstr)
+{
+	int ret;
+	char uuid_buf[DIGEST_SIZE*2];
+	
+	if(len<0)
+		return -EINVAL;
+	if(len>32)
+		len=32;
+	ret=len*2;
+	digest_to_uuid(digest,uuid_buf);
+	Memcpy(uuidstr,uuid_buf,ret);
+	uuidstr[ret]=0;
+	return ret;
+}
+
+int convert_uuidname(char * name,int len,BYTE * digest,char * newfilename)
+{
+	int i;
+	int lastsplit;
+	int offset;
+	int ret;
+	char uuidstr[DIGEST_SIZE*2];
+	char filename[DIGEST_SIZE*4];
+
+	if((len<0)||(len>32))
+		return -EINVAL;
+	if(len==0)
+		len=DIGEST_SIZE;
+
+	lastsplit=0;
+	for(i=0;name[i]!=0;i++)
+	{
+		if(name[i]=='/')
+			lastsplit=i;	
+	}
+	
+	ret=calculate_sm3(name,digest);
+	if(ret<0)
+		return ret;
+
+	len=get_short_uuidstr(len,digest,uuidstr);
+
+	offset=lastsplit;
+	if(offset!=0)
+	{
+		Memcpy(newfilename,name,offset+1);
+		offset++;
+	}
+	Strncpy(newfilename+offset,uuidstr,DIGEST_SIZE*2);
+	
+	ret=rename(name,newfilename);
+	if(ret<0)
+		return ret;
+	return 1;	
+} 

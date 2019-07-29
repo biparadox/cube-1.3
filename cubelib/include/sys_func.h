@@ -23,4 +23,5 @@ void  set_cubeerrinfo(char * errinfo);
 char *get_cubeerrinfo();
 void set_cubeerrnum(int err_num,int site);
 int get_cubeerrnum(int site);
+int convert_uuidname(char * name,int len,BYTE * digest,char * newfilename);
 #endif
