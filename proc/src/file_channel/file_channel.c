@@ -32,7 +32,6 @@ static char * tcp_addr;
 static int tcp_port;
 int    tcp_type=0;   // 0 means server, 1 means client
 static struct tcloud_connector_hub * conn_hub;
-
 static BYTE Buf[DIGEST_SIZE*64];
 static int index = 0;
 static BYTE * ReadBuf=Buf+DIGEST_SIZE*32;
@@ -40,6 +39,8 @@ static int readbuf_len;
 int fd=0;
 int file_count=0;
 int block_size=512;
+unsigned int left_size=0;
+BYTE Blob[2048];
 
 static void * default_conn = NULL;
 struct tcloud_connector * server_conn;
@@ -385,7 +386,6 @@ int proc_file_send(struct tcloud_connector * send_conn)
 	int ret;
 	int isend;
 	int package_size;
-	BYTE Blob[1024];
 
 	
 	void * pfdata_template = memdb_get_template(TYPE_PAIR(FILE_TRANS,FILE_DATA));
@@ -435,7 +435,6 @@ int proc_file_send(struct tcloud_connector * send_conn)
 int proc_file_receive_start( struct tcloud_connector * channel_conn)
 {
 	int ret;
-	BYTE Blob[1024];
 	int blob_size;
 	void * pfdata_template = memdb_get_template(TYPE_PAIR(FILE_TRANS,FILE_DATA));
 	if(pfdata_template==NULL)
@@ -472,25 +471,34 @@ int proc_file_receive_start( struct tcloud_connector * channel_conn)
 int proc_file_receive( void * sub_proc,struct tcloud_connector * recv_conn)
 {
 	int ret;
-	BYTE Blob[1024];
 	int blob_size;
+	int curr_size;
 	void * pfdata_template = memdb_get_template(TYPE_PAIR(FILE_TRANS,FILE_DATA));
 	if(pfdata_template==NULL)
 		return -EINVAL;
 
-	ret=channel_conn->conn_ops->read(channel_conn,Blob,1024);
+	ret=channel_conn->conn_ops->read(channel_conn,Blob+left_size,2048-left_size);
 
-	if(ret <=0)
+	if(ret <0)
 		return -EINVAL;
 
-        pfdata=Dalloc0(sizeof(struct policyfile_data),0);
-	if(pfdata==NULL)
-	{
-		return -ENOMEM;
-	}
+	curr_size=left_size+ret;
+	
+	left_size=0;
+
+
 	blob_size = blob_2_struct(Blob,pfdata,pfdata_template);
 	if(blob_size<0)
 		return blob_size;
+	left_size= curr_size-blob_size;
+
+	if(left_size>2048)
+	{
+		printf("data error!\n");
+		return -EINVAL;
+	}
+	print_cubeaudit("file_receive left_size %d blob_size %d ",left_size,blob_size);
+	Memcpy(Blob,Blob+blob_size,left_size);
 
 	lseek(fd,pfdata->offset,SEEK_SET);
 	write(fd,pfdata->policy_data,pfdata->data_size);
