@@ -187,7 +187,6 @@ int tcp_channel_start(void * sub_proc,void * para)
                     }
                     connector_setstate(channel_conn, CONN_CHANNEL_ACCEPT);
                     printf("create a new channel %p!\n", channel_conn);
-//		    channel_conn->conn_ops->write(channel_conn,"test",5);
 
                     conn_hub->hub_ops->add_connector(conn_hub, channel_conn, NULL);
 		    // should add a start message
