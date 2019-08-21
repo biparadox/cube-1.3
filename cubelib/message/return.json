@@ -1,0 +1,181 @@
+{
+	"head":
+	{
+		"name":"general_return_value",
+		"type":"TYPELIST"
+	},
+	"record":
+	{
+		"elem_no":1,
+		"elemlist":
+		[
+			"GENERAL_RETURN=0x240"
+		]
+	}
+}
+{
+	"head":
+	{
+		"name":"general_return_subtypelist",
+		"type":"SUBTYPELIST"
+	},
+	"record":
+	{
+		"type":"GENERAL_RETURN",
+		"elem_no":6,
+		"elemlist":
+		[
+			"INT=0x01",
+			"UUID",
+			"BINDATA",
+			"STRING",
+			"STRING_ARRAY",
+			"RECORD"
+		]
+	}
+}
+{
+	"head":
+	{
+		"name":"genera_return_int",
+		"type":"RECORDTYPE"
+	},
+	"record":
+	{
+		"type":"GENERAL_RETURN",
+		"subtype":"INT",
+		"struct_desc":
+		{
+			"elem_desc":
+			[
+				{"name":"name","type":"ESTRING"},
+				{"name":"return_value","type":"INT"}
+			]
+		},
+	}
+}
+{
+	"head":
+	{
+		"name":"genera_return_uuid",
+		"type":"RECORDTYPE"
+	},
+	"record":
+	{
+		"type":"GENERAL_RETURN",
+		"subtype":"UUID",
+		"struct_desc":
+		{
+			"elem_desc":
+			[
+				{"name":"name","type":"ESTRING"},
+				{"name":"return_value","type":"UUID"}
+			]
+		},
+	}
+}
+{
+	"head":
+	{
+		"name":"genera_return_uuid",
+		"type":"RECORDTYPE"
+	},
+	"record":
+	{
+		"type":"GENERAL_RETURN",
+		"subtype":"UUID",
+		"struct_desc":
+		{
+			"elem_desc":
+			[
+				{"name":"name","type":"ESTRING"},
+				{"name":"return_value","type":"UUID"}
+			]
+		},
+	}
+}
+{
+	"head":
+	{
+		"name":"genera_return_bindata",
+		"type":"RECORDTYPE"
+	},
+	"record":
+	{
+		"type":"GENERAL_RETURN",
+		"subtype":"BINDATA",
+		"struct_desc":
+		{
+			"elem_desc":
+			[
+				{"name":"name","type":"ESTRING"},
+				{"name":"size","type":"INT"},
+				{"name":"bindata","type":"DEFINE","def":"size"}
+			]
+		},
+	}
+}
+{
+	"head":
+	{
+		"name":"genera_return_string",
+		"type":"RECORDTYPE"
+	},
+	"record":
+	{
+		"type":"GENERAL_RETURN",
+		"subtype":"STRING",
+		"struct_desc":
+		{
+			"elem_desc":
+			[
+				{"name":"name","type":"ESTRING"},
+				{"name":"return_value","type":"ESTRING"}
+			]
+		},
+	}
+}
+{
+	"head":
+	{
+		"name":"genera_return_stringarray",
+		"type":"RECORDTYPE"
+	},
+	"record":
+	{
+		"type":"GENERAL_RETURN",
+		"subtype":"STRING_ARRAY",
+		"struct_desc":
+		{
+			"elem_desc":
+			[
+				{"name":"name","type":"ESTRING"},
+				{"name":"num","type":"INT"},
+				{"name":"array","type":"DEFSTRARRAY","size":32,"def":"num"}
+			]
+		},
+	}
+}
+{
+	"head":
+	{
+		"name":"genera_return_record",
+		"type":"RECORDTYPE"
+	},
+	"record":
+	{
+		"type":"GENERAL_RETURN",
+		"subtype":"RECORD",
+		"struct_desc":
+		{
+			"elem_desc":
+			[
+				{"name":"name","type":"ESTRING"},
+				{"name":"type","type":"INT"},
+				{"name":"subtype","type":"INT"},
+				{"name":"size","type":"INT"},
+				{"name":"blob","type":"DEFINE","def":"size"}
+			]
+		},
+	}
+}
