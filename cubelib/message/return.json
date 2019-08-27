@@ -77,26 +77,6 @@
 {
 	"head":
 	{
-		"name":"genera_return_uuid",
-		"type":"RECORDTYPE"
-	},
-	"record":
-	{
-		"type":"GENERAL_RETURN",
-		"subtype":"UUID",
-		"struct_desc":
-		{
-			"elem_desc":
-			[
-				{"name":"name","type":"ESTRING"},
-				{"name":"return_value","type":"UUID"}
-			]
-		},
-	}
-}
-{
-	"head":
-	{
 		"name":"genera_return_bindata",
 		"type":"RECORDTYPE"
 	},

@@ -22,12 +22,26 @@
 #include "msgfile_send.h"
 // add para lib_include
 
+int start_delay=500;
+int infile_delay=500;
+int exfile_delay=500;
+
 int proc_msgfile_send(void * sub_proc,char * filename,void * recv_msg);
 int proc_basemsg(void * sub_proc,void * recv_msg);
 int msgfile_send_init(void * sub_proc, void * para)
 {
 	int ret;
+        struct init_para * init_para=para;
 	// add yorself's module init func here
+	
+	if(init_para!=NULL)
+	{
+		start_delay=init_para->start_delay;
+		infile_delay=init_para->infile_delay;
+		exfile_delay=init_para->exfile_delay;
+	}
+	
+	
 	return 0;
 }
 int msgfile_send_start(void * sub_proc, void * para)
@@ -41,6 +55,8 @@ int msgfile_send_start(void * sub_proc, void * para)
 	// add yorself's module exec func here
 	print_cubeaudit("begin msgfile_send module!\n");
 
+	usleep(start_delay*1000);
+	
 	if(para!=NULL)
 	{
 		if(start_para->argc>=2)
@@ -48,7 +64,7 @@ int msgfile_send_start(void * sub_proc, void * para)
 			for(i=1;i<start_para->argc;i++)
 			{
 				ret=proc_msgfile_send(sub_proc,start_para->argv[i],NULL);
-				sleep(1);
+				usleep(exfile_delay*1000);
 			}
 		}	
 	}	
@@ -207,7 +223,7 @@ int proc_msgfile_send(void * sub_proc, char * filename,void * recv_msg)
 				{
 					ex_module_sendmsg(sub_proc,new_msg);
 					new_msg=message_create(type,subtype,recv_msg);
-					sleep(1);
+					usleep(infile_delay*1000);
 				}
 				count++;
 			}

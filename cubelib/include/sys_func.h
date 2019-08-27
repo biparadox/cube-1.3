@@ -24,4 +24,7 @@ char *get_cubeerrinfo();
 void set_cubeerrnum(int err_num,int site);
 int get_cubeerrnum(int site);
 int convert_uuidname(char * name,int len,BYTE * digest,char * newfilename);
+
+
+int RAND_bytes(unsigned char *buffer, size_t len);
 #endif

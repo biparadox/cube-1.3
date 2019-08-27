@@ -87,6 +87,7 @@ int main(int argc,char **argv)
 	"msgrecord.json",
 	"expandrecord.json",
 	"base_msg.json",
+	"return.json",
 	"dispatchrecord.json",
 	"exmoduledefine.json",
 	"sys_conn.json",

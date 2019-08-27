@@ -579,3 +579,23 @@ int convert_uuidname(char * name,int len,BYTE * digest,char * newfilename)
 		return ret;
 	return 1;	
 } 
+int RAND_bytes(unsigned char *buffer, size_t len) 
+{
+    int ret, fd;
+    const char * randomfile = "/dev/urandom";
+    fd = open(randomfile, O_RDONLY);
+    if (fd < 0) { 
+        perror("open urandom device:");
+        return fd;
+    }    
+    int readn = 0; 
+    while (readn != len) {
+        ret = read(fd, buffer + readn, len - readn);
+        if (ret < 0) { 
+            perror("read urandom device:");
+            return ret; 
+        }    
+        readn += ret; 
+    }    
+    return 0;
+}                                                                                                                                                                                                                
