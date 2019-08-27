@@ -599,3 +599,16 @@ int RAND_bytes(unsigned char *buffer, size_t len)
     }    
     return 0;
 }                                                                                                                                                                                                                
+void print_bin_data(BYTE * data,int len,int width)
+{
+    int i;
+    for(i=0;i<len;i++){
+        printf("%.2x ",data[i]);
+        if (width>0)
+        {
+            if((i+1)%width==0)
+                printf("\n");
+        }
+    }
+    printf("\n");
+}

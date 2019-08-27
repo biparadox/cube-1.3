@@ -95,20 +95,6 @@ int hexstr_2_bin(BYTE * hex,int size,BYTE * bin)
         return j;
 }
 
-void print_bin_data(BYTE * data,int len,int width)
-{
-    int i;
-    for(i=0;i<len;i++){
-        printf("%.2x ",data[i]);
-        if (width>0)
-        {
-            if((i+1)%width==0)
-                printf("\n");
-        }
-    }
-    printf("\n");
-}
-
 int output_channel_start(void * sub_proc,void * para)
 {
     int ret;
