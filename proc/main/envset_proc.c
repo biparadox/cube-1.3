@@ -4,6 +4,7 @@
 #include <errno.h>
 #include <sys/time.h>
 #include <fcntl.h>
+#include <dirent.h>
 #include <sys/stat.h>
 #include <sys/socket.h>
 #include <dlfcn.h>
@@ -144,7 +145,12 @@ int main(int argc,char **argv)
 	ex_module_list_init();
 
     // init system
-    system("mkdir lib");
+    DIR * dirent;
+    dirent=opendir("lib"); 	
+    if(dirent==NULL)
+    {		    
+    	system("mkdir lib");
+    }	
     // init the main proc struct
 
     struct lib_para_struct * lib_para=NULL;

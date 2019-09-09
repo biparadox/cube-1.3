@@ -70,7 +70,7 @@ int envset_func(char * envset_file)
     fd=open(envset_file,O_RDONLY);
     if(fd<0)
     {
-	    printf(" can't find instances define file %s!\n",envset_file);
+	    print_cubeerr(" can't find instances define file %s!\n",envset_file);
 	    return -EINVAL;
     }	
 
@@ -78,14 +78,14 @@ int envset_func(char * envset_file)
     read_json_node(fd,&define_node);
     if(define_node ==NULL)
     {
-	    printf("instance's default define can't find!\n");
+	    print_cubeerr("instance's default define can't find!\n");
 	    return -EINVAL;	
     }
 
     define_elem=json_find_elem("CUBE_PATH",define_node);
     if(define_elem==NULL)
     {
-	    printf("default instance define format error,no CUBE_PATH!\n");
+	    print_cubeerr("default instance define format error,no CUBE_PATH!\n");
 	    return -EINVAL;
     }			
 
@@ -174,7 +174,7 @@ int envset_func(char * envset_file)
     }
 
 
-    printf("new LD_LIBRARY_PATH is %s\n",ld_library_path);
+    print_cubeaudit("new LD_LIBRARY_PATH is %s\n",ld_library_path);
 
     read_json_node(fd,&define_node);
 
@@ -193,7 +193,7 @@ int envset_func(char * envset_file)
     		ret=json_node_getvalue(define_elem,app_path,DIGEST_SIZE*4);
 		if(ret<=0)
 		{
-			printf("CUBE_APP_PATH format error!\n");
+			print_cubeerr("CUBE_APP_PATH format error!\n");
 			return -EINVAL;
 		}
 		instance_offset+=ret+1;
@@ -204,13 +204,13 @@ int envset_func(char * envset_file)
     	define_elem=json_find_elem("INSTANCE",define_node);
     	if(define_elem==NULL)
     	{
-		printf("error format! without instance name!\n");
+		print_cubeerr("error format! without instance name!\n");
 		return -EINVAL;
     	}
    	ret=json_node_getvalue(define_elem,namebuffer,DIGEST_SIZE*4);
 	if(ret<=0)
 	{
-		printf("INSTANCE format error!\n");
+		print_cubeerr("INSTANCE format error!\n");
 		return -EINVAL;
 	}
 	Strcat(instance,"/");			
@@ -238,7 +238,7 @@ int envset_func(char * envset_file)
    			ret=json_node_getvalue(define_elem,namebuffer,DIGEST_SIZE*4);
 			if(ret<=0)
 			{
-				printf("CUBE_APP_PLUGIN format error!\n");
+				print_cubeerr("CUBE_APP_PLUGIN format error!\n");
 				return -EINVAL;
 			}
     			Strcat(instance_buffer+instance_offset,namebuffer);
@@ -263,7 +263,7 @@ int envset_func(char * envset_file)
    			ret=json_node_getvalue(define_elem,namebuffer,DIGEST_SIZE*4);
 			if(ret<=0)
 			{
-				printf("CUBE_DEFINE_PATH format error!\n");
+				print_cubeerr("CUBE_DEFINE_PATH format error!\n");
 				return -EINVAL;
 			}
 			sprintf(instance_buffer+instance_offset,"%s/define/:",app_path);
@@ -274,7 +274,7 @@ int envset_func(char * envset_file)
 		}
 	}
 
-    	printf("instance %s's LD_LIBRARY_PATH is %s\n",instance,getenv("LD_LIBRARY_PATH"));
+    	print_cubeaudit("instance %s's LD_LIBRARY_PATH is %s\n",instance,getenv("LD_LIBRARY_PATH"));
     	// reset LD_LIBRARY_PATH_FOR_app
 
 	if(app_path  == NULL)
@@ -291,7 +291,7 @@ int envset_func(char * envset_file)
    			ret=json_node_getvalue(define_elem,namebuffer,DIGEST_SIZE*4);
 			if(ret<=0)
 			{
-				printf("CUBE_APP_LIB format error!\n");
+				print_cubeerr("CUBE_APP_LIB format error!\n");
 				return -EINVAL;
 			}
 			sprintf(instance_buffer+instance_offset,"%s/locallib/bin/:",app_path);
@@ -303,7 +303,7 @@ int envset_func(char * envset_file)
 		}
 	}
 
-    	printf("instance %s's LD_LIBRARY_PATH is %s\n",instance,getenv("LD_LIBRARY_PATH"));
+    	print_cubeerr("instance %s's LD_LIBRARY_PATH is %s\n",instance,getenv("LD_LIBRARY_PATH"));
 	instance_count++;
     	// set OUTPUT file
     	define_elem=json_find_elem("CUBE_OUTPUT",define_node);
@@ -319,7 +319,7 @@ int envset_func(char * envset_file)
 	    setenv("CUBE_OUTPUT",instance_buffer+instance_offset,1);
         }
 	ret=chdir(instance);
-	printf("change path %s %d!\n",instance,ret);
+	print_cubeaudit("change path %s %d!\n",instance,ret);
 /*
         read_json_node(fd,&define_node);
 
