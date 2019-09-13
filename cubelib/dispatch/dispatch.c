@@ -1239,6 +1239,10 @@ int router_set_dup_flow(void * message,void * policy)
 //	msg_head->flag=msg_policy->flag;
 	Memset(msg_head->receiver_uuid,0,DIGEST_SIZE);
 	message_set_policy(message,policy);
+//      clear dup info's active message
+        message_set_activemsg(message,NULL);	
+//      replace police to new 
+
 	return 1;
 }
 

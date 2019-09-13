@@ -63,7 +63,7 @@ int read_dispatch_file(char * file_name,int is_aspect)
 		readlen=json_solve_str(&root_node,json_buffer);
 		if(readlen<0)
 		{
-			print_cubeerr("solve json str error!\n");
+			print_cubeerr("solve policy %s error!\n",file_name);
 			break;
 		}
 		json_offset+=readlen;
