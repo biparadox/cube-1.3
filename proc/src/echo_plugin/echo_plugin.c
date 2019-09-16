@@ -51,6 +51,7 @@ int echo_plugin_start(void * sub_proc,void * para)
 		{
 			printf("message format (%d %d) is not registered!\n",
 				message_get_type(recv_msg),message_get_subtype(recv_msg));
+			ex_module_sendmsg(sub_proc,recv_msg);
 			continue;
 		}
 		if((type==DTYPE_MESSAGE)&&(subtype==SUBTYPE_CTRL_MSG))
@@ -61,7 +62,8 @@ int echo_plugin_start(void * sub_proc,void * para)
 		}
 		else
 		{
-			proc_echo_message(sub_proc,recv_msg);
+			ex_module_sendmsg(sub_proc,recv_msg);
+			//proc_echo_message(sub_proc,recv_msg);
 		}
 	}
 	return 0;

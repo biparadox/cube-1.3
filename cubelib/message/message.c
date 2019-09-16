@@ -1393,6 +1393,7 @@ int __message_add_expand_site(void * message,int increment)
 	void * old_expandarray;
 	void * old_pexpandarray;
 	void * old_sizearray;
+	const int seg_value=5;
 	
 
 	msg_box=(struct message_box *)message;
@@ -1421,7 +1422,7 @@ int __message_add_expand_site(void * message,int increment)
 		memcpy(msg_box->pexpand,old_pexpandarray,expand_no*sizeof(void *));
 		memcpy(msg_box->expand_size,old_sizearray,expand_no*sizeof(int));
 		// free the old record array,use new record to replace it
-		Free(old_expandarray);
+	//	Free(old_expandarray);
 	}
 	return 0;
 }
