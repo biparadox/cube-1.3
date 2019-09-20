@@ -26,7 +26,6 @@
 // this program is the entry of cube instance,
 // it will set envirement variable and run one or several cube instance
 
-
 int envset_func(char * envset_file)
 {
 
@@ -321,48 +320,6 @@ int envset_func(char * envset_file)
 	ret=chdir(instance);
 	print_cubeaudit("change path %s %d!\n",instance,ret);
 /*
-        read_json_node(fd,&define_node);
-
-	int pid=fork();
-
-	if(pid==0)
-	{
-		ret=chdir(instance);
-		printf("change path %s %d!\n",instance,ret);
-		sprintf(instance_buffer+instance_offset,"%s/proc/main/main_proc",cube_path);
-
-		printf("prepare exec %s ",instance_buffer+instance_offset);
-
-		if(cube_argc==0)
-		{
-			ret=execv(instance_buffer+instance_offset,NULL);
-		}
-		else
-		{
-			for(i=0;cube_argv[i]!=NULL;i++)
-			{
-				printf(" %s",cube_argv[i]);
-			}
-			printf("\n");
-			if(output_file==NULL)
-				ret=execv(instance_buffer+instance_offset,cube_argv);
-			else
-			{
-				FILE * fd;
-				fd=freopen(output_file,"w+",stdout);
-				if(fd==NULL)
-				{
-					print_cubeerr("open stdout file %s failed!\n",output_file);
-					return -EINVAL;
-				}
-				ret=execv(instance_buffer+instance_offset,cube_argv);
-			}
-		}
-		perror("execv");
-		exit(0);
-	}
-
-	sleep(1);
 */
 			
 

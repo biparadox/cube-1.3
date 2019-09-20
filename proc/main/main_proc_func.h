@@ -36,4 +36,9 @@ int read_json_file(char * file_name);
 void * main_read_func(char * libname,char * sym);
 int read_sys_cfg(void ** lib_para_struct,void * root_node,char * plugin_dir);
 
+int  cube_path_add(char * name,char * path);
+char * cube_path_get_first(char * name); 
+char * cube_path_get_next(char * name);
+char * cube_path_remove(char * name); 
+
 #endif

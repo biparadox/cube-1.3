@@ -397,6 +397,55 @@ int proc_conn_init(void * sub_proc,void * para)
 	return 0;
 }
 
+int  conn_client_connect(void * hub)
+{ 
+	struct tcloud_connector * temp_conn;
+	// start all the CLIENT
+	if((hub==NULL) || IS_ERR(hub))
+		return -EINVAL;
+	int conn_num=0;
+	int ret;
+
+	struct tcloud_connector_hub * conn_hub = hub;
+	
+	temp_conn=hub_get_first_connector(hub);
+	
+	while(temp_conn!=NULL)
+	{
+		if(connector_getstate(temp_conn)!=CONN_CLIENT_CONNECT)
+		{
+			if(connector_get_type(temp_conn)==CONN_CLIENT)
+			{
+   				ret=temp_conn->conn_ops->connect(temp_conn);
+				if(ret<0)
+				{
+					print_cubeerr("client %s connect failed!\n",connector_getname(temp_conn));
+				}
+				else
+				{
+					print_cubeaudit("client %s connect succeed!\n",connector_getname(temp_conn));
+					conn_num++;
+				}
+			}
+			else if(connector_get_type(temp_conn)==CONN_P2P_RAND)
+			{
+   				ret=temp_conn->conn_ops->connect(temp_conn);
+				if(ret<0)
+				{
+					print_cubeerr("client %s connect failed!\n",connector_getname(temp_conn));
+				}
+				else
+				{
+					print_cubeaudit("client %s connect succeed!\n",connector_getname(temp_conn));
+					conn_num++;
+				}
+			}
+		}	
+		temp_conn=hub_get_next_connector(hub);
+	}
+	return conn_num;
+}
+	
 
 int proc_conn_start(void * sub_proc,void * para)
 {
@@ -425,12 +474,15 @@ int proc_conn_start(void * sub_proc,void * para)
 	if(sub_proc_pointer==NULL)
 		return -EINVAL;
 
+	int circle_count=0;
+	const int conn_check_interval=100;
+
 	struct tcloud_connector_hub * hub = sub_proc_pointer->hub;
 	if((hub==NULL) || IS_ERR(hub))
 		return -EINVAL;
 
 	// start all the CLIENT
-	
+	/*
 	temp_conn=hub_get_first_connector(hub);
 	
 	while(temp_conn!=NULL)
@@ -471,7 +523,7 @@ int proc_conn_start(void * sub_proc,void * para)
 		}	
 		temp_conn=hub_get_next_connector(hub);
 	}
-
+*/
 	
 
 	// 
@@ -481,7 +533,10 @@ int proc_conn_start(void * sub_proc,void * para)
 
 //		usleep(conn_val.tv_usec);
 
+		if(circle_count++ % conn_check_interval ==0)
+			 conn_client_connect(hub);
 		// receive the remote message
+
 		ret=hub->hub_ops->select(hub,&conn_val);
 		usleep(conn_val.tv_usec);
 		conn_val.tv_usec=time_val.tv_usec;
