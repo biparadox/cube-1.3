@@ -419,7 +419,7 @@ int  conn_client_connect(void * hub)
    				ret=temp_conn->conn_ops->connect(temp_conn);
 				if(ret<0)
 				{
-					print_cubeerr("client %s connect failed!\n",connector_getname(temp_conn));
+					//print_cubeerr("client %s connect failed!\n",connector_getname(temp_conn));
 				}
 				else
 				{
@@ -432,7 +432,7 @@ int  conn_client_connect(void * hub)
    				ret=temp_conn->conn_ops->connect(temp_conn);
 				if(ret<0)
 				{
-					print_cubeerr("client %s connect failed!\n",connector_getname(temp_conn));
+					//print_cubeerr("client %s connect failed!\n",connector_getname(temp_conn));
 				}
 				else
 				{
@@ -480,53 +480,6 @@ int proc_conn_start(void * sub_proc,void * para)
 	struct tcloud_connector_hub * hub = sub_proc_pointer->hub;
 	if((hub==NULL) || IS_ERR(hub))
 		return -EINVAL;
-
-	// start all the CLIENT
-	/*
-	temp_conn=hub_get_first_connector(hub);
-	
-	while(temp_conn!=NULL)
-	{
-		if(connector_get_type(temp_conn)==CONN_CLIENT)
-		{
-			for(i=0;i<180;i++)
-			{
-   				ret=temp_conn->conn_ops->connect(temp_conn);
-				if(ret>=0)
-				{
-					break;
-				}
-				usleep(50);
-			}
-			if(ret<0)
-			{
-				print_cubeerr("client %s connect failed!\n",connector_getname(temp_conn));
-			}
-
-		}	
-		else if(connector_get_type(temp_conn)==CONN_P2P_RAND)
-		{
-			for(i=0;i<180;i++)
-			{
-   				ret=temp_conn->conn_ops->connect(temp_conn);
-				if(ret>=0)
-				{
-					break;
-				}
-				usleep(50);
-			}
-			if(ret<0)
-			{
-				print_cubeerr("client %s connect failed!\n",connector_getname(temp_conn));
-			}
-
-		}	
-		temp_conn=hub_get_next_connector(hub);
-	}
-*/
-	
-
-	// 
 
 	while(1)
 	{
