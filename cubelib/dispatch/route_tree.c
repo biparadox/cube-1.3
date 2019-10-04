@@ -137,8 +137,8 @@ void * route_read_policy(void * policy_node)
     MATCH_RULE * temp_match_rule;
     ROUTE_RULE * temp_route_rule;
 
-    DISPATCH_POLICY * policy=dispatch_policy_create();
-    if(policy==NULL)
+    ROUTE_PATH  * path =route_path_create();
+    if(path==NULL)
         return NULL;
 
     temp_node=json_find_elem("policy_head",policy_node);
@@ -166,7 +166,7 @@ void * route_read_policy(void * policy_node)
     while(match_rule_node!=NULL)
     {
 	void * record_template;
-        temp_match_rule=Dalloc0(sizeof(MATCH_RULE),policy);
+        temp_match_rule=Dalloc0(sizeof(MATCH_RULE),path);
 	if(temp_match_rule==NULL)
 		return NULL;
         ret=json_2_struct(match_rule_node,temp_match_rule,match_rule_template);
@@ -216,7 +216,7 @@ void * route_read_policy(void * policy_node)
     route_rule_node=json_get_first_child(temp_node);
     while(route_rule_node!=NULL)
     {
-    	temp_route_rule=Dalloc0(sizeof(ROUTE_RULE),policy);
+    	temp_route_rule=Dalloc0(sizeof(ROUTE_RULE),path);
     	if(temp_route_rule==NULL)
 		return NULL;
    	 temp_route_rule=malloc(sizeof(ROUTE_RULE));
@@ -229,14 +229,14 @@ void * route_read_policy(void * policy_node)
         route_rule_node=json_get_next_child(temp_node);
     } 
 
-    return policy;
+    return path;
 }
 
-int _dispatch_policy_getfirst(void * policy_list,void ** policy)
+int _dispatch_policy_getfirst(void * policy_list,ROUTE_PATH ** policy)
 {
 	Record_List * recordhead;
 	Record_List * newrecord;
-        POLICY_LIST * dispatch_policy=(POLICY_LIST *)policy_list;
+        NODE_LIST * dispatch_policy=(NODE_LIST *)policy_list;
 
         recordhead = &(dispatch_policy->head);
 	if(recordhead==NULL)
@@ -250,31 +250,26 @@ int _dispatch_policy_getfirst(void * policy_list,void ** policy)
 
 int dispatch_policy_getfirst(void ** policy)
 {
-    return _dispatch_policy_getfirst(&process_policy,policy);
-}
-int dispatch_aspect_policy_getfirst(void ** policy)
-{
-    return _dispatch_policy_getfirst(&aspect_policy,policy);
+    return _dispatch_policy_getfirst(&route_forest,policy);
 }
 
-
-int dispatch_policy_getfirstmatchrule(void * policy,void ** rule)
+int dispatch_policy_getfirstmatchrule(void * path,MATCH_RULE ** rule)
 {
-    DISPATCH_POLICY * dispatch_policy=(DISPATCH_POLICY *)policy;
-    return _dispatch_policy_getfirst(&dispatch_policy->match_list,rule);
+    ROUTE_PATH * route_path=(ROUTE_PATH *)path;
+    return _dispatch_policy_getfirst(&route_path->match_list,rule);
 }
 
-int dispatch_policy_getfirstrouterule(void * policy,void ** rule)
+int dispatch_policy_getfirstrouterule(void * path,ROUTE_RULE ** rule)
 {
-    DISPATCH_POLICY * dispatch_policy=(DISPATCH_POLICY *)policy;
-    return _dispatch_policy_getfirst(&dispatch_policy->route_list,rule);
+    ROUTE_PATH * route_path=(ROUTE_PATH *)path;
+    return _dispatch_policy_getfirst(&route_path->route_list,rule);
 }
 
 int _dispatch_policy_getnext(void * policy_list,void ** policy)
 {
 	Record_List * recordhead;
 	Record_List * newrecord;
-        POLICY_LIST * dispatch_policy=(POLICY_LIST *)policy_list;
+        NODE_LIST * dispatch_policy=(NODE_LIST *)policy_list;
 
         if(dispatch_policy->curr==NULL)
 		return -EINVAL;
@@ -296,23 +291,19 @@ int _dispatch_policy_getnext(void * policy_list,void ** policy)
 
 int dispatch_policy_getnext(void ** policy)
 {
-    return _dispatch_policy_getnext(&process_policy,policy);
-}
-int dispatch_aspect_policy_getnext(void ** policy)
-{
-    return _dispatch_policy_getnext(&aspect_policy,policy);
+    return _dispatch_policy_getnext(&route_forest,policy);
 }
 
-int dispatch_policy_getnextmatchrule(void * policy,void ** rule)
+int dispatch_policy_getnextmatchrule(void * path,MATCH_RULE ** rule)
 {
-    DISPATCH_POLICY * dispatch_policy=(DISPATCH_POLICY *)policy;
-    return _dispatch_policy_getnext(&dispatch_policy->match_list,rule);
+    ROUTE_PATH  * route_path=(ROUTE_PATH *)path;
+    return _dispatch_policy_getnext(&route_path->match_list,rule);
 }
 
-int dispatch_policy_getnextrouterule(void * policy,void ** rule)
+int dispatch_policy_getnextrouterule(void * path,ROUTE_RULE ** rule)
 {
-    DISPATCH_POLICY * dispatch_policy=(DISPATCH_POLICY *)policy;
-    return _dispatch_policy_getnext(&dispatch_policy->route_list,rule);
+    ROUTE_PATH  * route_path=(ROUTE_PATH *)path;
+    return _dispatch_policy_getnext(&route_path->route_list,rule);
 }
 
 int _dispatch_rule_add(void * list,void * rule)
@@ -320,13 +311,13 @@ int _dispatch_rule_add(void * list,void * rule)
 	int ret;
 	Record_List * recordhead;
 	Record_List * newrecord;
-    	POLICY_LIST * rule_list=(POLICY_LIST *)list;
+    	NODE_LIST * rule_list=(NODE_LIST *)list;
 
    	recordhead = &(rule_list->head);
 	if(recordhead==NULL)
 		return -ENOMEM;
 
-	newrecord=Calloc0(sizeof(Record_List));
+	newrecord=Dalloc0(sizeof(Record_List),NULL);
 	if(newrecord==NULL)
 		return -ENOMEM;
 	INIT_LIST_HEAD(&(newrecord->list));
@@ -336,18 +327,16 @@ int _dispatch_rule_add(void * list,void * rule)
 	return 1;
 }
 
-int dispatch_policy_addmatchrule(void * policy,void * rule)
+int dispatch_policy_addmatchrule(void * path,MATCH_RULE * rule)
 {
-    DISPATCH_POLICY * dispatch_policy=(DISPATCH_POLICY *)policy;
-   	
-    return _dispatch_rule_add(&dispatch_policy->match_list,rule);
+    ROUTE_PATH  * route_path=(ROUTE_PATH *)path;
+    return _dispatch_rule_add(&route_path->match_list,rule);
 }
 
-int dispatch_policy_addrouterule(void * policy,void * rule)
+int dispatch_policy_addrouterule(void * path,ROUTE_RULE * rule)
 {
-    DISPATCH_POLICY * dispatch_policy=(DISPATCH_POLICY *)policy;
-   	
-    return _dispatch_rule_add(&dispatch_policy->route_list,rule);
+    ROUTE_PATH  * route_path=(ROUTE_PATH *)path;
+    return _dispatch_rule_add(&route_path->route_list,rule);
 }
 
 int _dispatch_policy_add(void * list,void * policy)
@@ -358,20 +347,11 @@ int _dispatch_policy_add(void * list,void * policy)
 int dispatch_policy_add(void * policy)
 {
       void * general_policy_list;
-      void * aspect_policy_list;
-      DISPATCH_POLICY * dispatch_policy=(DISPATCH_POLICY *)policy;
-      _dispatch_policy_add(&process_policy,policy);
+      ROUTE_PATH * dispatch_policy=(ROUTE_PATH *)policy;
+      _dispatch_policy_add(&route_forest,policy);
       return 1;
 }
-
-int dispatch_aspect_policy_add(void * policy)
-{
-      void * general_policy_list;
-      void * aspect_policy_list;
-      DISPATCH_POLICY * dispatch_policy=(DISPATCH_POLICY *)policy;
-      _dispatch_policy_add(&aspect_policy,policy);
-      return 1;
-}
+/*
 
 int dispatch_match_sender(void * policy, char * sender)
 {
@@ -628,125 +608,6 @@ int rule_get_target(void * router_rule,void * message,void **result)
 				return -EINVAL;
 		   	break;
 		   }
-
-/*
-	    case ROUTE_TARGET_SPLIT:
-		    return -EINVAL;
-
-	    case ROUTE_TARGET_MIXUUID:
-		    {
-			    void * json_root;
-			    void * json_elem;
-			    const int repeat_time=2;
-			    char mixvalue[repeat_time][DIGEST_SIZE*2];
-			    char tag[16];
-			    char uuid[DIGEST_SIZE*2];
-			    int i;
-
-			    ret=json_solve_str(&json_root,rule->target_name);
-			    if(ret<0)
-				    return ret;
-			    if(json_get_type(json_root)!=JSON_ELEM_MAP)
-				    return -EINVAL;
-			
-			    memset(uuid,0,DIGEST_SIZE*2);
-
-			    char * value;
-			    char name[DIGEST_SIZE*2];
-
-			    for(i=0;i<repeat_time;i++)
-			    {
-			   	 memset(mixvalue[i],0,DIGEST_SIZE*2);
-
-				 if(i==0)
-				 {
-			      	 	 // first json_elem is the node uuid value
-			       		json_elem=json_get_first_child(json_root);
-				 }
-				 else
-				 {
-					json_elem=json_get_next_child(json_root);
-
-				 }
-				 ret=json_node_getname(json_elem,name);
-			    	 if(ret<0)
-					return ret;
-				 if(json_get_type(json_elem)!=JSON_ELEM_STRING)
-					return -EINVAL;
-
-				 ret=json_node_getvalue(json_elem,tag,15);
-				// tag is "RECORD"  means this elem defines an elem in the message's record
-				 if(strcmp(tag,"RECORD")==0)
-				 {
-					void * record;	
-					ret=message_read_elem(message,name,0,&record);
-					if(ret<0)
-						return ret;
-				        int len=strlen(record);
-					if(len<DIGEST_SIZE*2)
-					{
-						Memcpy(mixvalue[i],record,len);
-					}
-					else
-					{
-						Memcpy(mixvalue[i],record,DIGEST_SIZE*2);
-					}
-				}
-				// tag is "name" means this elem defines remote proc's value
-				else if(strcmp(tag,"NAME")==0)
-				{
-				        int len=strlen(name);
-					if(len<DIGEST_SIZE*2)
-					{
-						Memcpy(mixvalue[i],name,len);
-					}
-					else
-					{
-						Memcpy(mixvalue[i],name,DIGEST_SIZE*2);
-					}
-				}
-
-			    	else if(strncmp(tag,"EXPAND",6)==0)
-			    	{
-					char * type=tag+7;
-			       		if(strlen(type)!=4)
-					{
-						return -EINVAL;	
-					}		
-					void * expand;
-				        ret = message_get_define_expand(message,&expand,type);
-					if(ret<0)
-						return -EINVAL;
-					if(expand==NULL)
-						return -EINVAL;
-					void * struct_template=load_record_template(type);
-					if(struct_template==NULL)
-						return -EINVAL;
-					ret=struct_read_elem(name,expand,mixvalue[i],struct_template);		
-					free_struct_template(struct_template);
-					if(ret<0)
-						return ret;
-			    	}
-
-		    		else
-			    	{
-			    		return -EINVAL;
-			    	}
-			  	if(i==0)
-					continue;
-			  	if(i==1)
-			   	{
-					comp_proc_uuid(mixvalue[0],mixvalue[1],uuid);
-				  	continue;
-			    	}
-			   	comp_proc_uuid(uuid,mixvalue[i],uuid);
-		
-			  }
-		   	 target=malloc(DIGEST_SIZE*2);
-		 	 Memcpy(target,uuid,DIGEST_SIZE*2);
-		   	 break;
-		   }
-*/		    
 	    case ROUTE_TARGET_ERROR:
 	    default:
 		    return -EINVAL;
@@ -777,7 +638,8 @@ int router_set_local_route(void * message,void * policy)
 	message_set_policy(message,policy);
 	return 1;	
 }
-
+*/
+/*
 int router_set_query_end(void * message,void * policy)
 {
 	int ret;
@@ -823,7 +685,7 @@ int router_set_query_end(void * message,void * policy)
 	msg_head->ljump=jumpcount++;
 	return 1;	
 }
-
+*/
 int router_find_route_policy(void * message,void **msg_policy,char * sender_proc)
 {
     DISPATCH_POLICY * policy;
@@ -865,6 +727,7 @@ int router_find_route_policy(void * message,void **msg_policy,char * sender_proc
     }
     return ret;
 }
+/*
 int router_dup_activemsg_info (void * message)
 {
 	int ret;
@@ -910,47 +773,12 @@ int router_dup_activemsg_info (void * message)
 				return ret;
 		}while(1);	
 	}
-/*
-	void * flow_expand;
-	ret=message_get_define_expand(active_msg,&old_expand,DTYPE_MSG_EXPAND,SUBTYPE_FLOW_TRACE);
-	if(old_expand!=NULL) 
-	{
-		new_expand=Calloc0(sizeof(MSG_EXPAND));
-		if(new_expand==NULL)
-			return -ENOMEM;
-		Memcpy(new_expand,old_expand,sizeof(MSG_EXPAND_HEAD));
-		void * struct_template =memdb_get_template(DTYPE_MSG_EXPAND,SUBTYPE_FLOW_TRACE);
-		new_expand->expand = clone_struct(old_expand->expand,struct_template);
-		message_add_expand(message,new_expand);
-	}
-	ret=message_get_define_expand(active_msg,&old_expand,DTYPE_MSG_EXPAND,SUBTYPE_ASPECT_POINT);
-	if(old_expand!=NULL) 
-
-	{
-		new_expand=Calloc0(sizeof(MSG_EXPAND));
-		if(new_expand==NULL)
-			return -ENOMEM;
-		Memcpy(new_expand,old_expand,sizeof(MSG_EXPAND_HEAD));
-		void * struct_template =memdb_get_template(DTYPE_MSG_EXPAND,SUBTYPE_ASPECT_POINT);
-		new_expand->expand = clone_struct(old_expand->expand,struct_template);
-		message_add_expand(message,new_expand);
-	}
-	ret=message_get_define_expand(active_msg,&old_expand,DTYPE_MSG_EXPAND,SUBTYPE_ROUTE_RECORD);
-	if(old_expand!=NULL) 
-	{
-		new_expand=Calloc0(sizeof(MSG_EXPAND));
-		if(new_expand==NULL)
-			return -ENOMEM;
-		Memcpy(new_expand,old_expand,sizeof(MSG_EXPAND_HEAD));
-		void * struct_template =memdb_get_template(DTYPE_MSG_EXPAND,SUBTYPE_ROUTE_RECORD);
-		new_expand->expand = clone_struct(old_expand->expand,struct_template);
-		message_add_expand(message,new_expand);
-	}
-        */
 	message_set_policy(message,message_get_policy(active_msg));
 
 	return 1;
 }
+*/
+
 /*
 int __message_policy_init(void * policy)
 {
@@ -959,12 +787,12 @@ int __message_policy_init(void * policy)
         return -EINVAL;
     message_policy->sender_proc=NULL;
     message_policy->match_policy_list=
-            (ROUTE_POLICY_LIST *)malloc(sizeof(ROUTE_POLICY_LIST));
+            (ROUTE_NODE_LIST *)malloc(sizeof(ROUTE_NODE_LIST));
     if(message_policy->match_policy_list==NULL)
         return -EINVAL;
 
     message_policy->dup_route_rule =
-            (ROUTE_POLICY_LIST *)malloc(sizeof(ROUTE_POLICY_LIST));
+            (ROUTE_NODE_LIST *)malloc(sizeof(ROUTE_NODE_LIST));
     if(message_policy->dup_route_rule==NULL)
         return -EINVAL;
     message_policy->main_route_rule =
@@ -1207,6 +1035,8 @@ int match_message_record(void * match_rule,void * message)
 }
 
 */
+
+/*
 int router_set_aspect_flow(void * message,void * policy)
 {
 	int ret;
@@ -1756,3 +1586,4 @@ int route_recover_route(void * message)
 	Free(route_record);
 	return 1;
 }
+*/

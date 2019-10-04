@@ -3,7 +3,7 @@ CFLAGS= -g -c -fPIC -Wall -DUSER_MODE
 CC=gcc
 LD=ld
 CCP=g++
-STRUCTOBJ= dispatch.o 
+STRUCTOBJ= route_tree.o 
 LIBNAME=dispatch
 DEPENDLIB= -lmessage -lmemdb -lbasefunc -lcrypto_func -lstruct -ljson -lalloc -lstring
 
@@ -18,5 +18,7 @@ test_main: test_main.c ../lib/lib$(LIBNAME).so
 	mv   lib$(LIBNAME).a ../lib
 dispatch.o:  dispatch.c ../include/dispatch.h  dispatch_struct.h
 	$(CC) $(CFLAGS) dispatch.c
+route_tree.o:  route_tree.c ../include/dispatch.h  route_tree.h
+	$(CC) $(CFLAGS) route_tree.c
 clean:
 	rm -f test_main *~ *.a *.o ../lib/lib$(LIBNAME).so

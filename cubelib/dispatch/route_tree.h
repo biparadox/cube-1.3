@@ -1,8 +1,6 @@
 #ifndef ROUTE_TREE_H
 #define ROUTE_TREE_H
 
-#include "dispatch.h"
-
 enum route_type
 {
 	ROUTE_DELIVER=0x01,
