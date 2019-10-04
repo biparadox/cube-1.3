@@ -71,7 +71,7 @@ typedef struct route_path
 	int match_rule_num;
 	int route_rule_num;
 
-	MATCH_RULE * match_list;
+	NODE_LIST  match_list;
 	NODE_LIST  route_path;
 	ROUTE_TRACE * response_template;
 	void *  response_hash;
