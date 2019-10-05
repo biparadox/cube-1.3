@@ -24,6 +24,8 @@ static void * route_rule_template;
 static int match_flag = 0x10000000;
 
 void * route_read_policy(void * policy_node);
+int  route_set_path(ROUTE_PATH * path, void * policy);
+
 static inline int _init_node_list (void * list)
 {
     	NODE_LIST * node_list=(NODE_LIST *)list;
@@ -54,9 +56,9 @@ int router_tree_init( )
 	ret=_init_node_list(&aspect_forest);
 	if(ret<0)
 		return ret;
-    	policy_head_template=memdb_get_template(DTYPE_DISPATCH,SUBTYPE_POLICY_HEAD);
-    	match_rule_template=memdb_get_template(DTYPE_DISPATCH,SUBTYPE_MATCH_HEAD);
-    	route_rule_template=memdb_get_template(DTYPE_DISPATCH,SUBTYPE_ROUTE_RULE);
+    	policy_head_template=memdb_get_template(TYPE_PAIR(DISPATCH,POLICY_HEAD));
+    	match_rule_template=memdb_get_template(TYPE_PAIR(DISPATCH,MATCH_HEAD));
+    	route_rule_template=memdb_get_template(TYPE_PAIR(DISPATCH,ROUTE_RULE));
 	return 0;
 }
 
@@ -136,6 +138,8 @@ void * route_read_policy(void * policy_node)
     MATCH_RULE * temp_match_rule;
     ROUTE_RULE * temp_route_rule;
 
+    RECORD(DISPATCH,POLICY_HEAD) * policy;	
+
     ROUTE_PATH  * path =route_path_create();
     if(path==NULL)
         return NULL;
@@ -145,19 +149,25 @@ void * route_read_policy(void * policy_node)
     {
 	return NULL;
     }
+
+    policy=Talloc0(sizeof(*policy));
+    if(policy==NULL)
+	return NULL;
+
+
     ret=json_2_struct(temp_node,policy,policy_head_template);
     if(ret<0)
         return NULL;
     // get the match policy json node
     match_policy_node=json_find_elem("MATCH_RULES",policy_node);
     if(match_policy_node==NULL)
-        return -EINVAL;
+        return NULL;
 
     // get the match policy json node
     route_policy_node=json_find_elem("ROUTE_RULES",policy_node);
 
     if(route_policy_node==NULL)
-        return -EINVAL;
+        return NULL;
 
     // read the match rule
 
@@ -174,7 +184,6 @@ void * route_read_policy(void * policy_node)
 	temp_node=json_find_elem("value",match_rule_node);
 	if(temp_node!=NULL)
 	{
-		void * record_desc;
 		void * value_struct;
 		record_template=memdb_get_template(temp_match_rule->type,temp_match_rule->subtype);
 		if(record_template==NULL)
@@ -218,7 +227,6 @@ void * route_read_policy(void * policy_node)
     	temp_route_rule=Dalloc0(sizeof(ROUTE_RULE),path);
     	if(temp_route_rule==NULL)
 		return NULL;
-   	 temp_route_rule=malloc(sizeof(ROUTE_RULE));
     	ret=json_2_struct(route_rule_node,temp_route_rule,route_rule_template);
     	if(ret<0)
         	return NULL;
