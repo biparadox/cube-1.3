@@ -2,9 +2,9 @@
 
 #include "../include/data_type.h"
 #include "../include/list.h"
+#include "../include/alloc.h"
 #include "../include/attrlist.h"
 #include "../include/memfunc.h"
-#include "../include/alloc.h"
 #include "../include/json.h"
 #include "../include/struct_deal.h"
 #include "../include/basefunc.h"
@@ -23,10 +23,11 @@ static void * route_rule_template;
 
 static int match_flag = 0x10000000;
 
+void * route_read_policy(void * policy_node);
 static inline int _init_node_list (void * list)
 {
     	NODE_LIST * node_list=(NODE_LIST *)list;
-   	memset(node_list,0,sizeof(NODE_LIST));
+   	Memset(node_list,0,sizeof(NODE_LIST));
    	INIT_LIST_HEAD(&(node_list->head.list));
    	node_list->head.record=NULL;
 	node_list->policy_num=0;
@@ -36,7 +37,7 @@ static inline int _init_node_list (void * list)
 static inline int _init_router_forest(void * list)
 {
     	NODE_LIST * forest=(NODE_LIST *)list;
-   	memset(forest,0,sizeof(NODE_LIST));
+   	Memset(forest,0,sizeof(NODE_LIST));
    	INIT_LIST_HEAD(&(forest->head.list));
    	forest->head.record=NULL;
 	forest->policy_num=0;
@@ -47,10 +48,10 @@ static inline int _init_router_forest(void * list)
 int router_tree_init( )
 {
 	int ret;
-	ret=_init_router_forest(&route_forest);
+	ret=_init_node_list(&route_forest);
 	if(ret<0)
 		return ret;
-	ret=_init_policy_list(&aspect_forest);
+	ret=_init_node_list(&aspect_forest);
 	if(ret<0)
 		return ret;
     	policy_head_template=memdb_get_template(DTYPE_DISPATCH,SUBTYPE_POLICY_HEAD);
@@ -89,21 +90,19 @@ char * route_path_getsubname(void * path)
 
 void * route_path_create()
 {
-	int ret;
 	ROUTE_PATH * path;
 	path=Dalloc0(sizeof(ROUTE_PATH),NULL);
 	if(path==NULL)
 		return NULL;
 	_init_node_list(&path->match_list);
 	_init_node_list(&path->route_path);
-	return policy;
+	return path;
 	
 }
 
 int read_policy_from_buffer(char * buffer, int max_len)
 {
 	int offset=0;
-	int ret;
 	void * root;
 	int solve_offset;
 	int count=0;

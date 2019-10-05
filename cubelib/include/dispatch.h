@@ -6,14 +6,14 @@
 
 enum dynamic_dispatch_typelist
 {
-	DTYPE_DISPATCH=0x210,
+	TYPE(DISPATCH)=0x210,
 };
 
 enum subtypelist_dispatch
 {
-	SUBTYPE_POLICY_HEAD=0x01,
-	SUBTYPE_MATCH_HEAD,
-	SUBTYPE_ROUTE_RULE
+	SUBTYPE(DISPATCH,POLICY_HEAD)=0x01,
+	SUBTYPE(DISPATCH,MATCH_HEAD),
+	SUBTYPE(DISPATCH,ROUTE_RULE)
 };
 
 
@@ -57,6 +57,32 @@ enum dispatch_policy_state
 	POLICY_TEST,	
 	POLICY_IGNORE
 };
+
+typedef struct tagdispatch_policy_head
+{	
+	char * name;
+	enum dispatch_policy_state state;
+	enum message_flow_type type;
+	char sender[DIGEST_SIZE];
+	char * newname;
+	int  ljump;
+	int rjump;
+}__attribute__((packed)) RECORD(DISPATCH,POLICY_HEAD);
+
+typedef struct tagdispatch_match_head
+{	
+	enum match_op_type op;
+	enum message_area_type area;
+	int type;
+	int subtype;
+}__attribute__((packed)) RECORD(DISPATCH,MATCH_HEAD);
+
+typedef struct tagdispatch_route_rule
+{	
+	enum route_target_type target_type;
+	char * target_name;
+}__attribute__((packed)) RECORD(DISPATCH,ROUTE_RULE);
+
 int dispatch_init();
 void * dispatch_policy_create();
 
