@@ -23,7 +23,6 @@
 
 #include "sys_func.h"
 #include "router_process_func.h"
-struct timeval debug_time;
 
 int read_dispatch_file(char * file_name,int is_aspect)
 {
@@ -82,17 +81,18 @@ int read_dispatch_file(char * file_name,int is_aspect)
 		if(readlen<32)
 			continue;
 
-		policy=dispatch_read_policy(root_node);
+		policy=route_read_policy(root_node);
 		if(policy==NULL)
 		{
 			print_cubeerr("read %d file error!",count);
 			break;
 		}
-		if((dispatch_policy_getstate(policy)==POLICY_IGNORE)
-			||(dispatch_policy_getstate(policy)==POLICY_CLOSE))
+		if((route_path_getstate(policy)==POLICY_IGNORE)
+			||(route_path_getstate(policy)==POLICY_CLOSE))
 		{
-			print_cubeaudit("policy %s is ignored!",dispatch_policy_getname(policy));
+			print_cubeaudit("policy %s is ignored!",route_path_getname(policy));
 		}
+/*
 		else
 		{
 			if(is_aspect)
@@ -101,6 +101,7 @@ int read_dispatch_file(char * file_name,int is_aspect)
 				dispatch_policy_add(policy);
 			count++;
 		}
+*/
 	}
 	print_cubeaudit("read %d policy succeed!",count);
 	close(fd);
@@ -177,7 +178,7 @@ int proc_router_recv_msg(void * message,char * local_uuid,char * proc_name)
 	if(message_get_state(message) & MSG_FLOW_RESPONSE)
 	{
 		
-		ret=route_check_sitestack(message);
+//		ret=route_check_sitestack(message);
 		if(ret<0)
 			return ret;
 		// if response stack finished, set the state to FINISH 
@@ -187,7 +188,7 @@ int proc_router_recv_msg(void * message,char * local_uuid,char * proc_name)
 	if(message_get_flow(message) & MSG_FLOW_ASPECT)
 	{
 		
-		ret=route_check_aspectstack(message);
+//		ret=route_check_aspectstack(message);
 		if(ret<0)
 			return ret;
 		if(ret==0)
@@ -301,6 +302,7 @@ int proc_router_start(void * sub_proc,void * para)
 	// message routing loop
 	while(1)
 	{
+/*
 		usleep(router_val.tv_usec);
 		void * sub_proc;
 		char * receiver_proc;
@@ -709,7 +711,7 @@ int proc_router_start(void * sub_proc,void * para)
 
 			continue;
 		}
-	
+*/	
 	}
 	return 0;
 }

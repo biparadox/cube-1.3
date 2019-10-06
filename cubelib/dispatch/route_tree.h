@@ -41,7 +41,8 @@ typedef struct tagroute_rule
 
 typedef struct tagroute_node
 {
-	
+	void * parent;
+	int layer;	
 	ROUTE_RULE next_target;
 	void * route_path; 
 	NODE_LIST * aspect_node;
@@ -59,12 +60,10 @@ typedef struct tagroute_trace
 typedef struct route_path
 {
 	char name[32];
-	char subname[32];
-	int  layer;
-	int  sequence;
-	int  curr_state;
-	int  next_state;
-	struct route_tree_node * prev;   
+	char sender[32];
+	int  ljump;
+	int  rjump;
+	enum dispatch_policy_state state;
 
 	int match_rule_num;
 	int route_rule_num;
@@ -72,11 +71,11 @@ typedef struct route_path
 	NODE_LIST  match_list;
 	NODE_LIST  route_path;
 	ROUTE_TRACE * response_template;
-	void *  response_hash;
-	void *  aspect_hash;
+//	void *  response_hash;
+//	void *  aspect_hash;
 
-        NODE_LIST next_route;
-	NODE_LIST err_route;         
+//      NODE_LIST next_route;
+//	NODE_LIST err_route;         
 }ROUTE_PATH;
 
 #endif

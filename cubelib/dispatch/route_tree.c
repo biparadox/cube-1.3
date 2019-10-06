@@ -25,6 +25,10 @@ static int match_flag = 0x10000000;
 
 void * route_read_policy(void * policy_node);
 int  route_set_path(ROUTE_PATH * path, void * policy);
+int dispatch_policy_addmatchrule(void * path,MATCH_RULE * rule);
+int dispatch_policy_addrouterule(void * path,ROUTE_RULE * rule);
+int dispatch_policy_getnextmatchrule(void * path,MATCH_RULE ** rule);
+int dispatch_policy_getnextrouterule(void * path,ROUTE_RULE ** rule);
 
 static inline int _init_node_list (void * list)
 {
@@ -35,6 +39,26 @@ static inline int _init_node_list (void * list)
 	node_list->policy_num=0;
 	return 0;
 
+}
+
+int _node_list_add(void * list,void * record)
+{
+	Record_List * recordhead;
+	Record_List * newrecord;
+    	NODE_LIST * node_list=(NODE_LIST *)list;
+
+   	recordhead = &(node_list->head);
+	if(recordhead==NULL)
+		return -ENOMEM;
+
+	newrecord=Dalloc0(sizeof(Record_List),NULL);
+	if(newrecord==NULL)
+		return -ENOMEM;
+	INIT_LIST_HEAD(&(newrecord->list));
+	newrecord->record=record;
+	List_add_tail(&(newrecord->list),&(recordhead->list));
+	node_list->policy_num++;
+	return 1;
 }
 static inline int _init_router_forest(void * list)
 {
@@ -76,20 +100,6 @@ char * route_path_getname(void * path)
     return tempname;
 }
 
-char * route_path_getsubname(void * path)
-{
-    ROUTE_PATH * route_path=path;
-    char * tempname;
-    int namelen;
-    if(path==NULL)
-	    return NULL;
-    namelen=Strnlen(route_path->subname,DIGEST_SIZE);
-	
-    tempname=Talloc0(namelen+1);
-    Strncpy(tempname,route_path->subname,namelen);
-    return tempname;
-}
-
 void * route_path_create()
 {
 	ROUTE_PATH * path;
@@ -99,7 +109,6 @@ void * route_path_create()
 	_init_node_list(&path->match_list);
 	_init_node_list(&path->route_path);
 	return path;
-	
 }
 
 int read_policy_from_buffer(char * buffer, int max_len)
@@ -132,8 +141,8 @@ void * route_read_policy(void * policy_node)
     void * match_rule_node;
     void * route_rule_node;
     void * temp_node;
-    char buffer[1024];
-    char * temp_str;
+//    char buffer[1024];
+//    char * temp_str;
     int ret;
     MATCH_RULE * temp_match_rule;
     ROUTE_RULE * temp_route_rule;
@@ -154,16 +163,26 @@ void * route_read_policy(void * policy_node)
     if(policy==NULL)
 	return NULL;
 
+    // read policy head
 
     ret=json_2_struct(temp_node,policy,policy_head_template);
     if(ret<0)
         return NULL;
+
+    // set policy head to path	
+
+    Strncpy(path->name,policy->name,DIGEST_SIZE);
+    Strncpy(path->sender,policy->sender,DIGEST_SIZE);
+    path->ljump=policy->ljump;
+    path->rjump=policy->rjump; 
+    path->state=policy->state; 
+
     // get the match policy json node
     match_policy_node=json_find_elem("MATCH_RULES",policy_node);
     if(match_policy_node==NULL)
         return NULL;
-
-    // get the match policy json node
+  
+    // get the route policy json node
     route_policy_node=json_find_elem("ROUTE_RULES",policy_node);
 
     if(route_policy_node==NULL)
@@ -219,7 +238,7 @@ void * route_read_policy(void * policy_node)
 
     temp_node=json_find_elem("main_policy",route_policy_node);
     if(temp_node==NULL)
-	return -EINVAL;	
+	return NULL;	
 
     route_rule_node=json_get_first_child(temp_node);
     while(route_rule_node!=NULL)
@@ -239,7 +258,7 @@ void * route_read_policy(void * policy_node)
     return path;
 }
 
-int _dispatch_policy_getfirst(void * policy_list,ROUTE_PATH ** policy)
+int _dispatch_policy_getfirst(void * policy_list,void ** policy)
 {
 	Record_List * recordhead;
 	Record_List * newrecord;
@@ -263,13 +282,13 @@ int dispatch_policy_getfirst(void ** policy)
 int dispatch_policy_getfirstmatchrule(void * path,MATCH_RULE ** rule)
 {
     ROUTE_PATH * route_path=(ROUTE_PATH *)path;
-    return _dispatch_policy_getfirst(&route_path->match_list,rule);
+    return _dispatch_policy_getfirst(&route_path->match_list,(void **)rule);
 }
 
 int dispatch_policy_getfirstrouterule(void * path,ROUTE_RULE ** rule)
 {
     ROUTE_PATH * route_path=(ROUTE_PATH *)path;
-    return _dispatch_policy_getfirst(&route_path->route_list,rule);
+    return _dispatch_policy_getfirst(&route_path->route_path,(void **)rule);
 }
 
 int _dispatch_policy_getnext(void * policy_list,void ** policy)
@@ -304,59 +323,43 @@ int dispatch_policy_getnext(void ** policy)
 int dispatch_policy_getnextmatchrule(void * path,MATCH_RULE ** rule)
 {
     ROUTE_PATH  * route_path=(ROUTE_PATH *)path;
-    return _dispatch_policy_getnext(&route_path->match_list,rule);
+    return _dispatch_policy_getnext(&route_path->match_list,(void **)rule);
 }
 
 int dispatch_policy_getnextrouterule(void * path,ROUTE_RULE ** rule)
 {
     ROUTE_PATH  * route_path=(ROUTE_PATH *)path;
-    return _dispatch_policy_getnext(&route_path->route_list,rule);
+    return _dispatch_policy_getnext(&route_path->route_path,(void **)rule);
 }
 
-int _dispatch_rule_add(void * list,void * rule)
-{
-	int ret;
-	Record_List * recordhead;
-	Record_List * newrecord;
-    	NODE_LIST * rule_list=(NODE_LIST *)list;
-
-   	recordhead = &(rule_list->head);
-	if(recordhead==NULL)
-		return -ENOMEM;
-
-	newrecord=Dalloc0(sizeof(Record_List),NULL);
-	if(newrecord==NULL)
-		return -ENOMEM;
-	INIT_LIST_HEAD(&(newrecord->list));
-	newrecord->record=rule;
-	List_add_tail(&(newrecord->list),recordhead);
-	rule_list->policy_num++;
-	return 1;
-}
 
 int dispatch_policy_addmatchrule(void * path,MATCH_RULE * rule)
 {
     ROUTE_PATH  * route_path=(ROUTE_PATH *)path;
-    return _dispatch_rule_add(&route_path->match_list,rule);
+    return _node_list_add(&route_path->match_list,(void *)rule);
 }
 
 int dispatch_policy_addrouterule(void * path,ROUTE_RULE * rule)
 {
     ROUTE_PATH  * route_path=(ROUTE_PATH *)path;
-    return _dispatch_rule_add(&route_path->route_list,rule);
+    return _node_list_add(&route_path->route_path,(void *)rule);
 }
 
 int _dispatch_policy_add(void * list,void * policy)
 {
-	return _dispatch_rule_add(list,policy);	
+	return _node_list_add(list,policy);	
 }
 
 int dispatch_policy_add(void * policy)
 {
-      void * general_policy_list;
-      ROUTE_PATH * dispatch_policy=(ROUTE_PATH *)policy;
-      _dispatch_policy_add(&route_forest,policy);
-      return 1;
+      return _dispatch_policy_add(&route_forest,policy);
+}
+int route_path_getstate(void * path)
+{
+    ROUTE_PATH * route_path=path;
+    if(path==NULL)
+	    return -EINVAL;
+    return route_path->state;
 }
 /*
 
@@ -693,6 +696,7 @@ int router_set_query_end(void * message,void * policy)
 	return 1;	
 }
 */
+/*
 int router_find_route_policy(void * message,void **msg_policy,char * sender_proc)
 {
     DISPATCH_POLICY * policy;
@@ -734,6 +738,7 @@ int router_find_route_policy(void * message,void **msg_policy,char * sender_proc
     }
     return ret;
 }
+*/
 /*
 int router_dup_activemsg_info (void * message)
 {

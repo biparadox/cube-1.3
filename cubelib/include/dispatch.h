@@ -105,11 +105,11 @@ int dispatch_aspect_policy_add(void * policy);
 
 int dispatch_policy_getfirst(void ** policy);
 int dispatch_policy_getnext(void ** policy);
-int dispatch_policy_getfirstmatchrule(void * policy,void ** rule);
-int dispatch_policy_getnextmatchrule(void * policy,void ** rule);
-int dispatch_policy_getfirstrouterule(void * policy,void ** rule);
-int dispatch_policy_getnextrouterule(void * policy,void ** rule);
-int dispatch_policy_getstate(void * policy);
+//int dispatch_policy_getfirstmatchrule(void * policy,void ** rule);
+//int dispatch_policy_getnextmatchrule(void * policy,void ** rule);
+//int dispatch_policy_getfirstrouterule(void * policy,void ** rule);
+//int dispatch_policy_getnextrouterule(void * policy,void ** rule);
+int route_path_getstate(void * path);
 const char * dispatch_policy_getname(void * policy);
 
 int dispatch_match_sender(void * policy,char * sender);
