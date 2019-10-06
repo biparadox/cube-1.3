@@ -225,12 +225,11 @@ void * route_read_policy(void * policy_node)
 			return NULL;	
 		temp_match_rule->value=value_struct;
 	}
-	ret=dispatch_policy_addmatchrule(policy,temp_match_rule);
+	ret=dispatch_policy_addmatchrule(path,temp_match_rule);
 	if(ret<0)
 		return NULL;	
 	
-//        __route_policy_add(policy->match_list,temp_match_rule);
-         match_rule_node=json_get_next_child(match_policy_node);
+        match_rule_node=json_get_next_child(match_policy_node);
     }
 
     // read the route policy
@@ -249,7 +248,7 @@ void * route_read_policy(void * policy_node)
     	ret=json_2_struct(route_rule_node,temp_route_rule,route_rule_template);
     	if(ret<0)
         	return NULL;
-	ret=dispatch_policy_addrouterule(policy,temp_route_rule);
+	ret=dispatch_policy_addrouterule(path,temp_route_rule);
 	if(ret<0)
 		return NULL;	
         route_rule_node=json_get_next_child(temp_node);
@@ -352,7 +351,7 @@ int _dispatch_policy_add(void * list,void * policy)
 
 int dispatch_policy_add(void * policy)
 {
-      return _dispatch_policy_add(&route_forest,policy);
+      return _node_list_add(&route_forest,policy);
 }
 int route_path_getstate(void * path)
 {
@@ -361,30 +360,30 @@ int route_path_getstate(void * path)
 	    return -EINVAL;
     return route_path->state;
 }
-/*
 
-int dispatch_match_sender(void * policy, char * sender)
+
+int route_match_sender(void * path, char * sender)
 {
 	int ret;
-	DISPATCH_POLICY * dispatch_policy=(DISPATCH_POLICY *)policy;
-	if(policy==NULL)
+	ROUTE_PATH * route_path=(ROUTE_PATH *)path;
+	if(path==NULL)
 		return 0;
-	ret=Strcmp(dispatch_policy->sender,sender);
+	ret=Strncmp(route_path->sender,sender,DIGEST_SIZE);
 	if(ret!=0)
 		return 0;
 	return 1;
 }
 
-int dispatch_match_message_jump(void * policy, void * message)
+int route_match_message_jump(void * path, void * message)
 {
 	int ret;
 	MSG_HEAD * msg_head;
-	DISPATCH_POLICY * dispatch_policy=(DISPATCH_POLICY *)policy;
-	if(policy==NULL)
+	ROUTE_PATH * route_path=(ROUTE_PATH *)path;
+	if(path==NULL)
 		return 0;
 	msg_head=message_get_head(message);
-	if((dispatch_policy->rjump==0)||(dispatch_policy->rjump==msg_head->rjump))
-		if((dispatch_policy->ljump==0)||(dispatch_policy->ljump==msg_head->ljump))
+	if((route_path->rjump==0)||(route_path->rjump==msg_head->rjump))
+		if((route_path->ljump==0)||(route_path->ljump==msg_head->ljump))
 		{
 			return 1;
 		}
@@ -393,13 +392,13 @@ int dispatch_match_message_jump(void * policy, void * message)
 
 
 
-int dispatch_match_message(void * policy,void * message)
+int route_match_message(void * path,void * message)
 {
 	int ret;
 	int result=0;
 	int prev_result=0;
 	int match_rule_num=0;
-	DISPATCH_POLICY * dispatch_policy=(DISPATCH_POLICY *)policy;
+	ROUTE_PATH * route_path=(ROUTE_PATH *)path;
 	MATCH_RULE * match_rule;
 	MSG_HEAD * msg_head;
 	void * msg_record;
@@ -409,14 +408,14 @@ int dispatch_match_message(void * policy,void * message)
 	if(msg_head==NULL)
 		return -EINVAL;
 
-	if(dispatch_policy->name!=NULL)
+	if(route_path->name!=NULL)
 	{
 		if(msg_head->route[0]!=0)
-			if(Strncmp(dispatch_policy->name,msg_head->route,DIGEST_SIZE)!=0)
+			if(Strncmp(route_path->name,msg_head->route,DIGEST_SIZE)!=0)
 				return 0;	
 	}
 
-	ret=dispatch_policy_getfirstmatchrule(policy,&match_rule);
+	ret=dispatch_policy_getfirstmatchrule(path,&match_rule);
 	if(ret<0)
 		return ret;
 	while(match_rule!=NULL)
@@ -517,7 +516,7 @@ int dispatch_match_message(void * policy,void * message)
 				return -EINVAL;	
 		}
 		match_rule_num++;
-		ret=dispatch_policy_getnextmatchrule(policy,&match_rule);
+		ret=dispatch_policy_getnextmatchrule(path,&match_rule);
 		if(ret<0)
 			return ret;
 	}	
@@ -525,7 +524,7 @@ int dispatch_match_message(void * policy,void * message)
 		return 0;
 	return prev_result;
 }
-
+/*
 int rule_get_target(void * router_rule,void * message,void **result)
 {
     BYTE * target;
@@ -696,16 +695,21 @@ int router_set_query_end(void * message,void * policy)
 	return 1;	
 }
 */
-/*
-int router_find_route_policy(void * message,void **msg_policy,char * sender_proc)
+
+int router_find_route_policy(void * message,void **msg_policy)
 {
-    DISPATCH_POLICY * policy;
+    ROUTE_PATH * policy;
     int ret;
     *msg_policy=NULL;
 
     ret=dispatch_policy_getfirst(&policy);
     if(ret<0)
         return ret;
+    MSG_HEAD * msg_head;
+    msg_head=message_get_head(message);
+    if(msg_head==NULL)
+	return -EINVAL;
+    	
     while(policy!=NULL)
     {
 	if((policy->state==POLICY_CLOSE)||(policy->state==POLICY_IGNORE))
@@ -716,13 +720,13 @@ int router_find_route_policy(void * message,void **msg_policy,char * sender_proc
 		continue;
 	}
 
-    	ret=dispatch_match_sender(policy,sender_proc);
+    	ret=route_match_sender(policy,msg_head->sender_uuid);
 	if(ret>0)
 	{	
-		ret=dispatch_match_message_jump(policy,message);
+		ret=route_match_message_jump(policy,message);
 		if(ret>0)
 		{
-       			ret=dispatch_match_message(policy,message);
+       			ret=route_match_message(policy,message);
         		if(ret<0)
             			return ret;
    	     		if(ret>0)
@@ -738,7 +742,7 @@ int router_find_route_policy(void * message,void **msg_policy,char * sender_proc
     }
     return ret;
 }
-*/
+
 /*
 int router_dup_activemsg_info (void * message)
 {

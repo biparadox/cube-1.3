@@ -92,6 +92,11 @@ int read_dispatch_file(char * file_name,int is_aspect)
 		{
 			print_cubeaudit("policy %s is ignored!",route_path_getname(policy));
 		}
+		else
+		{
+			dispatch_policy_add(policy);
+			count++;
+		}
 /*
 		else
 		{
@@ -302,7 +307,7 @@ int proc_router_start(void * sub_proc,void * para)
 	// message routing loop
 	while(1)
 	{
-/*
+
 		usleep(router_val.tv_usec);
 		void * sub_proc;
 		char * receiver_proc;
@@ -346,15 +351,9 @@ int proc_router_start(void * sub_proc,void * para)
 				get_next_ex_module(&sub_proc);
 				continue;	
 			}
+
 			Strncpy(origin_proc,ex_module_getname(sub_proc),DIGEST_SIZE);
-
-
 			print_cubeaudit("router get proc %.64s's message ",origin_proc); 
-
-			router_dup_activemsg_info(message);
-			
-			message_set_activemsg(message,message);
-
 			MSG_HEAD * msg_head;
 			msg_head=message_get_head(message);
 			// set rjump's value
@@ -378,6 +377,45 @@ int proc_router_start(void * sub_proc,void * para)
 
 			//duplicate active message's info and init policy
 			message_set_sender(message,origin_proc);
+			if(msg_head->flow==MSG_FLOW_ASPECT)
+			{
+				// enter the ASPECT route process
+			}
+			else   // flow is route path
+			{
+				if( msg_head->ljump == 1)
+				{
+					if(msg_head->rjump ==0)  // this is a new message
+					{
+						ret=router_find_route_policy(message,&msg_policy);
+						if(ret<0)
+							return ret;
+						if(msg_policy==NULL)
+						{
+							msg_head->flow=MSG_FLOW_FINISH;
+							proc_audit_log(message);
+							continue;
+						}
+						print_cubeaudit("new msg match path %.64s's message ",route_path_getname(msg_policy)); 
+					}
+					else	       // this is a message that already moved in route_path 	
+					{
+
+
+					}			
+				}
+	
+			}
+
+			// test's end
+		}
+/*
+
+
+
+			router_dup_activemsg_info(message);
+			
+			message_set_activemsg(message,message);
 
 			msg_policy=NULL;
 			aspect_policy=NULL;
