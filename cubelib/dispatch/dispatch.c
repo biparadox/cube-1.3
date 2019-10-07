@@ -100,6 +100,7 @@ int read_policy_from_buffer(char * buffer, int max_len)
 		if(policy==NULL)
 			break;
 		count++;
+		dispatch_add_policy(policy);
 	}
 	return count;
 }

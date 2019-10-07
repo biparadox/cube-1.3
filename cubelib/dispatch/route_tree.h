@@ -41,11 +41,11 @@ typedef struct tagroute_rule
 
 typedef struct tagroute_node
 {
-	void * parent;
-	int layer;	
-	ROUTE_RULE next_target;
 	void * route_path; 
-	NODE_LIST * aspect_node;
+	int layer;	
+	ROUTE_RULE this_target;
+	Record_List * chain;
+	NODE_LIST aspect_branch;
 	
 }__attribute__((packed)) ROUTE_NODE;
 
@@ -77,5 +77,7 @@ typedef struct route_path
 //      NODE_LIST next_route;
 //	NODE_LIST err_route;         
 }ROUTE_PATH;
+
+
 
 #endif

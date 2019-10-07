@@ -110,7 +110,7 @@ int dispatch_policy_getnext(void ** policy);
 //int dispatch_policy_getfirstrouterule(void * policy,void ** rule);
 //int dispatch_policy_getnextrouterule(void * policy,void ** rule);
 int route_path_getstate(void * path);
-const char * dispatch_policy_getname(void * policy);
+char * route_path_getname(void * policy);
 
 int dispatch_match_sender(void * policy,char * sender);
 int dispatch_match_message(void * policy,void * message);

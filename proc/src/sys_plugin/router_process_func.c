@@ -22,6 +22,7 @@
 #include "ex_module.h"
 
 #include "sys_func.h"
+#include "message_box.h"
 #include "router_process_func.h"
 
 int read_dispatch_file(char * file_name,int is_aspect)
@@ -90,11 +91,12 @@ int read_dispatch_file(char * file_name,int is_aspect)
 		if((route_path_getstate(policy)==POLICY_IGNORE)
 			||(route_path_getstate(policy)==POLICY_CLOSE))
 		{
-			print_cubeaudit("policy %s is ignored!",route_path_getname(policy));
+			char * policyname =route_path_getname(policy);
+			print_cubeaudit("policy %s is ignored!",policyname);
 		}
 		else
 		{
-			dispatch_policy_add(policy);
+			route_add_policy(policy);
 			count++;
 		}
 /*
@@ -385,7 +387,7 @@ int proc_router_start(void * sub_proc,void * para)
 			{
 				if( msg_head->ljump == 1)
 				{
-					if(msg_head->rjump ==0)  // this is a new message
+					if(msg_head->rjump ==1)  // this is a new message
 					{
 						ret=router_find_route_policy(message,&msg_policy);
 						if(ret<0)
@@ -396,7 +398,12 @@ int proc_router_start(void * sub_proc,void * para)
 							proc_audit_log(message);
 							continue;
 						}
-						print_cubeaudit("new msg match path %.64s's message ",route_path_getname(msg_policy)); 
+						//char * policy_name = route_path_getname(msg_policy);
+						print_cubeaudit("new msg match path %.64s's policy",route_path_getname(msg_policy)); 
+						proc_audit_log(message);
+						//debug_message(message,"normal message prepare to send:");
+						//print_cubeaudit("message (%s) is send to %s!\n",message_get_typestr(message),message_get_receiver(message));
+						ret=proc_router_send_msg(message,local_uuid,proc_name);
 					}
 					else	       // this is a message that already moved in route_path 	
 					{
