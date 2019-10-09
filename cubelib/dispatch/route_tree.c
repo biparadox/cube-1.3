@@ -116,6 +116,7 @@ void * route_path_create()
 void * route_node_create(ROUTE_RULE * rule)
 {
 	ROUTE_NODE * node;
+	int ret;
 	node=Dalloc0(sizeof(ROUTE_NODE),NULL);
 	if(node==NULL)
 		return NULL;
@@ -123,10 +124,10 @@ void * route_node_create(ROUTE_RULE * rule)
 	{
 		ret=struct_clone(rule,&node->this_target,match_rule_template);
 		if(ret<0)
-			return ret;
+			return NULL;
 	}
 
-	_init_node_list(&node->aspect_path);
+	_init_node_list(&node->aspect_branch);
 	return node;
 }
 
@@ -369,9 +370,11 @@ int dispatch_policy_addrouterule(void * path,ROUTE_RULE * rule)
      if(rule==NULL)
 	  return 0; 	
      route_node =route_node_create(rule);
+     if(route_node==NULL)
+	return -EINVAL;
 
      route_node->route_path=path;
-     if((record=_node_list_add(&route_path->match_list,(void *)route_node))==NULL)
+     if((record=_node_list_add(&route_path->route_path,(void *)route_node))==NULL)
 	return 0;
      route_node->chain=record;
      return 1;
@@ -560,7 +563,17 @@ int route_match_message(void * path,void * message)
 		return 0;
 	return prev_result;
 }
-/*
+
+ROUTE_NODE * get_curr_pathsite(void * msg)
+{
+	struct message_box * msg_box = (struct message_box *)msg;
+	Record_List * curr_pathrecord = (Record_List *)msg_box->path_site;
+	if(curr_pathrecord==NULL)
+		return NULL;
+	return (ROUTE_NODE *) curr_pathrecord->record;
+
+}
+
 int rule_get_target(void * router_rule,void * message,void **result)
 {
     BYTE * target;
@@ -662,6 +675,26 @@ int rule_get_target(void * router_rule,void * message,void **result)
 
 }
 
+int message_route_setstart( void * msg, void * path)
+{
+	int ret;
+	struct message_box * msg_box = (struct message_box *)msg;
+	ROUTE_PATH * route_path = (ROUTE_PATH *)path;
+	ROUTE_NODE * startnode;
+	char * receiver;
+	
+	msg_box->policy = path;
+	Strncpy(msg_box->head.route,route_path->name,DIGEST_SIZE);
+	msg_box->path_site = &route_path->route_path.head.list.next;
+	startnode = get_curr_pathsite(msg);
+	if(startnode==NULL)
+		return -EINVAL;
+	
+	rule_get_target(&startnode->this_target,msg,&receiver);
+
+	return 0;	
+}
+/*
 int router_set_local_route(void * message,void * policy)
 {
 	int ret;

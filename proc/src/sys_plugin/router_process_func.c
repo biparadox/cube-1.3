@@ -400,6 +400,8 @@ int proc_router_start(void * sub_proc,void * para)
 						}
 						//char * policy_name = route_path_getname(msg_policy);
 						print_cubeaudit("new msg match path %.64s's policy",route_path_getname(msg_policy)); 
+						
+						message_route_setstart(message,msg_policy);
 						proc_audit_log(message);
 						//debug_message(message,"normal message prepare to send:");
 						//print_cubeaudit("message (%s) is send to %s!\n",message_get_typestr(message),message_get_receiver(message));
