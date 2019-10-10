@@ -122,7 +122,7 @@ void * route_node_create(ROUTE_RULE * rule)
 		return NULL;
 	if(rule!=NULL)
 	{
-		ret=struct_clone(rule,&node->this_target,match_rule_template);
+		ret=struct_clone(rule,&node->this_target,route_rule_template);
 		if(ret<0)
 			return NULL;
 	}
@@ -378,7 +378,6 @@ int dispatch_policy_addrouterule(void * path,ROUTE_RULE * rule)
 	return 0;
      route_node->chain=record;
      return 1;
-     	
 }
 
 int _route_add_policy(void * list,void * policy)
@@ -578,8 +577,10 @@ int rule_get_target(void * router_rule,void * message,void **result)
 {
     BYTE * target;
     int ret;
+    int flag;
     char buffer[DIGEST_SIZE*2];
     ROUTE_RULE * rule= (ROUTE_RULE *)router_rule;
+    struct message_box * msg_box = (struct message_box *)message;
     *result=NULL;
     switch(rule->target_type){
 	    case ROUTE_TARGET_NAME:
@@ -587,6 +588,10 @@ int rule_get_target(void * router_rule,void * message,void **result)
 	    case ROUTE_TARGET_LOCAL:
 		    target=Talloc0(DIGEST_SIZE);
 		    Strncpy(target,rule->target_name,DIGEST_SIZE);
+		    message_set_receiver(message,target);
+		    flag=message_get_flag(message) | MSG_FLAG_LOCAL;
+		    message_set_flag(message,flag);
+		    
 		    break;
 	    case ROUTE_TARGET_UUID:
 		    ret=Strnlen(rule->target_name,DIGEST_SIZE*2);
@@ -685,7 +690,7 @@ int message_route_setstart( void * msg, void * path)
 	
 	msg_box->policy = path;
 	Strncpy(msg_box->head.route,route_path->name,DIGEST_SIZE);
-	msg_box->path_site = &route_path->route_path.head.list.next;
+	msg_box->path_site = route_path->route_path.head.list.next;
 	startnode = get_curr_pathsite(msg);
 	if(startnode==NULL)
 		return -EINVAL;
