@@ -651,6 +651,9 @@ int rule_get_target(void * router_rule,void * message,void **result)
 			return -EINVAL;
 		    target[0]=':';
 		    Memcpy(target+1,rule->target_name,ret);
+		    message_set_receiver(message,target);
+		    flag=message_get_flag(message) &(~MSG_FLAG_LOCAL);
+		    message_set_flag(message,flag);
 		    break;
 	    case ROUTE_TARGET_RECORD:
 		   {
@@ -748,6 +751,56 @@ int message_route_setnext( void * msg, void * path)
 	rule_get_target(&nextnode->this_target,msg,&receiver);
 
 	return 0;	
+}
+int router_dup_activemsg_info (void * message)
+{
+	int ret;
+	struct message_box * msg_box=message;
+	MSG_HEAD * msg_head;
+	MSG_HEAD * new_msg_head;
+	if(message==NULL)
+		return -EINVAL;
+
+	struct message_box * active_msg=message_get_activemsg(message);
+	if(active_msg==NULL)
+		return 0;
+	if(active_msg==message)
+	{
+		msg_head=message_get_head(message);
+	//	msg_head->ljump++;
+		return 0;
+	}
+	
+	msg_head=message_get_head(active_msg);
+	new_msg_head=message_get_head(message);
+	message_set_flow(msg_box,msg_head->flow);
+	message_set_state(msg_box,msg_head->state);
+	message_set_flag(msg_box,msg_head->flag);
+	message_set_route(msg_box,msg_head->route);
+	new_msg_head->ljump=msg_head->ljump;	
+	new_msg_head->rjump=msg_head->rjump;	
+
+	MSG_EXPAND * old_expand;
+	MSG_EXPAND * new_expand;
+
+	int i=0;
+	if(!(new_msg_head->flag & MSG_FLAG_FOLLOW))
+	{
+		do{
+			ret = message_get_expand(active_msg,&old_expand,i++);
+			if(ret<0)
+				return ret;
+			if(old_expand==NULL)
+				break;
+			ret=message_add_expand(message,old_expand);
+			if(ret<0)
+				return ret;
+		}while(1);	
+	}
+	msg_box->policy=active_msg->policy;
+	msg_box->path_site=active_msg->path_site;
+
+	return 1;
 }
 /*
 int router_set_local_route(void * message,void * policy)
