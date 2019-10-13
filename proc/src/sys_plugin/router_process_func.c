@@ -426,7 +426,7 @@ int proc_router_start(void * sub_proc,void * para)
 						}
 						else
 						{
-							message_route_setnext(message);
+							message_route_setremotestart(message);
 							proc_audit_log(message);
 							ret=proc_router_send_msg(message,local_uuid,proc_name);
 						}

@@ -733,6 +733,32 @@ int message_route_setstart( void * msg, void * path)
 
 	return 0;	
 }
+
+int message_route_setremotestart( void * msg)
+{
+	int ret;
+	struct message_box * msg_box = (struct message_box *)msg;
+	ROUTE_PATH * route_path ;
+	ROUTE_NODE * startnode;
+	char * receiver;
+	
+	ret=router_find_policy_byname(&route_path,msg_box->head.route,msg_box->head.rjump,msg_box->head.ljump);
+	if(ret<0)
+		return ret;
+	if(route_path==NULL)
+		return 0;
+
+	msg_box->policy = route_path;
+	msg_box->path_site = route_path->route_path.head.list.next;
+	startnode = get_curr_pathsite(msg);
+	if(startnode==NULL)
+		return -EINVAL;
+	
+	rule_get_target(&startnode->this_target,msg,&receiver);
+
+	return 0;	
+}
+
 int message_route_setnext( void * msg, void * path)
 {
 	int ret;
@@ -919,6 +945,38 @@ int router_find_route_policy(void * message,void **msg_policy)
     }
     return ret;
 }
+
+int router_find_policy_byname(void **msg_policy,char * name,int rjump,int ljump)
+{
+    ROUTE_PATH * policy;
+    int ret;
+		
+    *msg_policy=NULL;
+    ret=dispatch_policy_getfirst(&policy);
+    if(ret<0)
+        return ret;
+    while(policy!=NULL)
+    {
+	ret=Strncmp(name,policy->name,DIGEST_SIZE);
+	if(ret==0)
+	{
+		if((policy->rjump==0) || (policy->rjump==rjump))
+		{
+			if((policy->ljump==0) || (policy->ljump==ljump))
+			{
+				*msg_policy=policy;		
+				break;
+			}
+		}
+	}
+    	ret=dispatch_policy_getnext(&policy);
+    }
+    
+    // find policy in router policy list;
+    if(policy!=NULL)
+	return ret;
+}
+
 
 /*
 int router_dup_activemsg_info (void * message)
@@ -1287,60 +1345,6 @@ int router_set_dup_flow(void * message,void * policy)
 //      replace police to new 
 
 	return 1;
-}
-
-int router_find_policy_byname(void **msg_policy,char * name,int rjump,int ljump)
-{
-    DISPATCH_POLICY * policy;
-    int ret;
-		
-    *msg_policy=NULL;
-    ret=dispatch_policy_getfirst(&policy);
-    if(ret<0)
-        return ret;
-    while(policy!=NULL)
-    {
-	ret=Strncmp(name,policy->name,DIGEST_SIZE);
-	if(ret==0)
-	{
-		if((policy->rjump==0) || (policy->rjump==rjump))
-		{
-			if((policy->ljump==0) || (policy->ljump==ljump))
-			{
-				*msg_policy=policy;		
-				break;
-			}
-		}
-	}
-    	ret=dispatch_policy_getnext(&policy);
-    }
-    
-    // find policy in router policy list;
-    if(policy!=NULL)
-	return ret;
-
-    // if can't find policy in router policy list, look up it in aspect policy list	
-    ret=dispatch_aspect_policy_getfirst(&policy);
-    if(ret<0)
-        return ret;
-    while(policy!=NULL)
-    {
-	ret=Strncmp(name,policy->newname,DIGEST_SIZE);
-	if(ret==0)
-	{
-		if((policy->rjump==0) || (policy->rjump==rjump))
-		{
-			if((policy->ljump==0) || (policy->ljump==ljump))
-			{
-				*msg_policy=policy;		
-				break;
-			}
-		}
-	}
-    	ret=dispatch_aspect_policy_getnext(&policy);
-    }
-
-    return ret;
 }
 
 
