@@ -573,6 +573,37 @@ ROUTE_NODE * get_curr_pathsite(void * msg)
 
 }
 
+ROUTE_NODE * set_next_pathsite(void * msg)
+{
+	struct message_box * msg_box = (struct message_box *)msg;
+	Record_List * curr_pathrecord = (Record_List *)msg_box->path_site;
+	ROUTE_PATH * route_path = (ROUTE_PATH *)msg_box->policy;
+	if(curr_pathrecord==NULL)
+		return NULL;
+	Record_List * next_pathrecord = (Record_List *)curr_pathrecord->list.next;
+	if(next_pathrecord == &route_path->route_path.head.list)
+	{
+		msg_box->path_site=NULL;
+		return NULL;
+	}
+
+	msg_box->path_site=next_pathrecord;
+	return (ROUTE_NODE *) next_pathrecord->record;
+}
+
+ROUTE_NODE * get_next_pathsite(void * msg)
+{
+	struct message_box * msg_box = (struct message_box *)msg;
+	Record_List * curr_pathrecord = (Record_List *)msg_box->path_site;
+	ROUTE_PATH * route_path = (ROUTE_PATH *)msg_box->policy;
+	if(curr_pathrecord==NULL)
+		return NULL;
+	Record_List * next_pathrecord = (Record_List *)curr_pathrecord->list.next;
+	if(next_pathrecord == &route_path->route_path.head.list)
+		return NULL;
+	return (ROUTE_NODE *) next_pathrecord->record;
+}
+
 int rule_get_target(void * router_rule,void * message,void **result)
 {
     BYTE * target;
@@ -696,6 +727,25 @@ int message_route_setstart( void * msg, void * path)
 		return -EINVAL;
 	
 	rule_get_target(&startnode->this_target,msg,&receiver);
+
+	return 0;	
+}
+int message_route_setnext( void * msg, void * path)
+{
+	int ret;
+	struct message_box * msg_box = (struct message_box *)msg;
+	ROUTE_NODE * nextnode;
+	char * receiver;
+	
+	nextnode = set_next_pathsite(msg);
+	if(nextnode==NULL)
+	{
+		Memset(msg_box->head.receiver_uuid,0,DIGEST_SIZE);
+		msg_box->head.flag = MSG_FLOW_FINISH;
+		return 0;
+	}
+	
+	rule_get_target(&nextnode->this_target,msg,&receiver);
 
 	return 0;	
 }

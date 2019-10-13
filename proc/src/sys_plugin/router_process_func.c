@@ -232,6 +232,10 @@ int proc_router_send_msg(void * message,char * local_uuid,char * proc_name)
 //				}
 				send_ex_module_msg(sec_sub,message);
 			}
+			else
+			{
+				print_cubeerr("proc_router_send_msg: can't find local message target %s",msg_head->receiver_uuid);
+			}
 	}
 	else
 	{
@@ -409,9 +413,35 @@ int proc_router_start(void * sub_proc,void * para)
 					}
 					else	       // this is a message that already moved in route_path 	
 					{
-
-
+							// check if there is route set in msg_head
+						if(msg_head->route[0]==0)
+							// empty route
+						{
+							print_cubeaudit("empy route message from %s",msg_head->sender_uuid); 
+							
+						}
+						else
+						{
+							message_route_setnext(message);
+							proc_audit_log(message);
+							ret=proc_router_send_msg(message,local_uuid,proc_name);
+						}
 					}			
+				}
+				else
+				{
+					if(msg_head->route[0]==0)
+						// empty route
+					{
+						print_cubeaudit("empy route message from %s",msg_head->sender_uuid); 
+							
+					}
+					else
+					{
+						message_route_setnext(message);
+						proc_audit_log(message);
+						ret=proc_router_send_msg(message,local_uuid,proc_name);
+					}
 				}
 	
 			}
