@@ -550,6 +550,10 @@ int proc_conn_start(void * sub_proc,void * para)
 							print_cubeaudit("client %s send %d ack data to server !\n",connector_getname(send_conn),retval);
 						
 						}
+						else
+						{
+							connector_inet_get_uuid(recv_conn,message_head->sender_uuid);	
+						}
 						ex_module_sendmsg(sub_proc,message_box);
 					
 						continue;		
@@ -582,6 +586,7 @@ int proc_conn_start(void * sub_proc,void * para)
 						// check if this message is for you or for others
 						print_cubeaudit("channel receive (%d %d) message from conn %s!\n",message_head->record_type,
 							message_head->record_subtype,connector_getname(recv_conn));
+						connector_inet_get_uuid(recv_conn,message_head->sender_uuid);	
 						ex_module_sendmsg(sub_proc,message_box);
 						print_cubeaudit("client forward (%d %d) message to main proc!\n",message_head->record_type,
 							message_head->record_subtype);

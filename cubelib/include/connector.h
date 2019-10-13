@@ -189,6 +189,7 @@ int connector_get_protocol(void *);
 
 int connector_setname(void *,char *);
 int connector_getfd(void *);
+int connector_inet_get_uuid(void * conn, BYTE * uuid);
 
 void * get_connector_hub( );
 

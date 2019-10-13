@@ -39,6 +39,23 @@ typedef struct tagroute_rule
 	char * target_name;
 }__attribute__((packed)) ROUTE_RULE;
 
+typedef struct tagtrace_node
+{
+	BYTE msg_uuid[DIGEST_SIZE];
+	int trace_flag; // 0 means query response, i means aspect
+	BYTE sender_uuid[DIGEST_SIZE];
+	void * path;
+}__attribute__((packed)) TRACE_NODE;
+
+typedef struct tagaspect_node
+{
+	BYTE msg_uuid[DIGEST_SIZE];
+	int trace_flag; // 0 means query response, i means aspect
+	BYTE old_msguuid[DIGEST_SIZE];
+	void * aspect_site;
+	void * path;
+}__attribute__((packed)) ASPECT_NODE;
+
 typedef struct tagroute_node
 {
 	void * route_path; 
@@ -48,7 +65,7 @@ typedef struct tagroute_node
 	NODE_LIST aspect_branch;
 	
 }__attribute__((packed)) ROUTE_NODE;
-
+/*
 typedef struct tagroute_trace
 {
 	int  rjump;
@@ -56,6 +73,7 @@ typedef struct tagroute_trace
 	BYTE from_uuid[DIGEST_SIZE];
 	NODE_LIST aspect_node;
 }__attribute__((packed)) ROUTE_TRACE;
+*/
 
 typedef struct route_path
 {
@@ -70,7 +88,7 @@ typedef struct route_path
 
 	NODE_LIST  match_list;
 	NODE_LIST  route_path;
-	ROUTE_TRACE * response_template;
+	NODE_LIST  response_path;
 //	void *  response_hash;
 //	void *  aspect_hash;
 

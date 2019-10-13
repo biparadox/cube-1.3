@@ -618,7 +618,7 @@ int ex_module_sendmsg(void * ex_mod,void *msg)
 	BYTE buffer[DIGEST_SIZE];
 	Memset(buffer,0,DIGEST_SIZE);
 	message_set_receiver(msg,buffer);
-	message_set_sender(msg,ex_module_getname(ex_mod));
+	//message_set_sender(msg,ex_module_getname(ex_mod));
 
 	return message_queue_putmsg(ex_module->send_queue,msg);
 }

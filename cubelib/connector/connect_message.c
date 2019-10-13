@@ -98,6 +98,48 @@ void * hub_get_connector_byreceiver(void * hub, char * uuid, char * name, char *
 	return NULL;
 }
 
+int connector_inet_get_uuid(void * conn,BYTE * uuid)
+{
+	int ret;
+	int i;
+	TCLOUD_CONN * inet_conn=(TCLOUD_CONN *)conn;
+
+	if(conn!=NULL)
+	{	
+
+		if(connector_get_type(conn)==CONN_CLIENT)
+		{
+			struct connect_syn * syn_info=(struct connect_syn *)(inet_conn->conn_extern_info);
+			if(syn_info!=NULL)
+			{
+				comp_proc_uuid(syn_info->uuid,syn_info->server_name,uuid);
+			}
+
+		}
+		else if(connector_get_type(conn)==CONN_CHANNEL)
+		{
+			struct connect_proc_info * channel_info=(struct connect_ack *)(inet_conn->conn_extern_info);
+			if(channel_info!=NULL)
+			{
+				comp_proc_uuid(channel_info->uuid,channel_info->proc_name,uuid);
+			}
+
+		}
+		else if((inet_conn->conn_type == CONN_P2P_BIND)
+			||(inet_conn->conn_type==CONN_P2P_RAND))
+		{
+			struct sysconn_peer_info * sys_peer=NULL;
+			sys_peer=af_inet_p2p_getpeerexterninfo(inet_conn);
+			if(sys_peer!=NULL)
+			{
+				Memcpy(sys_peer->uuid,uuid,DIGEST_SIZE);
+			}
+		}
+	}
+	return 0;
+
+}
+
 void * hub_get_connector_bypeeruuid(void * hub,char * uuid)
 {
 	int ret;
