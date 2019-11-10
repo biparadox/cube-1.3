@@ -109,12 +109,12 @@ int print_cubeerr(char * format,...)
                 sprintf(buffer,"time: %d.%6.6d :",debug_time.tv_sec,debug_time.tv_usec);
         }
         offset=Strlen(buffer);
-	sprintf(buffer+offset,"errsite: file %s function %s line %d\n :",__FILE__,__FUNCTION__,__LINE__);
-        offset=Strlen(buffer);
+	//sprintf(buffer+offset,"errsite: file %s function %s line %d\n :",__FILE__,__FUNCTION__,__LINE__);
+        //offset=Strlen(buffer);
 	sprintf(buffer+offset,"errinfo: %s %d :", get_cubeerrinfo(),get_cubeerrnum(0));
 
   	va_start (args, format);
-  	vsprintf (buffer,format, args);
+  	vsprintf (buffer+offset,format, args);
   	va_end (args);
 	len=Strnlen(buffer,DIGEST_SIZE*32);
 	

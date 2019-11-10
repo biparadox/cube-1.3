@@ -110,6 +110,9 @@ int router_tree_init( )
 	ret=_init_node_list(&aspect_forest);
 	if(ret<0)
 		return ret;
+	ret=_init_node_list(&waiting_message_list);
+	if(ret<0)
+		return ret;
 	ret=_init_hash_forest();
 	if(ret<0)
 		return ret;
@@ -226,6 +229,7 @@ void * route_read_policy(void * policy_node)
 
     Strncpy(path->name,policy->name,DIGEST_SIZE);
     Strncpy(path->sender,policy->sender,DIGEST_SIZE);
+    path->flow = policy->type;
     path->ljump=policy->ljump;
     path->rjump=policy->rjump; 
     path->state=policy->state; 
@@ -420,6 +424,7 @@ int _waiting_message_add(void * message)
 void _waiting_message_del(void * record)
 {
 	_node_list_del(record);
+	waiting_message_list.policy_num--;
 }
 void * _waiting_message_getfirst()
 {
@@ -429,6 +434,21 @@ void * _waiting_message_getfirst()
 		return NULL;
 	return msg_record->record;
 } 
+void * _waiting_message_removehead()
+{
+	void * message;
+	if(waiting_message_list.policy_num ==0)
+		return NULL;
+	Record_List * msg_record =(Record_List *) waiting_message_list.head.list.next;
+	waiting_message_list.curr = msg_record;
+	if(msg_record==NULL)
+		return NULL;
+	_waiting_message_del(msg_record);
+	message=msg_record->record;
+	Free(msg_record);
+	return message;
+} 
+
 void * _waiting_message_getnext()
 {
 	Record_List * msg_record =(Record_List *) waiting_message_list.curr;
@@ -642,6 +662,8 @@ ROUTE_NODE * set_next_pathsite(void * msg)
 {
 	struct message_box * msg_box = (struct message_box *)msg;
 	Record_List * curr_pathrecord = (Record_List *)msg_box->path_site;
+
+
 	ROUTE_PATH * route_path = (ROUTE_PATH *)msg_box->policy;
 	if(curr_pathrecord==NULL)
 		return NULL;
@@ -787,13 +809,18 @@ int message_route_setstart( void * msg, void * path)
 	char * receiver;
 	
 	msg_box->policy = path;
+	msg_box->head.flow=route_path->flow;
 	Strncpy(msg_box->head.route,route_path->name,DIGEST_SIZE);
+	msg_box->path_site=NULL;
+	return 0;
+/*
 	msg_box->path_site = route_path->route_path.head.list.next;
 	startnode = get_curr_pathsite(msg);
 	if(startnode==NULL)
 		return -EINVAL;
 	
 	return rule_get_target(&startnode->this_target,msg,&receiver);
+*/
 }
 
 int message_route_setremotestart( void * msg)

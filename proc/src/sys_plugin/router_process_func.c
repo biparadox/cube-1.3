@@ -460,12 +460,25 @@ int proc_router_start(void * sub_proc,void * para)
 			get_next_ex_module(&sub_proc);
 		};
 		
-		message=_waiting_message_getfirst();
+		message=_waiting_message_removehead();
 		while(message!=NULL)
 		{		
 			msg_head=message_get_head(message);
 			if(msg_head->flow==MSG_FLOW_DELIVER)
-				ret=proc_router_send_msg(message,local_uuid,proc_name);
+			{
+				if(msg_head->ljump==1)
+				{
+					proc_audit_log(message);
+					ret=proc_router_send_msg(message,local_uuid,proc_name);
+				}
+				else
+				{	
+					message_route_setnext(message);
+					proc_audit_log(message);
+					ret=proc_router_send_msg(message,local_uuid,proc_name);
+				}
+			}
+			message=_waiting_message_removehead();
 		}
 
 			// test's end

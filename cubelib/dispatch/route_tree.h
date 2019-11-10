@@ -83,6 +83,7 @@ typedef struct route_path
 	int  ljump;
 	int  rjump;
 	enum dispatch_policy_state state;
+	enum message_flow_type flow;
 
 	int match_rule_num;
 	int route_rule_num;
@@ -100,7 +101,7 @@ typedef struct route_path
 int _waiting_message_add(void * msg);
 void _waiting_message_del(void * record);
 void * _waiting_message_getfirst();
+void * _waiting_message_removehead();
 void * _waiting_message_getnext();
-
 
 #endif
