@@ -43,7 +43,8 @@ typedef struct tagtrace_node
 {
 	BYTE msg_uuid[DIGEST_SIZE];
 	int trace_flag; // 0 means query response, i means aspect
-	BYTE sender_uuid[DIGEST_SIZE];
+	BYTE source_uuid[DIGEST_SIZE];
+	void * aspect_site;
 	void * path;
 }__attribute__((packed)) TRACE_NODE;
 
@@ -96,6 +97,10 @@ typedef struct route_path
 //	NODE_LIST err_route;         
 }ROUTE_PATH;
 
+int _waiting_message_add(void * msg);
+void _waiting_message_del(void * record);
+void * _waiting_message_getfirst();
+void * _waiting_message_getnext();
 
 
 #endif

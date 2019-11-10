@@ -11,6 +11,8 @@
 
 #include "data_type.h"
 #include "alloc.h"
+#include "list.h"
+#include "attrlist.h"
 #include "memfunc.h"
 #include "basefunc.h"
 #include "struct_deal.h"
@@ -23,6 +25,7 @@
 
 #include "sys_func.h"
 #include "message_box.h"
+#include "route_tree.h"
 #include "router_process_func.h"
 
 int read_dispatch_file(char * file_name,int is_aspect)
@@ -290,7 +293,7 @@ int proc_router_start(void * sub_proc,void * para)
 {
 	int ret;
 	int retval;
-	void * message_box;
+	struct message_box * message_box;
 	MSG_HEAD * message_head;
 	void * context;
 	int i,j;
@@ -311,10 +314,16 @@ int proc_router_start(void * sub_proc,void * para)
 	comp_proc_uuid(local_uuid,proc_name,conn_uuid);
 
 	// message routing loop
+	
+
 	while(1)
 	{
+	// throughout all the sub_proc
+		
+
 
 		usleep(router_val.tv_usec);
+
 		void * sub_proc;
 		char * receiver_proc;
 		char * sender_proc;
@@ -322,16 +331,15 @@ int proc_router_start(void * sub_proc,void * para)
 		void * aspect_policy;
 		char aspect_proc[DIGEST_SIZE*2];
 		char  origin_proc[DIGEST_SIZE];
+		struct message_box * message;
+		MSG_HEAD * msg_head;
 
 		if(proc_share_data_getstate()<PROC_LOCAL_START)
 			continue;
-
-		// throughout all the sub_proc
-		ret=get_first_ex_module(&sub_proc);
 		msg_policy=NULL;
+		ret=get_first_ex_module(&sub_proc);
 		while(sub_proc!=NULL)
 		{
-			void * message;
 			void * router_rule;
 			int state;
 			int flow;
@@ -344,11 +352,11 @@ int proc_router_start(void * sub_proc,void * para)
 			// this pro is a port proc
 			curr_proc_type=ex_module_gettype(sub_proc);
 
-				
-			// receiver an outside message
+			// check if sub_proc has message 
 			ret=recv_ex_module_msg(sub_proc,&message);
 			if(ret<0)
 			{
+				// get next sub_proc
 				get_next_ex_module(&sub_proc);
 				continue;
 			}
@@ -360,16 +368,20 @@ int proc_router_start(void * sub_proc,void * para)
 
 			Strncpy(origin_proc,ex_module_getname(sub_proc),DIGEST_SIZE);
 			print_cubeaudit("router get proc %.64s's message ",origin_proc); 
+
+
+
+			// message's value reset
 			if(Strcmp(origin_proc,"connector_proc")!=0)
 			{
 				message_set_sender(message,origin_proc);
 			}
 		
+			// if message is init message
 
 			router_dup_activemsg_info(message);
 
 			message_set_activemsg(message,message);
-			MSG_HEAD * msg_head;
 			msg_head=message_get_head(message);
 			// set rjump's value
 			switch(ex_module_gettype(sub_proc))
@@ -389,74 +401,74 @@ int proc_router_start(void * sub_proc,void * para)
 					break;
 			}
 		
+			// enter the message route match process
+			
 
-			//duplicate active message's info and init policy
-			//message_set_sender(message,origin_proc);
-			if(msg_head->flow==MSG_FLOW_ASPECT)
+			if(message->policy!=NULL)
+			// if message has path already
 			{
-				// enter the ASPECT route process
+				_waiting_message_add(message);
 			}
-			else   // flow is route path
+			// if message is init message
+			else if(msg_head->flow == 0)
 			{
-				if( msg_head->ljump == 1)
+				// finding the match policy 
+				ret=router_find_route_policy(message,&msg_policy);
+				if(ret<0)
 				{
-					if(msg_head->rjump ==1)  // this is a new message
-					{
-						ret=router_find_route_policy(message,&msg_policy);
-						if(ret<0)
-							return ret;
-						if(msg_policy==NULL)
-						{
-							msg_head->flow=MSG_FLOW_FINISH;
-							proc_audit_log(message);
-							continue;
-						}
-						//char * policy_name = route_path_getname(msg_policy);
-						print_cubeaudit("new msg match path %.64s's policy",route_path_getname(msg_policy)); 
-						
-						message_route_setstart(message,msg_policy);
-						proc_audit_log(message);
-						//debug_message(message,"normal message prepare to send:");
-						//print_cubeaudit("message (%s) is send to %s!\n",message_get_typestr(message),message_get_receiver(message));
-						ret=proc_router_send_msg(message,local_uuid,proc_name);
-					}
-					else	       // this is a message that already moved in route_path 	
-					{
-							// check if there is route set in msg_head
-						if(msg_head->route[0]==0)
-							// empty route
-						{
-							print_cubeaudit("empy route message from %s",msg_head->sender_uuid); 
-							
-						}
-						else
-						{
-							message_route_setremotestart(message);
-							proc_audit_log(message);
-							ret=proc_router_send_msg(message,local_uuid,proc_name);
-						}
-					}			
+					print_cubeerr("Fatal error in finding policy !");
+					return ret;
 				}
-				else
+				// if can't find match policy
+				if(msg_policy==NULL)
 				{
-					if(msg_head->route[0]==0)
-						// empty route
-					{
-						print_cubeaudit("empy route message from %s",msg_head->sender_uuid); 
-							
-					}
-					else
-					{
-						message_route_setnext(message);
-						proc_audit_log(message);
-						ret=proc_router_send_msg(message,local_uuid,proc_name);
-					}
+					msg_head->flow=MSG_FLOW_FINISH;
+					proc_audit_log(message);
+					get_next_ex_module(&sub_proc);
+					continue;
 				}
-	
+				// show the debug info
+				print_cubeaudit("new msg match path %.64s's policy",route_path_getname(msg_policy)); 
+				message_route_setstart(message,msg_policy);
+				_waiting_message_add(message);
+			}	
+			else if (~(msg_head->state & MSG_STATE_RESPONSE))
+			// message is not return message 
+			{
+				ret=message_route_setremotestart(message);
+				if(ret<0)
+				{
+					print_cubeerr("Fatal error in remotestart!");
+					return ret;
+				}
+				if(message->policy==NULL)
+				{
+					msg_head->flow=MSG_FLOW_FINISH;
+					proc_audit_log(message);
+					get_next_ex_module(&sub_proc);
+					continue;
+				}
+				print_cubeaudit("remote msg match path %.64s's policy",msg_head->route);
+				_waiting_message_add(message);
 			}
+			// message is a return message
+			else
+			{
+				// we should find message's response record and reload the path
+
+			} 
+			get_next_ex_module(&sub_proc);
+		};
+		
+		message=_waiting_message_getfirst();
+		while(message!=NULL)
+		{		
+			msg_head=message_get_head(message);
+			if(msg_head->flow==MSG_FLOW_DELIVER)
+				ret=proc_router_send_msg(message,local_uuid,proc_name);
+		}
 
 			// test's end
-		}
 /*
 
 

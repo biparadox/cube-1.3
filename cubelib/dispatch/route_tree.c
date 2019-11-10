@@ -15,8 +15,11 @@
 
 #include "route_tree.h"
 
+const int hash_order=8;
 static NODE_LIST route_forest;
 static NODE_LIST aspect_forest;
+static NODE_LIST hash_forest[256];
+static NODE_LIST waiting_message_list;
 
 static void * policy_head_template;
 static void * match_rule_template;
@@ -30,6 +33,12 @@ int dispatch_policy_addmatchrule(void * path,MATCH_RULE * rule);
 int dispatch_policy_addrouterule(void * path,ROUTE_RULE * rule);
 int dispatch_policy_getnextmatchrule(void * path,MATCH_RULE ** rule);
 int dispatch_policy_getnextrouterule(void * path,ROUTE_RULE ** rule);
+
+static inline unsigned int _hash_index(char * uuid)
+{
+	int ret = *((unsigned int *)uuid);
+	return ret&(0xffff>>(16-hash_order));
+}
 
 static inline int _init_node_list (void * list)
 {
@@ -62,6 +71,13 @@ Record_List * _node_list_add(void * list,void * record)
 	return newrecord;
 }
 
+void _node_list_del(void * record)
+{
+	Record_List * recordhead=record;
+	List_del(&(recordhead->list));
+	return;
+}
+
 static inline int _init_router_forest(void * list)
 {
     	NODE_LIST * forest=(NODE_LIST *)list;
@@ -70,7 +86,19 @@ static inline int _init_router_forest(void * list)
    	forest->head.record=NULL;
 	forest->policy_num=0;
 	return 0;
-
+}
+static inline int _init_hash_forest()
+{
+	int i;
+	for(i=0;i<1<<hash_order;i++)
+	{
+    		NODE_LIST * forest=&hash_forest[i];
+   		Memset(forest,0,sizeof(NODE_LIST));
+   		INIT_LIST_HEAD(&(forest->head.list));
+   		forest->head.record=NULL;
+		forest->policy_num=0;
+	}
+	return 0;
 }
 
 int router_tree_init( )
@@ -80,6 +108,9 @@ int router_tree_init( )
 	if(ret<0)
 		return ret;
 	ret=_init_node_list(&aspect_forest);
+	if(ret<0)
+		return ret;
+	ret=_init_hash_forest();
 	if(ret<0)
 		return ret;
     	policy_head_template=memdb_get_template(TYPE_PAIR(DISPATCH,POLICY_HEAD));
@@ -378,6 +409,40 @@ int dispatch_policy_addrouterule(void * path,ROUTE_RULE * rule)
 	return 0;
      route_node->chain=record;
      return 1;
+}
+
+int _waiting_message_add(void * message)
+{
+    if(_node_list_add(&waiting_message_list,message)==NULL)
+	return 0;
+    return 1;
+}
+void _waiting_message_del(void * record)
+{
+	_node_list_del(record);
+}
+void * _waiting_message_getfirst()
+{
+	Record_List * msg_record =(Record_List *) waiting_message_list.head.list.next;
+	waiting_message_list.curr = msg_record;
+	if(msg_record==NULL)
+		return NULL;
+	return msg_record->record;
+} 
+void * _waiting_message_getnext()
+{
+	Record_List * msg_record =(Record_List *) waiting_message_list.curr;
+	if(msg_record==NULL)
+		return NULL;
+	waiting_message_list.curr=msg_record->list.next;
+	// remove the curr waiting message
+	_waiting_message_del(msg_record);
+
+	msg_record =(Record_List *) waiting_message_list.curr;
+
+	if(msg_record==NULL)
+		return NULL;
+	return msg_record->record;
 }
 
 int _route_add_policy(void * list,void * policy)
@@ -711,7 +776,6 @@ int rule_get_target(void * router_rule,void * message,void **result)
     }
     *result=target;
     return rule->target_type;	
-
 }
 
 int message_route_setstart( void * msg, void * path)
@@ -729,9 +793,7 @@ int message_route_setstart( void * msg, void * path)
 	if(startnode==NULL)
 		return -EINVAL;
 	
-	rule_get_target(&startnode->this_target,msg,&receiver);
-
-	return 0;	
+	return rule_get_target(&startnode->this_target,msg,&receiver);
 }
 
 int message_route_setremotestart( void * msg)
@@ -754,9 +816,27 @@ int message_route_setremotestart( void * msg)
 	if(startnode==NULL)
 		return -EINVAL;
 	
-	rule_get_target(&startnode->this_target,msg,&receiver);
+	if(message_get_flow(msg)==MSG_STATE_QUERY)
+	{
+		// find hash nodelist
+		NODE_LIST * hash_list = &hash_forest[_hash_index(msg_box->head.nonce)];
+		if(hash_list==NULL)
+			return -EINVAL;
+		// build a query trace node and add it in hash nodelist 	
+		TRACE_NODE * trace_node = Dalloc0(sizeof(*trace_node),NULL);
+		if(trace_node ==NULL)
+			return -ENOMEM;
+		Memcpy(trace_node->msg_uuid,msg_box->head.nonce,DIGEST_SIZE);
+		Memcpy(trace_node->source_uuid,msg_box->head.sender_uuid,DIGEST_SIZE);
+		trace_node->path=msg_box->policy;
+		
+		// add trace_node to hash_nodelist 
+      		 _node_list_add(hash_list,trace_node);
+			
+	} 
 
-	return 0;	
+	return rule_get_target(&startnode->this_target,msg,&receiver);
+
 }
 
 int message_route_setnext( void * msg, void * path)
@@ -774,10 +854,15 @@ int message_route_setnext( void * msg, void * path)
 		return 0;
 	}
 	
-	rule_get_target(&nextnode->this_target,msg,&receiver);
+	return rule_get_target(&nextnode->this_target,msg,&receiver);
 
-	return 0;	
 }
+
+int message_route_findtrace(void * msg)
+{
+	
+}
+
 int router_dup_activemsg_info (void * message)
 {
 	int ret;
