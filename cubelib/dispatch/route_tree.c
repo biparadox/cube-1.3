@@ -811,16 +811,16 @@ int message_route_setstart( void * msg, void * path)
 	msg_box->policy = path;
 	msg_box->head.flow=route_path->flow;
 	Strncpy(msg_box->head.route,route_path->name,DIGEST_SIZE);
-	msg_box->path_site=NULL;
-	return 0;
-/*
+//	msg_box->path_site=NULL;
+//	return 0;
+
 	msg_box->path_site = route_path->route_path.head.list.next;
 	startnode = get_curr_pathsite(msg);
 	if(startnode==NULL)
 		return -EINVAL;
 	
 	return rule_get_target(&startnode->this_target,msg,&receiver);
-*/
+
 }
 
 int message_route_setremotestart( void * msg)
