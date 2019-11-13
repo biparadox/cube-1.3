@@ -877,7 +877,7 @@ int message_route_setnext( void * msg, void * path)
 	if(nextnode==NULL)
 	{
 		Memset(msg_box->head.receiver_uuid,0,DIGEST_SIZE);
-		msg_box->head.flag = MSG_FLOW_FINISH;
+		msg_box->head.flow = MSG_FLOW_FINISH;
 		return 0;
 	}
 	
