@@ -34,6 +34,7 @@ int dispatch_policy_addmatchrule(void * path,MATCH_RULE * rule);
 int dispatch_policy_addrouterule(void * path,ROUTE_RULE * rule);
 int dispatch_policy_getnextmatchrule(void * path,MATCH_RULE ** rule);
 int dispatch_policy_getnextrouterule(void * path,ROUTE_RULE ** rule);
+int route_tree_addresponserule(void * path,ROUTE_RULE * rule);
 
 static inline unsigned int _hash_index(char * uuid)
 {
@@ -159,6 +160,7 @@ void * route_path_create()
 		return NULL;
 	_init_node_list(&path->match_list);
 	_init_node_list(&path->route_path);
+	_init_node_list(&path->response_path);
 	return path;
 }
 
@@ -326,6 +328,28 @@ void * route_read_policy(void * policy_node)
         route_rule_node=json_get_next_child(temp_node);
     } 
 
+    // next,read the response route policy
+
+    temp_node=json_find_elem("response_policy",route_policy_node);
+    if(temp_node!=NULL)
+    {	
+
+    	route_rule_node=json_get_first_child(temp_node);
+    	while(route_rule_node!=NULL)
+    	{
+    		temp_route_rule=Dalloc0(sizeof(ROUTE_RULE),path);
+    		if(temp_route_rule==NULL)
+			return NULL;
+    		ret=json_2_struct(route_rule_node,temp_route_rule,route_rule_template);
+    		if(ret<0)
+        		return NULL;
+		ret = route_tree_addresponserule(path,temp_route_rule);
+		if(ret<0)
+			return NULL;	
+        	route_rule_node=json_get_next_child(temp_node);
+    	}
+    }		 
+
     return path;
 }
 
@@ -425,6 +449,24 @@ int dispatch_policy_addrouterule(void * path,ROUTE_RULE * rule)
 
      route_node->route_path=path;
      if((record=_node_list_add(&route_path->route_path,(void *)route_node))==NULL)
+	return 0;
+     route_node->chain=record;
+     return 1;
+}
+
+int route_tree_addresponserule(void * path,ROUTE_RULE * rule)
+{
+     ROUTE_PATH  * route_path=(ROUTE_PATH *)path;
+     ROUTE_NODE  * route_node;
+     Record_List * record;
+     if(rule==NULL)
+	  return 0; 	
+     route_node =route_node_create(rule);
+     if(route_node==NULL)
+	return -EINVAL;
+
+     route_node->route_path=path;
+     if((record=_node_list_add(&route_path->response_path,(void *)route_node))==NULL)
 	return 0;
      route_node->chain=record;
      return 1;
@@ -851,12 +893,23 @@ int message_route_setremotestart( void * msg)
 		return 0;
 
 	msg_box->policy = route_path;
-	msg_box->path_site = route_path->route_path.head.list.next;
-	startnode = get_curr_pathsite(msg);
-	if(startnode==NULL)
-		return -EINVAL;
+	if(msg_box->head.state != MSG_STATE_RESPONSE)
+	{
+		msg_box->path_site = route_path->route_path.head.list.next;
+		startnode = get_curr_pathsite(msg);
+		if(startnode==NULL)
+			return -EINVAL;
+	}
+	else
+	{
+		msg_box->path_site=route_path->response_path.head.list.next;
+		startnode = get_curr_pathsite(msg);
+		if(startnode==NULL)
+			return 0;
+	}
 	
-	if(message_get_flow(msg)==MSG_FLOW_QUERY)
+	
+	if((message_get_flow(msg)==MSG_FLOW_QUERY) &&(msg_box->head.state!=MSG_STATE_RESPONSE))
 	{
 		// find hash nodelist
 		NODE_LIST * hash_list = &hash_forest[_hash_index(msg_box->head.nonce)];
@@ -876,7 +929,6 @@ int message_route_setremotestart( void * msg)
 	} 
 
 	return rule_get_target(&startnode->this_target,msg,&receiver);
-
 }
 
 int message_route_setnext( void * msg, void * path)
