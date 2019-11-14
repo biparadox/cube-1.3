@@ -80,7 +80,8 @@ enum message_state_type
 	MSG_STATE_RECEIVE=0x04,
 	MSG_STATE_QUERY=0x20,
 	MSG_STATE_RESPONSE=0x40,
-    	MSG_STATE_FINISH=0xFFFF,
+    	MSG_STATE_FINISH=0x8000,
+    	MSG_STATE_ERROR=0xFFFF,
 };
 enum message_flag
 {

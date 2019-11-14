@@ -474,12 +474,17 @@ int proc_router_start(void * sub_proc,void * para)
 				else
 				{	
 					ret=message_route_setnext(message);
-					proc_audit_log(message);
 				        if(ret!=0)
 					{
 						// there is a target in the next	
+						proc_audit_log(message);
 						ret=proc_router_send_msg(message,local_uuid,proc_name);
 					}	
+					else
+					{
+						message->head.flow=MSG_FLOW_FINISH;
+						proc_audit_log(message);
+					}
 				}
 			}
 			else if(msg_head->flow == MSG_FLOW_QUERY)
@@ -511,7 +516,6 @@ int proc_router_start(void * sub_proc,void * para)
 							proc_audit_log(message);
 							ret=proc_router_send_msg(message,local_uuid,proc_name);
 						}
-		
 					}
 				}
 				

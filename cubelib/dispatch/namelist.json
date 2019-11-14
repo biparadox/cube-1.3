@@ -23,6 +23,27 @@
 {
 	"head":
 	{
+		"name":"message_state_type",
+		"type":"NAMELIST"
+	},
+	"record":
+	{
+		"elem_no":7,
+		"elemlist":
+		[
+			"MATCH=0x01",
+			"SEND=0x02",
+			"RECEIVE=0x04",
+			"QUERY=0x20",
+			"RESPONSE=0x40",
+			"FINISH=0x8000",
+			"ERROR=0xFFFF"
+		]
+	}
+}
+{
+	"head":
+	{
 		"name":"message_flag_type",
 		"type":"NAMELIST"
 	},
