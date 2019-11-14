@@ -482,6 +482,40 @@ int proc_router_start(void * sub_proc,void * para)
 					}	
 				}
 			}
+			else if(msg_head->flow == MSG_FLOW_QUERY)
+			{
+				if(msg_head->ljump==1)
+				{
+					proc_audit_log(message);
+					ret=proc_router_send_msg(message,local_uuid,proc_name);
+				}
+				else
+				{	
+					ret=message_route_setnext(message);
+				        if(ret!=0)
+					{
+						// there is a target in the next	
+						proc_audit_log(message);
+						ret=proc_router_send_msg(message,local_uuid,proc_name);
+					}	
+					else
+					{
+						ret=message_route_findtrace(message);
+						if(ret<0)
+						{
+							proc_audit_log(message);
+							print_cubeerr("find trace message (%d %d)failed!\n",message->head.record_type,message->head.record_subtype);
+						}
+						else
+						{
+							proc_audit_log(message);
+							ret=proc_router_send_msg(message,local_uuid,proc_name);
+						}
+		
+					}
+				}
+				
+			}
 			message=_waiting_message_removehead();
 		}
 

@@ -2,6 +2,7 @@
 
 #include "../include/data_type.h"
 #include "../include/list.h"
+#include "../include/attrlist.h"
 #include "../include/alloc.h"
 #include "../include/attrlist.h"
 #include "../include/memfunc.h"
@@ -38,6 +39,20 @@ static inline unsigned int _hash_index(char * uuid)
 {
 	int ret = *((unsigned int *)uuid);
 	return ret&(0xffff>>(16-hash_order));
+}
+int tracenode_comp_uuid(void * List_head, void * uuid)
+{
+        struct List_head * head;
+        TRACE_NODE * trace_node;
+        head=(struct List_head *)List_head;
+        if(head==NULL)
+                return -EINVAL;
+        Record_List * record;
+        record = List_entry(head,Record_List,list);
+        trace_node = (TRACE_NODE *) record->record;
+        if(trace_node == NULL)
+                return -EINVAL;
+        return Memcmp(trace_node->msg_uuid,uuid,DIGEST_SIZE);
 }
 
 static inline int _init_node_list (void * list)
@@ -513,8 +528,6 @@ int route_match_message_jump(void * path, void * message)
 	return 0;
 }
 
-
-
 int route_match_message(void * path,void * message)
 {
 	int ret;
@@ -887,7 +900,29 @@ int message_route_setnext( void * msg, void * path)
 
 int message_route_findtrace(void * msg)
 {
-	
+	struct message_box * message=msg;
+	TRACE_NODE * trace_node;
+	Record_List * trace_record;
+	struct List_head * curr_head;
+	if(msg==NULL)
+		return 0;
+	NODE_LIST * hash_list = &hash_forest[_hash_index(message->head.nonce)];
+	if(hash_list==NULL)
+		return -EINVAL;
+	curr_head = find_elem_with_tag(hash_list,
+                tracenode_comp_uuid,message->head.nonce);
+        if(curr_head == NULL)
+        {
+		message->head.flow=MSG_FLOW_FINISH;
+                return 0;
+        }
+        trace_record=List_entry(curr_head,Record_List,list);
+	trace_node=trace_record->record;
+	Memcpy(message->head.receiver_uuid,trace_node->source_uuid,DIGEST_SIZE);
+	message->head.state = MSG_STATE_RESPONSE;
+	message->head.flag &= ~MSG_FLAG_LOCAL;
+
+	return 1;	
 }
 
 int router_dup_activemsg_info (void * message)

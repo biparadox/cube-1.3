@@ -60,6 +60,7 @@ enum subtypelist_message_new
 	SUBTYPE(MESSAGE,STRINGARRAY),
 	SUBTYPE(MESSAGE,NODEFINE_HEAD)=0x100
 };
+// for message head's flow para
 enum message_flow_type
 {
     MSG_FLOW_INIT=0x01,
@@ -71,7 +72,7 @@ enum message_flow_type
     MSG_FLOW_FINISH=0x8000,
     MSG_FLOW_ERROR=0xFFFF,
 };
-
+// for message head's state para
 enum message_state_type
 {
 	MSG_STATE_MATCH=0x01,
