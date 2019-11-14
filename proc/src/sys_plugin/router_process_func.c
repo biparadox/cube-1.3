@@ -491,8 +491,25 @@ int proc_router_start(void * sub_proc,void * para)
 			{
 				if(msg_head->ljump==1)
 				{
-					proc_audit_log(message);
-					ret=proc_router_send_msg(message,local_uuid,proc_name);
+					if(msg_head->state !=MSG_STATE_RESPONSE)
+					{
+						proc_audit_log(message);
+						ret=proc_router_send_msg(message,local_uuid,proc_name);
+					}
+					else
+					{
+						ret=message_route_findtrace(message);
+						if(ret<0)
+						{
+							proc_audit_log(message);
+							print_cubeerr("find trace message (%d %d)failed!\n",message->head.record_type,message->head.record_subtype);
+						}
+						else
+						{
+							proc_audit_log(message);
+							ret=proc_router_send_msg(message,local_uuid,proc_name);
+						}
+					}
 				}
 				else
 				{	
