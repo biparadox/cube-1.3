@@ -66,6 +66,14 @@ typedef struct tagroute_node
 	NODE_LIST aspect_branch;
 	
 }__attribute__((packed)) ROUTE_NODE;
+
+typedef struct tagbranch_node
+{
+	void * route_path; 
+	int layer;	
+	enum message_flow_type branch_type;
+	void * branch_path;
+}__attribute__((packed)) BRANCH_NODE;
 /*
 typedef struct tagroute_trace
 {
@@ -97,6 +105,12 @@ typedef struct route_path
 //      NODE_LIST next_route;
 //	NODE_LIST err_route;         
 }ROUTE_PATH;
+
+int router_find_policy_byname(void **msg_policy,char * name, int rjump,int ljump);
+int route_get_node_byjump(ROUTE_PATH * path, ROUTE_NODE ** node,int ljump,int reverse);
+int _route_match_rule(void * message,void * path);			
+void * route_dup_message(void * message,BRANCH_NODE * branch);
+int route_aspect_message(void * message,void * path);
 
 int _waiting_message_add(void * msg);
 void _waiting_message_del(void * record);

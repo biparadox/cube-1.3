@@ -105,10 +105,6 @@ int dispatch_aspect_policy_add(void * policy);
 
 int dispatch_policy_getfirst(void ** policy);
 int dispatch_policy_getnext(void ** policy);
-//int dispatch_policy_getfirstmatchrule(void * policy,void ** rule);
-//int dispatch_policy_getnextmatchrule(void * policy,void ** rule);
-//int dispatch_policy_getfirstrouterule(void * policy,void ** rule);
-//int dispatch_policy_getnextrouterule(void * policy,void ** rule);
 int route_path_getstate(void * path);
 char * route_path_getname(void * policy);
 
@@ -120,7 +116,6 @@ int aspect_policy_getnext(void ** policy);
 
 int route_find_local_policy(void * message,void **msg_policy,char * sender_proc);
 int route_find_aspect_policy(void * message,void **msg_policy,char * sender_proc);
-int router_find_policy_byname(void **msg_policy,char * name, int rjump,int ljump);
 
 int route_push_site(void * message,BYTE * name);
 int route_push_site_str(void * message,char * name);

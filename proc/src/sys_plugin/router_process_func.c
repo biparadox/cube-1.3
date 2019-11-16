@@ -461,6 +461,8 @@ int proc_router_start(void * sub_proc,void * para)
 		};
 		
 		message=_waiting_message_removehead();
+
+		int issend=0;
 		while(message!=NULL)
 		{		
 			msg_head=message_get_head(message);
@@ -469,7 +471,6 @@ int proc_router_start(void * sub_proc,void * para)
 				if(msg_head->ljump==1)
 				{
 					proc_audit_log(message);
-					ret=proc_router_send_msg(message,local_uuid,proc_name);
 				}
 				else
 				{	
@@ -478,7 +479,7 @@ int proc_router_start(void * sub_proc,void * para)
 					{
 						// there is a target in the next	
 						proc_audit_log(message);
-						ret=proc_router_send_msg(message,local_uuid,proc_name);
+						issend=1;
 					}	
 					else
 					{
@@ -494,7 +495,7 @@ int proc_router_start(void * sub_proc,void * para)
 					if(msg_head->state !=MSG_STATE_RESPONSE)
 					{
 						proc_audit_log(message);
-						ret=proc_router_send_msg(message,local_uuid,proc_name);
+						issend=1;
 					}
 					else
 					{
@@ -507,7 +508,7 @@ int proc_router_start(void * sub_proc,void * para)
 						else
 						{
 							proc_audit_log(message);
-							ret=proc_router_send_msg(message,local_uuid,proc_name);
+							issend=1;
 						}
 					}
 				}
@@ -518,7 +519,7 @@ int proc_router_start(void * sub_proc,void * para)
 					{
 						// there is a target in the next	
 						proc_audit_log(message);
-						ret=proc_router_send_msg(message,local_uuid,proc_name);
+						issend=1;
 					}	
 					else
 					{
@@ -531,11 +532,52 @@ int proc_router_start(void * sub_proc,void * para)
 						else
 						{
 							proc_audit_log(message);
-							ret=proc_router_send_msg(message,local_uuid,proc_name);
+							issend=1;
 						}
 					}
 				}
 				
+			}
+			if(issend==1)
+			{
+				issend=0;
+				
+				ROUTE_NODE * curr_pathnode;
+				BRANCH_NODE * curr_branch;
+				Record_List * curr_record;
+
+				curr_pathnode=message->path_site;
+				if(curr_msg_site!=NULL)
+				{
+					int isaspect=0;
+					curr_record = _node_list_getfirst(&curr_path->aspect_branch);
+	
+					while(curr_record!=NULL)
+					{
+						curr_branch = curr_record->record;
+						switch(curr_branch->branch_type)
+						{
+							case MSG_FLOW_DUP:
+								ret=_route_match_aspect_branch(message,curr_branch);	
+								if(ret>0)
+								{
+									struct message_box * new_msg = route_dup_message(message,curr_branch);	
+									print_cubeaudit("dup a message to path %.64s's policy",new_msg->head.route);
+									_waiting_message_add(new_msg);
+								}
+								break;
+							case MSG_FLOW_ASPECT:
+								if(isaspect)
+									break;
+								break;
+							default:
+								break;
+						}
+						curr_record = _node_list_getnext(&curr_path->aspect_branch);
+					}	
+				}	
+
+				ret=proc_router_send_msg(message,local_uuid,proc_name);
 			}
 			message=_waiting_message_removehead();
 		}
