@@ -315,11 +315,11 @@ void * route_read_policy(void * policy_node)
     // set policy head to path	
 	// for DUP and ASPECT policy, find old path and insert branch
 
-    switch(path->flow)
+    switch(policy->type)
 	{
 		case MSG_FLOW_DUP:
 			
-			ret=route_find_policy_byname(&normal_path,policy->name,policy->rjump,policy->ljump);
+			ret=router_find_policy_byname(&normal_path,policy->name,policy->rjump,policy->ljump);
 			if(ret<0)
 				return ret;
 			if(normal_path==NULL)
@@ -1133,12 +1133,13 @@ int message_route_setstart( void * msg, void * path)
 //	msg_box->path_site=NULL;
 //	return 0;
 
-	msg_box->path_site = route_path->route_path.head.list.next;
-	startnode = get_curr_pathsite(msg);
-	if(startnode==NULL)
-		return -EINVAL;
+	msg_box->path_site = &route_path->route_path.head.list;
+//	startnode = get_curr_pathsite(msg);
+//	if(startnode==NULL)
+//		return -EINVAL;
 	
-	return rule_get_target(&startnode->this_target,msg,&receiver);
+//	return rule_get_target(&startnode->this_target,msg,&receiver);
+	return 1;
 
 }
 
@@ -1159,17 +1160,17 @@ int message_route_setremotestart( void * msg)
 	msg_box->policy = route_path;
 	if(msg_box->head.state != MSG_STATE_RESPONSE)
 	{
-		msg_box->path_site = route_path->route_path.head.list.next;
-		startnode = get_curr_pathsite(msg);
-		if(startnode==NULL)
-			return -EINVAL;
+		msg_box->path_site = &route_path->route_path.head.list;
+//		startnode = get_curr_pathsite(msg);
+//		if(startnode==NULL)
+//			return -EINVAL;
 	}
 	else
 	{
-		msg_box->path_site=route_path->response_path.head.list.next;
-		startnode = get_curr_pathsite(msg);
-		if(startnode==NULL)
-			return 0;
+		msg_box->path_site=&route_path->response_path.head.list;
+//		startnode = get_curr_pathsite(msg);
+//		if(startnode==NULL)
+//			return 0;
 	}
 	
 	
@@ -1192,7 +1193,8 @@ int message_route_setremotestart( void * msg)
 			
 	} 
 
-	return rule_get_target(&startnode->this_target,msg,&receiver);
+//	return rule_get_target(&startnode->this_target,msg,&receiver);
+	return 1;
 }
 
 int message_route_setnext( void * msg, void * path)

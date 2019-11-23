@@ -468,72 +468,40 @@ int proc_router_start(void * sub_proc,void * para)
 			msg_head=message_get_head(message);
 			if(msg_head->flow==MSG_FLOW_DELIVER)
 			{
-				if(msg_head->ljump==1)
+				ret=message_route_setnext(message);
+				if(ret!=0)
 				{
+					// there is a target in the next	
 					proc_audit_log(message);
-				}
+					issend=1;
+				}	
 				else
-				{	
-					ret=message_route_setnext(message);
-				        if(ret!=0)
-					{
-						// there is a target in the next	
-						proc_audit_log(message);
-						issend=1;
-					}	
-					else
-					{
-						message->head.flow=MSG_FLOW_FINISH;
-						proc_audit_log(message);
-					}
+				{
+					message->head.flow=MSG_FLOW_FINISH;
+					proc_audit_log(message);
 				}
 			}
 			else if(msg_head->flow == MSG_FLOW_QUERY)
 			{
-				if(msg_head->ljump==1)
+				ret=message_route_setnext(message);
+				if(ret!=0)
 				{
-					if(msg_head->state !=MSG_STATE_RESPONSE)
-					{
-						proc_audit_log(message);
-						issend=1;
-					}
-					else
-					{
-						ret=message_route_findtrace(message);
-						if(ret<0)
-						{
-							proc_audit_log(message);
-							print_cubeerr("find trace message (%d %d)failed!\n",message->head.record_type,message->head.record_subtype);
-						}
-						else
-						{
-							proc_audit_log(message);
-							issend=1;
-						}
-					}
-				}
-				else
-				{	
-					ret=message_route_setnext(message);
-				        if(ret!=0)
-					{
 						// there is a target in the next	
+					proc_audit_log(message);
+					issend=1;
+				}	
+				else
+				{
+					ret=message_route_findtrace(message);
+					if(ret<0)
+					{
 						proc_audit_log(message);
-						issend=1;
-					}	
+						print_cubeerr("find trace message (%d %d)failed!\n",message->head.record_type,message->head.record_subtype);
+					}
 					else
 					{
-						ret=message_route_findtrace(message);
-						if(ret<0)
-						{
-							proc_audit_log(message);
-							print_cubeerr("find trace message (%d %d)failed!\n",message->head.record_type,message->head.record_subtype);
-						}
-						else
-						{
-							proc_audit_log(message);
-							issend=1;
-						}
+						proc_audit_log(message);
+						issend=1;
 					}
 				}
 				
@@ -546,13 +514,14 @@ int proc_router_start(void * sub_proc,void * para)
 				BRANCH_NODE * curr_branch;
 				Record_List * curr_record;
 
-				curr_pathnode=message->path_site;
-				if(curr_msg_site!=NULL)
+				curr_record=message->path_site;
+				if((curr_record !=NULL) && (curr_record->record!=NULL))
 				{
+					curr_pathnode=curr_record->record;
 					int isaspect=0;
-					curr_record = _node_list_getfirst(&curr_path->aspect_branch);
+					curr_record = _node_list_getfirst(&curr_pathnode->aspect_branch);
 	
-					while(curr_record!=NULL)
+					while((curr_record!=NULL) &&(curr_record->record!=NULL))
 					{
 						curr_branch = curr_record->record;
 						switch(curr_branch->branch_type)
@@ -573,7 +542,7 @@ int proc_router_start(void * sub_proc,void * para)
 							default:
 								break;
 						}
-						curr_record = _node_list_getnext(&curr_path->aspect_branch);
+						curr_record = _node_list_getnext(&curr_pathnode->aspect_branch);
 					}	
 				}	
 
