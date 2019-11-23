@@ -97,7 +97,7 @@ void _node_list_del(void * record)
 Record_List * _node_list_getfirst(void * list)
 {
 	NODE_LIST * node_list=list;
-	node_list->curr = &(node_list->head.list.next);
+	node_list->curr = node_list->head.list.next;
 
 	Record_List * record; 
 
@@ -111,7 +111,7 @@ Record_List * _node_list_getnext(void * list)
 	NODE_LIST * node_list=list;
 	struct List_head * curr = (struct List_head *)node_list->curr;
 
-	if(curr->next == &(node_list->head.list.next))
+	if(curr->next == &(node_list->head.list))
 	{
 		node_list->curr=NULL;
 		return NULL;
@@ -489,7 +489,7 @@ int _route_match_aspect_branch(void * message,BRANCH_NODE * aspect_branch)
 	int ret;
 	struct message_box * msg_box = (struct message_box *)message;
 
-	ret = _route_match_rule(message,aspect_branch->branch_path);
+	ret = _route_match_rules(aspect_branch->branch_path,message);
 	return ret;
 }
 
