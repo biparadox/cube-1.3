@@ -1,0 +1,7 @@
+{
+	"CUBE_PATH":"/root/centoscloud/cube-1.3"
+}
+{
+	"CUBE_APP_PATH":"/root/centoscloud/cube-1.3/example",
+	"INSTANCE":"file_demo/file_receiver",
+}
