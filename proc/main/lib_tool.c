@@ -157,7 +157,7 @@ int main(int argc,char **argv)
 
 
 	msgfunc_init();
-	dispatch_init();
+	router_tree_init();
 
 	ex_module_list_init();
 

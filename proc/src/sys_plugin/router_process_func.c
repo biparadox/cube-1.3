@@ -462,9 +462,11 @@ int proc_router_start(void * sub_proc,void * para)
 		
 		message=_waiting_message_removehead();
 
-		int issend=0;
+		int issend;
 		while(message!=NULL)
 		{		
+			issend=0;
+
 			msg_head=message_get_head(message);
 			if(msg_head->flow==MSG_FLOW_DELIVER)
 			{
@@ -538,6 +540,14 @@ int proc_router_start(void * sub_proc,void * para)
 							case MSG_FLOW_ASPECT:
 								if(isaspect)
 									break;
+								ret=_route_match_aspect_branch(message,curr_branch);	
+								if(ret>0)
+								{
+									route_aspect_message(message,curr_branch);
+									print_cubeaudit("aspect message to path %.64s's policy",message->head.route);
+									_waiting_message_add(message);
+									message=NULL;
+								}
 								break;
 							default:
 								break;
@@ -545,8 +555,8 @@ int proc_router_start(void * sub_proc,void * para)
 						curr_record = _node_list_getnext(&curr_pathnode->aspect_branch);
 					}	
 				}	
-
-				ret=proc_router_send_msg(message,local_uuid,proc_name);
+				if(message!=NULL)
+					ret=proc_router_send_msg(message,local_uuid,proc_name);
 			}
 			message=_waiting_message_removehead();
 		}

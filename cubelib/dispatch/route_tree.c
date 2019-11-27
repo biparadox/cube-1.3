@@ -352,6 +352,35 @@ void * route_read_policy(void * policy_node)
 			path->flow=MSG_FLOW_DELIVER;
 			break;
 		case MSG_FLOW_ASPECT:
+			ret=router_find_policy_byname(&normal_path,policy->name,policy->rjump,policy->ljump);
+			if(ret<0)
+				return ret;
+			if(normal_path==NULL)
+			{
+				print_cubeerr("can't find ASPECT policy's aspect path!\n");
+				return 0;
+			}
+			ret = route_get_node_byjump(normal_path, &insert_node,policy->ljump,1);
+			if(ret<0)
+				return ret;
+			if(insert_node==NULL)
+			{
+				print_cubeerr("can't find ASPECT policy's insert node!\n");
+				return 0;
+			}
+			branch_node = Talloc0(sizeof(*branch_node));
+			if(branch_node == NULL)
+				return -ENOMEM;
+			branch_node->route_path = normal_path;
+			branch_node->branch_type =policy->type;  
+			branch_node->branch_path=path;
+			
+     		if((record=_node_list_add(&insert_node->aspect_branch,(void *)branch_node))==NULL)
+			{
+				print_cubeerr("insert DUP policy failed!\n");
+				return 0;
+			}
+
     		Strncpy(path->name,policy->newname,DIGEST_SIZE);
 			path->flow=MSG_FLOW_QUERY;
 			break;
@@ -497,17 +526,71 @@ void * route_dup_message(void * message,BRANCH_NODE * branch)
 {
 	struct message_box * msg_box=(struct message_box *)message;
 	if(branch->branch_type != MSG_FLOW_DUP)
-		return -EINVAL;	
+		return NULL;	
 	ROUTE_PATH * branch_path = branch->branch_path;
 	struct message_box * new_msg = message_clone(message);
 	if(new_msg==NULL)
-		return -EINVAL;
+		return NULL;
 	new_msg->head.ljump=1;
 	new_msg->head.rjump=1;
 	Strncpy(new_msg->head.route,branch_path->name,DIGEST_SIZE);
 	Strncpy(new_msg->head.sender_uuid,msg_box->head.sender_uuid,DIGEST_SIZE);
 	message_route_setstart(new_msg,branch_path);
 	return new_msg;
+}
+
+ASPECT_NODE * _create_aspect_node(void * message,BRANCH_NODE * branch)
+{
+	// find hash nodelist
+	struct message_box * msg_box=(struct message_box *)message;
+	NODE_LIST * hash_list = &hash_forest[_hash_index(msg_box->head.nonce)];
+	if(hash_list==NULL)
+		return -EINVAL;
+	// build a query trace node and add it in hash nodelist 	
+	ASPECT_NODE * aspect_node = Dalloc0(sizeof(*aspect_node),NULL);
+	if(aspect_node ==NULL)
+		return -ENOMEM;
+	Memcpy(aspect_node->old_msguuid,msg_box->head.nonce,DIGEST_SIZE);
+	aspect_node->trace_flag=1;
+	get_random_uuid(msg_box->head.nonce);
+	Memcpy(aspect_node->msg_uuid,msg_box->head.nonce,DIGEST_SIZE);
+	Memcpy(aspect_node->sender_uuid,msg_box->head.sender_uuid,DIGEST_SIZE);
+	Memcpy(aspect_node->receiver_uuid,msg_box->head.receiver_uuid,DIGEST_SIZE);
+	Memcpy(aspect_node->route,msg_box->head.route,DIGEST_SIZE);
+	aspect_node->flow=msg_box->head.flow;
+	aspect_node->state=msg_box->head.state;
+	aspect_node->flag=msg_box->head.flag;
+	aspect_node->ljump=msg_box->head.ljump;
+	aspect_node->rjump=msg_box->head.rjump;
+	
+	aspect_node->path=msg_box->policy;
+		
+	Strncpy(msg_box->head.route,msg_box->head.sender_uuid,DIGEST_SIZE);
+		// add trace_node to hash_nodelist 
+     _node_list_add(hash_list,aspect_node);
+
+}
+
+int _recover_aspect_message(void * message,ASPECT_NODE * aspect_node)
+{
+
+}
+
+
+int route_aspect_message(void * message,BRANCH_NODE * branch)
+{
+	struct message_box * msg_box=(struct message_box *)message;
+	if(branch->branch_type != MSG_FLOW_DUP)
+		return -EINVAL;	
+	ROUTE_PATH * branch_path = branch->branch_path;
+	// wait to add aspect function
+	ASPECT_NODE * aspect_node = _create_aspect_node(message,branch);
+	if(aspect_node ==NULL)
+		return -EINVAL;
+
+		
+	message_route_setstart(message,branch_path);
+	return 1;
 }
 
 int dispatch_policy_getfirst(void ** policy)

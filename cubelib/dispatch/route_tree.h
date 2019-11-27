@@ -53,6 +53,14 @@ typedef struct tagaspect_node
 	BYTE msg_uuid[DIGEST_SIZE];
 	int trace_flag; // 0 means query response, i means aspect
 	BYTE old_msguuid[DIGEST_SIZE];
+   char sender_uuid[DIGEST_SIZE];     // sender's uuid, or '@' followed with a name, or ':' followed with a connector's name
+   char receiver_uuid[DIGEST_SIZE];   // receiver's uuid, or '@" followed with a name, or ':' followed with a connector's name
+   char route[DIGEST_SIZE];
+   int  flow;
+   int  state;
+   int  flag;
+   int  ljump;
+   int  rjump;
 	void * aspect_site;
 	void * path;
 }__attribute__((packed)) ASPECT_NODE;
@@ -110,7 +118,7 @@ int router_find_policy_byname(void **msg_policy,char * name, int rjump,int ljump
 int route_get_node_byjump(ROUTE_PATH * path, ROUTE_NODE ** node,int ljump,int reverse);
 int _route_match_rule(void * message,void * path);			
 void * route_dup_message(void * message,BRANCH_NODE * branch);
-int route_aspect_message(void * message,void * path);
+int route_aspect_message(void * message,BRANCH_NODE * branch);
 
 int _waiting_message_add(void * msg);
 void _waiting_message_del(void * record);
