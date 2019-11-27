@@ -42,7 +42,7 @@ typedef struct tagroute_rule
 typedef struct tagtrace_node
 {
 	BYTE msg_uuid[DIGEST_SIZE];
-	int trace_flag; // 0 means query response, i means aspect
+	enum message_flow_type trace_flag; // 0 means query response, i means aspect
 	BYTE source_uuid[DIGEST_SIZE];
 	void * aspect_site;
 	void * path;

@@ -541,17 +541,13 @@ void * route_dup_message(void * message,BRANCH_NODE * branch)
 
 ASPECT_NODE * _create_aspect_node(void * message,BRANCH_NODE * branch)
 {
-	// find hash nodelist
 	struct message_box * msg_box=(struct message_box *)message;
-	NODE_LIST * hash_list = &hash_forest[_hash_index(msg_box->head.nonce)];
-	if(hash_list==NULL)
-		return -EINVAL;
 	// build a query trace node and add it in hash nodelist 	
 	ASPECT_NODE * aspect_node = Dalloc0(sizeof(*aspect_node),NULL);
 	if(aspect_node ==NULL)
 		return -ENOMEM;
 	Memcpy(aspect_node->old_msguuid,msg_box->head.nonce,DIGEST_SIZE);
-	aspect_node->trace_flag=1;
+	aspect_node->trace_flag=MSG_FLOW_ASPECT;
 	get_random_uuid(msg_box->head.nonce);
 	Memcpy(aspect_node->msg_uuid,msg_box->head.nonce,DIGEST_SIZE);
 	Memcpy(aspect_node->sender_uuid,msg_box->head.sender_uuid,DIGEST_SIZE);
@@ -566,13 +562,32 @@ ASPECT_NODE * _create_aspect_node(void * message,BRANCH_NODE * branch)
 	aspect_node->path=msg_box->policy;
 		
 	Strncpy(msg_box->head.route,msg_box->head.sender_uuid,DIGEST_SIZE);
-		// add trace_node to hash_nodelist 
+	// find hash nodelist
+	NODE_LIST * hash_list = &hash_forest[_hash_index(msg_box->head.nonce)];
+	if(hash_list==NULL)
+		return -EINVAL;
+     // add trace_node to hash_nodelist 
      _node_list_add(hash_list,aspect_node);
+	return aspect_node;
 
 }
 
 int _recover_aspect_message(void * message,ASPECT_NODE * aspect_node)
 {
+	struct message_box * msg_box = message;
+	Memcpy(msg_box->head.nonce,aspect_node->old_msguuid,DIGEST_SIZE);
+	Memcpy(msg_box->head.sender_uuid,aspect_node->sender_uuid,DIGEST_SIZE);
+	Memcpy(msg_box->head.receiver_uuid,aspect_node->receiver_uuid,DIGEST_SIZE);
+	Memcpy(msg_box->head.route,aspect_node->route,DIGEST_SIZE);
+	msg_box->head.flow = aspect_node->flow;
+	msg_box->head.state = aspect_node->state;
+	msg_box->head.flag = aspect_node->flag;
+	msg_box->head.ljump = aspect_node->ljump;
+	msg_box->head.rjump = aspect_node->rjump;
+	
+	msg_box->policy = aspect_node->path;
+	
+	return 0;	
 
 }
 
@@ -1296,13 +1311,43 @@ int message_route_setnext( void * msg, void * path)
 	}
 	
 	return rule_get_target(&nextnode->this_target,msg,&receiver);
-
 }
 
-int message_route_findtrace(void * msg)
+void * _find_flowtype_node(NODE_LIST * hash_list,BYTE * comp_uuid,enum message_flow_type flow)
+{
+	Record_List * curr_record;
+	struct List_head * curr_head = hash_list->head.list.next;
+	TRACE_NODE * trace_node=NULL;
+
+	while(curr_head != & hash_list->head.list)
+	{
+        curr_record=List_entry(curr_head,Record_List,list);
+		trace_node=curr_record->record;
+		if(trace_node==NULL)
+			return NULL;
+		if(Memcmp(trace_node->msg_uuid,comp_uuid,DIGEST_SIZE)==0)
+		{
+			if(trace_node->trace_flag == MSG_FLOW_ASPECT)
+			{
+				if(flow==MSG_FLOW_ASPECT)
+					return curr_record;
+			}
+			else
+			{
+				return curr_record;
+			}	
+		}
+		curr_head=curr_head->next;		
+	}	
+	
+}
+
+
+int message_route_findtrace(void * msg,enum message_flow_type flow)
 {
 	struct message_box * message=msg;
 	TRACE_NODE * trace_node;
+	ASPECT_NODE * aspect_node;
 	Record_List * trace_record;
 	struct List_head * curr_head;
 	if(msg==NULL)
@@ -1310,19 +1355,25 @@ int message_route_findtrace(void * msg)
 	NODE_LIST * hash_list = &hash_forest[_hash_index(message->head.nonce)];
 	if(hash_list==NULL)
 		return -EINVAL;
-	curr_head = find_elem_with_tag(hash_list,
-                tracenode_comp_uuid,message->head.nonce);
-        if(curr_head == NULL)
-        {
+	trace_record = _find_flowtype_node(hash_list,message->head.nonce,flow);
+	if(trace_record ==NULL)
+	{
 		message->head.flow=MSG_FLOW_FINISH;
-                return 0;
-        }
-        trace_record=List_entry(curr_head,Record_List,list);
-	trace_node=trace_record->record;
-	Memcpy(message->head.receiver_uuid,trace_node->source_uuid,DIGEST_SIZE);
-	message->head.state = MSG_STATE_RESPONSE;
-	message->head.flag &= ~MSG_FLAG_LOCAL;
+        return 0;
+    }
+	if(flow==MSG_FLOW_QUERY)
+	{
+		trace_node=trace_record->record;
+		Memcpy(message->head.receiver_uuid,trace_node->source_uuid,DIGEST_SIZE);
+		message->head.state = MSG_STATE_RESPONSE;
+		message->head.flag &= ~MSG_FLAG_LOCAL;
+	}
+	else if(flow ==MSG_FLOW_ASPECT)
+	{
+		aspect_node=trace_record->record;
+		_recover_aspect_message(message,aspect_node);
 
+	}
 	return 1;	
 }
 

@@ -388,7 +388,10 @@ int proc_router_start(void * sub_proc,void * para)
 			{
 				case MOD_TYPE_CONN:
 					msg_head->ljump=1;	
-					msg_head->rjump++;
+					if(msg_head->state!=MSG_STATE_RESPONSE)
+						msg_head->rjump++;
+					else
+						msg_head->rjump--;
 					break;
 				case MOD_TYPE_PORT:
 					msg_head->ljump=1;	
@@ -494,16 +497,33 @@ int proc_router_start(void * sub_proc,void * para)
 				}	
 				else
 				{
-					ret=message_route_findtrace(message);
-					if(ret<0)
+					if(msg_head->rjump>1)
 					{
-						proc_audit_log(message);
-						print_cubeerr("find trace message (%d %d)failed!\n",message->head.record_type,message->head.record_subtype);
+						ret=message_route_findtrace(message,MSG_FLOW_QUERY);
+						if(ret<0)
+						{
+							proc_audit_log(message);
+							print_cubeerr("find trace message (%d %d)failed!\n",message->head.record_type,message->head.record_subtype);
+						}
+						else
+						{
+							proc_audit_log(message);
+							issend=1;
+						}
 					}
 					else
 					{
-						proc_audit_log(message);
-						issend=1;
+						ret=message_route_findtrace(message,MSG_FLOW_ASPECT);
+						if(ret<0)
+						{
+							proc_audit_log(message);
+							print_cubeerr("find trace message (%d %d)failed!\n",message->head.record_type,message->head.record_subtype);
+						}
+						else
+						{
+							proc_audit_log(message);
+							issend=1;
+						}
 					}
 				}
 				
