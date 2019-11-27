@@ -580,14 +580,13 @@ int _recover_aspect_message(void * message,ASPECT_NODE * aspect_node)
 int route_aspect_message(void * message,BRANCH_NODE * branch)
 {
 	struct message_box * msg_box=(struct message_box *)message;
-	if(branch->branch_type != MSG_FLOW_DUP)
+	if(branch->branch_type != MSG_FLOW_ASPECT)
 		return -EINVAL;	
 	ROUTE_PATH * branch_path = branch->branch_path;
 	// wait to add aspect function
 	ASPECT_NODE * aspect_node = _create_aspect_node(message,branch);
 	if(aspect_node ==NULL)
 		return -EINVAL;
-
 		
 	message_route_setstart(message,branch_path);
 	return 1;
@@ -1234,7 +1233,8 @@ int message_route_setremotestart( void * msg)
 	ROUTE_NODE * startnode;
 	char * receiver;
 	
-	ret=router_find_policy_byname(&route_path,msg_box->head.route,msg_box->head.rjump,msg_box->head.ljump);
+	//ret=router_find_policy_byname(&route_path,msg_box->head.route,msg_box->head.rjump,msg_box->head.ljump);
+	ret=router_find_policy_byname(&route_path,msg_box->head.route,msg_box->head.rjump,0);
 	if(ret<0)
 		return ret;
 	if(route_path==NULL)
@@ -1505,18 +1505,24 @@ int router_find_policy_byname(void **msg_policy,char * name,int rjump,int ljump)
         return ret;
     while(policy!=NULL)
     {
-	ret=Strncmp(name,policy->name,DIGEST_SIZE);
-	if(ret==0)
-	{
-		if((policy->rjump==0) || (policy->rjump==rjump))
+		ret=Strncmp(name,policy->name,DIGEST_SIZE);
+		if(ret==0)
 		{
-			if((policy->ljump==0) || (policy->ljump==ljump))
+			if((policy->rjump==0) || (policy->rjump==rjump))
 			{
-				*msg_policy=policy;		
-				break;
+				if(ljump==0)
+				{
+					*msg_policy=policy;		
+					break;
+				}
+			
+				if((policy->ljump==0) || (policy->ljump==ljump))
+				{
+					*msg_policy=policy;		
+					break;
+				}
 			}
 		}
-	}
     	ret=dispatch_policy_getnext(&policy);
     }
     
