@@ -1,0 +1,21 @@
+{
+	"policy_head":
+	{
+			"name":"file_trans",
+       		"type":"ASPECT",
+			"newname":"crypto",
+			"ljump":2
+	},
+	"MATCH_RULES":
+	[
+		{
+			"op":"AND","type":"FILE_TRANS","subtype":"FILE_DATA"
+		}
+	],
+	"ROUTE_RULES":
+	{
+		"main_policy":[
+			{"target_type":"CONN","target_name":"crypt_client"}
+		]
+	}
+}

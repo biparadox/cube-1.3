@@ -1,0 +1,21 @@
+{
+	"policy_head":
+	{
+			"name":"file_trans",
+       		"type":"DUP",
+			"newname":"teardrop",
+			"ljump":1
+	},
+	"MATCH_RULES":
+	[
+		{
+			"op":"AND","type":"FILE_TRANS","subtype":"FILE_DATA"
+		}
+	],
+	"ROUTE_RULES":
+	{
+		"main_policy":[
+			{"target_type":"LOCAL","target_name":"file_dealer"}
+		]
+	}
+}

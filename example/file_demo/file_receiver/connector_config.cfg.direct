@@ -1,0 +1,15 @@
+#connector config policy
+{
+	"name":"file_server",
+	"type":"SERVER",
+	"family":"AF_INET",
+	"address":"0.0.0.0",
+	"port":12500,
+}
+{
+	"name":"crypt_client",
+	"type":"CLIENT",
+	"family":"AF_INET",
+	"address":"127.0.0.1",
+	"port":12211,
+}
