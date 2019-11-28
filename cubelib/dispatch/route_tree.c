@@ -575,13 +575,15 @@ ASPECT_NODE * _create_aspect_node(void * message,BRANCH_NODE * branch)
 int _recover_aspect_message(void * message,ASPECT_NODE * aspect_node)
 {
 	struct message_box * msg_box = message;
+	const int flag_mask = MSG_FLAG_CRYPT | MSG_FLAG_SIGN | MSG_FLAG_ZIP | MSG_FLAG_VERIFY;
 	Memcpy(msg_box->head.nonce,aspect_node->old_msguuid,DIGEST_SIZE);
 	Memcpy(msg_box->head.sender_uuid,aspect_node->sender_uuid,DIGEST_SIZE);
 	Memcpy(msg_box->head.receiver_uuid,aspect_node->receiver_uuid,DIGEST_SIZE);
 	Memcpy(msg_box->head.route,aspect_node->route,DIGEST_SIZE);
 	msg_box->head.flow = aspect_node->flow;
 	msg_box->head.state = aspect_node->state;
-	//msg_box->head.flag = aspect_node->flag;
+
+	msg_box->head.flag = (msg_box->head.flag & flag_mask) | (aspect_node->flag & (~flag_mask));
 	msg_box->head.ljump = aspect_node->ljump;
 	msg_box->head.rjump = aspect_node->rjump;
 	
@@ -602,6 +604,9 @@ int route_aspect_message(void * message,BRANCH_NODE * branch)
 	ASPECT_NODE * aspect_node = _create_aspect_node(message,branch);
 	if(aspect_node ==NULL)
 		return -EINVAL;
+
+	msg_box->head.ljump=1;
+	msg_box->head.rjump=1;
 		
 	message_route_setstart(message,branch_path);
 	return 1;

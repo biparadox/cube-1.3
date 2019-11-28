@@ -5,7 +5,7 @@ LD=ld
 CCP=g++
 STRUCTOBJ= route_tree.o 
 LIBNAME=dispatch
-DEPENDLIB= -lmessage -lmemdb -lbasefunc -lcrypto_func -lstruct -ljson -lalloc -lstring
+DEPENDLIB= -lsys_func -lmessage -lmemdb -lbasefunc -lcrypto_func -lstruct -ljson -lalloc -lstring
 
 main: ../lib/lib$(LIBNAME).so  ../lib/lib$(LIBNAME).a test_main
 test_main: test_main.c ../lib/lib$(LIBNAME).so 
