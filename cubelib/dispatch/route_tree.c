@@ -581,7 +581,7 @@ int _recover_aspect_message(void * message,ASPECT_NODE * aspect_node)
 	Memcpy(msg_box->head.route,aspect_node->route,DIGEST_SIZE);
 	msg_box->head.flow = aspect_node->flow;
 	msg_box->head.state = aspect_node->state;
-	msg_box->head.flag = aspect_node->flag;
+	//msg_box->head.flag = aspect_node->flag;
 	msg_box->head.ljump = aspect_node->ljump;
 	msg_box->head.rjump = aspect_node->rjump;
 	
