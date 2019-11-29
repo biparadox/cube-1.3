@@ -1344,7 +1344,7 @@ void * _find_flowtype_node(NODE_LIST * hash_list,BYTE * comp_uuid,enum message_f
 		}
 		curr_head=curr_head->next;		
 	}	
-	
+	return NULL;
 }
 
 

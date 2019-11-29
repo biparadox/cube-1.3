@@ -1,7 +1,7 @@
 #!/bin/sh
 cp file_sender/aspect_policy.cfg.crypto file_sender/aspect_policy.cfg
 cp file_receiver/aspect_policy.cfg.crypto file_receiver/aspect_policy.cfg
-#cp file_transfer/aspect_policy.cfg.teardrop file_transfer/aspect_policy.cfg
+cp file_transfer/aspect_policy.cfg.teardrop file_transfer/aspect_policy.cfg
 rm file_receiver/test.txt
 rm file_transfer/test.txt
 cp file_receiver/connector_config.cfg.transfer file_receiver/connector_config.cfg
@@ -13,8 +13,8 @@ sh ../run_cube.sh exec_def/_sender_crypthub.def &
 sleep 1
 sh ../run_cube.sh exec_def/_receiver_crypthub.def &
 sleep 1
-#sh ../run_cube.sh exec_def/_file_receiver.def &
+sh ../run_cube.sh exec_def/_file_receiver.def &
 sleep 1
 sh ../run_cube.sh exec_def/_file_transfer.def &
 sleep 1
-sh ../run_cube.sh exec_def/_file_sender.def request.txt &
+#sh ../run_cube.sh exec_def/_file_sender.def request.txt &
