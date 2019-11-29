@@ -30,10 +30,10 @@ static int match_flag = 0x10000000;
 
 void * route_read_policy(void * policy_node);
 int  route_set_path(ROUTE_PATH * path, void * policy);
-int dispatch_policy_addmatchrule(void * path,MATCH_RULE * rule);
-int dispatch_policy_addrouterule(void * path,ROUTE_RULE * rule);
-int dispatch_policy_getnextmatchrule(void * path,MATCH_RULE ** rule);
-int dispatch_policy_getnextrouterule(void * path,ROUTE_RULE ** rule);
+int route_policy_addmatchrule(void * path,MATCH_RULE * rule);
+int route_policy_addrouterule(void * path,ROUTE_RULE * rule);
+int route_policy_getnextmatchrule(void * path,MATCH_RULE ** rule);
+int route_policy_getnextrouterule(void * path,ROUTE_RULE ** rule);
 int route_tree_addresponserule(void * path,ROUTE_RULE * rule);
 
 static inline unsigned int _hash_index(char * uuid)
@@ -443,7 +443,7 @@ void * route_read_policy(void * policy_node)
 			return NULL;	
 		temp_match_rule->value=value_struct;
 	}
-	ret=dispatch_policy_addmatchrule(path,temp_match_rule);
+	ret=route_policy_addmatchrule(path,temp_match_rule);
 	if(ret<0)
 		return NULL;	
 	
@@ -466,7 +466,7 @@ void * route_read_policy(void * policy_node)
     	ret=json_2_struct(route_rule_node,temp_route_rule,route_rule_template);
     	if(ret<0)
         	return NULL;
-	ret=dispatch_policy_addrouterule(path,temp_route_rule);
+	ret=route_policy_addrouterule(path,temp_route_rule);
 	if(ret<0)
 		return NULL;	
         route_rule_node=json_get_next_child(temp_node);
@@ -588,7 +588,7 @@ int _recover_aspect_message(void * message,ASPECT_NODE * aspect_node)
 	msg_box->head.rjump = aspect_node->rjump;
 	
 	msg_box->policy = aspect_node->path;
-	
+
 	return 0;	
 
 }
@@ -658,20 +658,20 @@ int dispatch_policy_getnext(void ** policy)
     return _dispatch_policy_getnext(&route_forest,policy);
 }
 
-int dispatch_policy_getnextmatchrule(void * path,MATCH_RULE ** rule)
+int route_policy_getnextmatchrule(void * path,MATCH_RULE ** rule)
 {
     ROUTE_PATH  * route_path=(ROUTE_PATH *)path;
     return _dispatch_policy_getnext(&route_path->match_list,(void **)rule);
 }
 
-int dispatch_policy_getnextrouterule(void * path,ROUTE_RULE ** rule)
+int route_policy_getnextrouterule(void * path,ROUTE_RULE ** rule)
 {
     ROUTE_PATH  * route_path=(ROUTE_PATH *)path;
     return _dispatch_policy_getnext(&route_path->route_path,(void **)rule);
 }
 
 
-int dispatch_policy_addmatchrule(void * path,MATCH_RULE * rule)
+int route_policy_addmatchrule(void * path,MATCH_RULE * rule)
 {
     ROUTE_PATH  * route_path=(ROUTE_PATH *)path;
     if(_node_list_add(&route_path->match_list,(void *)rule)==NULL)
@@ -679,7 +679,7 @@ int dispatch_policy_addmatchrule(void * path,MATCH_RULE * rule)
     return 1;
 }
 
-int dispatch_policy_addrouterule(void * path,ROUTE_RULE * rule)
+int route_policy_addrouterule(void * path,ROUTE_RULE * rule)
 {
      ROUTE_PATH  * route_path=(ROUTE_PATH *)path;
      ROUTE_NODE  * route_node;
@@ -927,7 +927,7 @@ int _route_match_rules(void * path,void * message)
 				return -EINVAL;	
 		}
 		match_rule_num++;
-		ret=dispatch_policy_getnextmatchrule(path,&match_rule);
+		ret=route_policy_getnextmatchrule(path,&match_rule);
 		if(ret<0)
 			return ret;
 	}	
@@ -1060,7 +1060,7 @@ int route_match_message(void * path,void * message)
 				return -EINVAL;	
 		}
 		match_rule_num++;
-		ret=dispatch_policy_getnextmatchrule(path,&match_rule);
+		ret=route_policy_getnextmatchrule(path,&match_rule);
 		if(ret<0)
 			return ret;
 	}	
@@ -1377,7 +1377,8 @@ int message_route_findtrace(void * msg,enum message_flow_type flow)
 	{
 		aspect_node=trace_record->record;
 		_recover_aspect_message(message,aspect_node);
-
+		List_del(&trace_record);
+		//Free(aspect_node); 	
 	}
 	return 1;	
 }
@@ -1432,76 +1433,6 @@ int router_dup_activemsg_info (void * message)
 
 	return 1;
 }
-/*
-int router_set_local_route(void * message,void * policy)
-{
-	int ret;
-    	MSG_HEAD * msg_head;	
-   	DISPATCH_POLICY * msg_policy=(DISPATCH_POLICY *)policy;
-	ROUTE_RULE * rule;
-	char * target;
-
-    	if(policy==NULL)
-        	return -EINVAL;
-    	if(message==NULL)
-        	return -EINVAL;
-    	msg_head=message_get_head(message);
-		
-	Memset(msg_head->route,0,DIGEST_SIZE);
-	Strncpy(msg_head->route,msg_policy->name,DIGEST_SIZE);
-	msg_head->ljump=1;
-	msg_head->flow=msg_policy->type;
-	message_set_policy(message,policy);
-	return 1;	
-}
-*/
-/*
-int router_set_query_end(void * message,void * policy)
-{
-	int ret;
-    	MSG_HEAD * msg_head;	
-   	DISPATCH_POLICY * msg_policy=(DISPATCH_POLICY *)policy;
-	ROUTE_RULE * rule;
-	char * target;
-	int jumpcount=1;
-
-    	if(policy==NULL)
-        	return -EINVAL;
-    	if(message==NULL)
-        	return -EINVAL;
-    	msg_head=message_get_head(message);
-	message_set_policy(message,policy);
-	ret=dispatch_policy_getfirstrouterule(policy,&rule);
-	if(ret<0)
-		return ret;
-	while(rule!=NULL)
-	{
-		jumpcount++;
-		if((rule->target_type==ROUTE_TARGET_CONN)||(rule->target_type==ROUTE_TARGET_NAME))	
-			break;
-		ret=dispatch_policy_getnextrouterule(policy,&rule);
-	}
-
-	if(rule==NULL)
-		return -EINVAL;
-	ret=dispatch_policy_getnextrouterule(policy,&rule);
-
-	if(rule==NULL)
-		msg_head->flow=MSG_FLOW_FINISH;
-	else
-	{
-		// if next target is a remote target, change flow to DELIVER
-		message_set_receiver(message,rule->target_name);
-		if(rule->target_type!=ROUTE_TARGET_LOCAL)
-		{
-			msg_head->flow=MSG_FLOW_DELIVER;
-			msg_head->flag &=~MSG_FLAG_RESPONSE;
-		}
-	}
-	msg_head->ljump=jumpcount++;
-	return 1;	
-}
-*/
 
 int router_find_route_policy(void * message,void **msg_policy)
 {
@@ -1587,810 +1518,3 @@ int router_find_policy_byname(void **msg_policy,char * name,int rjump,int ljump)
 	return ret;
 }
 
-
-/*
-int router_dup_activemsg_info (void * message)
-{
-	int ret;
-	struct message_box * msg_box=message;
-	MSG_HEAD * msg_head;
-	MSG_HEAD * new_msg_head;
-	if(message==NULL)
-		return -EINVAL;
-
-	struct message_box * active_msg=message_get_activemsg(message);
-	if(active_msg==NULL)
-		return 0;
-	if(active_msg==message)
-	{
-		msg_head=message_get_head(message);
-	//	msg_head->ljump++;
-		return 0;
-	}
-	
-	msg_head=message_get_head(active_msg);
-	new_msg_head=message_get_head(message);
-	message_set_flow(msg_box,msg_head->flow);
-	message_set_state(msg_box,msg_head->state);
-//	message_set_flag(msg_box,msg_head->flag);
-	message_set_route(msg_box,msg_head->route);
-	new_msg_head->ljump=msg_head->ljump;	
-	new_msg_head->rjump=msg_head->rjump;	
-
-	MSG_EXPAND * old_expand;
-	MSG_EXPAND * new_expand;
-
-	int i=0;
-	if(!(new_msg_head->flag & MSG_FLAG_FOLLOW))
-	{
-		do{
-			ret = message_get_expand(active_msg,&old_expand,i++);
-			if(ret<0)
-				return ret;
-			if(old_expand==NULL)
-				break;
-			ret=message_add_expand(message,old_expand);
-			if(ret<0)
-				return ret;
-		}while(1);	
-	}
-	message_set_policy(message,message_get_policy(active_msg));
-
-	return 1;
-}
-*/
-
-/*
-int __message_policy_init(void * policy)
-{
-    MESSAGE_POLICY * message_policy=(MESSAGE_POLICY *)policy;
-    if(message_policy==NULL)
-        return -EINVAL;
-    message_policy->sender_proc=NULL;
-    message_policy->match_policy_list=
-            (ROUTE_NODE_LIST *)malloc(sizeof(ROUTE_NODE_LIST));
-    if(message_policy->match_policy_list==NULL)
-        return -EINVAL;
-
-    message_policy->dup_route_rule =
-            (ROUTE_NODE_LIST *)malloc(sizeof(ROUTE_NODE_LIST));
-    if(message_policy->dup_route_rule==NULL)
-        return -EINVAL;
-    message_policy->main_route_rule =
-            (ROUTE_RULE *)malloc(sizeof(ROUTE_RULE));
-    if(message_policy->main_route_rule==NULL)
-        return -EINVAL;
-    message_policy->sender_proc=NULL;
-    __route_policy_init(message_policy->match_policy_list);
-
-    memset(message_policy->main_route_rule,0,sizeof(ROUTE_RULE));
-    __route_policy_init(message_policy->dup_route_rule);
-    return 0;
-}
-*/
-#define MAX_LINE_LEN 1024
-//int read_cfg_buffer(FILE * stream, char * buf, int size)
-    /*  Read text data from config file,
-     *  ignore the ^# line and remove the \n character
-     *  stream: the config file stream
-     *  buf: the buffer to store the cfg data
-     *  size: read data size
-     *
-     *  return value: read data size,
-     *  negative value if it has special error
-     *  */
-/*
-{
-    long offset=0;
-    long curr_offset;
-    char buffer[MAX_LINE_LEN];
-    char * retptr;
-    int len;
-
-    while(offset<size)
-    {
-        curr_offset=ftell(stream);
-        retptr=fgets(buffer,MAX_LINE_LEN,stream);
-
-        // end of the file
-        if(retptr==NULL)
-            break;
-        len=strlen(buffer);
-        if(len==0)
-            break;
-        // commet line
-        if(buffer[0]=='#')
-            continue;
-        while((buffer[len-1]=='\r')||(buffer[len-1]=='\n'))
-        {
-            len--;
-            if(len==0)
-                continue;
-            buffer[len]==0;
-        }
-        // this line is too long to read
-        if(len>size)
-            return -EINVAL;
-
-        // out of the bound
-        if(len+offset>size)
-        {
-            fseek(stream,curr_offset,SEEK_SET);
-            break;
-        }
-        memcpy(buf+offset,buffer,len);
-        offset+=len;
-	buf[offset]=0;
-    }
-    return offset;
-}
-
-int read_one_policy(void ** message_policy,void * json_node)
-{
-    void * match_rule_template=create_struct_template(&match_rule_desc);
-    void * route_rule_template=create_struct_template(&route_rule_desc);
-    void * match_policy_node;
-    void * route_policy_node;
-    void * match_rule_node;
-    void * route_rule_node;
-    void * temp_node;
-    char buffer[1024];
-    int ret;
-    MATCH_RULE * temp_match_rule;
-    ROUTE_RULE * temp_route_rule;
-
-    MESSAGE_POLICY * policy=malloc(sizeof(MESSAGE_POLICY));
-    if(policy==NULL)
-        return -EINVAL;
-    __message_policy_init(policy);
-
-    // get the match policy json node
-    match_policy_node=json_find_elem("MATCH_POLICY",json_node);
-    if(match_policy_node==NULL)
-        return -EINVAL;
-
-    // get the match policy json node
-    route_policy_node=json_find_elem("ROUTE_POLICY",json_node);
-    if(route_policy_node==NULL)
-        return -EINVAL;
-
-    // read the match policy
-    // first,read the sender proc value
-
-    temp_node=json_find_elem("sender",match_policy_node);
-    if(temp_node==NULL)
-        policy->sender_proc=NULL;
-    else
-    {
-        ret=get_json_value_from_node(temp_node,buffer,1024);
-        if((ret<0) ||(ret>=1024))
-            return -EINVAL;
-        policy->sender_proc=dup_str(buffer,ret+1);
-    }
-
-    // second,read the match rule
-
-    temp_node = json_find_elem("rules",match_policy_node);
-    if(temp_node==NULL)
-        return -EINVAL;
-
-    match_rule_node=json_get_first_child(temp_node);
-    while(match_rule_node!=NULL)
-    {
-        temp_match_rule=malloc(sizeof(MATCH_RULE));
-        ret=json_2_struct(match_rule_node,temp_match_rule,match_rule_template);
-        if(ret<0)
-            return -EINVAL;
-        __route_policy_add(policy->match_policy_list,temp_match_rule);
-        match_rule_node=json_get_next_child(temp_node);
-    }
-
-    // read the route policy
-    // first,read the main route policy
-
-    route_rule_node=json_find_elem("main_policy",route_policy_node);
-    if(route_rule_node==NULL)
-        return -EINVAL;
-    temp_route_rule=malloc(sizeof(ROUTE_RULE));
-    ret=json_2_struct(route_rule_node,temp_route_rule,route_rule_template);
-    if(ret<0)
-        return -EINVAL;
-    policy->main_route_rule=temp_route_rule;
-
-    // second,read the dup rule
-
-    temp_node = json_find_elem("dup_policy",route_policy_node);
-    if(temp_node==NULL)
-    {
-        *message_policy=policy;
-        return 0;
-    }
-    route_rule_node=json_get_first_child(temp_node);
-    while(route_rule_node!=NULL)
-    {
-        temp_route_rule=malloc(sizeof(ROUTE_RULE));
-        ret=json_2_struct(route_rule_node,temp_route_rule,route_rule_template);
-        if(ret<0)
-            return -EINVAL;
-        __route_policy_add(policy->dup_route_rule,temp_route_rule);
-        route_rule_node=json_get_next_child(temp_node);
-    }
-    *message_policy=policy;
-    return 0;
-}
-
-int route_read_cfg(char * filename)
-{
-    const int bufsize=1024;
-    char buffer[bufsize];
-    void * root;
-    int read_offset;
-    int solve_offset;
-    int buffer_left=0;
-    int policy_num=0;
-    void * policy;
-    int ret;
-
-    FILE * fp = fopen(filename,"r");
-    if(fp==NULL)
-        return -EINVAL;
-
-    do {
-
-        // when the file reading is not finished, we should read new data to the buffer
-        if(fp != NULL)
-        {
-            read_offset=read_cfg_buffer(fp,buffer+buffer_left,bufsize-buffer_left);
-            if(read_offset<0)
-                return -EINVAL;
-            else if(read_offset==0)
-            {
-                fclose(fp);
-                fp=NULL;
-            }
-        }
-        printf("policy %d is %s\n",policy_num+1,buffer);
-
-        solve_offset=json_solve_str(&root,buffer);
-        if(solve_offset<=0)
-		break;
-        ret=read_one_policy(&policy,root);
-
-        if(ret<0)
-		break;
-        route_policy_add(policy);
-        policy_num++;
-	read_offset+=buffer_left;
-        buffer_left=read_offset-solve_offset;
-        if(buffer_left>0)
-	{
-            Memcpy(buffer,buffer+solve_offset,buffer_left);
-	    buffer[buffer_left]=0;
-	}
-        else
-        {
-            if(fp==NULL)
-                break;
-        }
-    }while(1);
-    return policy_num;
-}
-
-*/
-/*
-int match_message_record(void * match_rule,void * message)
-{
-    int ret;
-    MSG_HEAD * msg_head=get_message_head(message);
-    if(msg_head==NULL)
-        return -EINVAL;
-    void * record_template = load_record_template(msg_head->record_type);
-    if(record_template==NULL)
-        return -EINVAL;
-    MATCH_RULE * rule=(MATCH_RULE *)match_rule;
-    char buffer[1024];
-    void * record;
-    ret=message_comp_elem_text(message,rule->seg,0,rule->value);
-	
-    return ret;
-}
-
-*/
-
-/*
-int router_set_aspect_flow(void * message,void * policy)
-{
-	int ret;
-    	MSG_HEAD * msg_head;	
-   	DISPATCH_POLICY * msg_policy=(DISPATCH_POLICY *)policy;
-	ROUTE_RULE * rule;
-	char * target;
-
-    	if(policy==NULL)
-        	return -EINVAL;
-    	if(message==NULL)
-        	return -EINVAL;
-    	msg_head=message_get_head(message);
-		
-	if(!(msg_head->flow&MSG_FLOW_ASPECT))
-	{
-		Memset(msg_head->route,0,DIGEST_SIZE);
-		Strncpy(msg_head->route,msg_policy->newname,DIGEST_SIZE);
-		msg_head->ljump=1;
-		msg_head->rjump=1;
-		msg_head->flow=msg_policy->type;
-		msg_head->flag &=~MSG_FLAG_RESPONSE;
-	}
-	Memset(msg_head->receiver_uuid,0,DIGEST_SIZE);
-	message_set_policy(message,policy);
-
-	return 1;	
-}
-
-int router_set_dup_flow(void * message,void * policy)
-{
-	int ret;
-    	MSG_HEAD * msg_head;	
-   	DISPATCH_POLICY * msg_policy=(DISPATCH_POLICY *)policy;
-	ROUTE_RULE * rule;
-	char * target;
-
-    	if(policy==NULL)
-        	return -EINVAL;
-    	if(message==NULL)
-        	return -EINVAL;
-    	msg_head=message_get_head(message);
-		
-	Memset(msg_head->route,0,DIGEST_SIZE);
-	if(msg_policy->newname!=NULL)
-		Strncpy(msg_head->route,msg_policy->newname,DIGEST_SIZE);
-	msg_head->ljump=1;
-	msg_head->rjump=0;
-	msg_head->flow=MSG_FLOW_DELIVER;
-//	msg_head->flag=msg_policy->flag;
-	Memset(msg_head->receiver_uuid,0,DIGEST_SIZE);
-	message_set_policy(message,policy);
-//      clear dup info's active message
-        message_set_activemsg(message,NULL);	
-//      replace police to new 
-
-	return 1;
-}
-
-
-int router_find_aspect_policy(void * message,void **msg_policy,char * sender_proc)
-{
-    void * policy;
-    int ret;
-    *msg_policy=NULL;
-    ret=dispatch_aspect_policy_getfirst(&policy);
-    if(ret<0)
-        return ret;
-    while(policy!=NULL)
-    {
-	ret=dispatch_match_sender(policy,sender_proc);
-	if(ret>0)
-	{
-		ret=dispatch_match_message_jump(policy,message);
-		if(ret>0)
-		{
-        		ret=dispatch_match_message(policy,message);
-       			if(ret<0)
-            			return ret;
-        		if(ret>0)
-        		{
-            			*msg_policy=policy;
-            			return ret;
-        		}
-		}
-	}
-    	ret=dispatch_aspect_policy_getnext(&policy);
-    	if(ret<0)
-        	return ret;
-    }
-    return ret;
-}
-int router_find_aspect_policy_byname(void **msg_policy,char * name)
-{
-    DISPATCH_POLICY * policy;
-    int ret;
-		
-    *msg_policy=NULL;
-    ret=dispatch_policy_getfirst(&policy);
-    if(ret<0)
-        return ret;
-    while(policy!=NULL)
-    {
-		
-	if(policy->type==MSG_FLOW_ASPECT)
-	{
-		ret=Strncmp(name,policy->name,DIGEST_SIZE);
-		if(ret==0)
-		{
-			*msg_policy=policy;		
-			break;
-		}
-    		ret=dispatch_policy_getnext(&policy);
-	}	
-    }
-    return ret;
-}
-
-int router_set_next_jump(void * message)
-{
-	int ret;
-    	MSG_HEAD * msg_head;	
-   	DISPATCH_POLICY * msg_policy;
-	ROUTE_RULE * rule;
-	char * target;
-	int i;
-
-    	if(message==NULL)
-        	return -EINVAL;
-    	msg_head=message_get_head(message);
-		
-	msg_policy=message_get_policy(message);
-	if(msg_policy==NULL)
-		return 0;	
-
-	ret=dispatch_policy_getfirstrouterule(msg_policy,&rule);
-	if(rule==NULL)
-		return 0;
-	for(i=1;i<msg_head->ljump;i++)
-	{
-		ret=dispatch_policy_getnextrouterule(msg_policy,&rule);		
-		if(rule==NULL)
-			return 0;
-	}
-
-	Memset(msg_head->receiver_uuid,0,DIGEST_SIZE);
-
-	switch(rule->target_type)
-	{
-		case ROUTE_TARGET_LOCAL:
-		case ROUTE_TARGET_PORT:
-			ret=rule_get_target(rule,message,&target);
-			if(ret<0)
-				return ret;		
-			Strncpy(msg_head->receiver_uuid,target,DIGEST_SIZE);
-			msg_head->flag |=MSG_FLAG_LOCAL;
-			Free(target);
-			//message_set_state(message,MSG_FLOW_LOCAL);
-			break;
-		case ROUTE_TARGET_NAME:
-		case ROUTE_TARGET_RECORD:
-		case ROUTE_TARGET_EXPAND:
-			ret=rule_get_target(rule,message,&target);
-			if(ret<0)
-				return ret;		
-			if(Isstrinuuid(target))
-			{
-//				msg_head->receiver_uuid[0]='@';
-				Strncpy(msg_head->receiver_uuid,target,DIGEST_SIZE/4*3);
-			}
-			else
-			{
-				Memcpy(msg_head->receiver_uuid,target,DIGEST_SIZE);
-			}	
-			Free(target);
-			message_set_state(message,MSG_FLOW_DELIVER);
-			msg_head->flag&=~MSG_FLAG_LOCAL;
-//			msg_head->rjump++;
-			break;
-		case ROUTE_TARGET_CONN:
-			ret=rule_get_target(rule,message,&target);
-			if(ret<0)
-				return ret;		
-			Strncpy(msg_head->receiver_uuid,target,DIGEST_SIZE-1);
-			Free(target);
-			message_set_state(message,MSG_FLOW_DELIVER);
-			msg_head->flag&=~MSG_FLAG_LOCAL;
-//			msg_head->rjump++;
-			break;
-		default:
-			return -EINVAL;
-	}
-	return 1;	
-}
-
-int route_push_site_str(void * message,char * name)
-{
-	int len;
-	int ret;
-	BYTE buffer[DIGEST_SIZE];
-	Memset(buffer,0,DIGEST_SIZE);
-	len=Strnlen(name,DIGEST_SIZE*2);
-	if(len==DIGEST_SIZE*2)
-	{
-		ret=digest_to_uuid(name,buffer);
-		if(ret<0)
-			return ret;
-	}
-	else
-	{
-		if(len>DIGEST_SIZE/4*3)
-			return -EINVAL;
-		Strncpy(buffer,name,DIGEST_SIZE/4*3);
-	}
-	return route_push_site(message,buffer);	
-}
-
-int route_push_site(void * message,BYTE * name)
-{
-	MSG_EXPAND * expand;
-	struct expand_flow_trace * flow_trace;
-	int ret;
-	int len;
-	int index;
-
-	index=message_get_define_expand(message,&expand,DTYPE_MSG_EXPAND,SUBTYPE_FLOW_TRACE);
-	if(index<0)
-		return -EINVAL;
-	if(expand==NULL)
-	{
-		expand=Dalloc0(sizeof(MSG_EXPAND),message);
-		if(expand==NULL)
-			return -ENOMEM;	
-		expand->type=DTYPE_MSG_EXPAND;
-		expand->subtype=SUBTYPE_FLOW_TRACE;
-		flow_trace=Dalloc0(sizeof(*flow_trace),message);
-		if(flow_trace==NULL)
-			return -ENOMEM;	
-		expand->expand=flow_trace;
-	}
-	else
-	{
-		flow_trace=expand->expand;
-	}
-		
-	if(flow_trace->record_num==0)
-	{
-		flow_trace->record_num++;
-		flow_trace->trace_record=Dalloc0(DIGEST_SIZE,message);
-		if(flow_trace->trace_record==NULL)
-			return -ENOMEM;
-		Memcpy(flow_trace->trace_record,name,DIGEST_SIZE);
-		message_add_expand(message,expand);	
-	}
-	else
-	{
-		int curr_offset=flow_trace->record_num*DIGEST_SIZE;
-		flow_trace->record_num++;
-		char * buffer;
-		buffer=Dalloc0(curr_offset+DIGEST_SIZE,message);
-		if(buffer==NULL)
-			return -ENOMEM;
-		Memcpy(buffer,flow_trace->trace_record,curr_offset);
-		Free(flow_trace->trace_record);
-		Memcpy(buffer+curr_offset,name,DIGEST_SIZE);
-		flow_trace->trace_record=buffer;
-		message_replace_define_expand(message,expand);
-	}
-	return 0;
-}
-
-int route_push_aspect_site(void * message,char * proc,char * point)
-{
-	MSG_EXPAND * expand;
-	struct expand_aspect_point * aspect_point;
-	int ret;
-	int len;
-	int index;
-
-	index=message_get_define_expand(message,&expand,DTYPE_MSG_EXPAND,SUBTYPE_ASPECT_POINT);
-	if(index<0)
-		return -EINVAL;
-	if(expand==NULL)
-	{
-		expand=Calloc0(sizeof(MSG_EXPAND));
-		if(expand==NULL)
-			return -ENOMEM;	
-		expand->type=DTYPE_MSG_EXPAND;
-		expand->subtype=SUBTYPE_ASPECT_POINT;
-		aspect_point=Dalloc0(sizeof(*aspect_point),message);
-		if(aspect_point==NULL)
-			return -ENOMEM;	
-		expand->expand=aspect_point;
-	}
-	else
-	{
-		aspect_point=expand->expand;
-	}
-		
-	if(aspect_point->record_num==0)
-	{
-		aspect_point->record_num++;
-		aspect_point->aspect_proc=Dalloc0(DIGEST_SIZE,message);
-		if(aspect_point->aspect_proc==NULL)
-			return -ENOMEM;
-		Memcpy(aspect_point->aspect_proc,proc,DIGEST_SIZE);
-		aspect_point->aspect_point=Dalloc0(DIGEST_SIZE,message);
-		if(aspect_point->aspect_point==NULL)
-			return -ENOMEM;
-		Memcpy(aspect_point->aspect_point,point,DIGEST_SIZE);
-		message_add_expand(message,expand);	
-	}
-	else
-	{
-		int curr_offset=aspect_point->record_num*DIGEST_SIZE;
-		aspect_point->record_num++;
-		char * buffer;
-		buffer=Dalloc0(curr_offset+DIGEST_SIZE,message);
-		if(buffer==NULL)
-			return -ENOMEM;
-		Memcpy(buffer,aspect_point->aspect_proc,curr_offset);
-		Free(aspect_point->aspect_proc);
-		Memcpy(buffer+curr_offset,proc,DIGEST_SIZE);
-		aspect_point->aspect_proc=buffer;
-
-		buffer=Dalloc0(curr_offset+DIGEST_SIZE,message);
-		if(buffer==NULL)
-			return -ENOMEM;
-		Memcpy(buffer,aspect_point->aspect_point,curr_offset);
-		Free(aspect_point->aspect_point);
-		Memcpy(buffer+curr_offset,point,DIGEST_SIZE);
-		aspect_point->aspect_point=buffer;
-		message_replace_define_expand(message,expand);
-	}
-	return 0;
-}
-
-int route_check_sitestack(void * message)
-{
-	MSG_EXPAND * expand;
-	struct expand_flow_trace * flow_trace;
-	int ret;
-	ret=message_get_define_expand(message,&expand,DTYPE_MSG_EXPAND,SUBTYPE_FLOW_TRACE);
-	if(ret<0)
-		return -EINVAL;
-	if(expand==NULL)
-		return 0;
-	flow_trace=expand->expand;
-	return flow_trace->record_num;
-}
-int route_check_aspectstack(void * message)
-{
-	MSG_EXPAND * expand;
-	struct expand_aspect_point * aspect_point;
-	int ret;
-	ret=message_get_define_expand(message,&expand,DTYPE_MSG_EXPAND,SUBTYPE_ASPECT_POINT);
-	if(ret<0)
-		return -EINVAL;
-	if(expand==NULL)
-		return 0;
-	aspect_point=expand->expand;
-	if(aspect_point==NULL)
-		return 0;
-	return aspect_point->record_num;
-}
-
-int router_pop_site(void * message)
-{
-	MSG_EXPAND * expand;
-	struct expand_flow_trace * flow_trace;
-	int ret;
-	int len;
-
-	MSG_HEAD * msg_head =message_get_head(message);
-
-	ret=message_get_define_expand(message,&expand,DTYPE_MSG_EXPAND,SUBTYPE_FLOW_TRACE);
-	if(ret<0)
-		return -EINVAL;
-	if(expand==NULL)
-		return 0;
-	flow_trace=expand->expand;
-	if(flow_trace->record_num<1)
-		return 0;
-
-	int curr_offset=(--(flow_trace->record_num))*DIGEST_SIZE;
-	Memcpy(msg_head->receiver_uuid,flow_trace->trace_record+curr_offset,DIGEST_SIZE);
-
-	if(flow_trace->record_num==0)
-	{
-		Free(flow_trace->trace_record);
-		flow_trace->trace_record=NULL;
-		message_remove_expand(message,DTYPE_MSG_EXPAND,SUBTYPE_FLOW_TRACE,&expand);
-		Free(expand);
-	}
-		
-//	{
-//		msg_head->state=MSG_FLOW_DELIVER;
-//		msg_head->flag |= MSG_FLAG_LOCAL;
-//	}
-
-	return 1;
-}
-
-int router_pop_aspect_site(void * message, char * proc)
-{
-	MSG_EXPAND * expand;
-	struct expand_aspect_point * aspect_point;
-	int ret;
-	int len;
-
-	MSG_HEAD * msg_head =message_get_head(message);
-
-	ret=message_get_define_expand(message,&expand,DTYPE_MSG_EXPAND,SUBTYPE_ASPECT_POINT);
-	if(ret<0)
-		return -EINVAL;
-	if(expand==NULL)
-		return 0;
-	aspect_point=expand->expand;
-	if(aspect_point->record_num<1)
-		return 0;
-
-	int curr_offset=(--(aspect_point->record_num))*DIGEST_SIZE;
-	Memcpy(msg_head->receiver_uuid,aspect_point->aspect_point+curr_offset,DIGEST_SIZE);
-	Memcpy(proc,aspect_point->aspect_proc+curr_offset,DIGEST_SIZE);
-
-	if(aspect_point->record_num==0)
-	{
-		message_remove_expand(message,DTYPE_MSG_EXPAND,SUBTYPE_ASPECT_POINT,&expand);
-		Free(expand);
-		Free(aspect_point->aspect_proc);
-		Free(aspect_point->aspect_point);
-	}
-	return 1;
-}
-
-int router_store_route(void * message)
-{
-	int ret;
-	MSG_HEAD * msg_head;
-	struct expand_route_record * route_record;
-	if(message==NULL)
-		return  -EINVAL;
-	msg_head=(MSG_HEAD *)message_get_head(message);	
-	route_record=Dalloc0(sizeof(*route_record),message);
-	if(route_record==NULL)
-		return -ENOMEM;	
-
-	Memcpy(route_record->sender_uuid,msg_head->sender_uuid,DIGEST_SIZE);
-	Memcpy(route_record->receiver_uuid,msg_head->receiver_uuid,DIGEST_SIZE);
-	Memcpy(route_record->route,msg_head->route,DIGEST_SIZE);
-	route_record->flow=msg_head->flow;
-	route_record->state=msg_head->state;
-	route_record->flag=msg_head->flag;
-	route_record->ljump=msg_head->ljump;
-	route_record->rjump=msg_head->rjump;
-		
-	ret=message_add_expand_data(message,DTYPE_MSG_EXPAND,SUBTYPE_ROUTE_RECORD,route_record);
-	return ret;
-}
-int route_recover_route(void * message)
-{
-	int ret;
-	MSG_HEAD * msg_head;
-	MSG_EXPAND * expand;
-	struct expand_route_record * route_record=NULL;
-	if(message==NULL)
-		return  -EINVAL;
-	ret=message_get_define_expand(message,&expand,DTYPE_MSG_EXPAND,SUBTYPE_ROUTE_RECORD);
-	if(ret<0)
-		return ret;
-	if(expand==NULL)
-		return -EINVAL;
-	route_record=expand->expand;
-	if(route_record==NULL)
-		return -EINVAL;	
-
-	int temp_flag=0;
-	msg_head=(MSG_HEAD *)message_get_head(message);	
-
-	Memcpy(msg_head->sender_uuid,route_record->sender_uuid,DIGEST_SIZE);
-	Memcpy(msg_head->receiver_uuid,route_record->receiver_uuid,DIGEST_SIZE);
-	Memcpy(msg_head->route,route_record->route,DIGEST_SIZE);
-	msg_head->flow=route_record->flow;
-	msg_head->state=route_record->state;
-	msg_head->ljump=route_record->ljump;
-	msg_head->rjump=route_record->rjump;
-
-	int temp_mask=MSG_FLAG_CRYPT|MSG_FLAG_SIGN|MSG_FLAG_ZIP|MSG_FLAG_VERIFY;
-
-	msg_head->flag = (msg_head->flag &temp_mask) | (route_record->flag & (~temp_mask));
-
-	message_remove_expand(message,DTYPE_MSG_EXPAND,SUBTYPE_ROUTE_RECORD,&route_record);
-	Free(route_record);
-	return 1;
-}
-*/

@@ -10,11 +10,11 @@ killall envset_proc
 sleep 1
 
 sh ../run_cube.sh exec_def/_sender_crypthub.def &
-sleep 1
+#sleep 1
 sh ../run_cube.sh exec_def/_receiver_crypthub.def &
-sleep 1
+#sleep 1
 sh ../run_cube.sh exec_def/_file_receiver.def &
-sleep 1
+#sleep 1
 sh ../run_cube.sh exec_def/_file_transfer.def &
 sleep 1
-#sh ../run_cube.sh exec_def/_file_sender.def request.txt &
+sh ../run_cube.sh exec_def/_file_sender.def request.txt &
