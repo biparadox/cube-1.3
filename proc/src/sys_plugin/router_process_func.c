@@ -576,7 +576,13 @@ int proc_router_start(void * sub_proc,void * para)
 					}	
 				}	
 				if(message!=NULL)
-					ret=proc_router_send_msg(message,local_uuid,proc_name);
+				{
+					if(Memcmp(message->head.receiver_uuid,EMPTY_UUID,DIGEST_SIZE)!=0)
+					{
+						message->active_msg = message;
+						ret=proc_router_send_msg(message,local_uuid,proc_name);
+					}
+				}
 			}
 			message=_waiting_message_removehead();
 		}
