@@ -247,8 +247,6 @@ int route_get_node_byjump(ROUTE_PATH * path, ROUTE_NODE ** node,int ljump, int r
 	{
 		node_path=&(path->response_path);
 	}
-	if(ljump==0)
-		ljump=1;
 	
 	if(node_path->policy_num<ljump)
 	{
@@ -271,7 +269,56 @@ int route_get_node_byjump(ROUTE_PATH * path, ROUTE_NODE ** node,int ljump, int r
 		return 1;
 	return 0;	
 }
+/*
+int route_get_node_bysender(ROUTE_PATH * path, ROUTE_NODE ** node,char * sender, int rjump)
+{
+	NODE_LIST * node_path;
+	struct List_head * curr;
+	
+	*node=NULL;
+	if(rjump>=0)
+	{
+		node_path=&(path->route_path);
+	}
+	else
+	{
+		node_path=&(path->response_path);
+	}
+	
+	if(node_path->policy_num<ljump)
+	{
+		node=NULL;
+		return 0;
+	}
+	
+	curr = node_path->head.list.next;
+	Record_List * trace_record=NULL; 
+	ROUTE_NODE * trace_node=NULL;
 
+
+	while(curr != &(node_path->head.list))
+	{
+    	trace_record=List_entry(curr,Record_List,list);
+		trace_node=(ROUTE_NODE *)trace_record->record;
+		if(trace_node ==NULL)
+			return 0;
+		if(Strncmp(		
+
+		
+		curr=curr->next;	
+	}
+
+	for(i=0;i<ljump;i++)
+	{
+		curr=curr->next;
+	}
+	
+
+	if(*node!=NULL)
+		return 1;
+	return 0;	
+}
+*/
 void * route_read_policy(void * policy_node)
 {
     void * match_policy_node;
@@ -318,55 +365,41 @@ void * route_read_policy(void * policy_node)
     switch(policy->type)
 	{
 		case MSG_FLOW_DUP:
-			
-			ret=router_find_policy_byname(&normal_path,policy->name,policy->rjump,policy->ljump);
-			if(ret<0)
-				return ret;
-			if(normal_path==NULL)
-			{
-				print_cubeerr("can't find DUP policy's dup path!\n");
-				return 0;
-			}
-			ret = route_get_node_byjump(normal_path, &insert_node,policy->ljump,1);
-			if(ret<0)
-				return ret;
-			if(insert_node==NULL)
-			{
-				print_cubeerr("can't find DUP policy's insert node!\n");
-				return 0;
-			}
-			branch_node = Talloc0(sizeof(*branch_node));
-			if(branch_node == NULL)
-				return -ENOMEM;
-			branch_node->route_path = normal_path;
-			branch_node->branch_type =policy->type;  
-			branch_node->branch_path=path;
-			
-     		if((record=_node_list_add(&insert_node->aspect_branch,(void *)branch_node))==NULL)
-			{
-				print_cubeerr("insert DUP policy failed!\n");
-				return 0;
-			}
-
-    		Strncpy(path->name,policy->newname,DIGEST_SIZE);
-			path->flow=MSG_FLOW_DELIVER;
-			break;
 		case MSG_FLOW_ASPECT:
+			
 			ret=router_find_policy_byname(&normal_path,policy->name,policy->rjump,policy->ljump);
 			if(ret<0)
 				return ret;
 			if(normal_path==NULL)
 			{
-				print_cubeerr("can't find ASPECT policy's aspect path!\n");
+				print_cubeerr("can't find %s policy's aspect path!\n",policy->newname);
 				return 0;
 			}
-			ret = route_get_node_byjump(normal_path, &insert_node,policy->ljump,1);
+			if(policy->ljump!=0)
+			{
+				// insert aspect policy to the old policy by policy->ljump ,
+				// if policy->rjump is negative, it should be insert to the response path
+				ret = route_get_node_byjump(normal_path, &insert_node,policy->ljump,policy->rjump);
+			}
+/*
+			else if( Memcmp(policy->sender,EMPTY_UUID,DIGEST_SIZE) != 0)
+			{
+				// insert aspect policy to the old policy by finding message sender, 
+				// if policy->rjump is negative, it should be insert to the response path
+				ret = route_get_node_bysender(normal_path,&insert_node,policy->sender,policy->rjump);
+			}
+*/
+			else
+			{
+				print_cubeerr("can't find %s policy's insert node!\n",policy->newname);
+				return -EINVAL;
+			}
 			if(ret<0)
 				return ret;
 			if(insert_node==NULL)
 			{
-				print_cubeerr("can't find ASPECT policy's insert node!\n");
-				return 0;
+				print_cubeerr("can't find aspect policy %s 's insert node!\n",policy->newname);
+				return -EINVAL;
 			}
 			branch_node = Talloc0(sizeof(*branch_node));
 			if(branch_node == NULL)
@@ -377,12 +410,15 @@ void * route_read_policy(void * policy_node)
 			
      		if((record=_node_list_add(&insert_node->aspect_branch,(void *)branch_node))==NULL)
 			{
-				print_cubeerr("insert DUP policy failed!\n");
+				print_cubeerr("insert aspect policy %s failed!\n",policy->newname);
 				return 0;
 			}
 
     		Strncpy(path->name,policy->newname,DIGEST_SIZE);
-			path->flow=MSG_FLOW_QUERY;
+			if(policy->type == MSG_FLOW_DUP)
+				path->flow=MSG_FLOW_DELIVER;
+			else
+				path->flow=MSG_FLOW_QUERY;
 			break;
 		default:	
     		Strncpy(path->name,policy->name,DIGEST_SIZE);
@@ -1377,9 +1413,10 @@ int message_route_findtrace(void * msg,enum message_flow_type flow)
 	{
 		aspect_node=trace_record->record;
 		_recover_aspect_message(message,aspect_node);
-		List_del(&trace_record);
 		//Free(aspect_node); 	
+    	//List_del(&trace_record);
 	}
+    _node_list_del(trace_record);
 	return 1;	
 }
 
