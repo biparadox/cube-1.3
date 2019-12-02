@@ -1267,6 +1267,7 @@ int message_route_setstart( void * msg, void * path)
 	
 	msg_box->policy = path;
 	msg_box->head.flow=route_path->flow;
+	msg_box->head.state = MSG_STATE_MATCH;
 	Strncpy(msg_box->head.route,route_path->name,DIGEST_SIZE);
 //	msg_box->path_site=NULL;
 //	return 0;
