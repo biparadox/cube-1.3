@@ -85,22 +85,22 @@
 			[
 				{"name":"fin_opcode","type":"BENUM","ref_name":"flag_websocket_fin"},
 				{"name":"payload","type":"UCHAR"},
-				{"name":"payload_slen","type":"UINT16"},
-				{"name":"payload_len","type":"UINT64"},
+				{"name":"payload_slen","type":"USHORT"},
+				{"name":"payload_len","type":"LONGLONG"},
 				{"name":"masking_key","type":"STRING","size":4}
 			]
-		}
+		},
 		"flag_no":2,
 		"index":
-                [
-                        {
-                                "flag":"KEY",
-                                "elemlist":"fin_opcode,payload,payload_slen,masking_key"
-                        },
-                        {
-                                "flag":"INPUT",
-                                "elemlist":"fin_opcode,payload,payload_len,masking_key"
-                        }
-                ]
+ 		[
+            {
+                "flag":"KEY",
+                "elemlist":"fin_opcode,payload,payload_slen,masking_key"
+            },
+            {
+                "flag":"INPUT",
+                "elemlist":"fin_opcode,payload,payload_len,masking_key"
+            }
+        ]
 	}
 }
