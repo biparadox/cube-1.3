@@ -161,11 +161,12 @@ int     proc_audit_log (void * message)
     	int fd ;
 	ret=message_output_json(message,audit_text);	
 
-	audit_text[ret]='\n';			
-    	fd=open(audit_filename,O_WRONLY|O_APPEND);
-    	if(fd<0)
+	audit_text[ret]=0;			
+   	fd=open(audit_filename,O_WRONLY|O_APPEND);
+   	if(fd<0)
 		return -ENOENT;
-	write(fd,audit_text,ret+1);
+	print_pretty_text(audit_text,fd);
+	//write(fd,audit_text,ret+1);
 	write(fd,isostr,strlen(isostr));
 	close(fd);
 }

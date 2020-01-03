@@ -28,4 +28,5 @@ int convert_uuidname(char * name,int len,BYTE * digest,char * newfilename);
 
 int RAND_bytes(unsigned char *buffer, size_t len);
 void print_bin_data(BYTE * data,int len,int width);
+int  print_pretty_text(char * text,int fd);
 #endif

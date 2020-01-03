@@ -496,4 +496,3 @@ int hex_2_bin(BYTE * hex,int size,BYTE * bin)
 	}
 	return len/2;
 }
-

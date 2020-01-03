@@ -614,3 +614,95 @@ void print_bin_data(BYTE * data,int len,int width)
     }
     printf("\n");
 }
+
+static int json_tab=4;
+static int max_len=80;
+int print_pretty_text(char * json_str,int fd)
+{
+	int i=0,j=0;
+	int inlen=0;
+	int outlen=0;
+	char print_str[256];
+	char tab_len[128];
+	int print_state=0;
+	int deep=-1;
+	int jump=0;
+	inlen=Strlen(json_str);
+	if(inlen>4096)
+		return -EINVAL;
+
+	for(i=0;i<inlen;i++)
+	{
+		print_str[j++]=json_str[i];
+		if((json_str[i]=='{')||(json_str[i]=='['))
+		{
+			if(deep==-1)
+			{
+				print_str[j++]='\n';
+				write(fd,print_str,j);
+				deep++;
+				j=0;
+			}
+			else if(print_state==0)
+			{
+				print_state=1;
+				if(deep<=0)
+					jump=0;
+				else
+			    	jump=deep;
+				deep++;
+			}
+			else if(print_state==1)
+			{
+				i--;
+				print_str[j-1]='\n';
+				Memset(tab_len,' ',jump*json_tab);
+				write(fd,tab_len,jump*json_tab);
+				write(fd,print_str,j);
+				j=0;
+				print_state=0;	
+			}
+		}
+		else if((json_str[i]=='}')||(json_str[i]==']'))
+		{
+			if(print_state==0)
+			{
+				if(deep<=0)
+					jump=0;
+				else
+			    	jump=deep;
+			}
+
+			if(json_str[i+1]==',')
+			{
+				i++;
+				print_str[j++]=json_str[i];
+			}
+			print_str[j++]='\n';
+			Memset(tab_len,' ',jump*json_tab);
+			write(fd,tab_len,jump*json_tab);
+			write(fd,print_str,j);
+			j=0;
+			print_state=0;
+			deep--;
+		}
+		else if(j==max_len)
+		{
+			if(print_state==0)
+			{
+				if(deep<=0)
+					jump=0;
+				else
+			    	jump=deep;
+			}
+			print_str[j++]='\n';
+			Memset(tab_len,' ',jump*json_tab);
+			write(fd,tab_len,jump*json_tab);
+			write(fd,print_str,j);
+			j=0;
+			print_state=0;
+		}
+			
+	}
+	return 0;
+}
