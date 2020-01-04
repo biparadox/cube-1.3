@@ -125,5 +125,6 @@ void _waiting_message_del(void * record);
 void * _waiting_message_getfirst();
 void * _waiting_message_removehead();
 void * _waiting_message_getnext();
+void * route_read_policy(void * policy_node);
 
 #endif
