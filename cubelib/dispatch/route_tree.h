@@ -127,4 +127,6 @@ void * _waiting_message_removehead();
 void * _waiting_message_getnext();
 void * route_read_policy(void * policy_node);
 
+Record_List * _node_list_getfirst(void * list);
+Record_List * _node_list_getnext(void * list);
 #endif
