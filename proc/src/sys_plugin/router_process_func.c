@@ -281,7 +281,7 @@ int proc_router_init(void * sub_proc,void * para)
     ret=read_dispatch_file(aspect_filename,1);	
     if(ret<=0)
     {
-	    print_cubeerr("read aspect policy error %d!\n",ret);
+	    print_cubewarn("read aspect policy failed %d!\n",ret);
 //	    return ret;
     }
 

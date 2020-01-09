@@ -109,9 +109,8 @@ int print_cubeerr(char * format,...)
                 sprintf(buffer,"time: %d.%6.6d :",debug_time.tv_sec,debug_time.tv_usec);
         }
         offset=Strlen(buffer);
-	//sprintf(buffer+offset,"errsite: file %s function %s line %d\n :",__FILE__,__FUNCTION__,__LINE__);
-        //offset=Strlen(buffer);
 	sprintf(buffer+offset,"errinfo: %s %d :", get_cubeerrinfo(),get_cubeerrnum(0));
+        offset=Strlen(buffer);
 
   	va_start (args, format);
   	vsprintf (buffer+offset,format, args);
@@ -124,6 +123,48 @@ int print_cubeerr(char * format,...)
 	ret=write(fd,buffer,len);
 	return ret;
 }
+
+int print_cubewarn(char * format,...)
+{
+	int fd;
+	int len;
+	int ret;
+	int offset=0;
+
+  	va_list args;
+        gettimeofday( &debug_time, NULL );
+        if(first_time.tv_sec==0)
+        {
+                first_time.tv_sec=debug_time.tv_sec;
+                first_time.tv_usec=debug_time.tv_usec;
+                sprintf(buffer,"time: 0.0 :");
+        }
+        else
+        {
+                debug_time.tv_sec-=first_time.tv_sec;
+                if(debug_time.tv_usec<first_time.tv_usec)
+                        debug_time.tv_usec+=1000000-first_time.tv_usec;
+                else
+                        debug_time.tv_usec-=first_time.tv_usec;
+
+                sprintf(buffer,"time: %d.%6.6d :",debug_time.tv_sec,debug_time.tv_usec);
+        }
+        offset=Strlen(buffer);
+	sprintf(buffer+offset,"warninfo: %s %d :", get_cubeerrinfo(),get_cubeerrnum(0));
+        offset=Strlen(buffer);
+
+  	va_start (args, format);
+  	vsprintf (buffer+offset,format, args);
+  	va_end (args);
+	len=Strnlen(buffer,DIGEST_SIZE*32);
+	
+	fd=open(err_file,O_WRONLY|O_APPEND);
+	if(fd<0)
+		return -EINVAL;
+	ret=write(fd,buffer,len);
+	return ret;
+}
+
 
 int print_cubeaudit(char * format,...)
 {
@@ -165,7 +206,56 @@ int print_cubeaudit(char * format,...)
 	close(fd);
 	return ret;
 }
+/*
+int _print_cube_log(char * start, char * file,char * format,...)
+{
+	int fd;
+	int len;
+	int ret;
+	int offset=0;
+  	va_list args;
 
+    gettimeofday( &debug_time, NULL );
+    if(first_time.tv_sec==0)
+    {
+        first_time.tv_sec=debug_time.tv_sec;
+        first_time.tv_usec=debug_time.tv_usec;
+        sprintf(buffer,"time: 0.0 :");
+    }
+    else
+    {
+        debug_time.tv_sec-=first_time.tv_sec;
+        if(debug_time.tv_usec<first_time.tv_usec)
+            debug_time.tv_usec+=1000000-first_time.tv_usec;
+        else
+            debug_time.tv_usec-=first_time.tv_usec;
+
+        sprintf(buffer,"%s: %d.%6.6d :",start,debug_time.tv_sec,debug_time.tv_usec);
+    }
+    offset=Strlen(buffer);
+
+    va_start (args, format);
+    vsprintf (buffer+offset,format, args);
+    va_end (args);
+    len=Strnlen(buffer,DIGEST_SIZE*32);
+    buffer[len++]='\n';
+
+	fd=open(file,O_WRONLY|O_APPEND);
+	if(fd<0)
+		return -EINVAL;
+	ret=write(fd,buffer,len);
+	close(fd);
+	return ret;
+}
+
+int print_cubeaudit(char * format,...)
+{
+  	va_list args;
+    va_start (args, format);
+	_print_cube_log("start",audit_file,format,args);
+    va_end (args);
+}
+*/
 int debug_message(void * msg,char * info)
 {
         char Buf[256];
