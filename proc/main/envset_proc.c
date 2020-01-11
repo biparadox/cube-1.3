@@ -135,7 +135,7 @@ int main(int argc,char **argv)
 		ret=read_json_file(namebuffer);
 		if(ret<0)
 			return ret;
-		print_cubeaudit("read %d elem from file %s!\n",ret,namebuffer);
+		print_cubeaudit("read %d elem from file %s!",ret,namebuffer);
 	}
 
 	msgfunc_init();
@@ -164,7 +164,7 @@ int main(int argc,char **argv)
     	 close(fd);
 	
 
-    	 ret=read_sys_cfg(&lib_para,root_node,NULL);
+    	 ret=read_sys_cfg((void **)&lib_para,root_node,NULL);
     	 if(ret<0)
 		return ret;
     }	 		
@@ -246,7 +246,7 @@ int main(int argc,char **argv)
 
     ex_module_init(router_proc,&router_init);
 	
-    print_cubeaudit("prepare the router proc\n");
+    print_cubeaudit("system plugin router_proc is prepared!");
     ret=add_ex_module(router_proc);
     if(ret<0)
 	    return ret;
@@ -271,7 +271,7 @@ int main(int argc,char **argv)
     }
   */   
     usleep(time_val.tv_usec);
-    print_cubeaudit("prepare the conn proc\n");
+    print_cubeaudit("system plugin connector_proc is prepared!");
     ret=ex_module_start(conn_proc,NULL);
     if(ret<0)
 	    return ret;
@@ -291,25 +291,28 @@ int main(int argc,char **argv)
   		ret=ex_module_start(ex_module,NULL);
 	  	if(ret<0)
   			return ret;
-		print_cubeaudit("monitor ex_modulec %s started successfully!\n",ex_module_getname(ex_module));
 	  }
 	  else if(ex_module_gettype(ex_module) == MOD_TYPE_START)
 	  {
   		ret=ex_module_start(ex_module,&start_para);
 	  	if(ret<0)
   			return ret;
-		print_cubeaudit("start ex_module %s started successfully!\n",ex_module_getname(ex_module));
 
 	  }
+      print_cubeaudit("ex_module %s started successfully!",ex_module_getname(ex_module));
 	  	
-    	  ret= get_next_ex_module(&ex_module);
+      ret= get_next_ex_module(&ex_module);
 	  active_module_no++;
-    	  if(ret<0)
-		return ret;
+      if(ret<0)
+	  return ret;
     }
 
     if(active_module_no==0)
-	return 0;
+	{
+		print_cubeerr(" no active module loaded!");
+		return 0;
+	}
+    print_cubeaudit("instance load %d module!\n",active_module_no);
 
     proc_share_data_setstate(PROC_LOCAL_START);
 
@@ -317,7 +320,7 @@ int main(int argc,char **argv)
     int * thread_retval;
     thread_retval=malloc(sizeof(int)*active_module_no);
     if(thread_retval==NULL)
-	return NULL;
+	return -EINVAL;
 /*
     i=0;
     while(1)

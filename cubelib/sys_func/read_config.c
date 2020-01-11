@@ -109,7 +109,8 @@ int print_cubeerr(char * format,...)
                 sprintf(buffer,"time: %d.%6.6d :",debug_time.tv_sec,debug_time.tv_usec);
         }
         offset=Strlen(buffer);
-	sprintf(buffer+offset,"errinfo: %s %d :", get_cubeerrinfo(),get_cubeerrnum(0));
+		//sprintf(buffer+offset,"errinfo: %s %d :", get_cubeerrinfo(),get_cubeerrnum(0));
+		sprintf(buffer+offset,"errinfo: ");
         offset=Strlen(buffer);
 
   	va_start (args, format);
@@ -150,7 +151,8 @@ int print_cubewarn(char * format,...)
                 sprintf(buffer,"time: %d.%6.6d :",debug_time.tv_sec,debug_time.tv_usec);
         }
         offset=Strlen(buffer);
-	sprintf(buffer+offset,"warninfo: %s %d :", get_cubeerrinfo(),get_cubeerrnum(0));
+	//	sprintf(buffer+offset,"warninfo: %s %d :", get_cubeerrinfo(),get_cubeerrnum(0));
+		sprintf(buffer+offset,"warninfo: ");
         offset=Strlen(buffer);
 
   	va_start (args, format);
@@ -193,11 +195,11 @@ int print_cubeaudit(char * format,...)
         }
         offset=Strlen(buffer);
 
-        va_start (args, format);
-        vsprintf (buffer+offset,format, args);
-        va_end (args);
-        len=Strnlen(buffer,DIGEST_SIZE*32);
-        buffer[len++]='\n';
+    va_start (args, format);
+    vsprintf (buffer+offset,format, args);
+    va_end (args);
+    len=Strnlen(buffer,DIGEST_SIZE*32);
+    buffer[len++]='\n';
 
 	fd=open(audit_file,O_WRONLY|O_APPEND);
 	if(fd<0)

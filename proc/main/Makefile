@@ -1,10 +1,11 @@
 FLAGS= -g -o 
+CUBELIBPATH=../../cubelib
 INCLUDE= -I$(CUBELIBPATH)/include
 CFLAGS= -g -c -fPIC -DUSER_MODE $(INCLUDE)
 CC=gcc
 CCP=g++
 STRUCTOBJ=read_config.o
-DEPENDLIB= -L$(CUBELIBPATH)/lib -L$(CUBESYSPATH)/plugin -lsys_func -lexmodule -ldispatch -lchannel -lmessage -lmemdb -lconnector -lstruct -lcrypto_func -ljson -lbasefunc -lstring -lalloc -lpthread
+DEPENDLIB= -L$(CUBELIBPATH)/lib -lsys_func -lexmodule -ldispatch -lchannel -lmessage -lmemdb -lconnector -lstruct -lcrypto_func -ljson -lbasefunc -lstring -lalloc -lpthread
 EXECLIB= -L$(CUBELIBPATH)/lib -lpthread -Wl,-Bstatic -lsys_func -lexmodule -ldispatch -lchannel -lmessage -lmemdb -lconnector -lstruct -lcrypto_func -ljson -lbasefunc -lstring -lalloc -Wl,-Bdynamic
 
 main: main_proc lib_tool cube_exec envset_proc

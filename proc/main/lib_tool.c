@@ -172,7 +172,7 @@ int main(int argc,char **argv)
     	 close(fd);
 	
 
-    	 ret=read_sys_cfg(&lib_para,root_node,NULL);
+    	 ret=read_sys_cfg((void **)&lib_para,root_node,NULL);
     	 if(ret<0)
 		return ret;
     }	 		
@@ -216,7 +216,7 @@ int main(int argc,char **argv)
 			return -EINVAL;
 		}
 
-		while((ret=lib_read(fd,typeno,subtypeno,&record))>0)	
+		while((ret=lib_read(fd,typeno,subtypeno,(void **)&record))>0)	
 		{
 			ret=memdb_store_record(record);
 			if(ret<0)
@@ -254,7 +254,7 @@ int main(int argc,char **argv)
 			return -EINVAL;
 		}
 
-		while((ret=lib_read(fd,typeno,subtypeno,&record))>0)	
+		while((ret=lib_read(fd,typeno,subtypeno,(void **)&record))>0)	
 		{
 			ret=memdb_store_record(record);
 			if(ret<0)
@@ -282,7 +282,7 @@ int main(int argc,char **argv)
 			else if((fd=open(argv[i],O_RDONLY))<0)
 				return -EINVAL;
 
-			while((ret=lib_read(fd,typeno,subtypeno,&record))>0)	
+			while((ret=lib_read(fd,typeno,subtypeno,(void **)&record))>0)	
 			{
 				ret=memdb_store_record(record);
 				if(ret<0)

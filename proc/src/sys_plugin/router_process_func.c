@@ -113,7 +113,7 @@ int read_dispatch_file(char * file_name,int is_aspect)
 		}
 */
 	}
-	print_cubeaudit("read %d policy succeed!",count);
+	//print_cubeaudit("read %d policy succeed!",count);
 	close(fd);
 	return count;
 }
@@ -275,15 +275,19 @@ int proc_router_init(void * sub_proc,void * para)
     ret=read_dispatch_file(config_filename,0);	
     if(ret<=0)
     {
-	    print_cubeerr("read router policy error %d!\n",ret);
+	    print_cubeerr("read router policy error %d!",ret);
 //	    return ret;
     }
+	else
+		print_cubeaudit("read %d policy from router_policy file!",ret);
     ret=read_dispatch_file(aspect_filename,1);	
     if(ret<=0)
     {
-	    print_cubewarn("read aspect policy failed %d!\n",ret);
+	    print_cubewarn("read aspect policy failed %d!",ret);
 //	    return ret;
     }
+	else
+		print_cubeaudit("read %d policy from aspect policy file!",ret);
 
     proc_audit_init();
     return 0;

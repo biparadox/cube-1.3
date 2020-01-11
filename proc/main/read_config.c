@@ -121,10 +121,10 @@ int read_sys_cfg(void ** lib_para_struct,void * root_node,char * plugin_dir)
 				j++;
 			}
 			if(define_path[j]==NULL)
-				print_cubeerr("read define file  %s failed!\n",json_get_valuestr(define_node));
+				print_cubeerr("read define file  %s failed!",json_get_valuestr(define_node));
 		}
 		if(ret>=0)
-			print_cubeaudit("read %d elem from file %s!\n",ret,json_get_valuestr(define_node));
+			print_cubeaudit("read %d elem from file %s!",ret,json_get_valuestr(define_node));
 	}
 	else if(json_get_type(define_node)==JSON_ELEM_ARRAY)
 	{
@@ -149,11 +149,11 @@ int read_sys_cfg(void ** lib_para_struct,void * root_node,char * plugin_dir)
 				}
 				if(define_path[j]==NULL)
 				{
-					print_cubeerr("read define file  %s failed!\n",json_get_valuestr(define_file));
+					print_cubeerr("read define file  %s failed!",json_get_valuestr(define_file));
 				}
 			}	
 			if(ret>=0)
-				print_cubeaudit("read %d elem from file %s!\n",ret,json_get_valuestr(define_file));
+				print_cubeaudit("read %d elem from file %s!",ret,json_get_valuestr(define_file));
 			define_file=json_get_next_child(define_node);
 		}
 	}	
@@ -275,7 +275,7 @@ int read_plugin_cfg(void ** plugin,void * root_node)
     }
     close(fd);
 
-    ret=read_sys_cfg(&lib_para,lib_node,plugin_dir);
+    ret=read_sys_cfg((void **)&lib_para,lib_node,plugin_dir);
     if(ret<0)
     {
 	print_cubeerr("plugin %s read failed!",libname);
@@ -368,7 +368,7 @@ int read_main_cfg(void * lib_para_struct,void * root_node)
 	{
 		ret=read_record_file(json_get_valuestr(record_list));
 		if(ret>0)
-			print_cubeaudit("read %d elem from file %s!\n",ret,json_get_valuestr(record_list));
+			print_cubeaudit("read %d elem from file %s!",ret,json_get_valuestr(record_list));
 	}
 	else if(json_get_type(record_list)==JSON_ELEM_ARRAY)
 	{
@@ -377,7 +377,7 @@ int read_main_cfg(void * lib_para_struct,void * root_node)
 		{
 			ret=read_record_file(json_get_valuestr(record_file));
 			if(ret>0)
-				print_cubeaudit("read %d elem from file %s!\n",ret,json_get_valuestr(record_file));
+				print_cubeaudit("read %d elem from file %s!",ret,json_get_valuestr(record_file));
 			record_file=json_get_next_child(record_list);
 		}
 	}	

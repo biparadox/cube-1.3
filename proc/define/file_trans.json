@@ -84,13 +84,13 @@
 				{"name":"record_no","type":"INT"},
 				{"name":"offset","type":"INT"},
 				{"name":"data_size","type":"INT"},
-				{"name":"policy_data","type":"DEFINE","def":"data_size"}
+				{"name":"file_data","type":"DEFINE","def":"data_size"}
 			]
 		}
 		"index":
 		{
 			"flag":"INDEX",
-			"elemlist":"filename,total_size,record_no,offset,data_size,policy_data"
+			"elemlist":"filename,total_size,record_no,offset,data_size,file_data"
 		}
 	}	
 }

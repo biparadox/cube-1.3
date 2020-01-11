@@ -146,7 +146,7 @@ int get_filedata_from_message(void * message)
 	if(fd<0)
 		return fd;
 	lseek(fd,pfdata->offset,SEEK_SET);
-	write(fd,pfdata->policy_data,pfdata->data_size);
+	write(fd,pfdata->file_data,pfdata->data_size);
 	close(fd);
 	return 0;
 }
@@ -366,9 +366,9 @@ int proc_file_send(void * sub_proc,void * message)
         			pfdata->offset=i*block_size;
         			pfdata->total_size=total_size;
         			pfdata->data_size=block_size;
-				pfdata->policy_data=(BYTE *)Talloc0(sizeof(char)*pfdata->data_size);
+				pfdata->file_data=(BYTE *)Talloc0(sizeof(char)*pfdata->data_size);
 
-        			if(read(fd,pfdata->policy_data,pfdata->data_size)!=pfdata->data_size)
+        			if(read(fd,pfdata->file_data,pfdata->data_size)!=pfdata->data_size)
         			{
                			 	print_cubeerr("read vm list error! \n");
                 			return -EINVAL;
@@ -395,9 +395,9 @@ int proc_file_send(void * sub_proc,void * message)
         			pfdata->offset=i*block_size;
         			pfdata->total_size=total_size;
         			pfdata->data_size=data_size;
-				pfdata->policy_data=(BYTE *)Talloc(sizeof(char)*data_size);
+				pfdata->file_data=(BYTE *)Talloc(sizeof(char)*data_size);
 
-        			if(read(fd,pfdata->policy_data,data_size)!=data_size)
+        			if(read(fd,pfdata->file_data,data_size)!=data_size)
         			{
                			 	print_cubeerr("read vm list error! \n");
                 			return NULL;

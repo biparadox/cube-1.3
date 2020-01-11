@@ -1,1 +1,0 @@
-Test term_io's input message send and file_dealer's file_data send!

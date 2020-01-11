@@ -35,7 +35,7 @@ typedef struct policyfile_data
 	int record_no;
 	int offset;
 	int data_size;
-	BYTE * policy_data; //the file data
+	BYTE * file_data; //the file data
 }__attribute__((packed)) RECORD(FILE_TRANS,FILE_DATA);
 
 typedef struct policyfile_req

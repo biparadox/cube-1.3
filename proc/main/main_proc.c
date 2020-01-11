@@ -140,7 +140,7 @@ int main(int argc,char **argv)
     	 close(fd);
 	
 
-    	 ret=read_sys_cfg(&lib_para,root_node,NULL);
+    	 ret=read_sys_cfg((void **)&lib_para,root_node,NULL);
     	 if(ret<0)
 		return ret;
     }	 		
@@ -293,7 +293,7 @@ int main(int argc,char **argv)
     int * thread_retval;
     thread_retval=malloc(sizeof(int)*active_module_no);
     if(thread_retval==NULL)
-	return NULL;
+		return -EINVAL;
 /*
     i=0;
     while(1)
