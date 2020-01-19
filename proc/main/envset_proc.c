@@ -356,21 +356,21 @@ int main(int argc,char **argv)
 	  	||(ex_module_gettype(ex_module) == MOD_TYPE_PORT)
 	  	||(ex_module_gettype(ex_module) == MOD_TYPE_START))
 	  {
-		if(Strcmp(ex_module_getname(ex_module),"router_proc")!=0)
-		{
-    			ret=ex_module_join(ex_module,&thread_retval[i++]);
+		//if(Strcmp(ex_module_getname(ex_module),"router_proc")!=0)
+		//{
+    		ret=ex_module_join(ex_module,&thread_retval[i++]);
 	  		if(ret<0)
 			{
-				print_cubeerr("%s module exit!\n",ex_module_getname(ex_module));
+				print_cubeerr("%s module join error!\n",ex_module_getname(ex_module));
   				return ret;
 			}
 			print_cubeaudit("%s module exit!\n",ex_module_getname(ex_module));
-		}
+		//}
 	  }
 	  	
-    	  ret= get_next_ex_module(&ex_module);
-    	  if(ret<0)
-		return ret;
+    	 ret= get_next_ex_module(&ex_module);
+        if(ret<0)
+			return ret;
     }
 
     printf("thread return value %d!\n",thread_retval[0]);
