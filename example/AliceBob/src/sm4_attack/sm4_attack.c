@@ -2,22 +2,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
-#include <limits.h>
-#include <dirent.h>
-#include <sys/time.h>
 #include <fcntl.h>
-#include <sys/stat.h>
-#include <sys/socket.h>
 
 #include "data_type.h"
-#include "alloc.h"
-#include "string.h"
-#include "basefunc.h"
-#include "struct_deal.h"
-#include "crypto_func.h"
-#include "memdb.h"
-#include "message.h"
-#include "ex_module.h"
+#include "cube.h"
+#include "cube_define.h"
 #include "file_struct.h"
 #include "sm4_attack.h"
 
@@ -111,33 +100,19 @@ int proc_hack_message(void * sub_proc,void * message)
 		if(blob_size<0)
 			return blob_size;
 
-		if((i>0) && (i%100000==0))
-			printf("test to %d \n",i);
 		//if(Memcmp(blob+DIGEST_SIZE/2,comp_value,DIGEST_SIZE/4*3)==0)
 		if(Strncmp(blob+DIGEST_SIZE,"test.txt",DIGEST_SIZE)==0)
 		{
-        		message_set_blob(message,blob,blob_size);
+        	message_set_blob(message,blob,blob_size);
 			int flag=message_get_flag(message);
-        		message_set_flag(message,flag&(~MSG_FLAG_CRYPT));
+            message_set_flag(message,flag&(~MSG_FLAG_CRYPT));
 			message_load_record(message);
+			print_cubeaudit("Decrypt data succeed");
 			break;
 		}
 		free(blob);
 	}
-	RECORD(FILE_TRANS,FILE_DATA) * crypt_filedata;
-
-	ret=message_get_record(message,&crypt_filedata,0);
-	if(ret<0)
-			return ret;
-	if(crypt_filedata==NULL)
-			return -EINVAL;
-
-	int fd;
-	fd=open("flag.txt",O_CREAT|O_WRONLY|O_TRUNC,0666);
-	if(fd<0)
-			return -EIO;
-	write(fd,crypt_filedata->policy_data,crypt_filedata->data_size);
-
-        ex_module_sendmsg(sub_proc,message);
-        return ret;
+	
+    ex_module_sendmsg(sub_proc,message);
+    return ret;
 }

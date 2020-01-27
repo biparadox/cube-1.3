@@ -217,20 +217,6 @@ typedef struct ctrl_message     // record (MESSAGE,CTRL)
 }__attribute__((packed))
 RECORD(MESSAGE,CTRL_MSG);
 
-
-struct expand_flow_trace
-{
-    int  record_num;
-    BYTE *trace_record;
-} __attribute__((packed));
-
-struct expand_aspect_point
-{
-    int  record_num;
-    BYTE * aspect_proc;
-    BYTE * aspect_point;
-} __attribute__((packed));
-
 void * message_init();
 int message_record_init(void * message);
 void message_free(void * message);

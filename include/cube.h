@@ -10,7 +10,7 @@ int Free0(void * pointer);
 // function from alloc.h end
 
 // function from basefunc.h
-/*
+
 typedef struct uuid_head
 {
 	BYTE uuid[DIGEST_SIZE];
@@ -18,7 +18,7 @@ typedef struct uuid_head
 	int type;
 	int subtype;
 }__attribute__((packed)) UUID_HEAD;
-*/
+
 // crypto_func start
 int digest_to_uuid(BYTE *digest,char *uuid);
 int uuid_to_digest(char * uuid,BYTE *digest);
@@ -81,7 +81,6 @@ typedef struct tagMessage_Expand_Data_Head //general expand 's head struct
    int  type;
    int  subtype;      //expand data's type
 } __attribute__((packed)) MSG_EXPAND_HEAD;
-typedef MSG_EXPAND_HEAD RECORD(MESSAGE,EXPAND_HEAD);
 
 typedef struct tagMessage_Expand_Data  //general expand data struct
 {
@@ -90,7 +89,6 @@ typedef struct tagMessage_Expand_Data  //general expand data struct
    int  subtype;      //expand data's type
    void * expand;
 } __attribute__((packed)) MSG_EXPAND;
-typedef MSG_EXPAND RECORD(MESSAGE,MSG_EXPAND);
 
 int message_get_type(void * message);
 int message_get_subtype(void * message);
