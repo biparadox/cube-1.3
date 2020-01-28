@@ -1,17 +1,14 @@
-#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
-#include <fcntl.h>
 
 #include "data_type.h"
 #include "cube.h"
 #include "cube_define.h"
+#include "cube_record.h"
 #include "file_struct.h"
 #include "sm4_attack.h"
 
-
-static struct timeval time_val={0,50*1000};
 static char passwd[DIGEST_SIZE];
 
 int sm4_attack_init(void * sub_proc,void * para)
@@ -84,7 +81,7 @@ int proc_hack_message(void * sub_proc,void * message)
 	type=message_get_type(message);
 	subtype=message_get_subtype(message);
 
-        bind_blob_size=message_get_blob(message,&bind_blob);
+        bind_blob_size=message_get_blob(message,(void **)&bind_blob);
         if(bind_blob_size<=0)
                 return -EINVAL;
 	char brute_pass[9];

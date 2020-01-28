@@ -146,5 +146,39 @@ enum message_flag
 	MSG_FLAG_FOLLOW=0x100,
 };
 
+enum message_ctrl
+{
+	MSG_CTRL_INIT=0x01,
+	MSG_CTRL_START=0x02,
+	MSG_CTRL_SLEEP=0x03,
+	MSG_CTRL_RESUME=0x04,
+	MSG_CTRL_STOP=0x05,
+	MSG_CTRL_EXIT=0x06
+};
+
+typedef struct tagMessage_Head  //Ç¿ÖÆ·ÃÎÊ¿ØÖÆ±ê¼Ç
+{
+   char tag[4];            // should be "MESG" to indicate that this information is a message's begin 
+   int  version;          //  the message's version, now is 0x00010001
+   char sender_uuid[DIGEST_SIZE];     // sender's uuid, or '@' followed with a name, or ':' followed with a connector's name
+   char receiver_uuid[DIGEST_SIZE];   // receiver's uuid, or '@" followed with a name, or ':' followed with a connector's name
+   char route[DIGEST_SIZE];
+   int  flow;
+   int  state;
+   int  flag;
+   int  ljump;
+   int  rjump;
+   int  record_type;
+   int  record_subtype;
+   int  record_num;
+   int  record_size;
+   int  expand_num;   
+   int  expand_size;
+   BYTE nonce[DIGEST_SIZE];
+} __attribute__((packed)) MSG_HEAD;
 // message define end
+// sys_func define start
+extern struct timeval time_val;
+// sys_func define end
+
 #endif
