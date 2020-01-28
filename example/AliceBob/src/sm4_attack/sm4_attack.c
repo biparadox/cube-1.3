@@ -107,7 +107,7 @@ int proc_hack_message(void * sub_proc,void * message)
 			int flag=message_get_flag(message);
             message_set_flag(message,flag&(~MSG_FLAG_CRYPT));
 			message_load_record(message);
-			print_cubeaudit("Decrypt data succeed");
+			printf("Decrypt data succeed passwd=%d\n",i);
 			break;
 		}
 		free(blob);
