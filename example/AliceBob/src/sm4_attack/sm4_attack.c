@@ -27,7 +27,7 @@ int sm4_attack_start(void * sub_proc,void * para)
 	int subtype;
 
 
-	for(i=0;i<3000*1000;i++)
+	while(1)
 	{
 		usleep(time_val.tv_usec);
 		ret=ex_module_recvmsg(sub_proc,&recv_msg);
@@ -53,51 +53,32 @@ int sm4_attack_start(void * sub_proc,void * para)
 
 int proc_transfer_message(void * sub_proc,void * message)
 {
-	int type;
-	int subtype;
-	int i;
-	int ret;
-	printf("begin proc echo \n");
-	struct message_box * msg_box=message;
-	type=message_get_type(message);
-	subtype=message_get_subtype(message);
-
-	ex_module_sendmsg(sub_proc,message);
+	int ret = ex_module_sendmsg(sub_proc,message);
 	return ret;
 }
 
 int proc_hack_message(void * sub_proc,void * message)
 {
-        int i;
-        int ret;
-	int type;
-	int subtype;
+    int i,ret;
 
-        BYTE * blob;
-        int blob_size;
+    BYTE * blob;
+    int blob_size;
 
-        BYTE* bind_blob;
-        int bind_blob_size;
-	type=message_get_type(message);
-	subtype=message_get_subtype(message);
+    BYTE* bind_blob;
+    int bind_blob_size;
 
-        bind_blob_size=message_get_blob(message,(void **)&bind_blob);
-        if(bind_blob_size<=0)
-                return -EINVAL;
+    bind_blob_size=message_get_blob(message,(void **)&bind_blob);
+    if(bind_blob_size<=0)
+         return -EINVAL;
 	char brute_pass[9];
-
-	BYTE comp_value[DIGEST_SIZE/4*3];
-	Memset(comp_value,0,DIGEST_SIZE/4*3);
 
 	for(i=0;i<10000000;i++)
 	{
-	
 		sprintf(brute_pass,"%d",i);
 		blob_size=sm4_context_decrypt(bind_blob,&blob,bind_blob_size,brute_pass);
 		if(blob_size<0)
 			return blob_size;
 
-		//if(Memcmp(blob+DIGEST_SIZE/2,comp_value,DIGEST_SIZE/4*3)==0)
 		if(Strncmp(blob+DIGEST_SIZE,"test.txt",DIGEST_SIZE)==0)
 		{
         	message_set_blob(message,blob,blob_size);
@@ -107,9 +88,7 @@ int proc_hack_message(void * sub_proc,void * message)
 			printf("Decrypt data succeed passwd=%d\n",i);
 			break;
 		}
-		free(blob);
 	}
-	
     ex_module_sendmsg(sub_proc,message);
     return ret;
 }
