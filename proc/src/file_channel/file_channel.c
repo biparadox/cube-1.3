@@ -373,7 +373,7 @@ int proc_file_send_start(void * recv_msg)
         		pfdata->offset=file_count*block_size;
         		pfdata->total_size=total_size;
         		pfdata->data_size=block_size;
-			pfdata->policy_data=NULL;
+			pfdata->file_data=NULL;
 
 		}
 	}
@@ -404,9 +404,9 @@ int proc_file_send(struct tcloud_connector * send_conn)
 		pfdata->data_size=pfdata->total_size-pfdata->offset;
 		isend=0;
 	}
-	pfdata->policy_data=(BYTE *)Talloc0(sizeof(char)*pfdata->data_size);
+	pfdata->file_data=(BYTE *)Talloc0(sizeof(char)*pfdata->data_size);
 
-       	if(read(fd,pfdata->policy_data,pfdata->data_size)!=pfdata->data_size)
+       	if(read(fd,pfdata->file_data,pfdata->data_size)!=pfdata->data_size)
        	{
        	 	print_cubeerr("read vm list error! \n");
        		return -EINVAL;
@@ -458,7 +458,7 @@ int proc_file_receive_start( struct tcloud_connector * channel_conn)
 	if(fd<0)
 		return fd;
 	lseek(fd,pfdata->offset,SEEK_SET);
-	write(fd,pfdata->policy_data,pfdata->data_size);
+	write(fd,pfdata->file_data,pfdata->data_size);
 	printf("\n");
 	if(pfdata->total_size<=pfdata->offset+pfdata->data_size)
 	{
@@ -501,7 +501,7 @@ int proc_file_receive( void * sub_proc,struct tcloud_connector * recv_conn)
 	Memcpy(Blob,Blob+blob_size,left_size);
 
 	lseek(fd,pfdata->offset,SEEK_SET);
-	write(fd,pfdata->policy_data,pfdata->data_size);
+	write(fd,pfdata->file_data,pfdata->data_size);
 	printf("\r record %d",pfdata->record_no);
 	if(pfdata->total_size<=pfdata->offset+pfdata->data_size)
 	{
