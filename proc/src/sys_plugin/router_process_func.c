@@ -462,9 +462,11 @@ int proc_router_start(void * sub_proc,void * para)
 		message=_waiting_message_removehead();
 
 		int issend;
+		int isaspect;
 		while(message!=NULL)
 		{		
 			issend=0;
+			isaspect=0;
 
 			msg_head=message_get_head(message);
 			if(msg_head->flow==MSG_FLOW_DELIVER)
@@ -485,11 +487,11 @@ int proc_router_start(void * sub_proc,void * para)
 			else if(msg_head->flow == MSG_FLOW_QUERY)
 			{
 				ret=message_route_setnext(message);
-				if(ret <= 0)
+				if(ret < 0)
 				{
 					print_cubeerr("route query error!\n");
 				}	
-				else if(ret == ROUTE_TARGET_FINISH)
+				else if((ret==0) ||(ret == ROUTE_TARGET_FINISH))
 				{
 					if(msg_head->rjump>1)
 					{
@@ -517,6 +519,7 @@ int proc_router_start(void * sub_proc,void * para)
 						{
 							proc_audit_log(message);
 							issend=1;
+							isaspect=1;
 						}
 					}
 				}
@@ -537,10 +540,10 @@ int proc_router_start(void * sub_proc,void * para)
 				Record_List * curr_record;
 
 				curr_record=message->path_site;
+
 				if((curr_record !=NULL) && (curr_record->record!=NULL))
 				{
 					curr_pathnode=curr_record->record;
-					int isaspect=0;
 					curr_record = _node_list_getfirst(&curr_pathnode->aspect_branch);
 	
 					while((curr_record!=NULL) &&(curr_record->record!=NULL))

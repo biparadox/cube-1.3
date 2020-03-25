@@ -578,6 +578,7 @@ ASPECT_NODE * _create_aspect_node(void * message,BRANCH_NODE * branch)
 	aspect_node->rjump=msg_box->head.rjump;
 	
 	aspect_node->path=msg_box->policy;
+	aspect_node->aspect_site=msg_box->path_site;
 		
 	Strncpy(msg_box->head.route,msg_box->head.sender_uuid,DIGEST_SIZE);
 	// find hash nodelist
@@ -606,6 +607,7 @@ int _recover_aspect_message(void * message,ASPECT_NODE * aspect_node)
 	msg_box->head.rjump = aspect_node->rjump;
 	
 	msg_box->policy = aspect_node->path;
+	msg_box->path_site = aspect_node->aspect_site;
 
 	return 0;	
 
@@ -736,7 +738,7 @@ int route_tree_addresponserule(void * path,ROUTE_RULE * rule)
 int _waiting_message_add(void * message)
 {
     if(_node_list_add(&waiting_message_list,message)==NULL)
-	return 0;
+		return 0;
     return 1;
 }
 void _waiting_message_del(void * record)
