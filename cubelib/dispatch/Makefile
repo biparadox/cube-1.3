@@ -16,8 +16,6 @@ test_main: test_main.c ../lib/lib$(LIBNAME).so
 ../lib/lib$(LIBNAME).a: $(STRUCTOBJ)
 	ar -rc lib$(LIBNAME).a $(STRUCTOBJ)
 	mv   lib$(LIBNAME).a ../lib
-dispatch.o:  dispatch.c ../include/dispatch.h  dispatch_struct.h
-	$(CC) $(CFLAGS) dispatch.c
 route_tree.o:  route_tree.c ../include/dispatch.h  route_tree.h
 	$(CC) $(CFLAGS) route_tree.c
 clean:

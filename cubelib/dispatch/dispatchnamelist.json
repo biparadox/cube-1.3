@@ -56,6 +56,7 @@
 			"CHANNEL=0x40",
 			"PORT=0x80",
 			"MIXUUID=0x100",
+			"FINISH=0x1000",
 			"ERROR=0xFFFF"
 		]
 	}

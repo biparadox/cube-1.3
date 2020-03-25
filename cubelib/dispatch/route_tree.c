@@ -269,56 +269,7 @@ int route_get_node_byjump(ROUTE_PATH * path, ROUTE_NODE ** node,int ljump, int r
 		return 1;
 	return 0;	
 }
-/*
-int route_get_node_bysender(ROUTE_PATH * path, ROUTE_NODE ** node,char * sender, int rjump)
-{
-	NODE_LIST * node_path;
-	struct List_head * curr;
-	
-	*node=NULL;
-	if(rjump>=0)
-	{
-		node_path=&(path->route_path);
-	}
-	else
-	{
-		node_path=&(path->response_path);
-	}
-	
-	if(node_path->policy_num<ljump)
-	{
-		node=NULL;
-		return 0;
-	}
-	
-	curr = node_path->head.list.next;
-	Record_List * trace_record=NULL; 
-	ROUTE_NODE * trace_node=NULL;
 
-
-	while(curr != &(node_path->head.list))
-	{
-    	trace_record=List_entry(curr,Record_List,list);
-		trace_node=(ROUTE_NODE *)trace_record->record;
-		if(trace_node ==NULL)
-			return 0;
-		if(Strncmp(		
-
-		
-		curr=curr->next;	
-	}
-
-	for(i=0;i<ljump;i++)
-	{
-		curr=curr->next;
-	}
-	
-
-	if(*node!=NULL)
-		return 1;
-	return 0;	
-}
-*/
 void * route_read_policy(void * policy_node)
 {
     void * match_policy_node;
@@ -339,10 +290,12 @@ void * route_read_policy(void * policy_node)
 
     RECORD(DISPATCH,POLICY_HEAD) * policy;	
 
+	// create an empty route path
     ROUTE_PATH  * path =route_path_create();
     if(path==NULL)
         return NULL;
 
+	// get policy head
     temp_node=json_find_elem("policy_head",policy_node);
     if(temp_node==NULL)
     {
@@ -352,8 +305,6 @@ void * route_read_policy(void * policy_node)
     policy=Talloc0(sizeof(*policy));
     if(policy==NULL)
 	return NULL;
-
-    // read policy head
 
     ret=json_2_struct(temp_node,policy,policy_head_template);
     if(ret<0)
@@ -367,6 +318,7 @@ void * route_read_policy(void * policy_node)
 		case MSG_FLOW_DUP:
 		case MSG_FLOW_ASPECT:
 			
+			// find the origin policy
 			ret=router_find_policy_byname(&normal_path,policy->name,policy->rjump,policy->ljump);
 			if(ret<0)
 				return ret;
@@ -375,6 +327,8 @@ void * route_read_policy(void * policy_node)
 				print_cubeerr("can't find %s policy's aspect path!\n",policy->newname);
 				return 0;
 			}
+
+			// find the insert site in the origin policy
 			if(policy->ljump!=0)
 			{
 				// insert aspect policy to the old policy by policy->ljump ,
@@ -401,12 +355,16 @@ void * route_read_policy(void * policy_node)
 				print_cubeerr("can't find aspect policy %s 's insert node!\n",policy->newname);
 				return -EINVAL;
 			}
+
+			// build the branch node
 			branch_node = Talloc0(sizeof(*branch_node));
 			if(branch_node == NULL)
 				return -ENOMEM;
 			branch_node->route_path = normal_path;
 			branch_node->branch_type =policy->type;  
 			branch_node->branch_path=path;
+
+			// insert branch node to the aspect branch
 			
      		if((record=_node_list_add(&insert_node->aspect_branch,(void *)branch_node))==NULL)
 			{
@@ -414,13 +372,15 @@ void * route_read_policy(void * policy_node)
 				return 0;
 			}
 
+			// set aspect policy's type
     		Strncpy(path->name,policy->newname,DIGEST_SIZE);
 			if(policy->type == MSG_FLOW_DUP)
 				path->flow=MSG_FLOW_DELIVER;
 			else
 				path->flow=MSG_FLOW_QUERY;
 			break;
-		default:	
+		default:
+			// 	
     		Strncpy(path->name,policy->name,DIGEST_SIZE);
     		Strncpy(path->sender,policy->sender,DIGEST_SIZE);
     		path->flow = policy->type;
@@ -447,41 +407,41 @@ void * route_read_policy(void * policy_node)
     match_rule_node=json_get_first_child(match_policy_node);
     while(match_rule_node!=NULL)
     {
-	void * record_template;
+		void * record_template;
         temp_match_rule=Dalloc0(sizeof(MATCH_RULE),path);
-	if(temp_match_rule==NULL)
-		return NULL;
+		if(temp_match_rule==NULL)
+			return NULL;
         ret=json_2_struct(match_rule_node,temp_match_rule,match_rule_template);
         if(ret<0)
             return NULL;
-	temp_node=json_find_elem("value",match_rule_node);
-	if(temp_node!=NULL)
-	{
-		void * value_struct;
-		record_template=memdb_get_template(temp_match_rule->type,temp_match_rule->subtype);
-		if(record_template==NULL)
-			return NULL;
-		record_template=clone_struct_template(record_template);
-		if(record_template==NULL)
-			return NULL;
-		temp_match_rule->match_template=record_template;
-		ret=json_marked_struct(temp_node,record_template,match_flag);
-		if(ret<0)
-			return NULL;
-		value_struct=Dalloc0(struct_size(record_template),policy);
-		if(value_struct==NULL)
+		temp_node=json_find_elem("value",match_rule_node);
+		if(temp_node!=NULL)
 		{
-			free_struct_template(record_template);
-			return NULL;
+			void * value_struct;
+			record_template=memdb_get_template(temp_match_rule->type,temp_match_rule->subtype);
+			if(record_template==NULL)
+				return NULL;
+			record_template=clone_struct_template(record_template);
+			if(record_template==NULL)
+				return NULL;
+			temp_match_rule->match_template=record_template;
+			ret=json_marked_struct(temp_node,record_template,match_flag);
+			if(ret<0)
+				return NULL;
+			value_struct=Dalloc0(struct_size(record_template),policy);
+			if(value_struct==NULL)
+			{
+				free_struct_template(record_template);
+				return NULL;
+			}
+			ret=json_2_part_struct(temp_node,value_struct,temp_match_rule->match_template,match_flag);
+			if(ret<0)
+				return NULL;	
+			temp_match_rule->value=value_struct;
 		}
-		ret=json_2_part_struct(temp_node,value_struct,temp_match_rule->match_template,match_flag);
+		ret=route_policy_addmatchrule(path,temp_match_rule);
 		if(ret<0)
 			return NULL;	
-		temp_match_rule->value=value_struct;
-	}
-	ret=route_policy_addmatchrule(path,temp_match_rule);
-	if(ret<0)
-		return NULL;	
 	
         match_rule_node=json_get_next_child(match_policy_node);
     }
@@ -491,44 +451,66 @@ void * route_read_policy(void * policy_node)
 
     temp_node=json_find_elem("main_policy",route_policy_node);
     if(temp_node==NULL)
-	return NULL;	
+		return NULL;	
 
     route_rule_node=json_get_first_child(temp_node);
     while(route_rule_node!=NULL)
     {
     	temp_route_rule=Dalloc0(sizeof(ROUTE_RULE),path);
     	if(temp_route_rule==NULL)
-		return NULL;
+			return NULL;
     	ret=json_2_struct(route_rule_node,temp_route_rule,route_rule_template);
     	if(ret<0)
         	return NULL;
-	ret=route_policy_addrouterule(path,temp_route_rule);
-	if(ret<0)
-		return NULL;	
+		ret=route_policy_addrouterule(path,temp_route_rule);
+		if(ret<0)
+			return NULL;	
         route_rule_node=json_get_next_child(temp_node);
     } 
 
+	// build a finish route node and add it to the route rule
+   	temp_route_rule=Dalloc0(sizeof(ROUTE_RULE),path);
+	if(temp_route_rule==NULL)
+		return NULL;
+	temp_route_rule->target_type=ROUTE_TARGET_FINISH;
+	ret=route_policy_addrouterule(path,temp_route_rule);
+	if(ret<0)
+		return NULL;	
+
     // next,read the response route policy
 
-    temp_node=json_find_elem("response_policy",route_policy_node);
-    if(temp_node!=NULL)
-    {	
+	if(path->flow == MSG_FLOW_QUERY)
+	{
 
-    	route_rule_node=json_get_first_child(temp_node);
-    	while(route_rule_node!=NULL)
-    	{
-    		temp_route_rule=Dalloc0(sizeof(ROUTE_RULE),path);
-    		if(temp_route_rule==NULL)
+    	temp_node=json_find_elem("response_policy",route_policy_node);
+    	if(temp_node!=NULL)
+    	{	
+
+    		route_rule_node=json_get_first_child(temp_node);
+    		while(route_rule_node!=NULL)
+    		{
+    			temp_route_rule=Dalloc0(sizeof(ROUTE_RULE),path);
+    			if(temp_route_rule==NULL)
+					return NULL;
+    			ret=json_2_struct(route_rule_node,temp_route_rule,route_rule_template);
+    			if(ret<0)
+        			return NULL;
+				ret = route_tree_addresponserule(path,temp_route_rule);
+				if(ret<0)
+					return NULL;	
+        		route_rule_node=json_get_next_child(temp_node);
+    		}
+    	}
+
+		// build a finish route node and add it to the response rule
+   		temp_route_rule=Dalloc0(sizeof(ROUTE_RULE),path);
+		if(temp_route_rule==NULL)
 			return NULL;
-    		ret=json_2_struct(route_rule_node,temp_route_rule,route_rule_template);
-    		if(ret<0)
-        		return NULL;
-		ret = route_tree_addresponserule(path,temp_route_rule);
+		temp_route_rule->target_type=ROUTE_TARGET_FINISH;
+		ret=route_tree_addresponserule(path,temp_route_rule);
 		if(ret<0)
 			return NULL;	
-        	route_rule_node=json_get_next_child(temp_node);
-    	}
-    }		 
+	}		 
 
     return path;
 }
@@ -804,7 +786,7 @@ void * _waiting_message_getnext()
 int _route_add_policy(void * list,void * policy)
 {
     if(_node_list_add(list,policy)==NULL)
-	return 0;
+		return 0;
     return 1;
 }
 
@@ -1249,6 +1231,8 @@ int rule_get_target(void * router_rule,void * message,void **result)
 				return -EINVAL;
 		   	break;
 		   }
+	    case ROUTE_TARGET_FINISH:
+			break;
 	    case ROUTE_TARGET_ERROR:
 	    default:
 		    return -EINVAL;
@@ -1351,7 +1335,6 @@ int message_route_setnext( void * msg, void * path)
 		//msg_box->head.flow = MSG_FLOW_FINISH;
 		return 0;
 	}
-	
 	return rule_get_target(&nextnode->this_target,msg,&receiver);
 }
 

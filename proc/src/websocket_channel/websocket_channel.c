@@ -262,6 +262,7 @@ int websocket_channel_start(void * sub_proc,void * para)
 						    ws_umask(Buf,len,head.masking_key);
 						    //printf("read Data %s!\n",Buf);
 						    ret=channel_inner_write(websocket_channel,Buf,len);	
+							print_cubeaudit("websocket_channel write %d Data!",len);
 					    }
 					    if(ret<len)
 					    {
@@ -517,6 +518,7 @@ int send_frame_head(void * conn,frame_head* head)
         perror("write head");
         return -1;
     }
+	print_cubeaudit("websocket_channel read %d Data!",len);
 
     free(response_head);
     return 0;
@@ -538,11 +540,12 @@ int websocket_send_func(void * pointer)
 		continue;
 	 memcpy(&head,&send_para.head,sizeof(head));	 	
 
-         len=channel_inner_read(send_para.inner_channel,ReadBuf,1024);
-         if(len<0)
+    len=channel_inner_read(send_para.inner_channel,ReadBuf,1024);
+    if(len<0)
 		return -EINVAL;
 	 if(len >0)
 	 {
+		  print_cubeaudit("websocket_channel : Get %d data from websocekt_channel！",len);
 	      head.payload_length=len;
 	 //   printf("send fin=%d\nopcode=0x%X\nmask=%d\npayload_len=%llu\n",head.fin,head.opcode,head.mask,head.payload_length);
 	      send_frame_head(send_para.ws_conn,&head);	

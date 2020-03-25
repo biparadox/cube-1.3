@@ -102,17 +102,8 @@ int read_dispatch_file(char * file_name,int is_aspect)
 			route_add_policy(policy);
 			count++;
 		}
-/*
-		else
-		{
-			if(is_aspect)
-				dispatch_aspect_policy_add(policy);
-			else
-				dispatch_policy_add(policy);
-			count++;
-		}
-*/
 	}
+	
 	//print_cubeaudit("read %d policy succeed!",count);
 	close(fd);
 	return count;
@@ -494,13 +485,11 @@ int proc_router_start(void * sub_proc,void * para)
 			else if(msg_head->flow == MSG_FLOW_QUERY)
 			{
 				ret=message_route_setnext(message);
-				if(ret!=0)
+				if(ret <= 0)
 				{
-						// there is a target in the next	
-					proc_audit_log(message);
-					issend=1;
+					print_cubeerr("route query error!\n");
 				}	
-				else
+				else if(ret == ROUTE_TARGET_FINISH)
 				{
 					if(msg_head->rjump>1)
 					{
@@ -530,6 +519,12 @@ int proc_router_start(void * sub_proc,void * para)
 							issend=1;
 						}
 					}
+				}
+				else
+				{
+					// this is not the end	
+					proc_audit_log(message);
+					issend=1;
 				}
 				
 			}
