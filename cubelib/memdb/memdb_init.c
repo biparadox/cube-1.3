@@ -984,8 +984,15 @@ void *  memdb_store(void * data,int type,int subtype,char * name)
 	}
 	else
 	{
-		
 		Free0(record);
+		void * struct_template=memdb_get_template(type,subtype);
+		if(struct_template==NULL)
+		{
+			return NULL;
+		}
+		
+		oldrecord->record=clone_struct(data,struct_template);
+
 		ret=_memdb_record_add_name(oldrecord,name);
 		if(ret<0)
 			return NULL;
@@ -1039,10 +1046,19 @@ int memdb_store_record(void * record)
 	}
 	else
 	{
+		void * struct_template=memdb_get_template(db_record->head.type,
+			db_record->head.subtype);
+		if(struct_template==NULL)
+		{
+			Free0(record);
+			return -EINVAL;
+		}
 		
+		oldrecord->record=clone_struct(db_record->record,struct_template);
 		ret=_memdb_record_add_name(oldrecord,db_record->head.name);
 		if(ret<0)
 			return -EINVAL;
+		Free0(record);
 		return ret;				
 	}
 	return 1;
