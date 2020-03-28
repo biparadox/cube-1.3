@@ -1050,7 +1050,6 @@ int memdb_store_record(void * record)
 			db_record->head.subtype);
 		if(struct_template==NULL)
 		{
-			Free0(record);
 			return -EINVAL;
 		}
 		
@@ -1058,7 +1057,6 @@ int memdb_store_record(void * record)
 		ret=_memdb_record_add_name(oldrecord,db_record->head.name);
 		if(ret<0)
 			return -EINVAL;
-		Free0(record);
 		return ret;				
 	}
 	return 1;

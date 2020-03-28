@@ -86,7 +86,7 @@ int main(int argc,char **argv)
 	"memdb.json",
 	"msghead.json",
 	"msgrecord.json",
-	"expandrecord.json",
+//	"expandrecord.json",
 	"base_msg.json",
 	"return.json",
 	"dispatchrecord.json",
