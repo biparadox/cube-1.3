@@ -90,6 +90,7 @@ typedef struct tagMessage_Expand_Data  //general expand data struct
    void * expand;
 } __attribute__((packed)) MSG_EXPAND;
 
+void * message_get_head(void * message);
 int message_get_type(void * message);
 int message_get_subtype(void * message);
 int message_get_uuid(void * message,BYTE * uuid);
