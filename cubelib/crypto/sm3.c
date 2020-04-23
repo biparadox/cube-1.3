@@ -215,7 +215,7 @@ int SM3_final(sm3_context *index, UINT32 *SM3_hash)
 
 //int calculate_sm3(char* filename, UINT32 *SM3_hash)
 //int calculate_by_context(char buffer[][DIGEST_SIZE],int countline,UINT32 *SM3_hash)
-int calculate_by_context(char **buffer,int countline,UINT32 *SM3_hash)
+int calculate_by_context(BYTE **buffer,int countline,UINT32 *SM3_hash)
 {
     int fd1;
     int result;
@@ -252,7 +252,7 @@ int calculate_by_context(char **buffer,int countline,UINT32 *SM3_hash)
     return 0;
 }
 
-int calculate_context_sm3(char* context, int context_size, UINT32 *SM3_hash)
+int calculate_context_sm3(BYTE* context, int context_size, UINT32 *SM3_hash)
 {
    
     int result;

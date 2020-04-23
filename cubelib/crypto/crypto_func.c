@@ -376,7 +376,7 @@ int get_random_uuid(BYTE * uuid)
 	return ret;
 }
 
-int calculate_context_sha1(char *context,int context_size,UINT32 *SM3_hash)
+int calculate_context_sha1(BYTE *context,int context_size,UINT32 *SM3_hash)
 {
 	int result;
 //	SHA1_CTX index;
