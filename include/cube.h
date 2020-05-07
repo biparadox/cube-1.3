@@ -41,6 +41,13 @@ int sm4_data_recover(int input_len,BYTE * input_data,int * output_len,BYTE * out
 // crypto_func end
 
 // ex_module func start
+int ex_module_gettype(void * ex_mod);
+char * ex_module_getname(void * ex_mod);
+int ex_module_setpointer(void * ex_mod,void * pointer);
+void * ex_module_getpointer(void * ex_mod);
+int ex_module_sendmsg(void * ex_mod,void *msg);
+int ex_module_recvmsg(void * ex_mod,void **msg);
+
 int proc_share_data_getstate();
 int proc_share_data_setstate(int state);
 void * proc_share_data_getpointer();
