@@ -1190,6 +1190,12 @@ int rule_get_target(void * router_rule,void * message,void **result)
 				return -EINVAL;
 			if(target==NULL)
 				return -EINVAL;
+			if(Isstrinuuid(target))
+		    		message_set_receiver(message,target);
+			else
+			       message_set_receiver_uuid(message,target);
+		    	flag=message_get_flag(message) &(~MSG_FLAG_LOCAL);
+		    	message_set_flag(message,flag);
 			break;
 		   }
 
