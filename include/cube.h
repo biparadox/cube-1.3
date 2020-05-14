@@ -117,6 +117,7 @@ int  message_remove_expand(void * message,int type,int subtype,void ** expand);
 int  message_remove_indexed_expand(void * message,int index,void ** expand) ;
 int  message_get_record(void * message, void ** msg_record,int record_no);
 int  message_get_expand(void * message, void ** msg_expand,int expand_no);
+int message_get_define_expand(void * message,void ** addr,int type,int subtype);
 
 int message_set_flag(void * message, int flag);
 int message_get_flag(void * message);
