@@ -228,7 +228,8 @@ int main(int argc,char **argv)
 		while(db_record!=NULL)
 		{
 			memdb_print(db_record,json_buffer);
-			printf("%s\n",json_buffer);
+			//printf("%s\n",json_buffer);
+			print_pretty_text(json_buffer,1);
 			db_record=memdb_get_next(typeno,subtypeno);
 		}
 	}	
@@ -302,7 +303,7 @@ int main(int argc,char **argv)
 		while(db_record!=NULL)
 		{
 			memdb_print(db_record,json_buffer);
-			printf("%s\n",json_buffer);
+			print_pretty_text(json_buffer,1);
 			lib_write(fd,typeno,subtypeno,db_record);		
 			db_record=memdb_get_next(typeno,subtypeno);
 		}
