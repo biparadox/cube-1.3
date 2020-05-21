@@ -4,6 +4,8 @@
 // function from alloc.h start
 void * Talloc(int size);
 void * Talloc0(int size);
+void * Dalloc(int size,void * base);
+void * Dalloc0(int size,void * base);
 
 int Free(void * pointer);
 int Free0(void * pointer);
