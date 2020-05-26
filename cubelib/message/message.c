@@ -952,12 +952,15 @@ int message_load_record(void * message)
 //  msg_box->current_offset=msg_box->head_size;
 
     no=0;
-    while(msg_box->record[no]!=NULL)
-    {
-        if(no>=msg_box->head.record_num)
-            return 0;
-        no++;
-    }
+    if(msg_box->head.record_num>0)
+    {		
+    	while(msg_box->record[no]!=NULL)
+    	{
+        	if(no>=msg_box->head.record_num)
+            		return 0;
+        	no++;
+    	}
+    }	
 
     for(;no<msg_box->head.record_num;no++)
     {
@@ -974,7 +977,8 @@ int message_load_record(void * message)
 //	record_size=blob_2_struct((BYTE *)(msg_box->record[no]),record,msg_box->record_template);
     if(ret<0)
         return ret;
-    msg_box->current_offset+=msg_box->record_size[no];
+    if(msg_box->head.record_num>0)
+    	msg_box->current_offset+=msg_box->record_size[no];
 //	msg_box->record_size[no]=record_size;
     return 1;
 }
