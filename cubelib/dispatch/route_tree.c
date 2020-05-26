@@ -1415,7 +1415,7 @@ int message_route_findtrace(void * msg,enum message_flow_type flow)
 		//Free(aspect_node); 	
     	//List_del(&trace_record);
 	}
-    _node_list_del(trace_record);
+    	//_node_list_del(trace_record);
 	return 1;	
 }
 

@@ -21,6 +21,10 @@ typedef struct uuid_head
 	int subtype;
 }__attribute__((packed)) UUID_HEAD;
 
+int   Isvaliduuid(char * uuid);
+int   Isstrinuuid(BYTE * uuid);
+int   Isemptyuuid(BYTE * uuid);
+
 // crypto_func start
 int digest_to_uuid(BYTE *digest,char *uuid);
 int uuid_to_digest(char * uuid,BYTE *digest);
