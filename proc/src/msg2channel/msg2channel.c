@@ -103,6 +103,7 @@ int msg2channel_start(void * sub_proc,void * para)
 		else
 		{
 			print_cubeerr("resolve channel message failed!\n");
+			print_cubeerr("error channel message: %s\n",ReadBuf+offset);
 			readbuf_len=0;
 		}
 	}
