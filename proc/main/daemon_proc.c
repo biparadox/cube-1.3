@@ -206,7 +206,11 @@ int cube_proc(struct start_para * start_para)
     struct lib_para_struct * lib_para=NULL;
     sleep(1);
     fd=open(sys_config_file,O_RDONLY);
-    if(fd>0)
+    if(fd<0)
+    {
+	print_cubeerr("can't open sys_config file %s!\n",sys_config_file);
+    }
+    else 
     {
 
    	 ret=read_json_node(fd,&root_node);
@@ -218,10 +222,6 @@ int cube_proc(struct start_para * start_para)
     	 ret=read_sys_cfg((void **)&lib_para,root_node,NULL);
     	 if(ret<0)
 		return ret;
-    }	 		
-    else
-    {
-	print_cubeerr("can't open sys_config file %s!\n",sys_config_file);
     }
     fd=open(main_config_file,O_RDONLY);
     if(fd<0)
