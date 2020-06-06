@@ -236,11 +236,11 @@ int cube_proc(struct start_para * start_para)
     if(ret<0)
 	return ret; 		
 
-//    ret=get_local_uuid(local_uuid);
-//    digest_to_uuid(local_uuid,buffer);
-//    buffer[64]=0;
-//    print_cubeaudit("this machine's local uuid is %s\n",buffer);
-//    proc_share_data_setvalue("uuid",local_uuid);
+    ret=get_local_uuid(local_uuid);
+    digest_to_uuid(local_uuid,buffer);
+    buffer[64]=0;
+    print_cubeaudit("this machine's local uuid is %s\n",buffer);
+    proc_share_data_setvalue("uuid",local_uuid);
 
 
     // init all the proc database

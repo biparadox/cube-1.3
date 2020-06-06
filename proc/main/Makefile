@@ -8,7 +8,7 @@ STRUCTOBJ=read_config.o
 DEPENDLIB= -L$(CUBELIBPATH)/lib -lsys_func -lexmodule -ldispatch -lchannel -lmessage -lmemdb -lconnector -lstruct -lcrypto_func -ljson -lbasefunc -lstring -lalloc -lpthread
 EXECLIB= -L$(CUBELIBPATH)/lib -lpthread -Wl,-Bstatic -lsys_func -lexmodule -ldispatch -lchannel -lmessage -lmemdb -lconnector -lstruct -lcrypto_func -ljson -lbasefunc -lstring -lalloc -Wl,-Bdynamic
 
-main: main_proc lib_tool cube_exec envset_proc
+main: main_proc lib_tool cube_exec envset_proc daemon_proc
 main_proc:  main_proc.c main_proc_func.h $(STRUCTOBJ)
 	$(CC) $(FLAGS) main_proc main_proc.c $(STRUCTOBJ) $(INCLUDE) $(DEPENDLIB) -ldl
 lib_tool:  lib_tool.c lib_rw.c main_proc_func.h $(STRUCTOBJ)

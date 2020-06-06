@@ -394,7 +394,7 @@ int shakehands(void * conn)
 			len=channel_conn->conn_ops->write(channel_conn,head,strlen(head));
 			if(len<0)
 			{
-				perror("write");
+				print_cubeerr("write data to websocket_channel failed, write len %d",strlen(head));
 			}
 			break;
 		}
