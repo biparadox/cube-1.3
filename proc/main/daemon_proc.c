@@ -357,7 +357,7 @@ int cube_proc(struct start_para * start_para)
 	  }
 	  else if(ex_module_gettype(ex_module) == MOD_TYPE_START)
 	  {
-  		ret=ex_module_start(ex_module,&start_para);
+  		ret=ex_module_start(ex_module,start_para);
 	  	if(ret<0)
   			return ret;
 		print_cubeaudit("start ex_module %s started successfully!\n",ex_module_getname(ex_module));
