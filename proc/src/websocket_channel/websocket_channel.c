@@ -29,8 +29,8 @@
 
 #include "websocket_channel.h"
 
-#define MAX_LINE_LEN 1024
-#define BUFFER_SIZE 1024
+#define MAX_LINE_LEN 1400
+#define BUFFER_SIZE 1536
 #define SHA_DIGEST_LENGTH 20
 #define GUID "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
 
@@ -43,9 +43,9 @@ static CHANNEL * websocket_channel;
 pthread_t send_pthread;
 
 
-static BYTE Buf[DIGEST_SIZE*64];
+static BYTE Buf[BUFFER_SIZE*2];
 static int index = 0;
-static BYTE * ReadBuf=Buf+DIGEST_SIZE*32;
+static BYTE * ReadBuf=Buf+BUFFER_SIZE;
 static int readbuf_len;
 
 static void * default_conn = NULL;
@@ -540,7 +540,7 @@ int websocket_send_func(void * pointer)
 		continue;
 	 memcpy(&head,&send_para.head,sizeof(head));	 	
 
-    len=channel_inner_read(send_para.inner_channel,ReadBuf,1024);
+    len=channel_inner_read(send_para.inner_channel,ReadBuf,MAX_LINE_LEN);
     if(len<0)
 		return -EINVAL;
 	 if(len >0)
