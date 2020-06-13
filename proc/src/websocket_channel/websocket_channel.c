@@ -329,7 +329,7 @@ int _readline(char* allbuf,int level,char* linebuf)
 		else
 			*(linebuf++) = allbuf[level];
 	}
-	return -1;
+	return len;
 }
 
 
@@ -344,6 +344,7 @@ int shakehands(void * conn)
 	char linebuf[256];
 	//Sec-WebSocket-Accept
 	char sec_accept[32];
+	char * sec_protocol;
 	//sha1 data
 	unsigned char sha1_data[SHA_DIGEST_LENGTH+1]={0};
 	//reponse head buffer
@@ -365,11 +366,15 @@ int shakehands(void * conn)
 //	printf("request\n");
 //	printf("%s\n",buffer);
 
-	do {
+	while(level<len)
+	{
 		memset(linebuf,0,sizeof(linebuf));
 		level = _readline(buffer,level,linebuf);
 		//printf("line:%s\n",linebuf);
+		if(level<0)
+			return level;
 
+		char * substr = NULL;
 		if (strstr(linebuf,"Sec-WebSocket-Key")!=NULL)
 		{
 			strcat(linebuf,GUID);
@@ -379,26 +384,35 @@ int shakehands(void * conn)
 
 			bin_to_radix64(sec_accept,SHA_DIGEST_LENGTH,sha1_data);
 			strcat(sec_accept,"=");	
-			//printf("radix64:%s\n",sec_accept);
-			//          base64_encode(sha1_data,SHA_DIGEST_LENGTH,sec_accept);
-			//          printf("base64:%s\n",sec_accept);
-			/* write the response */
-			sprintf(head, "HTTP/1.1 101 Switching Protocols\r\n" \
-					"Upgrade: websocket\r\n" \
-					"Connection: Upgrade\r\n" \
-					"Sec-WebSocket-Accept: %s\r\n" \
-					"\r\n",sec_accept);
-
-			printf("response\n");
-			//printf("%s",head);
-			len=channel_conn->conn_ops->write(channel_conn,head,strlen(head));
-			if(len<0)
-			{
-				print_cubeerr("write data to websocket_channel failed, write len %d",strlen(head));
-			}
-			break;
 		}
-	}while((buffer[level]!='\r' || buffer[level+1]!='\n') && level!=-1);
+		substr=strstr(linebuf,"Sec-WebSocket-Protocol");
+		if(substr!=NULL)
+		{
+			sec_protocol = dup_str(linebuf+23,DIGEST_SIZE);
+			print_cubeaudit(" websocket_channel: get websocket protocol %s",sec_protocol);	
+		}
+	}
+	sprintf(head, "HTTP/1.1 101 Switching Protocols\r\n" \
+			"Upgrade: websocket\r\n" \
+			"Connection: Upgrade\r\n" \
+			"Sec-WebSocket-Accept: %s\r\n",sec_accept);
+
+	if(sec_protocol==NULL)
+	{
+		sprintf(head+strlen(head),"\r\n");
+		print_cubeaudit("websocket no-protocol response\n");
+	}
+	else
+	{
+		sprintf(head+strlen(head),"Sec-WebSocket-Protocol: %s\r\n\r\n",sec_protocol);
+		print_cubeaudit("websocket protocol response\n");
+	}
+	//printf("%s",head);
+	len=channel_conn->conn_ops->write(channel_conn,head,strlen(head));
+	if(len<0)
+	{
+		print_cubeerr("write data to websocket_channel failed, write len %d",strlen(head));
+	}
 	return 0;
 }
 
