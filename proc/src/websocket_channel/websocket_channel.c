@@ -344,7 +344,7 @@ int shakehands(void * conn)
 	char linebuf[256];
 	//Sec-WebSocket-Accept
 	char sec_accept[32];
-	char * sec_protocol;
+	char * sec_protocol=NULL;
 	//sha1 data
 	unsigned char sha1_data[SHA_DIGEST_LENGTH+1]={0};
 	//reponse head buffer
