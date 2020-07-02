@@ -173,9 +173,12 @@ int websocket_channel_init(void * sub_proc,void * para)
     conn_hub->hub_ops->add_connector(conn_hub,server_conn,NULL);
 
     ret=server_conn->conn_ops->listen(server_conn);
-
-    fprintf(stdout,"test server listen,return value is %d!\n",ret);
-
+    if(ret <0 )
+    {
+        print_cubeerr("websocket server listen error ,return value is %d!",ret);
+        return ret;
+    }
+    print_cubeaudit("websocket server listen proceed!",ret);
     websocket_channel=channel_register(init_para->channel_name,CHANNEL_RDWR,sub_proc);
     if(websocket_channel==NULL)
 	return -EINVAL;
@@ -408,6 +411,7 @@ int shakehands(void * conn)
 		print_cubeaudit("websocket protocol response\n");
 	}
 	//printf("%s",head);
+    usleep(50*1000);
 	len=channel_conn->conn_ops->write(channel_conn,head,strlen(head));
 	if(len<0)
 	{

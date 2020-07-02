@@ -72,8 +72,8 @@ int msg2channel_start(void * sub_proc,void * para)
 		return ret;
 	if(ret>0)
 	{
-		print_cubeaudit("msg2channel read %d data",ret);
-	    	void * message;
+		print_cubeaudit("msg2channel read %d  %d data %s",ret,offset,ReadBuf+offset);
+	   	void * message;
 		MSG_HEAD * msg_head;
 		int str_size;
 		readbuf_len+=ret;
@@ -121,7 +121,7 @@ int msg2channel_start(void * sub_proc,void * para)
             	if (len != stroffset)
                 	print_cubeerr("msg2channel write failed!\n");
 				else
-					print_cubeaudit("msg2channel write %d data",stroffset);
+					print_cubeaudit("msg2channel write %d data %s",stroffset,WriteBuf);
 			}
         }
     }
