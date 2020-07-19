@@ -442,7 +442,13 @@ int get_string_value(void * addr,void * elem_attr)
 	
 int get_int_value(void * addr,void * elem_attr)
 {
-	return *(int *)addr; 
+	
+	struct elem_template * curr_elem=elem_attr;
+	if(curr_elem->size == 1)
+		return *(char *)addr; 
+	if(curr_elem->size == 2)
+		return *(short *)addr; 
+	return *(int *)addr;
 }
 
 int int_get_text_value(void * elem,char * text,void * elem_attr)
