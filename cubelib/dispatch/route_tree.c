@@ -847,6 +847,13 @@ int _route_match_rules(void * path,void * message)
 	msg_head=message_get_head(message);
 	if(msg_head==NULL)
 		return -EINVAL;
+
+    // judge the rjump 
+    if(route_path->rjump !=0)
+    {
+        if(route_path->rjump != msg_head->rjump)
+            return -EINVAL;
+    }
 	ret=dispatch_policy_getfirstmatchrule(path,&match_rule);
 	if(ret<0)
 		return ret;
@@ -1531,7 +1538,7 @@ int router_find_policy_byname(void **msg_policy,char * name,int rjump,int ljump)
 		ret=Strncmp(name,policy->name,DIGEST_SIZE);
 		if(ret==0)
 		{
-			if((policy->rjump==0) || (policy->rjump==rjump))
+			if((policy->rjump==0) || (policy->rjump==rjump)||(policy->rjump==-rjump))
 			{
 				if(ljump==0)
 				{
