@@ -582,7 +582,7 @@ int proc_router_start(void * sub_proc,void * para)
 								ret=_route_match_aspect_branch(message,curr_branch);	
 								if(ret>0)
 								{
-									route_aspect_message(message,curr_branch);
+									ret=route_aspect_message(message,curr_branch);
 									print_cubeaudit("aspect message to path %.64s's policy",message->head.route);
 									_waiting_message_add(message);
 									message=NULL;

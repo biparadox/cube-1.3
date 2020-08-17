@@ -388,7 +388,11 @@ void * route_read_policy(void * policy_node)
 
 
     path->ljump=policy->ljump;
-    path->rjump=policy->rjump; 
+    if(policy->rjump >=0)
+        path->rjump=policy->rjump; 
+    else
+        path->rjump=-policy->rjump; 
+
     path->state=policy->state; 
 
     // get the match policy json node
