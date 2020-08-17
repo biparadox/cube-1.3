@@ -431,7 +431,7 @@ int proc_router_start(void * sub_proc,void * para)
 				message_route_setstart(message,msg_policy);
 				_waiting_message_add(message);
 			}	
-			else if (~(msg_head->state & MSG_STATE_RESPONSE))
+			else if ((msg_head->state & MSG_STATE_RESPONSE)==0)
 			// message is not return message 
 			{
 				ret=message_route_setremotestart(message);
@@ -454,6 +454,22 @@ int proc_router_start(void * sub_proc,void * para)
 			else
 			{
 				// we should find message's response record and reload the path
+				ret=message_route_setremotestart(message);
+				if(ret<0)
+				{
+					print_cubeerr("Fatal error in remotestart!");
+					return ret;
+				}
+				if(message->policy==NULL)
+				{
+				    print_cubeaudit("maybe an aspect remote msg %.64s come",msg_head->route);
+					proc_audit_log(message);
+				}
+                else
+                {
+				    print_cubeaudit("response remote msg match path %.64s's policy",msg_head->route);
+                }
+				_waiting_message_add(message);
 
 			} 
 			get_next_ex_module(&sub_proc);

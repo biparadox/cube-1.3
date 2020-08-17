@@ -1300,44 +1300,42 @@ int message_route_setremotestart( void * msg)
 	ret=router_find_policy_byname(&route_path,msg_box->head.route,msg_box->head.rjump,0);
 	if(ret<0)
 		return ret;
-	if(route_path==NULL)
-		return 0;
-
-	msg_box->policy = route_path;
-	if(msg_box->head.state != MSG_STATE_RESPONSE)
-	{
-		msg_box->path_site = &route_path->route_path.head.list;
-//		startnode = get_curr_pathsite(msg);
-//		if(startnode==NULL)
-//			return -EINVAL;
-	}
-	else
-	{
-		msg_box->path_site=&route_path->response_path.head.list;
-//		startnode = get_curr_pathsite(msg);
-//		if(startnode==NULL)
-//			return 0;
-	}
+	if(route_path!=NULL) //there is a route policy match this remote message
+    {
+	    msg_box->policy = route_path;
+	    if(msg_box->head.state != MSG_STATE_RESPONSE)
+	    {
+		    msg_box->path_site = &route_path->route_path.head.list;
+	    }
+	    else
+	    {
+		    msg_box->path_site=&route_path->response_path.head.list;
+	    }
 	
 	
-	if((message_get_flow(msg)==MSG_FLOW_QUERY) &&(msg_box->head.state!=MSG_STATE_RESPONSE))
-	{
-		// find hash nodelist
-		NODE_LIST * hash_list = &hash_forest[_hash_index(msg_box->head.nonce)];
-		if(hash_list==NULL)
-			return -EINVAL;
-		// build a query trace node and add it in hash nodelist 	
-		TRACE_NODE * trace_node = Dalloc0(sizeof(*trace_node),NULL);
-		if(trace_node ==NULL)
-			return -ENOMEM;
-		Memcpy(trace_node->msg_uuid,msg_box->head.nonce,DIGEST_SIZE);
-		Memcpy(trace_node->source_uuid,msg_box->head.sender_uuid,DIGEST_SIZE);
-		trace_node->path=msg_box->policy;
+	    if((message_get_flow(msg)==MSG_FLOW_QUERY) &&(msg_box->head.state!=MSG_STATE_RESPONSE))
+	    {
+		    // find hash nodelist
+		    NODE_LIST * hash_list = &hash_forest[_hash_index(msg_box->head.nonce)];
+		    if(hash_list==NULL)
+			    return -EINVAL;
+		    // build a query trace node and add it in hash nodelist 	
+		    TRACE_NODE * trace_node = Dalloc0(sizeof(*trace_node),NULL);
+		    if(trace_node ==NULL)
+			    return -ENOMEM;
+		    Memcpy(trace_node->msg_uuid,msg_box->head.nonce,DIGEST_SIZE);
+		    Memcpy(trace_node->source_uuid,msg_box->head.sender_uuid,DIGEST_SIZE);
+		    trace_node->path=msg_box->policy;
 		
-		// add trace_node to hash_nodelist 
+		    // add trace_node to hash_nodelist 
       		 _node_list_add(hash_list,trace_node);
 			
-	} 
+	    }
+    }
+	else  //perhaps this is the return info of aspect policy
+    {
+
+    }
 
 //	return rule_get_target(&startnode->this_target,msg,&receiver);
 	return 1;
