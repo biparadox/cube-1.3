@@ -88,7 +88,7 @@ int proc_msgrecord_print(void * sub_proc,void * recv_msg)
 			printf("record (%d %d) format error!\n",type,subtype);
 			return ret;
 		}
-		printf("%s\n",record_buf);
+		printf("\n%s\n",record_buf);
 		ret=message_get_record(recv_msg,&record,i++);
 		if(ret<0)
 			return ret;
