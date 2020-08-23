@@ -1154,6 +1154,14 @@ int rule_get_target(void * router_rule,void * message,void **result)
     *result=NULL;
     switch(rule->target_type){
 	    case ROUTE_TARGET_NAME:
+		    target=Talloc0(DIGEST_SIZE);
+		    Strncpy(target,rule->target_name,DIGEST_SIZE);
+		    message_set_receiver(message,target);
+		    flag = message_get_flag(message) & (~MSG_FLAG_LOCAL);
+		    message_set_flag(message,flag);
+		    
+		    break;
+
 	    case ROUTE_TARGET_PORT:
 	    case ROUTE_TARGET_LOCAL:
 		    target=Talloc0(DIGEST_SIZE);
