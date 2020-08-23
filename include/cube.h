@@ -47,6 +47,20 @@ int sm4_data_recover(int input_len,BYTE * input_data,int * output_len,BYTE * out
 // crypto_func end
 
 // ex_module func start
+enum module_type
+{
+	MOD_TYPE_MAIN=0x01,
+	MOD_TYPE_CONN,
+	MOD_TYPE_ROUTER,
+	MOD_TYPE_PORT,
+	MOD_TYPE_MONITOR,
+	MOD_TYPE_DECIDE,
+	MOD_TYPE_CONTROL,
+	MOD_TYPE_START,
+	MOD_TYPE_TRANSLATER,
+};
+
+enum ex_mod_state
 int ex_module_gettype(void * ex_mod);
 char * ex_module_getname(void * ex_mod);
 int ex_module_setpointer(void * ex_mod,void * pointer);
