@@ -60,7 +60,6 @@ enum module_type
 	MOD_TYPE_TRANSLATER,
 };
 
-enum ex_mod_state
 int ex_module_gettype(void * ex_mod);
 char * ex_module_getname(void * ex_mod);
 int ex_module_setpointer(void * ex_mod,void * pointer);
