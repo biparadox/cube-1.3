@@ -66,7 +66,7 @@ int msg2channel_start(void * sub_proc,void * para)
 
     while(1)
     {
-        usleep(time_val.tv_usec/10);
+        usleep(time_val.tv_usec*10);
 	ret=channel_read(msg2channel,ReadBuf+readbuf_len,DIGEST_SIZE*32-readbuf_len);
 	if(ret<0)
 		return ret;
@@ -77,7 +77,8 @@ int msg2channel_start(void * sub_proc,void * para)
 		MSG_HEAD * msg_head;
 		int str_size;
 		readbuf_len+=ret;
-	
+
+
   		ret=json_2_message(ReadBuf+offset,&message);
 	   	if(ret>=0)
 	    	{
@@ -102,7 +103,7 @@ int msg2channel_start(void * sub_proc,void * para)
 		}
 		else
 		{
-			print_cubeerr("resolve channel message failed!\n");
+			print_cubeerr("resolve channel message failed! return %d\n",ret);
 			print_cubeerr("error channel message: %s\n",ReadBuf+offset);
 			readbuf_len=0;
 		}

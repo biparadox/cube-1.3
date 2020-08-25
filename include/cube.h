@@ -32,6 +32,8 @@ int comp_proc_uuid(BYTE * dev_uuid,char * proc_name,BYTE * conn_uuid);
 int calculate_by_context(BYTE **buffer,int countline,UINT32 *SM3_hash);
 int calculate_context_sm3(BYTE* context, int context_size, UINT32 *SM3_hash);
 int calculate_context_sha1(BYTE* context,int context_size,UINT32 *SM3_hash);
+
+
 int extend_pcr_sm3digest(BYTE * pcr_value,BYTE * sm3digest);
 int is_valid_uuidstr(char * uuidstr);
 int sm4_context_crypt( BYTE * input, BYTE ** output, int size,char * passwd);
@@ -142,6 +144,9 @@ int message_set_flag(void * message, int flag);
 int message_get_flag(void * message);
 int message_get_blob(void * message, void ** blob);
 int message_set_blob(void * message,void * blob, int size);
+
+int message_2_json(void * message,char * json_str);
+int json_2_message(char * json_str,void ** message);
 // message func end
 
 // memdb func start
