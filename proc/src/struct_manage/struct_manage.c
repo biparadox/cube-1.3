@@ -58,7 +58,8 @@ int struct_manage_start(void * sub_proc,void * para)
 		if(action==0)
 		{
 			action=1;
-			__proc_output_describe(sub_proc,DB_TYPELIST,0,NULL,NULL);
+            usleep(100*1000);
+		//	__proc_output_describe(sub_proc,DB_TYPELIST,0,NULL,NULL);
 			{
 /*
 				struct types_pair test_types;
@@ -192,7 +193,7 @@ int __proc_output_describe(void * sub_proc,int type,int subtype,void * message,v
 					return -EINVAL;
 				message_add_expand_data(send_msg,DB_NAMELIST,0,record->record);	
 				ex_module_sendmsg(sub_proc,send_msg);
-				usleep(50*1000);
+				usleep(1000*1000);
                 		record=memdb_get_next(type,subtype);
 			}
 			break;
