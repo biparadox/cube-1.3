@@ -158,6 +158,8 @@ int main(int argc,char **argv)
 	return ret; 		
 
     ret=get_local_uuid(local_uuid);
+    if(ret<=0)
+        return -EINVAL;
     digest_to_uuid(local_uuid,buffer);
     buffer[64]=0;
     print_cubeaudit("this machine's local uuid is %s\n",buffer);

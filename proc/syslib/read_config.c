@@ -166,16 +166,25 @@ int get_local_uuid(BYTE * uuid)
 	if((tempfile1==NULL) || IS_ERR(tempfile1)) 
 		return tempfile1;
 
-	sprintf(cmd,"dmidecode | grep UUID | awk '{print $2}' > %s",tempfile1);
-	ret=system(cmd);
+    int is_fromfile=1;
+    if(geteuid()==0)
+    {
+	    sprintf(cmd,"dmidecode | grep UUID | awk '{print $2}' > %s",tempfile1);
+	    ret=system(cmd);
 
-	fi=fopen(tempfile1,"r");
-	memset(uuidstr,0,DIGEST_SIZE*2);
-	len=fread(uuidstr,1,36,fi);
-	sprintf(cmd,"rm -f %s",tempfile1);
-	ret=system(cmd);
+	    fi=fopen(tempfile1,"r");
+	    memset(uuidstr,0,DIGEST_SIZE*2);
+	    len=fread(uuidstr,1,36,fi);
+	    sprintf(cmd,"rm -f %s",tempfile1);
+	    ret=system(cmd);
+        if(len!=0)
+            is_fromfile=0;
+        else
+            print_cubeaudit("root user run dmidecode cmd failed!");
 
-	if(len==0)
+    }
+
+	if(is_fromfile ==1)
 	{
 		libpath=getenv("CUBE_SYS_PLUGIN");
 		if(libpath==NULL)
@@ -186,7 +195,10 @@ int get_local_uuid(BYTE * uuid)
 		memset(uuidstr,0,DIGEST_SIZE);
 		len=fread(uuidstr,1,36,fi);
 		if(len<=0)
+        {
+            print_cubeerr("Can't get node uuid from file"!);
 			return 0;
+        }
 	}
 
 	len=convert_machine_uuid(uuidstr,uuid);

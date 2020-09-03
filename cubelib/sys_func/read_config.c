@@ -362,16 +362,28 @@ int get_local_uuid(BYTE * uuid)
 	if((tempfile1==NULL) || IS_ERR(tempfile1)) 
 		return tempfile1;
 
-	sprintf(cmd,"dmidecode | grep UUID | awk '{print $2}' > %s",tempfile1);
-	ret=system(cmd);
+    int isfromfile=1;
 
-	fi=fopen(tempfile1,"r");
-	memset(uuidstr,0,DIGEST_SIZE*2);
-	len=fread(uuidstr,1,36,fi);
-	sprintf(cmd,"rm -f %s",tempfile1);
-	ret=system(cmd);
+    if(geteuid()==0)
+    {
+    
+	    sprintf(cmd,"dmidecode | grep UUID | awk '{print $2}' > %s",tempfile1);
+	    ret=system(cmd);
 
-	if(len==0)
+	    fi=fopen(tempfile1,"r");
+	    memset(uuidstr,0,DIGEST_SIZE*2);
+	    len=fread(uuidstr,1,36,fi);
+	    sprintf(cmd,"rm -f %s",tempfile1);
+	    ret=system(cmd);
+        if(len<=0)
+        {
+            print_cubewarn(" root user get uuid from dmidecode failed! try to get uuid from proc/plugin/uuid");
+        }
+        else
+            isfromfile=0;
+     }
+
+	if(isfromfile)
 	{
 		libpath=getenv("CUBE_SYS_PLUGIN");
 		if(libpath==NULL)
@@ -381,8 +393,9 @@ int get_local_uuid(BYTE * uuid)
 		fi=fopen(filename,"r");
 		if(fi==NULL)
 		{
-			print_cubeerr("can't get node's machine uuid,perhaps you need buildi"
+			print_cubeerr("can't get node's machine uuid,perhaps you need build "
 				"an uuid file in cube-1.3/proc/plugin\n");
+            return -EINVAL;    
 		}
 		memset(uuidstr,0,DIGEST_SIZE);
 		len=fread(uuidstr,1,36,fi);
