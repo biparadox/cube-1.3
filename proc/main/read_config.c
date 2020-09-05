@@ -378,6 +378,8 @@ int read_main_cfg(void * lib_para_struct,void * root_node)
 			ret=read_record_file(json_get_valuestr(record_file));
 			if(ret>0)
 				print_cubeaudit("read %d elem from file %s!",ret,json_get_valuestr(record_file));
+			else
+				print_cubewarn("read record file %s failed!",json_get_valuestr(record_file));
 			record_file=json_get_next_child(record_list);
 		}
 	}	
