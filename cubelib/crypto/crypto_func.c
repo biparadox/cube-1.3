@@ -289,7 +289,7 @@ int sm4_text_decrypt( BYTE * input, BYTE ** output,BYTE * passwd)
 	*output=output_buf;
 	return out_size;	
 }
-
+/*
 int calculate_sm3(char* filename, UINT32 *SM3_hash)
 {
     int fd1;
@@ -301,7 +301,7 @@ int calculate_sm3(char* filename, UINT32 *SM3_hash)
     char *sm3buffer;
     sm3buffer = (char*) malloc(4096);
 
-    /* Open the input file */
+    // Open the input file 
     fd1 = open(filename,O_RDONLY);
 
     if (fd1 < 0)
@@ -313,7 +313,7 @@ int calculate_sm3(char* filename, UINT32 *SM3_hash)
     filesize = attribute.st_size;
         //printf("filesize:%d\n",filesize);
 
-    /* Initialise sm3-Context */
+    // Initialise sm3-Context 
     result = SM3_init(&index);
     if (result)
     {
@@ -361,7 +361,7 @@ int calculate_sm3(char* filename, UINT32 *SM3_hash)
         return -1;
     return 0;
 }
-
+*/
 int get_random_uuid(BYTE * uuid)
 {
 	int fd;

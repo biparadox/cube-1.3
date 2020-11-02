@@ -187,6 +187,7 @@ int memdb_find_recordtype(int type,int subtype);
 int memdb_set_template(int type, int subtype, void * struct_template);
 
 void * memdb_get_template(int type, int subtype);
+int memdb_comp_uuid(void * record);
 
 // memdb func end
 // system func start
