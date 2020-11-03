@@ -27,7 +27,6 @@
 
 #include "sm3_ext.h"
 
-
 /*
  * 32-bit integer manipulation macros (big endian)
  */
