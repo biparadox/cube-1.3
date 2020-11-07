@@ -186,6 +186,10 @@ void * memdb_find_byname(char * name,int type,int subtype);
 int memdb_find_recordtype(int type,int subtype);
 int memdb_set_template(int type, int subtype, void * struct_template);
 
+int  memdb_get_typeno(char * typestr);
+int  memdb_get_subtypeno(int typeno,char * typestr);
+char * memdb_get_typestr(int typeno);
+char * memdb_get_subtypestr(int typeno,int subtypeno);
 void * memdb_get_template(int type, int subtype);
 int memdb_comp_uuid(void * record);
 

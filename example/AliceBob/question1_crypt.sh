@@ -11,7 +11,7 @@ yes|cp instance/transfer/aspect_policy.cfg.teardrop instance/transfer/aspect_pol
 yes|cp instance/Alice/sender/aspect_policy.cfg.symmcrypt instance/Alice/sender/aspect_policy.cfg 
 yes|cp instance/Bob/receiver/aspect_policy.cfg.symmcrypt instance/Bob/receiver/aspect_policy.cfg 
 
-killall -9 envset_proc
+pkill envset_proc
 sleep 1
 sh run_cube.sh exec_def/question1/_Alice_crypt.def &
 sh run_cube.sh exec_def/question1/_Bob_crypt.def &
