@@ -32,13 +32,13 @@ int comp_proc_uuid(BYTE * dev_uuid,char * proc_name,BYTE * conn_uuid);
 int calculate_by_context(BYTE **buffer,int countline,UINT32 *SM3_hash);
 int calculate_context_sm3(BYTE* context, int context_size, UINT32 *SM3_hash);
 int calculate_context_sha1(BYTE* context,int context_size,UINT32 *SM3_hash);
+int calculate_sm3(char* filename, unsigned char *SM3_hash);
 
 
 int extend_pcr_sm3digest(BYTE * pcr_value,BYTE * sm3digest);
 int is_valid_uuidstr(char * uuidstr);
 int sm4_context_crypt( BYTE * input, BYTE ** output, int size,char * passwd);
 int sm4_context_decrypt( BYTE * input, BYTE ** output, int size,char * passwd);
-int calculate_sm3(char* filename, UINT32 *SM3_hash);
 int get_random_uuid(BYTE * uuid);
 
 int sm4_text_crypt( BYTE * input, BYTE ** output, BYTE * passwd);
