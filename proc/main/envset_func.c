@@ -7,6 +7,8 @@
 #include <sys/stat.h>
 #include <sys/socket.h>
 #include <dlfcn.h>
+#include <sys/types.h>
+#include <pwd.h>
 
 #include "data_type.h"
 #include "alloc.h"
@@ -154,6 +156,8 @@ int envset_func(char * envset_file)
 		    return -EINVAL;
 	    setenv("CUBE_BASE_DEFINE",namebuffer,1);
     }
+
+
 
     // set LD_LIBRARY_PATH
     ld_library_path=json_buffer+offset;
@@ -321,8 +325,27 @@ int envset_func(char * envset_file)
 	print_cubeaudit("change path %s %d!\n",instance,ret);
 /*
 */
+    // set CUBE_EXEC_USER environment
+    define_elem=json_find_elem("CUBE_EXEC_USER",define_node);
+    if(define_elem !=NULL)
+    {	
+	    ret=json_node_getvalue(define_elem,namebuffer,DIGEST_SIZE);
+	    if(ret<=0)
+        {
+            print_cubeerr("get exec user format error!");
+		    return -EINVAL;
+        }
+        print_cubeaudit("change user to %s",namebuffer);
+        struct passwd * passdata;
+        passdata = getpwnam(namebuffer);
+        if(passdata==NULL)
+        {
+            print_cubeerr("find user %s failed!",namebuffer);
+            exit(0);
+        }
+        setuid(passdata->pw_uid);
+    }
 			
-
     return ret;
 }
 
