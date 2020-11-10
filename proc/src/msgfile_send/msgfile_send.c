@@ -107,7 +107,7 @@ int proc_basemsg(void * sub_proc,void * recv_msg)
 		return ret;
 	while(base_msg!=NULL)
 	{
-		proc_msgfile_send(sub_proc,base_msg->message,recv_msg);
+		proc_msgfile_send(sub_proc,base_msg->message,NULL);
 		ret=message_get_record(recv_msg,&base_msg,i++);	
 	}
 	return i;
