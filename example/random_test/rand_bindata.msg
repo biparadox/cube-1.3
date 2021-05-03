@@ -1,0 +1,9 @@
+{
+	"type":"GENERAL_RETURN",
+	"subtype":"BINDATA"
+}
+{
+	"name":"rand_test",
+    "size":16,
+    "bindata":""
+}

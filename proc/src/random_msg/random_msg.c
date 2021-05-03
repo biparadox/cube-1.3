@@ -68,6 +68,12 @@ int random_msg_start(void * sub_proc,void * para)
             case SUBTYPE(GENERAL_RETURN,INT):
                 proc_randomint_msg(sub_proc,recv_msg);
                 break;
+            case SUBTYPE(GENERAL_RETURN,UUID):
+                proc_randomuuid_msg(sub_proc,recv_msg);
+                break;
+            case SUBTYPE(GENERAL_RETURN,BINDATA):
+                proc_randombindata_msg(sub_proc,recv_msg);
+                break;
             default:
                 ex_module_sendmsg(sub_proc,recv_msg);
                 break;
@@ -92,6 +98,57 @@ int proc_randomint_msg(void * sub_proc,void * recv_msg)
 
 	void * new_msg;
 	new_msg=message_create(TYPE_PAIR(GENERAL_RETURN,INT),recv_msg);
+    if(new_msg==NULL)
+        return -EINVAL;
+    ret=message_add_record(new_msg,input);
+	if(ret<0)
+		return ret;
+	ret=ex_module_sendmsg(sub_proc,new_msg);
+	return ret;
+}
+
+int proc_randomuuid_msg(void * sub_proc,void * recv_msg)
+{
+	int ret;
+	int i;
+    RECORD(GENERAL_RETURN,UUID) * input;
+
+    ret=message_get_record(recv_msg,&input,0);
+    if(input==NULL)
+    {
+        return -EINVAL;
+    }
+    RAND_bytes(input->return_value,DIGEST_SIZE);
+
+	void * new_msg;
+	new_msg=message_create(TYPE_PAIR(GENERAL_RETURN,UUID),recv_msg);
+    if(new_msg==NULL)
+        return -EINVAL;
+    ret=message_add_record(new_msg,input);
+	if(ret<0)
+		return ret;
+	ret=ex_module_sendmsg(sub_proc,new_msg);
+	return ret;
+}
+
+int proc_randombindata_msg(void * sub_proc,void * recv_msg)
+{
+	int ret;
+	int i;
+    RECORD(GENERAL_RETURN,BINDATA) * input;
+
+    ret=message_get_record(recv_msg,&input,0);
+    if(input==NULL)
+    {
+        return -EINVAL;
+    }
+
+    input->bindata=Talloc0(input->size);
+    RAND_bytes(input->bindata,input->size);
+
+
+	void * new_msg;
+	new_msg=message_create(TYPE_PAIR(GENERAL_RETURN,BINDATA),recv_msg);
     if(new_msg==NULL)
         return -EINVAL;
     ret=message_add_record(new_msg,input);
