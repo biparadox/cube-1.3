@@ -454,46 +454,64 @@ int get_int_value(void * addr,void * elem_attr)
 int int_get_text_value(void * elem,char * text,void * elem_attr)
 {
 	struct elem_template * curr_elem=elem_attr;
-	int i;
+	long long i;
 	long long value=0;
-	int len;
+    int end_digit=-1; 
+	int len=0;
 	char buffer[DIGEST_SIZE];
 	char *pch=text;
 
-	Memcpy(&value,elem,curr_elem->size);
-	if(curr_elem->size==8)
+    switch(curr_elem->elem_desc->type)
+    {
+        case CUBE_TYPE_INT:
+            value = *(int *)elem;
+            break;
+        case TPM_TYPE_UINT32:
+            value = *(unsigned int *)elem;
+            break;
+        case CUBE_TYPE_LONGLONG:
+            value = *(long long *)elem;
+            break;
+        case TPM_TYPE_UINT64:
+            end_digit=(*(UINT64 *)elem %10);
+            value = (*(UINT64 *)elem/10);
+            break;
+     }
+//	Memcpy(&value,elem,curr_elem->size);
+    if(value<0)
 	{
-		if(value<0)
-		{
-			*pch++='-';
-			value=-value;
-		}
+	    *pch++='-';
+		value=-value;
+        len++;
 	}
-	else
-	{
-		long long comp_value=((long long)1)<<(curr_elem->size*8-1);
-		if(value>comp_value)
-		{
-			comp_value<<=1;
-			value=comp_value-value;
-			*pch++='-';
-		}
-	}	
-
 	i=1;
-	len=2;
+	len++;
 	while(value/i)
 	{
-		i*=10;
 		len++;
+        if(value/i<10)
+            break;
+	    i*=10;
 	}
 	if(value==0)
-		i=10;
-	while(i/=10)
-	{
-		*pch++=value/i+'0';
-		value%=i;
-	}	
+    {
+        if(end_digit==-1)
+            *pch++='0';
+    }    
+    else
+    {
+	    do
+	    {
+            *pch++=value/i+'0';
+	        value%=i;
+	    }while(i/=10);
+    }
+    if(end_digit>-1)
+    {
+        len++;
+        *pch++=end_digit+'0';
+    }
+        
 	*pch='\0';
 	return len;
 }
