@@ -86,9 +86,29 @@ int msgfile_send_start(void * sub_proc, void * para)
 			message_get_type(recv_msg),message_get_subtype(recv_msg));
 			continue;
 		}
-		if((type==DTYPE_MESSAGE) &&(subtype==SUBTYPE_BASE_MSG))
+		if((type==TYPE(MESSAGE)) &&(subtype==SUBTYPE(MESSAGE,BASE_MSG)))
 		{
 			proc_basemsg(sub_proc,recv_msg);
+		}
+		else if((type==TYPE(MESSAGE)) &&(subtype==SUBTYPE(MESSAGE,CTRL_MSG)))
+		{
+			ret = proc_msgfile_send_ctrl(sub_proc,recv_msg);
+            switch(ret)
+            {
+                case MSG_CTRL_INIT:   
+                case MSG_CTRL_START:   
+                case MSG_CTRL_SLEEP:   
+                case MSG_CTRL_RESUME:   
+                    break;
+                case MSG_CTRL_STOP:
+	                printf("stop the proc! \n");
+                    sleep(1);
+                    return ret;
+                case MSG_CTRL_EXIT:
+                default:
+	                printf("exit the proc! \n");
+                    exit(ret);
+            }
 		}
 	}
 	
@@ -237,4 +257,25 @@ int proc_msgfile_send(void * sub_proc, char * filename,void * recv_msg)
 	}
 	close(fd);
 	return count;
+}
+
+int proc_msgfile_send_ctrl(void * sub_proc,void * message)
+{
+	int ret;
+	int i=0;
+
+	RECORD(MESSAGE,CTRL_MSG) * ctrl_msg;
+
+	
+	ret=message_get_record(message,&ctrl_msg,i++);
+	if(ret<0)
+		return ret;
+	if(ctrl_msg!=NULL)
+	{
+		ret=ctrl_msg->ctrl; 
+	}
+
+	ex_module_sendmsg(sub_proc,message);
+
+	return ret;
 }
