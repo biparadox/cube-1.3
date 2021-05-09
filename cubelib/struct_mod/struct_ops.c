@@ -463,6 +463,9 @@ int int_get_text_value(void * elem,char * text,void * elem_attr)
 
     switch(curr_elem->elem_desc->type)
     {
+        case CUBE_TYPE_UCHAR:
+            value = *(char *)elem;
+            break;
         case CUBE_TYPE_INT:
             value = *(int *)elem;
             break;
