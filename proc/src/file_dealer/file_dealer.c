@@ -77,6 +77,10 @@ int file_dealer_start(void * sub_proc,void * para)
 			{
 				proc_file_send(sub_proc,recv_msg);
 			}
+            else
+            {
+			    ex_module_sendmsg(sub_proc,recv_msg);
+            }
 		}
 		else
 		{
