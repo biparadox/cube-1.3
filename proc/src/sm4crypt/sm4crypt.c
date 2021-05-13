@@ -162,9 +162,9 @@ int proc_uncrypt_message(void * sub_proc,void * message)
 	if(blob_size<0)
 		return blob_size;
 
-        message_set_blob(message,blob,blob_size);
+    message_set_blob(message,blob,blob_size);
 	int flag=message_get_flag(message);
-        message_set_flag(message,flag&(~MSG_FLAG_CRYPT));
+    message_set_flag(message,flag&(~MSG_FLAG_CRYPT));
 
 	message_load_record(message);
 
