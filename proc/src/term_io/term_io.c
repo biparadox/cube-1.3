@@ -66,7 +66,6 @@ int term_io_start(void * sub_proc,void * para)
 			{
  				type=message_get_type(recv_msg);
 				subtype=message_get_subtype(recv_msg);
-				state=1;
 			}
 
 			if((type==DTYPE_MESSAGE)&&(subtype==SUBTYPE(MESSAGE,BASE_MSG)))
@@ -75,7 +74,28 @@ int term_io_start(void * sub_proc,void * para)
 				ret=proc_output_base_msg(sub_proc,recv_msg);
 				if(ret<0)
 					continue;
+				state=1;
 			}
+		    else if((type==TYPE(MESSAGE)) &&(subtype==SUBTYPE(MESSAGE,CTRL_MSG)))
+		    {
+			    ret = proc_term_io_send_ctrl(sub_proc,recv_msg);
+                switch(ret)
+                {
+                    case MSG_CTRL_INIT:   
+                    case MSG_CTRL_START:   
+                    case MSG_CTRL_SLEEP:   
+                    case MSG_CTRL_RESUME:   
+                        break;
+                    case MSG_CTRL_STOP:
+	                    printf("stop the proc! \n");
+                        sleep(1);
+                        return ret;
+                    case MSG_CTRL_EXIT:
+                    default:
+	                    printf("exit the proc! \n");
+                        exit(ret);
+                }
+		    }
 		}
 		if(state==1)
 		{
@@ -203,4 +223,24 @@ int get_password(const char *prompt,char * passwd)
     }
     passwd[i] = '\0'; //设置字符串结束标志 
     return i;
+}
+int proc_term_io_send_ctrl(void * sub_proc,void * message)
+{
+	int ret;
+	int i=0;
+
+	RECORD(MESSAGE,CTRL_MSG) * ctrl_msg;
+
+	
+	ret=message_get_record(message,&ctrl_msg,i++);
+	if(ret<0)
+		return ret;
+	if(ctrl_msg!=NULL)
+	{
+		ret=ctrl_msg->ctrl; 
+	}
+
+	ex_module_sendmsg(sub_proc,message);
+
+	return ret;
 }
