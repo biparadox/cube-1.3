@@ -811,3 +811,22 @@ int print_pretty_text(char * json_str,int fd)
 	}
 	return 0;
 }
+
+void * create_type_message(int type,int subtype,void * active_msg)
+{
+	int ret;
+
+	void * new_msg;
+	RECORD(MESSAGE,TYPES) types_pair;
+
+	types_pair.type=type;
+	types_pair.subtype=subtype;
+
+	new_msg=message_create(TYPE_PAIR(MESSAGE,TYPES),active_msg);
+	if(new_msg==NULL)
+		return NULL;
+	
+	message_add_record(new_msg,&types_pair);
+	return new_msg;
+}
+

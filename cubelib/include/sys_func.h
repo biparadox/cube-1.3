@@ -11,6 +11,7 @@ int read_json_file(char * file_name);
 int read_record_file(char * record_file);
 
 extern struct timeval time_val;
+void * create_type_message(int type,int subtype,void * active_msg);
 
 int set_semvalue(int semid,int value);
 void del_semvalue(int semid);

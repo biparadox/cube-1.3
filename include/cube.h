@@ -201,6 +201,7 @@ int print_cubeaudit(char * format,...);
 int convert_uuidname(char * name,int len,BYTE * digest,char * newfilename);
 int RAND_bytes(unsigned char *buffer, size_t len);
 void print_bin_data(BYTE * data,int len,int width);
+void * create_type_message(int type,int subtype,void * active_msg);
 
 // system func end
 #endif
