@@ -740,7 +740,7 @@ int proc_get_uuid(BYTE * uuid)
 	int ret;
 	BYTE local_uuid[DIGEST_SIZE];
 	BYTE proc_name[DIGEST_SIZE];
-	ret=proc_share_data_getvalue("local_uuid",local_uuid);	
+	ret=proc_share_data_getvalue("uuid",local_uuid);	
 	if(ret<0)
 		return ret;
 	ret=proc_share_data_getvalue("proc_name",proc_name);
