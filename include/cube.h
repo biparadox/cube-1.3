@@ -75,6 +75,7 @@ void * proc_share_data_getpointer();
 int proc_share_data_setpointer(void * pointer);
 int proc_share_data_getvalue(char * valuename,void * value);
 int proc_share_data_setvalue(char * valuename,void * value);
+int proc_get_uuid(BYTE * uuid);
 
 // ex_module func end
 // struct func start

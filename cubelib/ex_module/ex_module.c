@@ -735,3 +735,17 @@ int proc_share_data_setvalue(char * valuename,void * value)
 	ret=struct_write_elem(valuename,main_module->context,value,main_module->context_template);
 	return ret;
 }
+int proc_get_uuid(BYTE * uuid)
+{
+	int ret;
+	BYTE local_uuid[DIGEST_SIZE];
+	BYTE proc_name[DIGEST_SIZE];
+	ret=proc_share_data_getvalue("local_uuid",local_uuid);	
+	if(ret<0)
+		return ret;
+	ret=proc_share_data_getvalue("proc_name",proc_name);
+	if(ret<0)
+		return ret;
+	comp_proc_uuid(local_uuid,proc_name,uuid);
+	return 0;	
+}
