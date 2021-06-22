@@ -90,6 +90,8 @@ int  _convert_frame_func (void *addr, void * data, void * struct_template,
 				{
 					curr_node->temp_var++;
 					curr_elem->limit=0;
+                    // should i clear curr->index value?
+					curr_elem->index=0;
 				}
 			}
 			else
