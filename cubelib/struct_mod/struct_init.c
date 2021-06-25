@@ -224,11 +224,11 @@ int _elem_get_defvalue(void * elem,void * addr)
 	// now compute the define elem's offset
 
 	// if define elem is the first layer child
-	if(temp_elem->father!=NULL)
-	{
-		if(!_is_elem_in_subset(curr_elem,temp_elem->father))
-			return -EINVAL;	
-	}
+//	if(temp_elem->father!=NULL)
+//	{
+//		if(!_is_elem_in_subset(curr_elem,temp_elem->father))
+//			return -EINVAL;	
+//	}
 
 	def_addr=_elem_get_addr(temp_elem,addr);
 	// if define elem is an elem in curr_elem's father subset
