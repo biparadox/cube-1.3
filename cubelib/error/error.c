@@ -169,3 +169,10 @@ int cubeerr_write(enum cube_error_code err_code,int para, char * err_string)
     ret=_cubeerr_write_info(&err_info);
     return ret;
 }
+
+ERR_INFO * cubeerr_get()
+{
+    ERR_INFO * return_info;
+    ERR_INFO info_head; 
+
+}

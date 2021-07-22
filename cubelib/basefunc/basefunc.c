@@ -5,8 +5,9 @@
  * Author: Hu Jun (algorist@bjut.edu.cn)
  */
 
-#include "../include/errno.h"
 #include "../include/data_type.h"
+#include <errno.h>
+//#include "../include/errno.h"
 #include "../include/alloc.h"
 #include "../include/memfunc.h"
 #include "../include/list.h"
