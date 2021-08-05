@@ -35,7 +35,7 @@ static struct InitElemInfo_struct MemdbElemInfo[] =
 
 };
 
-void * _alloc_dynamic_db(int type,int subtype);
+void * _alloc_dynamic_db(int type,int subtype,void * db_addr);
 int _namelist_tail_func(void * memdb,void * record)
 {
 	DB_RECORD * db_record=record;
@@ -222,45 +222,67 @@ int _memdb_record_add_name(void * record,char * name)
 	// judge if this name is in the list;
 	if(_memdb_record_find_name(record,name)>0)
 		return 0;
-
+    // compute string's len
 	len=Strnlen(name,DIGEST_SIZE);
 	if(len<DIGEST_SIZE)
 		len++;
-
-	new_name=Dalloc0(len,record_db);
-	if(new_name==NULL)
-		return -ENOMEM;
-	Strncpy(new_name,name,DIGEST_SIZE);
-	
+    //if record_db->names is empty 
 	if(record_db->names==NULL)
 	{
+        // if record_db->head.name[0] is empty, store name here
 		if(record_db->head.name[0]==0)
-			record_db->name_no=0;
-		else
+        {
 			record_db->name_no=1;
+            Strncpy(record_db->head.name[0],name,DIGEST_SIZE);
+            return 1;
+        }
+	
+        record_db->name_no=1;
+     
+        // alloc name pointer's space  
 
-		record_db->names=Dalloc0(sizeof(char *),record_db);
+		record_db->names=Dalloc0(sizeof(char *),&record_db->names);
 		if(record_db->names==NULL)
 			return -ENOMEM;
+        // alloc name string space
+        new_name=Dalloc0(len,&record_db->names[0]);    
 		record_db->names[0]=new_name;
 		record_db->name_no++;
 		return 2;
 	}
 
+// this code should be after the pointer alloc 
+
 	record_db->name_no++;
 	namelist_no=record_db->name_no;
-	if(record_db->head.name[0]!=0)
-		namelist_no--;
+//	if(record_db->head.name[0]!=0)
+//		namelist_no--;
 //	namelist_no++;
 		
-	new_namearray=Dalloc0(sizeof(char *)*namelist_no,record_db);
+    // alloc new name pointer array 
+	new_namearray=Dalloc0(sizeof(char *)*namelist_no,&record_db->names);
 	if(new_namearray==NULL)
 		return -ENOMEM;
+    // duplicate old namearray to new namearray
 	Memcpy(new_namearray,record_db->names,sizeof(char *)*(namelist_no-1));
-	new_namearray[namelist_no-1]=new_name;
+    // add redirect process here start
+    
 
-	Free0(record_db->names);
+    // add redirect process here end
+
+
+    // free the old namearray start
+
+    // free the old namearray end
+
+//	Free0(record_db->names);
 	record_db->names=new_namearray;	
+
+	new_name=Dalloc0(len,&record_db->names[namelist_no-1]);
+	if(new_name==NULL)
+		return -ENOMEM;
+	new_namearray[namelist_no-1]=new_name;
+	Strncpy(new_name,name,len);
 
 	return namelist_no+2;	
 }
@@ -559,6 +581,7 @@ int memdb_register_dynamicdb(int type,int subtype)
 	struct memdb_desc * memdb;
 	int ret;
 	DB_RECORD * db_record;
+    Record_List * record_list;
 	struct struct_recordtype * record_define;
 	
 	if(type<=DB_DTYPE_START)
@@ -574,14 +597,16 @@ int memdb_register_dynamicdb(int type,int subtype)
 
 	record_define=db_record->record;
 
-	memdb=_alloc_dynamic_db(type,subtype);
+	record_list=hashlist_add_elem(dynamic_db_list,memdb);
+	if(record_list==NULL)
+		return -EINVAL;
+
+	memdb=_alloc_dynamic_db(type,subtype,&record_list->record);
 	if(memdb==NULL)
 		return -EINVAL;
 	Memcpy(memdb->uuid,record_define->uuid,DIGEST_SIZE);
-	ret=hashlist_add_elem(dynamic_db_list,memdb);
-	if(ret<0)
-		return ret;
 	memdb->struct_template=db_record->tail;
+
 	memdb->tail_func=NULL;
 	return 0;
 }
@@ -682,14 +707,14 @@ void * memdb_get_dblist(int type, int subtype)
 }
 
 
-void * _alloc_dynamic_db(int type,int subtype)
+void * _alloc_dynamic_db(int type,int subtype,void * db_addr)
 {
 	int ret;
 	struct memdb_desc * memdb;
 	void * db_list=init_hash_list(8,type,subtype);
 	if(db_list==NULL)
 		return NULL;
-	memdb=Salloc0(sizeof(DB_DESC));
+	memdb=Dalloc0(sizeof(DB_DESC),db_addr);
 	if(memdb==NULL)
 		return NULL;
 	memdb->type=type;
@@ -935,6 +960,7 @@ void *  memdb_store(void * data,int type,int subtype,char * name)
 	UUID_HEAD * head;
 	DB_RECORD * record;
 	DB_RECORD * oldrecord;
+    Record_List * record_list;
 	db_list=memdb_get_dblist(type,subtype);
 	if(db_list==NULL)
 	{
@@ -978,8 +1004,8 @@ void *  memdb_store(void * data,int type,int subtype,char * name)
 			return NULL;
 		}
 		record->record=clone_struct(data,struct_template);
-		ret=hashlist_add_elem(db_list->record_db,record);
-		if(ret<0)
+		record_list=hashlist_add_elem(db_list->record_db,record);
+		if(record_list == NULL)
 			return NULL;
 	}
 	else
@@ -1009,6 +1035,7 @@ int memdb_store_record(void * record)
 	UUID_HEAD * head;
 	DB_RECORD * db_record=record;
 	DB_RECORD * oldrecord;
+    Record_List * record_list;
 	if(db_record==NULL)
 		return -EINVAL; 
 	if(db_record->record==NULL)
@@ -1039,8 +1066,8 @@ int memdb_store_record(void * record)
 			Free0(record);
 			return -EINVAL;
 		}
-		ret=hashlist_add_elem(db_list->record_db,record);
-		if(ret<0)
+		record_list=hashlist_add_elem(db_list->record_db,record);
+		if(record_list==NULL)
 			return -EINVAL;
 		db_list->record_no++;
 	}

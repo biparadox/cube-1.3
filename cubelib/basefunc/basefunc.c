@@ -98,7 +98,7 @@ int hashlist_set_desc(void * hashlist,void * desc)
 	return 0;
 }
 
-int hashlist_add_elem(void * hashlist,void * elem)
+void * hashlist_add_elem(void * hashlist,void * elem)
 {
 	Record_List * new_record;
 	UUID_LIST * uuid_list= (UUID_LIST *)hashlist;
@@ -114,10 +114,10 @@ int hashlist_add_elem(void * hashlist,void * elem)
 	else if(uuid_list->hash_num==1024)
 		hindex=get_hash_index(elem);
 	else
-		return -EINVAL;
+		return NULL;
 	
 	List_add_tail(&new_record->list,&uuid_list->hash_table[hindex].list);
-	return 0;
+	return new_record;
 }
 
 static __inline__ int comp_uuid(void * src,void * desc)

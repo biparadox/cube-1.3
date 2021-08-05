@@ -48,7 +48,7 @@ int main() {
 
   hash_head=init_hash_list(8,0,0);
 	
-  ret=hashlist_add_elem(hash_head,test_uuid);	
+  hashlist_add_elem(hash_head,test_uuid);	
   
   Memset(digest,'A',DIGEST_SIZE);
   test_uuid1=hashlist_find_elem(hash_head,digest);
