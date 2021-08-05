@@ -24,6 +24,9 @@ enum elem_attr_flag
 	ELEM_ATTR_REF=0x800,
 	ELEM_ATTR_FIXSIZE=0x1000,
 	ELEM_ATTR_SPECIAL=0x2000,
+    //add TPM type ENUM start
+    ELEM_ATTR_TPMTYPE=0x4000,
+    //add TPM type ENUM end
 	ELEM_ATTR_EMPTY=0x80000,
 
 };

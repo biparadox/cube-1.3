@@ -851,11 +851,11 @@ int memdb_init()
 
 	elemenumlist=_merge_namelist(templist,templist1);
 
-
+/*
 	typeenumlist=Dalloc0(sizeof(struct struct_namelist),NULL);
 	if(typeenumlist==NULL)
 		return -ENOMEM;
-
+*/
 	templist->elem_no=_get_namelist_no(&struct_type_baselist);
 	templist->elemlist=&struct_type_baselist;
 	
