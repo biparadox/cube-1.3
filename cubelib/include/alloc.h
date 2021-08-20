@@ -10,6 +10,7 @@ void * Calloc0(int size);
 
 void * Dalloc(int size,void * base);
 void * Dalloc0(int size,void * base);
+void * Dpointer_set(void * pointer,void * base);
 
 void * Talloc(int size);
 void * Talloc0(int size);

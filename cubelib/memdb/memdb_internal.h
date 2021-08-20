@@ -2,6 +2,8 @@
 #define _MEMDB_INTERNAL_H
 
 
+
+
 struct elem_attr_octet
 {
 	char * name;
@@ -11,7 +13,6 @@ struct elem_attr_octet
 	char ref_name[DIGEST_SIZE];
 	char def[DIGEST_SIZE];
 };
-
 
 struct memdb_desc
 {
@@ -25,13 +26,19 @@ struct memdb_desc
 };
 
 
-extern struct memdb_desc ** static_db_list;
-extern struct memdb_desc * dynamic_db_list;
+struct memdb_static_struct
+{
+    struct memdb_desc ** static_db_list;
+    struct memdb_desc * dynamic_db_list;
+    struct struct_namelist *elemenumlist;
+    struct struct_namelist *typeenumlist;
+    void * elem_template;
+    void * head_template;
+    void * index_template;
+};
 
+extern struct memdb_static_struct * memdb_base;
 
-static void * elem_template;
-extern void * head_template;
-static void * index_template;
 
 // static type define
 
@@ -73,8 +80,6 @@ struct struct_recordtype
 
 // the 2 init namelist
 
-extern struct struct_namelist *elemenumlist;
-extern struct struct_namelist *typeenumlist;
 
 
 typedef struct memdb_desc_record

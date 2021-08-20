@@ -6,8 +6,16 @@ enum alloc_type
 	ALLOC_TEMP=1,
 	ALLOC_STATIC,
 	ALLOC_CACHE,
-	ALLOC_DYNAMIC	
+	ALLOC_DYNAMIC,
+    ALLOC_PAGE,
+    ALLOC_ERR
 };
+
+#define Pointer_Type_Mask  0xF000
+#define Pointer_Size_Mask  0x0FFF
+#define Pointer_Desc(pointer)   (*(UINT16 *)((BYTE *)pointer -2))
+#define Pointer_Type(pointer)   ((Pointer_Desc(pointer)&Pointer_Type_Mask)>>12)
+#define Pointer_Size(pointer)   (Pointer_Desc(pointer)&Pointer_Size_Mask)
 
 typedef struct alloc_head
 {

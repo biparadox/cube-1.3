@@ -23,7 +23,7 @@ int read_namelist_json_desc(void * root,void * record)
 	
 	void * temp_node;
 
-	namelist =Dalloc0(sizeof(struct struct_namelist),record);
+	namelist =Dalloc0(sizeof(struct struct_namelist),&db_record->record);
 	if(namelist==NULL)
 		return -ENOMEM;
 	if(db_record->head.type!=DB_NAMELIST)
@@ -62,7 +62,7 @@ int read_typelist_json_desc(void * root,void * record)
 	DB_RECORD * namelist_record;
 
 
-	typelist=Dalloc0(sizeof(struct struct_typelist),record);
+	typelist=Dalloc0(sizeof(struct struct_typelist),&db_record->record);
 	if(typelist==NULL)
 		return -ENOMEM;
 	if(db_record->head.type!=DB_TYPELIST)
@@ -120,7 +120,8 @@ int read_typelist_json_desc(void * root,void * record)
 		return -EINVAL;
 	
 	memdb_store(baselist,DB_NAMELIST,0,"typeenumlist");
-	typeenumlist=baselist;
+    Dpointer_set(baselist,&memdb_base->typeenumlist);
+	//memdb_base->typeenumlist=baselist;
 
 	return ret;	
 }
@@ -345,7 +346,7 @@ int memdb_read_desc(void * root, BYTE * uuid)
 	if(db_record==NULL)
 		return -ENOMEM;
 	
-	ret=json_2_struct(head_node,&(db_record->head),head_template);
+	ret=json_2_struct(head_node,&(db_record->head),memdb_base->head_template);
 	if(ret<0)
 		return -EINVAL;	
 	

@@ -21,12 +21,12 @@ int enumtype_get_text_value(void * addr,char * text,void * elem_template)
 	int offset=0;
 	int i;
 
-	if(elemenumlist==NULL)
+	if(memdb_base->elemenumlist==NULL)
 		return -EINVAL;
-	if(elemenumlist->elemlist==NULL)
+	if(memdb_base->elemenumlist->elemlist==NULL)
 		return -EINVAL;
 
-	enum_list=elemenumlist->elemlist;
+	enum_list=memdb_base->elemenumlist->elemlist;
 
 	enum_value=*(int *)addr;
 	if(enum_value<0)
@@ -62,12 +62,12 @@ int enumtype_set_text_value(void * addr,void * text,void * elem_template){
 	int offset=0;
 	int i;
 
-	if(elemenumlist==NULL)
+	if(memdb_base->elemenumlist==NULL)
 		return -EINVAL;
-	if(elemenumlist->elemlist==NULL)
+	if(memdb_base->elemenumlist->elemlist==NULL)
 		return -EINVAL;
 
-	enum_list=elemenumlist->elemlist;
+	enum_list=memdb_base->elemenumlist->elemlist;
 
 	if(!Strcmp(nulstring,text))
 	{
@@ -101,18 +101,18 @@ int recordtype_get_text_value(void * addr,char * text,void * elem_template)
 	int offset=0;
 	int i;
 
-	if(typeenumlist==NULL)
+	if(memdb_base->typeenumlist==NULL)
 		return -EINVAL;
-	if(typeenumlist->elemlist==NULL)
+	if(memdb_base->typeenumlist->elemlist==NULL)
 		return -EINVAL;
 
-	enum_list=typeenumlist->elemlist;
+	enum_list=memdb_base->typeenumlist->elemlist;
 
 	enum_value=*(int *)addr;
 	if(enum_value<0)
 		return -EINVAL;
 
-	for(i=0;i<typeenumlist->elem_no;i++)
+	for(i=0;i<memdb_base->typeenumlist->elem_no;i++)
 	{
 		if(enum_list[i].value==enum_value)
 		{
@@ -142,12 +142,12 @@ int recordtype_set_text_value(void * addr,void * text,void * elem_template){
 	int offset=0;
 	int i;
 
-	if(typeenumlist==NULL)
+	if(memdb_base->typeenumlist==NULL)
 		return -EINVAL;
-	if(typeenumlist->elemlist==NULL)
+	if(memdb_base->typeenumlist->elemlist==NULL)
 		return -EINVAL;
 
-	enum_list=typeenumlist->elemlist;
+	enum_list=memdb_base->typeenumlist->elemlist;
 
 	if(!Strcmp(nulstring,text))
 	{
@@ -157,7 +157,7 @@ int recordtype_set_text_value(void * addr,void * text,void * elem_template){
 	}
 	else
 	{
-		for(i=0;i<typeenumlist->elem_no;i++)
+		for(i=0;i<memdb_base->typeenumlist->elem_no;i++)
 		{
 			if(!Strcmp(enum_list[i].name,text))
 			{

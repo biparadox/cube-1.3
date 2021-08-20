@@ -1,4 +1,3 @@
-
 #include "../include/data_type.h"
 #include"../include/errno.h"
 #include "../include/list.h"
@@ -21,11 +20,13 @@ extern ELEM_OPS enumtype_convert_ops;
 extern ELEM_OPS recordtype_convert_ops;
 extern ELEM_OPS subtype_convert_ops;
 
+struct memdb_static_struct * memdb_base;
+/*
 struct memdb_desc ** static_db_list;
 struct memdb_desc * dynamic_db_list;
 struct struct_namelist *elemenumlist;
 struct struct_namelist *typeenumlist;
-
+*/
 static struct InitElemInfo_struct MemdbElemInfo[] =
 {
 	{CUBE_TYPE_ELEMTYPE,&enumtype_convert_ops,0,sizeof(int)},
@@ -101,10 +102,10 @@ void * _clone_namelist(void * list1)
 
 	int elem_no = namelist1->elem_no;
 
-	newnamelist=Dalloc0(sizeof(struct struct_namelist),list1);
+	newnamelist=Dalloc0(sizeof(struct struct_namelist),NULL);
 	if(newnamelist==NULL)
 		return NULL;
-	newnamelist->elemlist=Dalloc0(sizeof(NAME2VALUE)*elem_no,newnamelist);
+	newnamelist->elemlist=Dalloc0(sizeof(NAME2VALUE)*elem_no,&newnamelist->elemlist);
 	if(newnamelist->elemlist==NULL)
 		return NULL;
 	newnamelist->elem_no=elem_no;
@@ -168,10 +169,10 @@ void * _merge_namelist(void * list1, void * list2)
 	}
 
 	
-	newnamelist=Dalloc0(sizeof(struct struct_namelist),list1);
+	newnamelist=Dalloc0(sizeof(struct struct_namelist),NULL);
 	if(newnamelist==NULL)
 		return NULL;
-	newnamelist->elemlist = Dalloc0(sizeof(NAME2VALUE)*elem_no,newnamelist);
+	newnamelist->elemlist = Dalloc0(sizeof(NAME2VALUE)*elem_no,&newnamelist->elemlist);
 	if(newnamelist->elemlist==NULL)
 		return NULL;
 	newnamelist->elem_no=elem_no;
@@ -504,16 +505,17 @@ int memdb_register_db(int type,int subtype,void * struct_desc,void * tail_func,c
 
 	if(type<DB_DTYPE_START)
 	{
-		static_db_list[type]=Salloc0(sizeof(struct memdb_desc));
-		if(static_db_list[type]==NULL)
+		memdb_base->static_db_list[type]=Salloc0(sizeof(struct memdb_desc));
+		if(memdb_base->static_db_list[type]==NULL)
 			return -ENOMEM;
-		memdb=static_db_list[type];
+		memdb=memdb_base->static_db_list[type];
 	}
 	else if(type>=DB_DTYPE_START)
 	{
 		return -EINVAL;
 	}
 	memdb->record_db=init_hash_list(8,type,subtype);
+    //Dpointer_set(memdb->record_db,&memdb->record_db);
 	memdb->struct_template=create_struct_template(struct_desc);
 	memdb->type=type;
 	memdb->subtype=subtype;
@@ -560,6 +562,8 @@ int memdb_register_dynamicdb(int type,int subtype)
 	int ret;
 	DB_RECORD * db_record;
 	struct struct_recordtype * record_define;
+    Record_List * new_record;
+
 	
 	if(type<=DB_DTYPE_START)
 		return -EINVAL;
@@ -578,10 +582,13 @@ int memdb_register_dynamicdb(int type,int subtype)
 	if(memdb==NULL)
 		return -EINVAL;
 	Memcpy(memdb->uuid,record_define->uuid,DIGEST_SIZE);
-	ret=hashlist_add_elem(dynamic_db_list,memdb);
-	if(ret<0)
-		return ret;
+	new_record=hashlist_add_elem(memdb_base->dynamic_db_list,memdb);
+	if(new_record==NULL)
+		return -EINVAL;
+//  use Dpointer_set to replace follow code
+//  Dpointer_set(memdb->struct_template,&db_record->tail);
 	memdb->struct_template=db_record->tail;
+//  memdb->record_db=db_record;
 	memdb->tail_func=NULL;
 	return 0;
 }
@@ -652,7 +659,7 @@ void * memdb_get_next_record (int type,int subtype)
 void *  _get_dynamic_db_bytype(int type,int subtype)
 {
 	struct memdb_desc * memdb;
-	memdb=hashlist_get_first(dynamic_db_list);
+	memdb=hashlist_get_first(memdb_base->dynamic_db_list);
 	while(memdb!=NULL)
 	{
 		if(memdb->type == type)
@@ -660,7 +667,7 @@ void *  _get_dynamic_db_bytype(int type,int subtype)
 			if(memdb->subtype == subtype)
 				return memdb;
 		}
-		memdb=hashlist_get_next(dynamic_db_list);
+		memdb=hashlist_get_next(memdb_base->dynamic_db_list);
 	}	 
 	return NULL;
 }
@@ -671,9 +678,9 @@ void * memdb_get_dblist(int type, int subtype)
 	if(type<0) 
 		return NULL;
 	if(type< DB_DTYPE_START)
-		db_list=static_db_list[type];
+		db_list=memdb_base->static_db_list[type];
 	else if(type == DB_DTYPE_START)
-		db_list=dynamic_db_list;
+		db_list=memdb_base->dynamic_db_list;
 	else if(type >DB_DTYPE_START)
 		db_list=_get_dynamic_db_bytype(type,subtype);
 	else
@@ -689,16 +696,16 @@ void * _alloc_dynamic_db(int type,int subtype)
 	void * db_list=init_hash_list(8,type,subtype);
 	if(db_list==NULL)
 		return NULL;
-	memdb=Salloc0(sizeof(DB_DESC));
+	memdb=Dalloc0(sizeof(struct memdb_desc),NULL);
 	if(memdb==NULL)
 		return NULL;
 	memdb->type=type;
 	memdb->subtype=subtype;
 	memdb->record_db=db_list;
+    //Dpointer_set(db_list,&memdb->record_db);
 	return memdb;
-
-
 }
+
 void * memdb_get_template(int type, int subtype)
 {
 	struct memdb_desc * db_list;
@@ -829,8 +836,13 @@ int memdb_init()
 
 
 	// alloc memspace for static database 
-	static_db_list=Salloc0(sizeof(void *)*DB_DTYPE_START);
-	if(static_db_list==NULL)
+
+    memdb_base=Salloc0(sizeof(*memdb_base));
+    if(memdb_base==NULL)
+        return -ENOMEM;
+
+	memdb_base->static_db_list=Salloc0(sizeof(void *)*(DB_BASEEND+1));
+	if(memdb_base->static_db_list==NULL)
 		return -ENOMEM;
 
 	// generate two init namelist
@@ -845,11 +857,12 @@ int memdb_init()
 	templist1->elem_no=_get_namelist_no(&memdb_elem_type_array);
 	templist1->elemlist=&memdb_elem_type_array;
 
-	elemenumlist=Dalloc0(sizeof(struct struct_namelist),NULL);
-	if(elemenumlist=NULL)
+	memdb_base->elemenumlist=Dalloc0(sizeof(struct struct_namelist),&memdb_base->elemenumlist);
+	if(memdb_base->elemenumlist=NULL)
 		return -ENOMEM;
 
-	elemenumlist=_merge_namelist(templist,templist1);
+	memdb_base->elemenumlist=_merge_namelist(templist,templist1);
+    Dpointer_set(memdb_base->elemenumlist,&memdb_base->elemenumlist);
 
 /*
 	typeenumlist=Dalloc0(sizeof(struct struct_namelist),NULL);
@@ -859,7 +872,8 @@ int memdb_init()
 	templist->elem_no=_get_namelist_no(&struct_type_baselist);
 	templist->elemlist=&struct_type_baselist;
 	
-	typeenumlist=_clone_namelist(templist);
+	memdb_base->typeenumlist=_clone_namelist(templist);
+    Dpointer_set(memdb_base->typeenumlist,&memdb_base->typeenumlist);
 	
 
 	// register the new elem ops
@@ -875,29 +889,28 @@ int memdb_init()
 	
 
 	// init those head template and elem template
-	head_template= create_struct_template(&uuid_head_desc);
-	if(head_template==NULL)
+	memdb_base->head_template= create_struct_template(&uuid_head_desc);
+	if(memdb_base->head_template==NULL)
 		return -EINVAL;
 
-	elem_template= create_struct_template(&elem_attr_octet_desc);
-	if(elem_template==NULL)
+	memdb_base->elem_template = create_struct_template(&elem_attr_octet_desc);
+	if(memdb_base->elem_template==NULL)
 		return -EINVAL;
 
 	// init the DB_NAMELIST lib
 	ret=memdb_register_db(DB_NAMELIST,0,&struct_namelist_desc,&_namelist_tail_func,NULL);
 	if(ret<0)
 		return ret;
-
 	// store the two init record of DB_NAMELIST
-	record = memdb_store(elemenumlist,DB_NAMELIST,0,"elemenumlist");
+	record = memdb_store(memdb_base->elemenumlist,DB_NAMELIST,0,"elemenumlist");
 	if(record==NULL)
 		return -EINVAL;
 
-	record = memdb_store(typeenumlist,DB_NAMELIST,0,"typeenumlist");
+	record = memdb_store(memdb_base->typeenumlist,DB_NAMELIST,0,"typeenumlist");
 	if(record==NULL)
 		return -EINVAL;
 
-	record = memdb_store(typeenumlist,DB_NAMELIST,0,"baseenumlist");
+	record = memdb_store(memdb_base->typeenumlist,DB_NAMELIST,0,"baseenumlist");
 	if(record==NULL)
 		return -EINVAL;
 
@@ -923,7 +936,8 @@ int memdb_init()
 
 	// store the init typelist
 
-	dynamic_db_list=init_hash_list(8,DB_DTYPE_START,0);
+	memdb_base->dynamic_db_list=init_hash_list(8,DB_DTYPE_START,0);
+    //Dpointer_set(memdb_base->dynamic_db_list,&memdb_base->dynamic_db_list);
 
 	return 0;
 }
@@ -1214,7 +1228,7 @@ int memdb_print(void * data,char * json_str)
 		return -EINVAL;	
 	Strcpy(json_str,"{\"head\":");
 	offset=Strlen(json_str);
-	ret=struct_2_json(&record->head,json_str+offset,head_template);
+	ret=struct_2_json(&record->head,json_str+offset,memdb_base->head_template);
 	if(ret<0)
 		return ret;
 	offset+=ret;
@@ -1235,9 +1249,9 @@ int memdb_print(void * data,char * json_str)
 
 int memdb_get_typeno(char * typestr)
 {
-	if(typeenumlist==NULL)
+	if(memdb_base->typeenumlist==NULL)
 		return -EINVAL;
-	return _get_value_namelist(typestr,typeenumlist);
+	return _get_value_namelist(typestr,memdb_base->typeenumlist);
 }
 
 int memdb_get_subtypeno(int typeno,char * typestr)
@@ -1249,9 +1263,9 @@ int memdb_get_subtypeno(int typeno,char * typestr)
 }
 char * memdb_get_typestr(int typeno)
 {
-	if(typeenumlist==NULL)
+	if(memdb_base->typeenumlist==NULL)
 		return -EINVAL;
-	return _get_str_namelist(typeno,typeenumlist);
+	return _get_str_namelist(typeno,memdb_base->typeenumlist);
 }
 
 char * memdb_get_subtypestr(int typeno,int subtypeno)

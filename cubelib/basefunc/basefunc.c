@@ -13,6 +13,7 @@
 #include "../include/list.h"
 #include "../include/basefunc.h"
 #include "../include/attrlist.h"
+#include "../alloc/alloc_struct.h"
 
 const int db_order=10;
 const int hash_num=1024;  // 2^db_order
@@ -64,6 +65,9 @@ void * init_hash_list(int order,int type,int subtype)
 		return NULL;
 	if(order>10)
 		return NULL;
+
+    // set all the order to a fix value    
+    //order=6;
 	UUID_LIST * hash_head;
 	hash_head=Salloc0(sizeof(UUID_LIST));
 	if(hash_head==NULL)
@@ -71,7 +75,7 @@ void * init_hash_list(int order,int type,int subtype)
 	hash_head->hash_num=1<<order;
 	hash_head->desc=NULL;
 	hash_head->curr_index=0;
-	hash_head->hash_table=Salloc(sizeof(Record_List)*hash_head->hash_num);
+	hash_head->hash_table=Salloc0(sizeof(Record_List)*hash_head->hash_num);
 
 	if(hash_head->hash_table==NULL)
 		return NULL;
@@ -103,11 +107,17 @@ void * hashlist_add_elem(void * hashlist,void * elem)
 	Record_List * new_record;
 	UUID_LIST * uuid_list= (UUID_LIST *)hashlist;
 	int hindex;
-	new_record=Calloc(sizeof(Record_List));
+	new_record=Calloc0(sizeof(Record_List));
 	if(new_record==NULL)
-		return -ENOMEM;
+		return NULL;
 	INIT_LIST_HEAD(&(new_record->list));
-	new_record->record=elem;
+
+//  use Dpointer_set to replace follow code
+    if( Pointer_Desc(elem)== ALLOC_DYNAMIC)  
+        Dpointer_set(elem,&new_record->record);
+    else
+        new_record->record=elem;
+//	new_record->record=elem;
 
 	if(uuid_list->hash_num==256)
 		hindex=get_hash_subindex(elem);

@@ -174,7 +174,7 @@ int _create_template_start(void * addr,void * data,void * elem, void * para)
 	// prepare the root node's elem_list
 	root_node->elem_no=_count_struct_num(root_node->struct_desc);
 	
-	root_node->elem_list=Dalloc0(sizeof(struct elem_template)*root_node->elem_no,root_node);
+	root_node->elem_list=Dalloc0(sizeof(struct elem_template)*root_node->elem_no,&root_node->elem_list);
 	if(root_node->elem_list==NULL)
 		return -ENOMEM;
 
@@ -186,7 +186,7 @@ int _create_template_start(void * addr,void * data,void * elem, void * para)
 		if(_issubsetelem(root_node->struct_desc[i].type))
 		{
 			
-			temp_node = Dalloc0(sizeof(STRUCT_NODE),root_node); 
+			temp_node = Dalloc0(sizeof(STRUCT_NODE),&root_node->elem_list[i].ref); 
 			if(temp_node==NULL)
 				return -ENOMEM;
 			root_node->elem_list[i].ref=temp_node;
@@ -211,7 +211,7 @@ int _create_template_enterstruct(void * addr,void * data,void * elem, void * par
 //	curr_node->struct_desc=curr_elem->elem_desc->ref;	
 	curr_node->elem_no=_count_struct_num(curr_node->struct_desc);
 	
-	curr_node->elem_list=Dalloc0(sizeof(struct elem_template)*curr_node->elem_no,curr_node);
+	curr_node->elem_list=Dalloc0(sizeof(struct elem_template)*curr_node->elem_no,&curr_node->elem_list);
 	if(curr_node->elem_list==NULL)
 		return -ENOMEM;
 
@@ -223,7 +223,7 @@ int _create_template_enterstruct(void * addr,void * data,void * elem, void * par
 		if(_issubsetelem(curr_node->struct_desc[i].type))
 		{
 			
-			temp_node = Dalloc0(sizeof(STRUCT_NODE),curr_node); 
+			temp_node = Dalloc0(sizeof(STRUCT_NODE),&curr_node->elem_list[i].ref); 
 			if(temp_node==NULL)
 				return -ENOMEM;
 			curr_node->elem_list[i].ref=temp_node;
@@ -411,7 +411,7 @@ int _clone_template_start(void * addr,void * data,void * elem, void * para)
 	clone_node->elem_no=root_node->elem_no;
 	clone_node->struct_desc=root_node->struct_desc;
 
-	clone_node->elem_list=Dalloc0(sizeof(struct elem_template)*clone_node->elem_no,clone_node);
+	clone_node->elem_list=Dalloc0(sizeof(struct elem_template)*clone_node->elem_no,&clone_node->elem_list);
 	if(clone_node->elem_list==NULL)
 		return -ENOMEM;
 
@@ -423,7 +423,7 @@ int _clone_template_start(void * addr,void * data,void * elem, void * para)
 		if(_issubsetelem(clone_node->struct_desc[i].type))
 		{
 			
-			temp_node = Dalloc0(sizeof(STRUCT_NODE),clone_node); 
+			temp_node = Dalloc0(sizeof(STRUCT_NODE),&clone_node->elem_list[i].ref); 
 			if(temp_node==NULL)
 				return -ENOMEM;
 			clone_node->elem_list[i].ref=temp_node;
@@ -461,7 +461,7 @@ int _clone_template_enterstruct(void * addr,void * data,void * elem, void * para
 	// prepare the root node's elem_list
 	clone_node->elem_no=my_para->source_node->elem_no;
 	
-	clone_node->elem_list=Dalloc0(sizeof(struct elem_template)*clone_node->elem_no,clone_node);
+	clone_node->elem_list=Dalloc0(sizeof(struct elem_template)*clone_node->elem_no,&clone_node->elem_list);
 	if(clone_node->elem_list==NULL)
 		return -ENOMEM;
 
@@ -474,7 +474,7 @@ int _clone_template_enterstruct(void * addr,void * data,void * elem, void * para
 		if(_issubsetelem(clone_node->struct_desc[i].type))
 		{
 			
-			temp_node = Dalloc0(sizeof(STRUCT_NODE),clone_node); 
+			temp_node = Dalloc0(sizeof(STRUCT_NODE),&clone_node->elem_list[i].ref); 
 			if(temp_node==NULL)
 				return -ENOMEM;
 			clone_node->elem_list[i].ref=temp_node;
