@@ -34,6 +34,7 @@
 #include "../include/struct_deal.h"
 #include "../include/memdb.h"
 #include "../include/message.h"
+#include "../include/return_value.h"
 
 
 int read_json_file(char * file_name)
@@ -107,7 +108,7 @@ int main() {
 		"subtypelist.json",
 		"msghead.json",
 		"base_msg.json",
-		"expandrecord.json",
+		"return_value.json",
 		NULL
 	};
 
@@ -151,24 +152,28 @@ int main() {
 	
 	void * message;
 	struct basic_message base_msg;
-	struct expand_flow_trace flow_trace;
+
+    RECORD(GENERAL_RETURN,UUID) * expand_uuid;
 
 	message=message_create(DTYPE_MESSAGE,SUBTYPE_BASE_MSG,NULL);	
 
 	base_msg.message=dup_str("Hello,World!",0);
 	
-	flow_trace.record_num=1;
-	flow_trace.trace_record=Talloc0(DIGEST_SIZE*flow_trace.record_num);
-	Strncpy(flow_trace.trace_record,"test_port",DIGEST_SIZE/4*3);
-
 	ret=message_add_record(message,&base_msg);
 	if(ret<0)
 	{
 		printf("add message record failed!\n");
 		return ret;
-	}	
+	}
 
-	ret=message_add_expand_data(message,DTYPE_MSG_EXPAND,SUBTYPE_FLOW_TRACE,&flow_trace);
+    expand_uuid=Talloc0(sizeof(*expand_uuid));
+    if(expand_uuid==NULL)
+        return -ENOMEM;
+
+    expand_uuid->name=dup_str("test_expand",0);
+    Memset(expand_uuid->return_value,'A',32);
+
+	ret=message_add_expand_data(message,DTYPE_MSG_EXPAND,SUBTYPE_FLOW_TRACE,expand_uuid);
 	if(ret<0)
 	{
 		printf("add message expand failed!\n");
@@ -215,7 +220,6 @@ int main() {
 		printf("load expand failed!\n");
 		return ret;
 	}
-
 
 	printf("%s\n",json_buffer);
 	
