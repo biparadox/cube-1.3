@@ -108,6 +108,12 @@ int  _convert_frame_func (void *addr, void * data, void * struct_template,
 				continue;
 			}
 		}
+
+   // deep debug start
+        if(deep_debug)
+            printf("elem name %s offset %d size %d\n",curr_elem->elem_desc->name,curr_elem->offset,curr_elem->size); 
+    //deep debug end
+
 			// throughout the node tree: into the sub_struct
 		if(_issubsetelem(curr_elem->elem_desc->type))
 		{

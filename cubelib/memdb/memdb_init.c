@@ -562,7 +562,7 @@ int memdb_register_dynamicdb(int type,int subtype)
 	int ret;
 	DB_RECORD * db_record;
 	struct struct_recordtype * record_define;
-    Record_List * new_record;
+    Record_List * newrecord;
 
 	
 	if(type<=DB_DTYPE_START)
@@ -582,8 +582,8 @@ int memdb_register_dynamicdb(int type,int subtype)
 	if(memdb==NULL)
 		return -EINVAL;
 	Memcpy(memdb->uuid,record_define->uuid,DIGEST_SIZE);
-	new_record=hashlist_add_elem(memdb_base->dynamic_db_list,memdb);
-	if(new_record==NULL)
+	newrecord=hashlist_add_elem(memdb_base->dynamic_db_list,memdb);
+	if(newrecord==NULL)
 		return -EINVAL;
 //  use Dpointer_set to replace follow code
 //  Dpointer_set(memdb->struct_template,&db_record->tail);
@@ -949,6 +949,7 @@ void *  memdb_store(void * data,int type,int subtype,char * name)
 	UUID_HEAD * head;
 	DB_RECORD * record;
 	DB_RECORD * oldrecord;
+	Record_List * newrecord;
 	db_list=memdb_get_dblist(type,subtype);
 	if(db_list==NULL)
 	{
@@ -992,8 +993,8 @@ void *  memdb_store(void * data,int type,int subtype,char * name)
 			return NULL;
 		}
 		record->record=clone_struct(data,struct_template);
-		ret=hashlist_add_elem(db_list->record_db,record);
-		if(ret<0)
+		newrecord=hashlist_add_elem(db_list->record_db,record);
+		if(newrecord==NULL)
 			return NULL;
 	}
 	else
@@ -1023,6 +1024,7 @@ int memdb_store_record(void * record)
 	UUID_HEAD * head;
 	DB_RECORD * db_record=record;
 	DB_RECORD * oldrecord;
+	Record_List * newrecord;
 	if(db_record==NULL)
 		return -EINVAL; 
 	if(db_record->record==NULL)
@@ -1053,8 +1055,8 @@ int memdb_store_record(void * record)
 			Free0(record);
 			return -EINVAL;
 		}
-		ret=hashlist_add_elem(db_list->record_db,record);
-		if(ret<0)
+		newrecord=hashlist_add_elem(db_list->record_db,record);
+		if(newrecord==NULL)
 			return -EINVAL;
 		db_list->record_no++;
 	}
