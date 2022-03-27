@@ -136,6 +136,7 @@ struct login_db
 
 static struct struct_elem_attr file_list_desc[] =
 {
+   	{"start_time",CUBE_TYPE_TIME,0,NULL,NULL},
    	{"record_no",CUBE_TYPE_INT,sizeof(int),NULL,NULL},
     	{"file_list",CUBE_TYPE_DEFSTRARRAY,32,NULL,"record_no"},
 	{NULL,CUBE_TYPE_ENDDATA,0,NULL}

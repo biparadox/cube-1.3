@@ -134,19 +134,25 @@ int channel_buf_write(void * buf,BYTE * data,int size)
 	CHANNEL_BUF * curr_buf=buf;
 	int left_data;
 	int ret=0;
+
 	if(curr_buf->last_read_tail-1==curr_buf->last_write_tail)
+    // there is no space in buf_channel
 		return 0;
 
 	if(curr_buf->last_read_tail>curr_buf->last_write_tail)
+    // write_tail and read_tail is in same circle 
 	{
 		left_data=curr_buf->last_read_tail-1-curr_buf->last_write_tail;
+        // compute how many space left for next write
 		if(size<left_data)
+        // there are enough space for this write
 		{
 			Memcpy(((void *)curr_buf)+curr_buf->offset+curr_buf->last_write_tail,data,size);
 			curr_buf->last_write_tail+=size;		
 			ret=size;
 		}
 		else
+        // no enough space 
 		{
 			Memcpy(((void *)curr_buf)+curr_buf->offset+curr_buf->last_write_tail,data,left_data);
 			curr_buf->last_write_tail=curr_buf->last_read_tail-1;		
@@ -155,10 +161,17 @@ int channel_buf_write(void * buf,BYTE * data,int size)
 
 	}
 	else
+    // write_tail is one circle ahead read_tail
 	{
-		left_data=curr_buf->bufsize-curr_buf->last_write_tail+curr_buf->last_read_tail-1;
 		int tail_block_size=curr_buf->bufsize-curr_buf->last_write_tail;
-		if(size<tail_block_size)
+		    // left space between the write_tail and the upper board of the buf
+		int head_block_size=curr_buf->last_read_tail-1;
+            // left space between the  lower board of the buf and the read_tail
+        if(head_block_size<0)
+            head_block_size=0;
+		left_data=tail_block_size+head_block_size;   
+		if(size<tail_block_size+head_block_size)
+           // tail_block_size is enough, we can write data directly
 		{
 			Memcpy(((void *)curr_buf)+curr_buf->offset+curr_buf->last_write_tail,data,size);
 			curr_buf->last_write_tail+=size;		
@@ -166,8 +179,11 @@ int channel_buf_write(void * buf,BYTE * data,int size)
 		}
 		else
 		{
+            // we should write the tail_block first  
 			Memcpy(((void *)curr_buf)+curr_buf->offset+curr_buf->last_write_tail,data,tail_block_size);
+
 			if(size<left_data)
+            // head_block can put the left data in 
 			{
 				Memcpy(((void *)curr_buf)+curr_buf->offset,data+tail_block_size,size-tail_block_size);
 				curr_buf->last_write_tail=size-tail_block_size;
@@ -175,9 +191,10 @@ int channel_buf_write(void * buf,BYTE * data,int size)
 
 			}
 			else
+            // head_block is not enouth 
 			{
-				Memcpy(((void *)curr_buf)+curr_buf->offset,data+tail_block_size,left_data-tail_block_size);
-				curr_buf->last_write_tail=curr_buf->last_read_tail-1;		
+				Memcpy(((void *)curr_buf)+curr_buf->offset,data+tail_block_size,head_block_size);
+				curr_buf->last_write_tail=head_block_size;		
 				ret=left_data;	
 
 			}
