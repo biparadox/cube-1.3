@@ -1899,7 +1899,7 @@ int message_get_define_expand(void * message,void ** addr,int type,int subtype)
 	for(i=0;i<msg_box->head.expand_num;i++)
 	{
 		if(msg_box->pexpand[i]==NULL)
-			return 0;
+            continue;
 		MSG_EXPAND *curr_expand=(MSG_EXPAND *)(msg_box->pexpand[i]);	
 
 		if((curr_expand->type!=type)
