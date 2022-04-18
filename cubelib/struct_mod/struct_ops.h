@@ -72,7 +72,7 @@ int _elem_get_text_value(void * addr,char * text,void * elem);
 int _elem_set_text_value(void * addr,char * text,void * elem);
 
 #define DEFINE_TAG  0x00FFF000
-struct elem_template
+typedef struct elem_template
 {
 	struct struct_elem_attr * elem_desc;
 	int offset;    // the offset of this elem compare to the father
