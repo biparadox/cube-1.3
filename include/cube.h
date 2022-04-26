@@ -25,6 +25,23 @@ int   Isvaliduuid(char * uuid);
 int   Isstrinuuid(BYTE * uuid);
 int   Isemptyuuid(BYTE * uuid);
 
+void * Memcpy(void * dest,void * src, unsigned int count);
+void * Memset(void * s,int c, int n);
+int    Memcmp(const void *s1,const void *s2,int n);
+
+char * Strcpy(char *dest,const char *src);
+char * Strncpy(char *dest,const char *src,int n);
+int    Strcmp(const char *s1,const char *s2);
+int    Strncmp(const char *s1,const char *s2,int n);
+char * Strcat(char * dest,const char *src);
+char * Strncat(char * dest,const char *src,int n);
+int    Strlen(char * str);
+int    Strnlen(char * str,int n);
+
+int    Getfiledfromstr(char * name,char * str,char IFS,int maxsize);
+int    Itoa(int n,char * str);
+int    Atoi(char * str,int maxlen);
+int    Getlowestbit(BYTE * addr,int size,int bit); 
 // crypto_func start
 int digest_to_uuid(BYTE *digest,char *uuid);
 int uuid_to_digest(char * uuid,BYTE *digest);
@@ -193,6 +210,7 @@ char * memdb_get_typestr(int typeno);
 char * memdb_get_subtypestr(int typeno,int subtypeno);
 void * memdb_get_template(int type, int subtype);
 int memdb_comp_uuid(void * record);
+int memdb_comp_record_uuid(void * record,int type,int subtype, BYTE * uuid);
 
 // memdb func end
 // system func start

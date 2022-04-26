@@ -1300,3 +1300,24 @@ int memdb_comp_uuid(void * record)
 	Free0(buf);
 	return blob_size;
 }
+int memdb_comp_record_uuid(void * record,int type,int subtype, BYTE * uuid)
+{
+	BYTE * buf;	
+	int blob_size;
+	void * struct_template=memdb_get_template(type,subtype);
+	if(struct_template == NULL)
+		return -EINVAL;
+	if(record==NULL)
+		return -EINVAL;
+	buf=Talloc(2000);
+	if(buf==NULL)
+		return -ENOMEM;
+	
+	blob_size=struct_2_part_blob(record,buf,struct_template,CUBE_ELEM_FLAG_INDEX);
+	if(blob_size>0)
+	{
+		calculate_context_sm3(buf,blob_size,uuid);
+	}
+	Free0(buf);
+	return blob_size;
+}
