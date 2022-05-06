@@ -700,10 +700,12 @@ int RAND_bytes(unsigned char *buffer, size_t len)
         ret = read(fd, buffer + readn, len - readn);
         if (ret < 0) { 
             perror("read urandom device:");
+            close(fd);
             return ret; 
         }    
         readn += ret; 
     }    
+    close(fd);
     return 0;
 }                                                                                                                                                                                                                
 void print_bin_data(BYTE * data,int len,int width)
