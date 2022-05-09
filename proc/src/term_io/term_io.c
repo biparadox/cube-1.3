@@ -67,6 +67,11 @@ int term_io_start(void * sub_proc,void * para)
  				type=message_get_type(recv_msg);
 				subtype=message_get_subtype(recv_msg);
 			}
+			if((type==DTYPE_MESSAGE)&&(subtype==SUBTYPE(MESSAGE,CONN_ACKI)))
+			{
+				// the beginning of integrity check
+				state=1;
+			}
 
 			if((type==DTYPE_MESSAGE)&&(subtype==SUBTYPE(MESSAGE,BASE_MSG)))
 			{
