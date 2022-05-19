@@ -57,7 +57,7 @@ int proc_msgrecord_print(void * sub_proc,void * recv_msg)
 	int subtype;
 	int i;
 	int ret;
-	char record_buf[DIGEST_SIZE*32];
+	char record_buf[DIGEST_SIZE*32*2];
 
 	type=message_get_type(recv_msg);
 	subtype=message_get_subtype(recv_msg);
@@ -88,7 +88,8 @@ int proc_msgrecord_print(void * sub_proc,void * recv_msg)
 			printf("record (%d %d) format error!\n",type,subtype);
 			return ret;
 		}
-		printf("\n%s\n",record_buf);
+        print_pretty_text(record_buf,1);
+		//printf("\n%s\n",record_buf);
 		ret=message_get_record(recv_msg,&record,i++);
 		if(ret<0)
 			return ret;

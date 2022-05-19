@@ -118,9 +118,9 @@ static struct struct_elem_attr login_db_desc[] =
 {
     	{"head",CUBE_TYPE_SUBSTRUCT,0,&uuid_head_desc,NULL},
    	{"record_no",CUBE_TYPE_INT,sizeof(int),NULL,NULL},
-    	{"login_list2",CUBE_TYPE_ARRAY,3,&connect_login_desc,"record_no"},
-//    	{"login_list2",CUBE_TYPE_DEFARRAY,0,&connect_login_desc,"record_no"},
-//    	{"login_list1",CUBE_TYPE_SUBSTRUCT,3,&connect_login_desc,NULL},
+//    	{"login_list2",CUBE_TYPE_ARRAY,3,&connect_login_desc,"record_no"},
+    	{"login_list2",CUBE_TYPE_DEFARRAY,0,&connect_login_desc,"record_no"},
+//   	{"login_list1",CUBE_TYPE_SUBSTRUCT,3,&connect_login_desc,NULL},
 	{NULL,CUBE_TYPE_ENDDATA,0,NULL}
 	
 };
