@@ -43,7 +43,7 @@
 	"record":
 	{
 		"type":"MESSAGE",
-		"elem_no":15,
+		"elem_no":16,
 		"elemlist":
 		[
 			"HEAD=0x01",
@@ -60,6 +60,7 @@
 			"NUMBER",
 			"INSTANCE_INFO",
 			"STRING_ARRAY",
+            "VIRTUAL_NODE",
 			"NODEFINE_HEAD=0x100"
 		]
 	}

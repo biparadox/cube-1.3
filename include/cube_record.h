@@ -37,6 +37,15 @@ typedef struct record_string_array // record (MESSAGE,STRING_ARRAY)
 }__attribute__((packed))
 RECORD(MESSAGE,STRING_ARRAY);
 
+typedef struct record_virtual_node // record (MESSAGE,VIRTUAL_NODE)
+{
+	int virt_type;
+	char node_name[DIGEST_SIZE];// string length is 32
+	char domain[DIGEST_SIZE];   // the domain node belongs
+	BYTE node_uuid[DIGEST_SIZE];   // node's new uuid
+}__attribute__((packed))
+RECORD(MESSAGE,VIRTUAL_NODE);
+
 typedef struct uuid_record    // record (MESSAGE,UUID_RECORD)
 {
 	BYTE uuid[DIGEST_SIZE];

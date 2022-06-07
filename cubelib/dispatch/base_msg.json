@@ -211,3 +211,25 @@
 		}
 	}
 }
+{
+	"head":
+	{
+		"name":"record_virtual_node",
+		"type":"RECORDTYPE"
+	},
+	"record":
+	{
+		"type":"MESSAGE",
+		"subtype":"VIRTUAL_NODE",
+		"struct_desc":
+		{
+			"elem_desc":
+			[
+				{"name":"virt_type","type":"INT"},
+				{"name":"node_name","type":"STRING","size":32},
+                {"name":"domain","type":"STRING","size":32},
+                {"name":"node_uuid","type":"UUID"}
+			]
+		}
+	}
+}
