@@ -24,6 +24,7 @@
 int virtual_node_init(void * sub_proc, void * para)
 {
 	int ret;
+    char uuid_str[DIGEST_SIZE*2+1];
 
     // Init virtuan node Func
     struct virtual_node_para * virt_para=para;
@@ -44,6 +45,10 @@ int virtual_node_init(void * sub_proc, void * para)
         Strncpy(virtual_node->domain,virt_para->domain,DIGEST_SIZE);
         calculate_context_sm3(virtual_node->node_name,DIGEST_SIZE,virtual_node->node_uuid);
         proc_share_data_setvalue("uuid",virtual_node->node_uuid);
+        Memset(uuid_str,0,DIGEST_SIZE*2+1);
+        digest_to_uuid(virtual_node->node_uuid,uuid_str);
+        
+        print_cubeaudit("virtual_node init :change virtual node uuid to %s!",uuid_str);
 
         // store virtual_node struct
         DB_RECORD * db_record;
