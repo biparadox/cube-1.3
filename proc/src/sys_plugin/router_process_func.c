@@ -526,17 +526,22 @@ int proc_router_start(void * sub_proc,void * para)
 					else
 					{
 						ret=message_route_findtrace(message,MSG_FLOW_ASPECT);
-						if(ret<0)
+						if(ret<0)   // find aspect error!
 						{
 							proc_audit_log(message);
 							print_cubeerr("find trace message (%d %d)failed!\n",message->head.record_type,message->head.record_subtype);
 						}
-						else
+						else if (ret ==0) // no aspect node, should search if it will be aspect
 						{
+							proc_audit_log(message);
+                            issend=1;
+						}
+                        else              // find an aspect node  
+                        {
 							proc_audit_log(message);
 							issend=1;
 							isaspect=1;
-						}
+                        }
 					}
 				}
 				else
