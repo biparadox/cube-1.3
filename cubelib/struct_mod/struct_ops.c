@@ -466,6 +466,9 @@ int int_get_text_value(void * elem,char * text,void * elem_attr)
         case CUBE_TYPE_UCHAR:
             value = *(char *)elem;
             break;
+        case CUBE_TYPE_USHORT:
+            value = *(unsigned short *)elem;
+            break;
         case CUBE_TYPE_INT:
             value = *(int *)elem;
             break;
