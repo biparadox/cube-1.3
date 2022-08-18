@@ -194,6 +194,7 @@ int tcp_channel_client_init(void * sub_proc,void * para)
     tcp_channel=channel_register(init_para->channel_name,CHANNEL_RDWR,sub_proc);
     if(tcp_channel==NULL)
 	    return -EINVAL;
+    default_conn = client_conn;
 
     return 0;
 }
@@ -243,14 +244,8 @@ int tcp_channel_read(TCLOUD_CONN * recv_conn)
  	else
 	{
         print_cubeaudit("conn peeraddr %s read message\n", recv_conn->conn_peeraddr);
-	    int newlen=_channel_set_recv_conn(Buf,recv_conn,len);
-		if(ret<0)
-		{
-		    print_cubeaudit("set recv conn failed!\n");	
-		}
-		else
-		    ret=channel_inner_write(tcp_channel,Buf,newlen);	
-		if(ret<newlen)
+		ret=channel_inner_write(tcp_channel,Buf,len);	
+		if(ret<len)
 		{
 		    print_cubeaudit(" read Buffer overflow!\n");
 			return -EINVAL;	
@@ -349,38 +344,34 @@ int tcp_channel_start(void * sub_proc,void * para)
                     }   
                 }while(1);
             }
+            else if(mode == 1)
+            {
+                if(client_conn == NULL)
+                    return -EINVAL;
+                ret = tcp_channel_read(client_conn);
+            }
         }
-        else if(mode == 1)
-        {
-            if(client_conn == NULL)
-                return -EINVAL;
-            ret = tcp_channel_read(client_conn);
-        }
-	    else
-	    {
-		    int len=0;
-		    TCLOUD_CONN * send_conn=NULL;
-		    len=channel_inner_read(tcp_channel,ReadBuf+readbuf_len,1024-readbuf_len);
-		    if(len<0)
-			    return -EINVAL;
-		    if((len >0) ||(readbuf_len>0))
+		int len=0;
+		TCLOUD_CONN * send_conn=NULL;
+		len=channel_inner_read(tcp_channel,ReadBuf+readbuf_len,1024-readbuf_len);
+		if(len<0)
+		    return -EINVAL;
+		if((len >0) ||(readbuf_len>0))
+		{
+		    readbuf_len+=len;
+		    ret=_channel_get_send_conn(ReadBuf,1024,&send_conn);
+		    if(ret>=0)
 		    {
-			    readbuf_len+=len;
-			    len=_channel_get_send_conn(ReadBuf,1024,&send_conn);
-			    if(len>0)
+			    ret=send_conn->conn_ops->write(send_conn,ReadBuf,readbuf_len);
+			    if(ret<0)
+				    return -EINVAL;
+			    if(readbuf_len>ret)
 			    {
-				    ret=send_conn->conn_ops->write(send_conn,ReadBuf+sizeof(struct default_channel_head),len);
-				    if(ret<len)
-					    return -EINVAL;
-				    len=ret+sizeof(struct default_channel_head);
-				    if(readbuf_len>len)
-				    {
-					    Memcpy(ReadBuf,ReadBuf+len,readbuf_len);
-				    }
-				    readbuf_len-=len;	
+				    Memcpy(ReadBuf,ReadBuf+ret,readbuf_len-ret);
 			    }
+			    readbuf_len-=ret;	
 		    }
-        }
+		}
     }
     return 0;
 }
