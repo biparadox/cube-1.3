@@ -5,7 +5,7 @@ CC=gcc
 CCP=g++
 PLUGIN=tcp_channel
 PLUGIN_OBJ=
-TEST_LIB= -L$(CUBELIBPATH)/lib -lexmodule -lmessage -lchannel -lmemdb -lconnector -lstruct -lcrypto_func -lpthread -lwebsockets
+TEST_LIB= -L$(CUBELIBPATH)/lib -lexmodule -lmessage -lchannel -lmemdb -lconnector -lstruct -lcrypto_func -lpthread
 
 main: lib$(PLUGIN).so
 lib$(PLUGIN).so:  $(PLUGIN).o $(PLUGIN_PROC_OBJ) $(INIT_DB_OBJ)

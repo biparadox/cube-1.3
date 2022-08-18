@@ -28,6 +28,7 @@
 
 #define MAX_LINE_LEN 1024
 
+static int mode=0; //0 means server, 1 means client 
 static char * tcp_addr;
 static int tcp_port;
 static struct tcloud_connector_hub * conn_hub;
@@ -40,6 +41,7 @@ static int readbuf_len;
 
 static void * default_conn = NULL;
 struct tcloud_connector * server_conn;
+struct tcloud_connector * client_conn;
 
 
 struct default_conn_index
@@ -72,14 +74,6 @@ int _channel_set_recv_conn(BYTE * Buf,void * conn,int size)
 	}
 	else
 		conn_index=(struct default_conn_index *)set_conn->conn_extern_info;
-	if(Buf!=NULL)
-	{
-		struct default_channel_head * channel_head;
-		channel_head=(struct default_channel_head *)Buf;
-		channel_head->conn_no=conn_index->conn_no;
-		channel_head->size=size;
-		return size+sizeof(*channel_head);
-	}
 	return 0;
 }
 
@@ -88,37 +82,54 @@ int _channel_get_send_conn(BYTE * Buf,int length,void **conn)
 //本函数用于改写模块者实现一个根据缓冲区确定写连接对象和连接长度的函数，缺省设置为
 //连接编号和写入数据长度
 {
-	struct default_channel_head * channel_head;
 	struct default_conn_index * conn_index;
-	if(length<sizeof(*channel_head))
-		return 0;
-	channel_head=(struct defaule_channel_head *)Buf;
-	if(channel_head->size>length-sizeof(*channel_head))
-		return 0;
 
 	TCLOUD_CONN * temp_conn;
+    if(default_conn != NULL)
+    {
+        *conn = default_conn;
+		conn_index=temp_conn->conn_extern_info;
+        if(conn_index==NULL)
+            return 0;
+        return conn_index->conn_no;
+    }
+        
 	temp_conn=hub_get_first_connector(conn_hub);
 	while(temp_conn!=NULL)
 	{
-		conn_index=temp_conn->conn_extern_info;
-		if(conn_index!=NULL)
-		{
-			if(conn_index->conn_no==channel_head->conn_no)
-			{
-				break;
-			}
+        if(connector_get_type(temp_conn) == CONN_CHANNEL)
+        {
+		    conn_index=temp_conn->conn_extern_info;
+		    if(conn_index!=NULL)
+            {    
+	            *conn=temp_conn;
+	            return conn_index->conn_no;
+            }
 		}
 		temp_conn=hub_get_next_connector(conn_hub);
 	}
-	
-	*conn=temp_conn;
-	
-	return channel_head->size;
+    *conn=NULL;
+	return 0;
 }
 
-
-
 int tcp_channel_init(void * sub_proc,void * para)
+{
+    struct tcp_init_para * init_para=para;
+    if(init_para->mode != NULL)
+    {   
+        if((Strcmp(init_para->mode,"client")==0)
+            || (Strcmp(init_para->mode,"CLIENT")==0)
+            || (Strcmp(init_para->mode,"Client")==0))
+            mode =1;
+    }
+    if(mode == 1)
+        tcp_channel_client_init(sub_proc,para);
+    else
+        tcp_channel_server_init(sub_proc,para);
+    
+}
+
+int tcp_channel_server_init(void * sub_proc,void * para)
 {
     struct tcp_init_para * init_para=para;
     int ret;
@@ -153,6 +164,101 @@ int tcp_channel_init(void * sub_proc,void * para)
     return 0;
 }
 
+int tcp_channel_client_init(void * sub_proc,void * para)
+{
+    struct tcp_init_para * init_para=para;
+    int ret;
+
+    conn_hub = get_connector_hub();
+
+    if(conn_hub==NULL)
+	return -EINVAL;
+    client_conn	= get_connector(CONN_CLIENT,AF_INET);
+    if((client_conn ==NULL) & IS_ERR(client_conn))
+    {
+         print_cubeerr("get conn failed!\n");
+         return -EINVAL;
+    }
+ 
+    Strcpy(Buf,init_para->tcp_addr);
+    Strcat(Buf,":");
+    Itoa(init_para->tcp_port,Buf+Strlen(Buf));
+
+    ret=client_conn->conn_ops->init(client_conn,"tcp_channel_client",Buf);
+    if(ret<0)
+	    return ret;
+    conn_hub->hub_ops->add_connector(conn_hub,client_conn,NULL);
+
+    ret=client_conn->conn_ops->connect(client_conn);
+
+    tcp_channel=channel_register(init_para->channel_name,CHANNEL_RDWR,sub_proc);
+    if(tcp_channel==NULL)
+	    return -EINVAL;
+
+    return 0;
+}
+
+int tcp_channel_server_accept(TCLOUD_CONN * recv_conn)
+{
+    struct tcloud_connector * channel_conn;
+	char * peer_addr;
+    channel_conn = recv_conn->conn_ops->accept(recv_conn);
+    if(channel_conn == NULL)
+    {
+        printf("error: server connector accept error %p!\n", channel_conn);
+        return -EINVAL;
+    }
+    connector_setstate(channel_conn, CONN_CHANNEL_ACCEPT);
+    print_cubeaudit("create a new channel %p!\n", channel_conn);
+    conn_hub->hub_ops->add_connector(conn_hub, channel_conn, NULL);
+	// should add a start message
+    if(channel_conn->conn_ops->getpeeraddr!=NULL)
+    {
+        peer_addr=channel_conn->conn_ops->getpeeraddr(channel_conn);
+		if(peer_addr!=NULL)
+		    print_cubeaudit("build channel to %s !\n",peer_addr);	
+	    _channel_set_recv_conn(NULL,channel_conn,0);
+    }	
+    return 0;
+}
+
+int tcp_channel_read(TCLOUD_CONN * recv_conn)
+{
+    int ret;
+    int rc=0;
+    int len;
+    len = recv_conn->conn_ops->read(recv_conn, Buf, 1024);
+    if (len < 0) 
+    {
+        //print_cubeerr("tcp_channel:read error");
+        //conn_hub->hub_ops->del_connector(conn_hub, recv_conn);
+        return -EINVAL;
+    }
+    else if (len == 0) 
+    {
+        print_cubeaudit("peer close\n");
+        conn_hub->hub_ops->del_connector(conn_hub, recv_conn);
+        return 0;
+    } 
+ 	else
+	{
+        print_cubeaudit("conn peeraddr %s read message\n", recv_conn->conn_peeraddr);
+	    int newlen=_channel_set_recv_conn(Buf,recv_conn,len);
+		if(ret<0)
+		{
+		    print_cubeaudit("set recv conn failed!\n");	
+		}
+		else
+		    ret=channel_inner_write(tcp_channel,Buf,newlen);	
+		if(ret<newlen)
+		{
+		    print_cubeaudit(" read Buffer overflow!\n");
+			return -EINVAL;	
+        }
+    }
+    return ret;
+}
+
 int tcp_channel_start(void * sub_proc,void * para)
 {
     int ret = 0, len = 0, i = 0, j = 0;
@@ -169,95 +275,112 @@ int tcp_channel_start(void * sub_proc,void * para)
         ret = conn_hub->hub_ops->select(conn_hub, &conn_val);
         usleep(conn_val.tv_usec);
     	conn_val.tv_usec = time_val.tv_usec;
-        if (ret > 0) {
-            do {
-                recv_conn = conn_hub->hub_ops->getactiveread(conn_hub);
-                if (recv_conn == NULL)
-                    break;
-        	usleep(conn_val.tv_usec);
-                if (connector_get_type(recv_conn) == CONN_SERVER)
+        if (ret > 0) 
+        {
+
+            if(mode == 0 )
+            {
+
+                do 
                 {
-                    struct tcloud_connector * channel_conn;
-		    char * peer_addr;
-                    channel_conn = recv_conn->conn_ops->accept(recv_conn);
-                    if(channel_conn == NULL)
+                    recv_conn = conn_hub->hub_ops->getactiveread(conn_hub);
+                    if (recv_conn == NULL)
+                        break;
+        	        usleep(conn_val.tv_usec);
+                    if (connector_get_type(recv_conn) == CONN_SERVER)
                     {
-                        printf("error: server connector accept error %p!\n", channel_conn);
-                        continue;
+                    /*
+                        struct tcloud_connector * channel_conn;
+		                char * peer_addr;
+                        channel_conn = recv_conn->conn_ops->accept(recv_conn);
+                        if(channel_conn == NULL)
+                        {
+                            printf("error: server connector accept error %p!\n", channel_conn);
+                            continue;
+                        }
+                        connector_setstate(channel_conn, CONN_CHANNEL_ACCEPT);
+                        printf("create a new channel %p!\n", channel_conn);
+
+                        conn_hub->hub_ops->add_connector(conn_hub, channel_conn, NULL);
+		                // should add a start message
+		                if(channel_conn->conn_ops->getpeeraddr!=NULL)
+		                {
+			                peer_addr=channel_conn->conn_ops->getpeeraddr(channel_conn);
+			                if(peer_addr!=NULL)
+				                printf("build channel to %s !\n",peer_addr);	
+			                _channel_set_recv_conn(NULL,channel_conn,0);
+                        }	
+                        */
+                        ret =   tcp_channel_server_accept(recv_conn);
+                        if(ret <0)
+                            continue;
                     }
-                    connector_setstate(channel_conn, CONN_CHANNEL_ACCEPT);
-                    printf("create a new channel %p!\n", channel_conn);
-
-                    conn_hub->hub_ops->add_connector(conn_hub, channel_conn, NULL);
-		    // should add a start message
-		    if(channel_conn->conn_ops->getpeeraddr!=NULL)
-		    {
-			peer_addr=channel_conn->conn_ops->getpeeraddr(channel_conn);
-			if(peer_addr!=NULL)
-				printf("build channel to %s !\n",peer_addr);	
-			_channel_set_recv_conn(NULL,channel_conn,0);
-                    }	
-			
-
-                }
-                else if (connector_get_type(recv_conn) == CONN_CHANNEL)
-                {
-                    printf("conn peeraddr %s send message\n", recv_conn->conn_peeraddr);
-                    rc = 0;
-                    len = recv_conn->conn_ops->read(recv_conn, Buf+sizeof(struct default_channel_head), 
-			1024-sizeof(struct default_channel_head));
-                    if (len < 0) {
-                        perror("read error");
+                    else if (connector_get_type(recv_conn) == CONN_CHANNEL)
+                    {
+                        rc = 0;
+                        /*
+                        len = recv_conn->conn_ops->read(recv_conn, Buf, 1024);
+                        if (len < 0) {
+                            perror("read error");
                         //conn_hub->hub_ops->del_connector(conn_hub, recv_conn);
-                    } else if (len == 0) {
-                        printf("peer close\n");
-                        conn_hub->hub_ops->del_connector(conn_hub, recv_conn);
-                    } 
- 		    else
-		    {
-			int newlen=_channel_set_recv_conn(Buf,recv_conn,len);
-			if(ret<0)
-			{
-				printf("set recv conn failed!\n");	
-			}
-			else
-				ret=channel_inner_write(tcp_channel,Buf,newlen);	
-			if(ret<newlen)
-			{
-				printf(" read Buffer overflow!\n");
-				return -EINVAL;	
-			}	
-			
-                    }
-                }
-            } while (1);
+                        }
+                        else if (len == 0) 
+                        {
+                            printf("peer close\n");
+                            conn_hub->hub_ops->del_connector(conn_hub, recv_conn);
+                        } 
+ 		                else
+		                {
+			                int newlen=_channel_set_recv_conn(Buf,recv_conn,len);
+			                if(ret<0)
+			                {
+				               printf("set recv conn failed!\n");	
+			                }
+			                else
+				                ret=channel_inner_write(tcp_channel,Buf,newlen);	
+			                if(ret<newlen)
+			                {
+				                printf(" read Buffer overflow!\n");
+				                return -EINVAL;	
+			                }	
+                        }
+                        */
+                        ret = tcp_channel_read(recv_conn);
+                    }   
+                }while(1);
+            }
         }
-	else
-	{
-		int len=0;
-		TCLOUD_CONN * send_conn=NULL;
-		len=channel_inner_read(tcp_channel,ReadBuf+readbuf_len,1024-readbuf_len);
-		if(len<0)
-			return -EINVAL;
-		if((len >0) ||(readbuf_len>0))
-		{
-			readbuf_len+=len;
-			len=_channel_get_send_conn(ReadBuf,1024,&send_conn);
-			if(len>0)
-			{
-				ret=send_conn->conn_ops->write(send_conn,ReadBuf+sizeof(struct default_channel_head),len);
-				if(ret<len)
-					return -EINVAL;
-				len=ret+sizeof(struct default_channel_head);
-				if(readbuf_len>len)
-				{
-					Memcpy(ReadBuf,ReadBuf+len,readbuf_len);
-				}
-				readbuf_len-=len;	
-			}
-		}
-	 }			
-	    
+        else if(mode == 1)
+        {
+            if(client_conn == NULL)
+                return -EINVAL;
+            ret = tcp_channel_read(client_conn);
+        }
+	    else
+	    {
+		    int len=0;
+		    TCLOUD_CONN * send_conn=NULL;
+		    len=channel_inner_read(tcp_channel,ReadBuf+readbuf_len,1024-readbuf_len);
+		    if(len<0)
+			    return -EINVAL;
+		    if((len >0) ||(readbuf_len>0))
+		    {
+			    readbuf_len+=len;
+			    len=_channel_get_send_conn(ReadBuf,1024,&send_conn);
+			    if(len>0)
+			    {
+				    ret=send_conn->conn_ops->write(send_conn,ReadBuf+sizeof(struct default_channel_head),len);
+				    if(ret<len)
+					    return -EINVAL;
+				    len=ret+sizeof(struct default_channel_head);
+				    if(readbuf_len>len)
+				    {
+					    Memcpy(ReadBuf,ReadBuf+len,readbuf_len);
+				    }
+				    readbuf_len-=len;	
+			    }
+		    }
+        }
     }
     return 0;
 }

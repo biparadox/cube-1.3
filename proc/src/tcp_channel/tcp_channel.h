@@ -34,6 +34,7 @@ int tcp_channel_start(void * sub_proc,void * para);
 
 struct tcp_init_para
 {
+    char * mode;
 	char * tcp_addr;
 	int tcp_port;	
 	char * channel_name;
