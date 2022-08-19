@@ -94,7 +94,7 @@ int msg2binstream_start(void * sub_proc,void * para)
                 return -EINVAL;
 
             record=Talloc0(struct_size(struct_template));
-            if(record=NULL)
+            if(record==NULL)
                 return -ENOMEM;
 
             ret = blob_2_struct(ReadBuf+offset,record,struct_template);
