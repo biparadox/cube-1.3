@@ -706,7 +706,7 @@ int RAND_bytes(unsigned char *buffer, size_t len)
         readn += ret; 
     }    
     close(fd);
-    return 0;
+    return 1;
 }                                                                                                                                                                                                                
 void print_bin_data(BYTE * data,int len,int width)
 {

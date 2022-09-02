@@ -127,6 +127,7 @@ int tcp_channel_init(void * sub_proc,void * para)
     else
         tcp_channel_server_init(sub_proc,para);
     
+    return 0;
 }
 
 int tcp_channel_server_init(void * sub_proc,void * para)
