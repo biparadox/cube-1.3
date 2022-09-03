@@ -217,7 +217,7 @@ int memdb_comp_record_uuid(void * record,int type,int subtype, BYTE * uuid);
 int print_cubeerr(char * format,...);
 int print_cubeaudit(char * format,...);
 int convert_uuidname(char * name,int len,BYTE * digest,char * newfilename);
-int RAND_bytes(unsigned char *buffer, size_t len);
+int RAND_bytes(unsigned char *buffer, int len);
 void print_bin_data(BYTE * data,int len,int width);
 void * create_type_message(int type,int subtype,void * active_msg);
 

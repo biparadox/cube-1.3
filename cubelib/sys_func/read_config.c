@@ -686,7 +686,7 @@ int convert_uuidname(char * name,int len,BYTE * digest,char * newfilename)
 		return ret;
 	return 1;	
 } 
-int RAND_bytes(unsigned char *buffer, size_t len) 
+int RAND_bytes(unsigned char *buffer, int len) 
 {
     int ret, fd;
     const char * randomfile = "/dev/urandom";
