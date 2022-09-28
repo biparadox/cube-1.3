@@ -7,7 +7,8 @@ enum subtype_general_return {
 	SUBTYPE(GENERAL_RETURN,BINDATA),
 	SUBTYPE(GENERAL_RETURN,STRING),
 	SUBTYPE(GENERAL_RETURN,STRING_ARRAY),
-	SUBTYPE(GENERAL_RETURN,RECORD)
+	SUBTYPE(GENERAL_RETURN,RECORD),
+	SUBTYPE(GENERAL_RETURN,TIME_VAL)
 };
 typedef struct genera_return_int{
 	char * name;
@@ -43,4 +44,10 @@ typedef struct genera_return_record{
 	int size;
 	BYTE * blob;
 }__attribute__((packed)) RECORD(GENERAL_RETURN,RECORD);
+
+typedef struct genera_return_time_val{
+	char * name;
+	unsigned int tv_sec;
+    unsigned int tv_usec;
+}__attribute__((packed)) RECORD(GENERAL_RETURN,TIME_VAL);
 
