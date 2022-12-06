@@ -202,8 +202,8 @@ int read_plugin_cfg(void ** plugin,void * root_node)
     temp_node=json_find_elem("libname",root_node);
     if(temp_node==NULL)
     {
-	print_cubeerr("wrong plugin format!\n");
-	return -EINVAL;
+	    print_cubeerr("wrong plugin format!\n");
+	    return -EINVAL;
     }
 
     libname=json_get_valuestr(temp_node);

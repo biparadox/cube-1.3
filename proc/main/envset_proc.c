@@ -259,11 +259,19 @@ int main(int argc,char **argv)
     if(fd>0)
     {	
 
+        i=0;
     	while(read_json_node(fd,&root_node)>0)
     	{  		
-		ret=read_plugin_cfg(&ex_module,root_node);
-		if(ret>=0)
+		    ret=read_plugin_cfg(&ex_module,root_node);
+            i++;
+		    if(ret>=0)
+            {
     			add_ex_module(ex_module);
+            }
+            else
+            {
+                print_cubeerr("read plugin %d error %d\n",i);
+            }
     	}
     }	
     
