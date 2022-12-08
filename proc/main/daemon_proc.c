@@ -200,7 +200,7 @@ int cube_proc(struct start_para * start_para)
 	ex_module_list_init();
 
     // init system
-//  system("mkdir lib");
+    system("mkdir lib -m 0555");
     // init the main proc struct
 
     struct lib_para_struct * lib_para=NULL;
