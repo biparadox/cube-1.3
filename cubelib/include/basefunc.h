@@ -29,6 +29,8 @@ void * hashlist_find_elem_byname(void * hashlist,char * name);
 void * hashlist_remove_elem(void * hashlist,void * elem);
 void * hashlist_get_first(void * hashlist);
 void * hashlist_get_next(void * hashlist);
+void * hashlist_get_first_parall(void * hashlist,int * curr_index, void ** curr_head);
+void * hashlist_get_next_parall(void * hashlist,int * curr_index, void ** curr_head);
 
 
 void * init_list_queue(void );

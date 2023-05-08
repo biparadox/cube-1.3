@@ -659,7 +659,10 @@ void * memdb_get_next_record (int type,int subtype)
 void *  _get_dynamic_db_bytype(int type,int subtype)
 {
 	struct memdb_desc * memdb;
-	memdb=hashlist_get_first(memdb_base->dynamic_db_list);
+    int curr_index;
+    Record_List * curr_head;
+
+	memdb=hashlist_get_first_parall(memdb_base->dynamic_db_list,&curr_index,&curr_head);
 	while(memdb!=NULL)
 	{
 		if(memdb->type == type)
@@ -667,7 +670,7 @@ void *  _get_dynamic_db_bytype(int type,int subtype)
 			if(memdb->subtype == subtype)
 				return memdb;
 		}
-		memdb=hashlist_get_next(memdb_base->dynamic_db_list);
+		memdb=hashlist_get_next_parall(memdb_base->dynamic_db_list,&curr_index,&curr_head);
 	}	 
 	return NULL;
 }

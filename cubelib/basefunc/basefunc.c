@@ -287,6 +287,50 @@ void * hashlist_get_next(void * hashlist)
 	return NULL;
 }
 
+void * hashlist_get_first_parall(void * hashlist, int * curr_index, void ** curr_head)
+{
+	UUID_LIST * uuid_list = hashlist;
+	Record_List * temp=NULL;
+	int i;
+	for(i=0;i<uuid_list->hash_num;i++)
+	{
+		temp=(Record_List *)(uuid_list->hash_table[i].list.next);
+		if(temp==&uuid_list->hash_table[i])
+			continue;
+		*curr_index=i;
+		*curr_head=&temp->list;
+		return temp->record;
+	}
+	*curr_index=0;
+	*curr_head=NULL;
+	return NULL;
+}
+
+void * hashlist_get_next_parall(void * hashlist,int * curr_index,void ** curr_head)
+{
+	UUID_LIST * uuid_list = hashlist;
+	Record_List * temp=NULL;
+	int i;
+	if(*curr_head==NULL)
+		return NULL;
+	temp=*curr_head;
+	for(i=*curr_index;i<uuid_list->hash_num;i++)
+	{
+		temp=(Record_List *)(temp->list.next);
+		if(temp==&uuid_list->hash_table[i])
+		{
+			temp=&uuid_list->hash_table[i+1];
+			continue;
+		}
+		*curr_index=i;
+		*curr_head=&temp->list;
+		return temp->record;
+	}
+	*curr_index=0;
+	*curr_head=NULL;
+	return NULL;
+}
+
 
 
 typedef struct tagpointer_stack
