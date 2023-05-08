@@ -238,6 +238,9 @@ int message_record_init(void * message)
         if(IS_ERR(msg_box->record_template))
             return msg_box->record_template;
 
+	if(msg_box->record_template == NULL)
+		return -EINVAL;
+
         __message_alloc_record_site(message);
         return 0;
 }
@@ -371,6 +374,11 @@ int message_add_record(void * message,void * record)
         	ret=__message_add_record_site(message,1);
     	if(ret<0)
 	    	return ret;
+
+	if(msg_box->record_template==NULL)
+	{
+		return -EINVAL;
+	}
 
 	// assign the record's value 
     	msg_box->precord[curr_site]=Dalloc0(struct_size(msg_box->record_template),msg_box);
