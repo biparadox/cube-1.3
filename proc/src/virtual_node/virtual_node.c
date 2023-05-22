@@ -44,7 +44,7 @@ int virtual_node_init(void * sub_proc, void * para)
         Strncpy(virtual_node->node_name,virt_para->node_name,DIGEST_SIZE);
         Strncpy(virtual_node->domain,virt_para->domain,DIGEST_SIZE);
 
-        calculate_context_sm3(virtual_node->node_name,DIGEST_SIZE*2,virtual_node->node_uuid);
+        calculate_context_sm3(virtual_node->node_name,Strlen(virtual_node->node_name),virtual_node->node_uuid);
         proc_share_data_setvalue("uuid",virtual_node->node_uuid);
         Memset(uuid_str,0,DIGEST_SIZE*2+1);
         digest_to_uuid(virtual_node->node_uuid,uuid_str);
