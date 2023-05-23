@@ -87,6 +87,7 @@ int channel_buf_read(void * buf,BYTE * data,int size)
 		{
 			Memcpy(data,((void *)curr_buf)+curr_buf->offset+curr_buf->last_read_tail,size);
 			curr_buf->last_read_tail+=size;		
+            
 			ret=size;
 		}
 		else
@@ -105,6 +106,7 @@ int channel_buf_read(void * buf,BYTE * data,int size)
 		{
 			Memcpy(data,((void *)curr_buf)+curr_buf->offset+curr_buf->last_read_tail,size);
 			curr_buf->last_read_tail+=size;		
+            
 			ret=size;
 		}
 		else
@@ -149,6 +151,7 @@ int channel_buf_write(void * buf,BYTE * data,int size)
 		{
 			Memcpy(((void *)curr_buf)+curr_buf->offset+curr_buf->last_write_tail,data,size);
 			curr_buf->last_write_tail+=size;		
+
 			ret=size;
 		}
 		else
@@ -156,12 +159,13 @@ int channel_buf_write(void * buf,BYTE * data,int size)
 		{
 			Memcpy(((void *)curr_buf)+curr_buf->offset+curr_buf->last_write_tail,data,left_data);
 			curr_buf->last_write_tail=curr_buf->last_read_tail-1;		
+            print_cubeerr("channel_buf %p overflow: size %d left space %d",curr_buf,size,left_data);
 			ret=left_data;
 		}
 
 	}
 	else
-    // write_tail is one circle ahead read_tail
+    // read_tail is one circle ahead write_tail
 	{
 		int tail_block_size=curr_buf->bufsize-curr_buf->last_write_tail;
 		    // left space between the write_tail and the upper board of the buf
@@ -170,7 +174,7 @@ int channel_buf_write(void * buf,BYTE * data,int size)
         if(head_block_size<0)
             head_block_size=0;
 		left_data=tail_block_size+head_block_size;   
-		if(size<tail_block_size+head_block_size)
+		if(size<tail_block_size)
            // tail_block_size is enough, we can write data directly
 		{
 			Memcpy(((void *)curr_buf)+curr_buf->offset+curr_buf->last_write_tail,data,size);
@@ -195,6 +199,7 @@ int channel_buf_write(void * buf,BYTE * data,int size)
 			{
 				Memcpy(((void *)curr_buf)+curr_buf->offset,data+tail_block_size,head_block_size);
 				curr_buf->last_write_tail=head_block_size;		
+                print_cubeerr("channel_buf %p overflow: size %d left space %d",curr_buf,size-tail_block_size,head_block_size);
 				ret=left_data;	
 
 			}
