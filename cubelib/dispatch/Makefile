@@ -7,7 +7,7 @@ STRUCTOBJ= route_tree.o
 LIBNAME=dispatch
 DEPENDLIB= -lsys_func -lmessage -lmemdb -lbasefunc -lcrypto_func -lstruct -ljson -lalloc -lstring
 
-main: ../lib/lib$(LIBNAME).so  ../lib/lib$(LIBNAME).a
+main: ../lib/lib$(LIBNAME).so  ../lib/lib$(LIBNAME).a 
 test_main: test_main.c ../lib/lib$(LIBNAME).so 
 	$(CC) $(FLAGS) test_main test_main.c -L../lib -l$(LIBNAME) $(DEPENDLIB)   
 ../lib/lib$(LIBNAME).so: $(STRUCTOBJ)
