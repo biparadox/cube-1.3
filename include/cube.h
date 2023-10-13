@@ -165,6 +165,7 @@ int message_set_blob(void * message,void * blob, int size);
 
 int message_2_json(void * message,char * json_str);
 int json_2_message(char * json_str,void ** message);
+void * message_gen_typesmsg(int type,int subtype,void * active_msg);
 // message func end
 
 // memdb func start
