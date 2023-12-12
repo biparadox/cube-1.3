@@ -107,13 +107,13 @@ void * Talloc(int size)
 {
 
     void * pointer;
-    pointer=malloc(size+sizeof(UINT16));
+    pointer=malloc(size+sizeof(UINT32));
     if(pointer==NULL)
         return NULL;
-    *(UINT16 *)pointer=size;
-    *(UINT16 *)pointer|=ALLOC_TEMP<<12;
+    *(UINT32 *)pointer=size;
+    *(UINT32 *)pointer|=ALLOC_TEMP<<12;
 
-    return pointer+sizeof(UINT16);   
+    return pointer+sizeof(UINT32);   
 
 //	return general_alloc(ALLOC_TEMP,0,&tempmem_struct,size);
 }
@@ -130,7 +130,7 @@ void * Talloc0(int size)
 
 int TFree(void * pointer)
 {
-	free(pointer-sizeof(UINT16));
+	free(pointer-sizeof(UINT32));
 	return 0;
 //	return general_free(pointer,&tempmem_struct);
 }
@@ -138,12 +138,12 @@ int TFree(void * pointer)
 void * Salloc(int size)
 {
     void * pointer;
-    pointer=malloc(size+sizeof(UINT16));
+    pointer=malloc(size+sizeof(UINT32));
     if(pointer==NULL)
-    *(UINT16 *)pointer=size;
-    *(UINT16 *)pointer|=ALLOC_STATIC<<12;
+    *(UINT32 *)pointer=size;
+    *(UINT32 *)pointer|=ALLOC_STATIC<<12;
 
-    return pointer+sizeof(UINT16);   
+    return pointer+sizeof(UINT32);   
 //	return general_alloc(ALLOC_STATIC,0,&static_struct,size);
 }
 
@@ -159,7 +159,7 @@ void * Salloc0(int size)
 
 int SFree(void * pointer)
 {
-	free(pointer-sizeof(UINT16));
+	free(pointer-sizeof(UINT32));
 	return 0;
 }
 
@@ -167,14 +167,14 @@ int SFree(void * pointer)
 void * Dalloc(int size,void * base)
 {
     void * pointer;
-    pointer=malloc(size+sizeof(UINT16)+sizeof(void *));
+    pointer=malloc(size+sizeof(UINT32)+sizeof(void *));
     if(pointer==NULL)
         return NULL;
     *(void **)pointer=base;
-    *(UINT16 *)(pointer+sizeof(void *))=size;
-    *(UINT16 *)(pointer+sizeof(void *))|=ALLOC_DYNAMIC<<12;
+    *(UINT32 *)(pointer+sizeof(void *))=size;
+    *(UINT32 *)(pointer+sizeof(void *))|=ALLOC_DYNAMIC<<12;
 
-    return pointer+sizeof(UINT16)+sizeof(void *);   
+    return pointer+sizeof(UINT32)+sizeof(void *);   
 }
 
 void * Dalloc0(int size,void * base)
@@ -192,26 +192,26 @@ void * Dpointer_set(void * pointer,void * base)
     if(base!=NULL)
         *(void **)base=pointer;
 
-    *(void **)(pointer-sizeof(UINT16)-sizeof(void *))=base;
+    *(void **)(pointer-sizeof(UINT32)-sizeof(void *))=base;
     return pointer; 
 }
 
 int DFree(void * pointer)
 {
-	free(pointer-sizeof(UINT16)-sizeof(void *));
+	free(pointer-sizeof(UINT32)-sizeof(void *));
 	return 0;
 }
 
 void * Calloc(int size)
 {
     void * pointer;
-    pointer=malloc(size+sizeof(UINT16));
+    pointer=malloc(size+sizeof(UINT32));
     if(pointer==NULL)
         return NULL;
-    *(UINT16 *)pointer=size;
-    *(UINT16 *)pointer|=ALLOC_CACHE<<12;
+    *(UINT32 *)pointer=size;
+    *(UINT32 *)pointer|=ALLOC_CACHE<<12;
 
-    return pointer+sizeof(UINT16);   
+    return pointer+sizeof(UINT32);   
 /*
 */
 }
@@ -227,7 +227,7 @@ void * Calloc0(int size)
 
 int CFree(void * pointer)
 {
-	free(pointer-sizeof(UINT16));
+	free(pointer-sizeof(UINT32));
 	return 0;
 }
 
