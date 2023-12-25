@@ -409,6 +409,7 @@ int receive_local_client_ack(void * message_box,void * conn,void * hub)
 	TCLOUD_CONN * temp_conn=hub_get_connector_bypeeruuid(hub,conn_uuid);
 	if(temp_conn!=NULL)
 	{
+		print_cubeaudit("receive_local_client_ack: delete connector %s\n",temp_conn->conn_ops->getname(temp_conn)); 
 		((TCLOUD_CONN_HUB *)hub)->hub_ops->del_connector(hub,temp_conn);
 		temp_conn->conn_ops->disconnect(temp_conn);
 	}
