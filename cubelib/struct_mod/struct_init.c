@@ -1148,7 +1148,14 @@ int _elem_set_text_value(void * addr,char * text,void * elem)
 			}
 			else
 			{
-				ret=elem_ops->set_text_value(*(BYTE **)elem_src,text,elem);
+				if(_isdefineelem(type))
+				{
+					curr_elem->tempsize=repeat_num;
+					ret=elem_ops->set_text_value(*(BYTE **)elem_src,text,elem);
+					curr_elem->tempsize=0;
+				}
+				else
+					ret=elem_ops->set_text_value(*(BYTE **)elem_src,text,elem);
 			}	
 		}
 	}
