@@ -372,6 +372,14 @@ int proc_router_start(void * sub_proc,void * para)
 			{
 				message_set_sender(message,origin_proc);
 			}
+			else
+			{
+				msg_head=message_get_head(message);
+				if(Memcmp(msg_head->sender_uuid,EMPTY_UUID,DIGEST_SIZE)==0)
+				{
+					message_set_sender(message,origin_proc);
+				}
+			}
 		
 			// if message is init message
 
