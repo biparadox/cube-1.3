@@ -261,7 +261,12 @@ int websocket_msgport_start(void * sub_proc,void * para)
 						    //printf("read Data %s!\n",Buf);
                            if(ret<0)
                                 continue;
-							print_cubeaudit("websocket_msgport read %d Data for msg!",ret);
+			    print_cubeaudit("websocket_msgport read %d Data for msg!",ret);
+			    MSG_HEAD * msg_head = message_get_head(new_msg);
+			    if(Memcmp(msg_head->nonce,EMPTY_UUID,DIGEST_SIZE)==0)	
+			    {
+				get_random_uuid(msg_head->nonce);	
+			    } 	
                             ex_module_sendmsg(sub_proc,new_msg);
 					    }
 
