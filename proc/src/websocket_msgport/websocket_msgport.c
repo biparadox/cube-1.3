@@ -237,7 +237,7 @@ int websocket_msgport_start(void * sub_proc,void * para)
 				    ret=shakehands(channel_conn);
 				    if(ret<0)
 					    return -EINVAL;		
-                    is_connect=1;
+                    		    is_connect=1;
 				    send_para.ws_conn=channel_conn;
 
 			    }
@@ -255,19 +255,22 @@ int websocket_msgport_start(void * sub_proc,void * para)
 					    len=recv_conn->conn_ops->read(recv_conn,Buf,BUFFER_SIZE);
 					    if(len>0)
 					    {
+		    				print_cubeaudit("websocket_msgport: receive %d data！",len);
 						    ws_umask(Buf,len,head.masking_key);
 
-                           ret=json_2_message(Buf,&new_msg); 
+                           			ret=json_2_message(Buf,&new_msg); 
 						    //printf("read Data %s!\n",Buf);
-                           if(ret<0)
-                                continue;
-			    print_cubeaudit("websocket_msgport read %d Data for msg!",ret);
-			    MSG_HEAD * msg_head = message_get_head(new_msg);
-			    if(Memcmp(msg_head->nonce,EMPTY_UUID,DIGEST_SIZE)==0)	
-			    {
-				get_random_uuid(msg_head->nonce);	
-			    } 	
-                            ex_module_sendmsg(sub_proc,new_msg);
+                           			if(ret<0)
+                                			continue;
+			    			print_cubeaudit("websocket_msgport: convert %d Data for msg!",ret);
+						// clear json head message
+
+			   			MSG_HEAD * msg_head = message_get_head(new_msg);
+			    			if(Memcmp(msg_head->nonce,EMPTY_UUID,DIGEST_SIZE)==0)	
+			    			{
+							get_random_uuid(msg_head->nonce);	
+			    			} 	
+                            			ex_module_sendmsg(sub_proc,new_msg);
 					    }
 
 				    }while(len>0);
@@ -283,17 +286,21 @@ int websocket_msgport_start(void * sub_proc,void * para)
 	    {
 		    if(recv_msg==NULL)
 			    continue;
-    		len=message_output_json(recv_msg,ReadBuf);
+    		len=message_output_clear_json(recv_msg,ReadBuf);
 	        if(len >0)
 	        {
-		        print_cubeaudit("websocket_msgport : Get %d data from recv_msg！",len);
+		    print_cubeaudit("websocket_msgport : Get %d data from recv_msg！",len);
 	            head.payload_length=len;
 	 //   printf("send fin=%d\nopcode=0x%X\nmask=%d\npayload_len=%llu\n",head.fin,head.opcode,head.mask,head.payload_length);
 	            send_frame_head(send_para.ws_conn,&head);	
 	      //printf("send Data %s!\n",ReadBuf);
 	            ret=send_para.ws_conn->conn_ops->write(send_para.ws_conn,ReadBuf,len);
 	            if(ret<len)
-			        return -EINVAL;
+		    {
+			print_cubeerr("websocket_msgport: send %d data return %d!", len,ret);
+			return -EINVAL;
+		    }	
+		    print_cubeaudit("websocket_msgport: send %d data！",len);
 	            len=ret+sizeof(struct default_channel_head);
             }			
         }
@@ -554,7 +561,7 @@ int send_frame_head(void * conn,frame_head* head)
         perror("write head");
         return -1;
     }
-	print_cubeaudit("websocket_msgport read %d Data!",len);
+	print_cubeaudit("websocket_msgport send %d head Data!",len);
 
     free(response_head);
     return 0;

@@ -741,6 +741,146 @@ int message_output_json(void * message, char * text)
 	return offset;
 }
 
+int message_output_clear_json(void * message, char * text)
+{
+	struct message_box * msg_box;
+	int ret;
+	MSG_HEAD * msg_head;
+	MSG_EXPAND * msg_expand;
+	BYTE * data;
+	BYTE * buffer;
+	int i,j;
+	int record_size,expand_size;
+	int head_size;
+	int text_size,offset;
+	
+	msg_box=(struct message_box *)message;
+
+	if(message==NULL)
+		return -EINVAL;
+	if(text==NULL)
+		return -EINVAL;
+	msg_head=&msg_box->head;
+	
+	buffer=Talloc(4096);
+	if(buffer==NULL)
+		return -EINVAL;
+	// output head text
+	Strcpy(text,"{ \"HEAD\":");
+	offset=Strlen(text);
+
+	if(msg_box->record_template!=NULL)
+		ret=struct_2_part_json(msg_head,text+offset,msg_kits->head_template,CUBE_ELEM_FLAG_KEY);
+	else
+	{
+		void * head_nodefine_template=memdb_get_template(TYPE_PAIR(MESSAGE,NODEFINE_HEAD));
+		if(head_nodefine_template==NULL)
+			return -EINVAL;
+		ret=struct_2_json(msg_head,text+offset,head_nodefine_template);
+	}
+	if(ret<0)
+		return ret;
+	offset+=ret;
+	// output record text
+	Strcpy(buffer,",\"RECORD\":[");
+	ret=Strlen(buffer);
+	Strcpy(text+offset,buffer);
+	offset+=ret;	
+
+   	if((message_get_flag(message) & MSG_FLAG_CRYPT)
+		||(msg_box->record_template==NULL))
+   	{
+		if(msg_box->blob==NULL)
+		{
+    			Strcpy(buffer,"{\"EMPTY\":\"\"");
+    			Strcpy(text+offset,buffer);
+    			offset+=Strlen(buffer);
+    			text[offset++]='}';
+		}
+		else
+		{	
+    			Strcpy(buffer,"{\"BIN_FORMAT\":");
+    			Strcpy(text+offset,buffer);
+    			offset+=Strlen(buffer);
+    			text[offset++]='\"';
+			ret=bin_to_radix64(text+offset,msg_head->record_size,msg_box->blob);
+			offset+=ret;	
+    			text[offset++]='\"';
+    			text[offset++]='}';
+		}
+	}
+    	else 
+    	{   
+		for(i=0;i<msg_head->record_num;i++)
+		{
+			if(i>0)
+				text[offset++]=',';
+		
+			ret=struct_2_json(msg_box->precord[i],text+offset,msg_box->record_template);
+			if(ret<0)
+				return ret;
+			offset+=ret;
+		}
+    	}
+	
+	Strcpy(buffer,"],\"EXPAND\" :[");
+	Strcpy(text+offset,buffer);
+	offset+=Strlen(buffer);
+	for(i=0;i<msg_head->expand_num;i++)
+	{
+		MSG_EXPAND * expand;
+		expand=msg_box->pexpand[i];
+		if(expand==NULL)
+		{
+			expand=Talloc0(sizeof(MSG_EXPAND));
+			if(expand==NULL)
+				return -ENOMEM;
+			ret=blob_2_struct(msg_box->expand[i],expand,msg_kits->expand_bin_template);
+			if(ret<0)
+				return ret;
+			ret=struct_2_json(expand,text+offset,msg_kits->expand_bin_template);
+			offset+=ret;
+				
+		}
+		else
+		{
+			void * expand_template=memdb_get_template(expand->type,
+				expand->subtype);
+			if(expand_template==NULL)
+			{
+				ret=struct_2_json(msg_box->pexpand[i],text+offset,msg_kits->expand_bin_template);
+			
+			}
+			else
+			{
+				ret=struct_2_json(msg_box->pexpand[i],text+offset,msg_kits->expand_head_template);
+				if(ret<0)
+					return ret;
+				offset+=ret-1;
+				Strcpy(buffer,",\"expand\":");
+				Strcpy(text+offset,buffer);
+				offset+=Strlen(buffer);
+				msg_expand=(MSG_EXPAND *)msg_box->pexpand[i];
+				ret=struct_2_json(msg_expand->expand,text+offset,expand_template);
+				if(ret<0)
+					return ret;
+				offset+=ret;
+				text[offset++]='}';
+				text[offset]='\0';
+			}
+		}
+		text[offset++]=',';
+	}
+	if(i!=0)
+		offset--;
+	Strcpy(buffer,"]}");
+	Strcpy(text+offset,buffer);
+	offset+=Strlen(buffer);
+
+	Free(buffer);
+	return offset;
+}
+
 int message_read_head(void ** message,void * blob,int blob_size)
 {
 	struct message_box * msg_box;

@@ -296,6 +296,7 @@ int message_comp_expand_elem_text(void * message,char * item_name, int index, ch
 void * message_get_head(void * message);
 int message_output_blob(void * message, BYTE ** blob);
 int message_output_json(void * message, char * text);
+int message_output_clear_json(void * message, char * text);
 
 //   //  _________________________________________________________________________ //
 

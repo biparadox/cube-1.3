@@ -75,11 +75,18 @@
 		"type":"MESSAGE",
 		"subtype":"HEAD",
 		"uuid":"msg_head",
+		"flag_no":2,
 		"index":
-		{
-			"flag":"INDEX",
-			"elemlist":"sender_uuid,receiver_uuid,flow,state,flag,record_type,record_subtype"
-		}
+		[
+			{
+				"flag":"INDEX",
+				"elemlist":"sender_uuid,receiver_uuid,flow,state,flag,record_type,record_subtype"
+			},
+			{
+				"flag":"KEY",
+				"elemlist":"record_type,record_subtype,record_num,expand_num"
+			}
+		]	
 	}	
 }
 {
