@@ -1025,8 +1025,16 @@ int message_read_from_src(void ** message,void * src,
 
     seek_size=0;
     ret=read_func(src,readbuf,sizeof(MSG_HEAD));
+    if(ret<0)
+    {
+	//print_cubeerr("message_read_from_src: read err");	    
+	return ret;	
+    }
     if(ret<sizeof(MSG_HEAD))
-        return ret;
+    {
+	//print_cubeerr("message_read_from_src: read length not enough");	    
+        return -EINVAL;
+    }
 
     retval=message_read_head(message,readbuf,ret);
     if(retval<0)
