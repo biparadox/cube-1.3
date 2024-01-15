@@ -102,9 +102,9 @@ int proc_share_data_getvalue(char * valuename,void * value);
 int proc_share_data_setvalue(char * valuename,void * value);
 int proc_get_uuid(BYTE * uuid);
 
-void * ex_module_addslot(void * ex_mod,void * slot_port);
+int ex_module_addslot(void * ex_mod,void * slot_port);
 void * ex_module_findport(void * ex_mod,char * name);
-void * ex_module_addsock(void * ex_mod,void * sock);
+int ex_module_addsock(void * ex_mod,void * sock);
 void * ex_module_removesock(void * ex_mod,BYTE * uuid);
 void * ex_module_findsock(void * ex_mod,BYTE * uuid);
 

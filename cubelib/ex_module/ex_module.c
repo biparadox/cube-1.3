@@ -51,7 +51,7 @@ struct ex_module_list
 
 EX_MODULE * main_module;
 
-void * ex_module_addslot(void * ex_mod,void * slot_port)
+int ex_module_addslot(void * ex_mod,void * slot_port)
 {
 	EX_MODULE * ex_module=*(EX_MODULE **)ex_mod;
 	if(ex_mod==NULL)
@@ -59,7 +59,7 @@ void * ex_module_addslot(void * ex_mod,void * slot_port)
 	return slot_list_addslot(ex_module->slots,slot_port);
 }
 
-void * ex_module_addsock(void * ex_mod,void * sock)
+int ex_module_addsock(void * ex_mod,void * sock)
 {
 	EX_MODULE * ex_module=*(EX_MODULE **)ex_mod;
 	if(ex_mod==NULL)
