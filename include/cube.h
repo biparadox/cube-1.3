@@ -222,5 +222,24 @@ int RAND_bytes(unsigned char *buffer, int len);
 void print_bin_data(BYTE * data,int len,int width);
 void * create_type_message(int type,int subtype,void * active_msg);
 
+int ex_module_addslot(void * ex_mod,void * slot_port);
+void * ex_module_findport(void * ex_mod,char * name);
+int ex_module_addsock(void * ex_mod,void * sock);
+void * ex_module_removesock(void * ex_mod,BYTE * uuid);
+void * ex_module_findsock(void * ex_mod,BYTE * uuid);
+
+void * slot_port_init(char * name, int port_num);
+void * slot_port_addrecordpin(void * port,int type,int subtype);
+void * slot_port_addmessagepin(void * port,int type,int subtype);
+void * slot_create_sock(void * slot_port,BYTE * uuid);
+int slot_sock_addrecord(void * sock,void * record);
+int slot_sock_addrecorddata(void * sock,int type,int subtype, void * record);
+int slot_sock_addmsg(void * sock, void * message);
+int slot_sock_isactive(void * sock);
+int slot_sock_isempty(void * sock);
+void * slot_sock_removerecord(void * sock,int type,int subtype);
+void * slot_sock_removemessage(void * sock,int type,int subtype);
+
+
 // system func end
 #endif
