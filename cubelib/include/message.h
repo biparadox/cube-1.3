@@ -255,7 +255,7 @@ int  message_add_record_blob(void * message,int record_size, BYTE * record);
 
 int  message_add_expand(void * message,void * expand);
 int  message_add_expand_data(void * message,int type,int subtype,void * expand);
-int  message_add_expand_blob(void * message,int type,int subtype,void * expand);
+int  message_add_expand_blob(void * message,int size,void * blob);
 
 int  message_remove_expand(void * message,int type,int subtype,void ** expand);
 int  message_remove_indexed_expand(void * message,int index,void ** expand) ;

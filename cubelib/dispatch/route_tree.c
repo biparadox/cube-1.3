@@ -1466,20 +1466,39 @@ int router_dup_activemsg_info (void * message)
 
 	MSG_EXPAND * old_expand;
 	MSG_EXPAND * new_expand;
+	
 
 	int i=0;
+
 	if(!(new_msg_head->flag & MSG_FLAG_FOLLOW))
 	{
-		do{
-			ret = message_get_expand(active_msg,&old_expand,i++);
+		BYTE * expand_buf;
+		expand_buf=Talloc0(sizeof(DIGEST_SIZE*32));
+		if(expand_buf==NULL)
+			return -ENOMEM;
+		for(i=0;i<active_msg->head.expand_num;i++){
+
+
+			ret = message_get_expand(active_msg,&old_expand,i);
 			if(ret<0)
 				return ret;
 			if(old_expand==NULL)
-				break;
-			ret=message_add_expand(message,old_expand);
-			if(ret<0)
-				return ret;
-		}while(1);	
+			{
+				/* check if bin expand data exist, if not, continue */ 
+				if(active_msg->expand[i]==NULL)	
+					continue;
+				/* else, duplicate the bin expand data */
+				ret=message_add_expand_blob(message,active_msg->expand_size[i],active_msg->expand[i]);
+				if(ret<0)
+					return ret;
+			}
+			else
+			{
+				ret=message_add_expand(message,old_expand);
+				if(ret<0)
+					return ret;
+			}
+		}	
 	}
 	msg_box->policy=active_msg->policy;
 	msg_box->path_site=active_msg->path_site;

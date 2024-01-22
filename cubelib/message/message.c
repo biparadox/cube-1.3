@@ -976,8 +976,13 @@ int  message_read_data(void * message,void * blob,int data_size)
                 __message_alloc_expand_site(msg_box);
 		for(i=0;i<msg_box->head.expand_num;i++)
 		{
-			msg_box->expand[i]=data+current_offset;
+			// compute expand size
 			msg_box->expand_size[i]=*(int *)(data+current_offset)+sizeof(MSG_EXPAND_HEAD);
+			// duplicate expand data
+			msg_box->expand[i]=Dalloc0(msg_box->expand_size[i],msg_box);
+			if(msg_box->expand[i]==NULL)
+				return -ENOMEM;
+			Memcpy(msg_box->expand[i],data+current_offset,msg_box->expand_size[i]);
 			current_offset+=msg_box->expand_size[i];
 		}
                 msg_box->current_offset=0;
@@ -1649,33 +1654,33 @@ int message_add_expand_data(void * message,int type,int subtype,void * expand)
 	return message_add_expand(message,msg_expand);
 }
 
-/*
-int message_add_expand_blob(void * message,void * expand)
+
+int message_add_expand_blob(void * message,int size, void * blob)
 {
 	struct message_box * msg_box;
 	int ret;
 	MSG_HEAD * msg_head;
 	MSG_EXPAND * expand_head;
+	int curr_site;
 
 	msg_box=(struct message_box *)message;
+	msg_head=&msg_box->head;
+	curr_site=msg_head->expand_num;
+	ret=__message_add_expand_site(message,1);
+	if(ret<0)
+		return -EINVAL;
 
-	msg_head=&(msg_box->head);
-	if(message==NULL)
-		return -EINVAL;
-	if(expand==NULL)
-		return -EINVAL;
-	expand_head=(MSG_EXPAND *)expand;
-	if(expand_head->data_size<0)
-		return -EINVAL;
-	if(expand_head->data_size>4096)
-		return -EINVAL;
-	msg_box->expand[msg_head->expand_num++]=expand;
-        msg_box->box_state=MSG_BOX_EXPAND;
+	msg_box->expand_size[curr_site]=size;
 
-	return ret;
+	msg_box->expand[curr_site]=Dalloc0(size,message);
+	if(msg_box->expand[curr_site]==NULL)
+		return -ENOMEM;	
+	Memcpy(msg_box->expand[curr_site],blob,size);	
+
+	return size;
 }
 
-
+/*
 int message_record_blob2struct(void * message)
 {
 	struct message_box * msg_box;
@@ -1998,7 +2003,7 @@ int message_get_expand(void * message,void ** msg_expand, int expand_no)
 		if(expand_head==NULL)
 			return -ENOMEM;
 		
-		ret=blob_2_struct(expand_head,msg_box->expand[expand_no],struct_template);
+		ret=blob_2_struct(msg_box->expand[expand_no],expand_head,struct_template);
 		if(ret<0)
 			return ret;
 		struct_template=memdb_get_template(expand_head->type,expand_head->subtype);
