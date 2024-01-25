@@ -170,6 +170,7 @@ int cube_proc(struct start_para * start_para)
 	"dispatchrecord.json",
 	"exmoduledefine.json",
 	"sys_conn.json",
+	"cube_audit.json",
 	 NULL
     };
 

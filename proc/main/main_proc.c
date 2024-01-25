@@ -91,6 +91,7 @@ int main(int argc,char **argv)
 	"dispatchrecord.json",
 	"exmoduledefine.json",
 	"sys_conn.json",
+	"cube_audit.json",
 	 NULL
     };
 
