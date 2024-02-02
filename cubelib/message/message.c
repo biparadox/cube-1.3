@@ -2140,7 +2140,13 @@ int message_remove_indexed_expand(void * message, int expand_no,void **expand)
 		return -EINVAL;
 	msg_head=&(msg_box->head);
 
-	*expand=msg_box->pexpand[expand_no];
+	if(expand !=NULL){
+		*expand=msg_box->pexpand[expand_no];
+	}
+	else {
+		expand_data = msg_box->pexpand[expand_no];
+	}
+
 /*	
 	if(msg_box->expand[expand_no]!=NULL)
 	{
@@ -2168,7 +2174,9 @@ int message_remove_expand(void * message, int type,int subtype,void ** expand)
 
 	if((message==NULL) || IS_ERR(message))
 		return -EINVAL;
-	*expand=NULL;
+
+	if(expand != NULL)
+		*expand=NULL;
 
 	for(i=0;i<msg_box->head.expand_num;i++)
 	{
@@ -2185,7 +2193,7 @@ int message_remove_expand(void * message, int type,int subtype,void ** expand)
 			break;
 		}
 	}
-
+	
 	return 0;
 }
 

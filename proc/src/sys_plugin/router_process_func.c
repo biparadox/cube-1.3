@@ -22,6 +22,7 @@
 #include "message.h"
 #include "dispatch.h"
 #include "ex_module.h"
+#include "cube_audit.h"
 
 #include "sys_func.h"
 #include "message_box.h"
@@ -126,6 +127,33 @@ int proc_router_hit_target(void * message,char * local_uuid,char * proc_name)
 
 }
 
+int proc_audit_route_init()
+{
+	int ret=1;
+	RECORD(CUBE_AUDIT,ROUTE_SELECT) * route_select;
+	RECORD(CUBE_AUDIT,ROUTE_FILTER) * route_filter;
+	DB_RECORD * db_record;
+	
+	route_select = memdb_get_first_record(TYPE_PAIR(CUBE_AUDIT,ROUTE_SELECT));
+	while(route_select != NULL)
+	{
+		if(route_select->filter_op == FILTER_SELSEQ)
+		{
+			route_filter=Talloc0(sizeof(*route_filter));
+			if(route_filter ==NULL)
+				return -ENOMEM;
+			Memcpy(route_filter,route_select,sizeof(*route_select));
+			route_filter->seq_counter=route_filter->seq_num;
+			db_record = memdb_store(route_filter,TYPE_PAIR(CUBE_AUDIT,ROUTE_FILTER),NULL);
+			if(db_record == NULL)
+				return -EINVAL;
+			//print_bin_data(db_record->head.uuid,32,16);
+		}
+		route_select = memdb_get_next_record(TYPE_PAIR(CUBE_AUDIT,ROUTE_SELECT));
+	}	
+	return ret;
+}
+
 int 	proc_audit_init()
 {
 	char audit_text[4096];
@@ -140,6 +168,74 @@ int 	proc_audit_init()
 	return 0;
 }
 
+int proc_audit_route_filter(void * message)
+{
+	int ret=0;
+	RECORD(CUBE_AUDIT,ROUTE_SELECT) * route_select;
+	RECORD(CUBE_AUDIT,ROUTE_FILTER) * route_filter;
+	DB_RECORD * db_record;
+	MSG_HEAD * msg_head;
+
+	msg_head = message_get_head (message);
+	if(msg_head == NULL)
+		return -EINVAL;
+	
+	db_record = memdb_get_first(TYPE_PAIR(CUBE_AUDIT,ROUTE_SELECT));
+	if(db_record == NULL)
+		return 1;
+	route_select = db_record->record;
+	while(route_select != NULL)
+	{
+		if(Strncmp(route_select->route_name,msg_head->route,DIGEST_SIZE)==0)
+		{
+			switch (route_select->filter_op)
+			{
+				case FILTER_SELALL:
+					return 1;
+				case FILTER_EXCEPT:
+					return 0;
+				case FILTER_SELSEQ:
+					db_record = memdb_find(db_record->head.uuid,TYPE_PAIR(CUBE_AUDIT,ROUTE_FILTER));
+					if(db_record == NULL)
+					{
+						return 1;
+					}
+					route_filter = db_record->record;
+					if(route_filter == NULL)
+						return 1;
+					if(Memcmp(route_filter->match_uuid,msg_head->nonce,DIGEST_SIZE)==0)
+					{
+						if(route_filter->seq_counter==0)
+							return 1;
+					}	
+					else
+					{
+						if(route_filter->seq_counter>0)
+						{
+							route_filter->seq_counter--;
+							Memcpy(route_filter->match_uuid,msg_head->nonce,DIGEST_SIZE);
+							memdb_store_record(db_record);
+							if(route_filter->seq_counter==0)
+							{
+								return 1;
+							}
+						}
+					}
+					break;
+				default:
+					return -EINVAL;	
+					
+			}
+		}
+		db_record = memdb_get_next(TYPE_PAIR(CUBE_AUDIT,ROUTE_SELECT));
+		if(db_record == NULL)
+			return ret;
+		route_select = db_record->record;
+	}
+	
+	return ret;
+}
+
 int     proc_audit_log (void * message)
 {
 //	if(deep_debug==0)
@@ -150,6 +246,10 @@ int     proc_audit_log (void * message)
 	char audit_text[4096];
         const char * audit_filename= "./message.log";
     	int fd ;
+
+	if(proc_audit_route_filter(message)<=0)
+		return 0;
+
 	ret=message_output_json(message,audit_text);	
 
 	audit_text[ret]=0;			
@@ -281,6 +381,7 @@ int proc_router_init(void * sub_proc,void * para)
 		print_cubeaudit("read %d policy from aspect policy file!",ret);
 
     proc_audit_init();
+    proc_audit_route_init();
     return 0;
 }
 
