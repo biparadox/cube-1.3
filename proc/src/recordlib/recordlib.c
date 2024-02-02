@@ -214,7 +214,12 @@ int proc_store_message(void * sub_proc,void * message)
 		subtype_str=memdb_get_subtypestr(types->type,types->subtype);
 		if(subtype_str==NULL)
 			return -EINVAL;
-		sprintf(filename,"lib/%s-%s.lib",type_str,subtype_str);
+//		printf("proc_store_message: typestr %p subtype_str %p\n",type_str,subtype_str);
+		Strncpy(filename,"lib/",DIGEST_SIZE);
+		Strncat(filename,type_str,DIGEST_SIZE*2);
+		Strncat(filename,"-",DIGEST_SIZE*2);
+		Strncat(filename,subtype_str,DIGEST_SIZE*3);
+		Strncat(filename,".lib",DIGEST_SIZE*3);
 		fd=open(filename,O_WRONLY|O_CREAT|O_TRUNC,0666);
 		if(fd<0)
 			return fd;

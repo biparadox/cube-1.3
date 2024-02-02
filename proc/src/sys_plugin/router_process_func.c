@@ -473,10 +473,11 @@ int proc_router_start(void * sub_proc,void * para)
 				    print_cubeaudit("maybe an aspect remote msg %.64s come",msg_head->route);
 					proc_audit_log(message);
 				}
-                else
-                {
+                		else
+                		{
 				    print_cubeaudit("response remote msg match path %.64s's policy",msg_head->route);
-                }
+                		}
+				print_cubeaudit("router_proc: add message to send queue");
 				_waiting_message_add(message);
 
 			} 
