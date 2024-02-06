@@ -727,6 +727,24 @@ void * memdb_get_template(int type, int subtype)
 	return db_record->tail;
 	
 }
+void * memdb_clone_template(int type, int subtype)
+{
+	struct memdb_desc * db_list;
+	DB_RECORD * db_record;
+	if(type<=0)
+		return NULL;
+	if(type<DB_BASEEND)
+	{
+		db_list=memdb_get_dblist(type,subtype);
+		return clone_struct_template(db_list->struct_template);
+	}	
+	
+	db_record = memdb_get_recordtype(type,subtype);
+	if(db_record == NULL)
+		return NULL;
+	return clone_struct_template(db_record->tail);
+	
+}
 /*
 int memdb_set_index(int type,int subtype,int flag,char * elem_list)
 {

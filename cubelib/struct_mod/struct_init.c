@@ -949,6 +949,8 @@ int _elem_get_text_value(void * addr,char * text,void * elem)
 	// get this elem's addr
 
 	elem_src=_elem_get_addr(elem,addr);
+	if(deep_debug)
+		printf("_elem_get_text_value:elem_src %p\n",elem_src);
 
 	if(_ispointerelem(type)||
 		(_isdefineelem(type)&&_isarrayelem(type)))
@@ -1010,6 +1012,8 @@ int _elem_get_text_value(void * addr,char * text,void * elem)
 			{
 				if(elem_ops->elem_get_length!=NULL)
 				{
+					if(deep_debug)
+						printf("_elem_get_text_value:before elem_get_length elem_src %p\n",elem_src);
 					ret=elem_ops->elem_get_length(*(BYTE **)elem_src,elem);
 					if(ret<0)
 						return ret;

@@ -753,39 +753,72 @@ int message_output_clear_json(void * message, char * text)
 	int record_size,expand_size;
 	int head_size;
 	int text_size,offset;
+	void * temp_template;
 	
 	msg_box=(struct message_box *)message;
 
 	if(message==NULL)
-		return -EINVAL;
+	{
+		ret=-EINVAL;
+		goto err1;
+	}
 	if(text==NULL)
-		return -EINVAL;
+	{
+		ret=-EINVAL;
+		goto err1;
+	}
 	msg_head=&msg_box->head;
 	
-	buffer=Talloc(4096);
+	buffer=Talloc(2048);
 	if(buffer==NULL)
-		return -EINVAL;
+	{
+		ret=-ENOMEM;
+		goto err1;
+	}
 	// output head text
 	Strcpy(text,"{ \"HEAD\":");
 	offset=Strlen(text);
 
-	if(msg_box->record_template!=NULL)
+	printf("offset start: %d\n",offset);
+
+	if(msg_kits->head_template!=NULL)
+	{
+		temp_template=clone_struct_template(msg_kits->head_template);
+		if(temp_template ==NULL)
+		{
+			ret=-EINVAL;
+			goto err;
+		}
 		ret=struct_2_part_json(msg_head,text+offset,msg_kits->head_template,CUBE_ELEM_FLAG_KEY);
+		if(ret <0)
+		{
+			ret=-EINVAL;
+			goto err;
+		}
+		free_struct_template(temp_template);
+	}
 	else
 	{
 		void * head_nodefine_template=memdb_get_template(TYPE_PAIR(MESSAGE,NODEFINE_HEAD));
 		if(head_nodefine_template==NULL)
-			return -EINVAL;
+		{
+			ret = -EINVAL;	
+			goto err;
+		}
 		ret=struct_2_json(msg_head,text+offset,head_nodefine_template);
 	}
 	if(ret<0)
-		return ret;
+	{
+		goto err;
+	}
 	offset+=ret;
+	printf("offset %d msg head %d\n",offset,ret);
 	// output record text
 	Strcpy(buffer,",\"RECORD\":[");
 	ret=Strlen(buffer);
 	Strcpy(text+offset,buffer);
 	offset+=ret;	
+	printf("offset %d record ret %d\n",offset,ret);
 
    	if((message_get_flag(message) & MSG_FLAG_CRYPT)
 		||(msg_box->record_template==NULL))
@@ -811,16 +844,27 @@ int message_output_clear_json(void * message, char * text)
 	}
     	else 
     	{   
+		temp_template=clone_struct_template(msg_box->record_template);
+		if(temp_template ==NULL)
+		{
+			ret=-EINVAL;
+			goto err;
+		}
 		for(i=0;i<msg_head->record_num;i++)
 		{
 			if(i>0)
 				text[offset++]=',';
 		
-			ret=struct_2_json(msg_box->precord[i],text+offset,msg_box->record_template);
+			ret=struct_2_json(msg_box->precord[i],text+offset,temp_template);
 			if(ret<0)
-				return ret;
+			{
+				free_struct_template(temp_template);
+				goto err;
+			}
 			offset+=ret;
+			printf(" output %d record data offset %d ret %d\n",i,offset,ret);
 		}
+		free_struct_template(temp_template);
     	}
 	
 	Strcpy(buffer,"],\"EXPAND\" :[");
@@ -828,24 +872,34 @@ int message_output_clear_json(void * message, char * text)
 	offset+=Strlen(buffer);
 	for(i=0;i<msg_head->expand_num;i++)
 	{
+		printf(" output %d expand data offset \n",msg_head->expand_num,offset);
 		MSG_EXPAND * expand;
 		expand=msg_box->pexpand[i];
 		if(expand==NULL)
 		{
 			expand=Talloc0(sizeof(MSG_EXPAND));
 			if(expand==NULL)
+			{
+				Free(buffer);
 				return -ENOMEM;
+			}
 			ret=blob_2_struct(msg_box->expand[i],expand,msg_kits->expand_bin_template);
 			if(ret<0)
+			{
+				Free(buffer);
 				return ret;
+			}
 			ret=struct_2_json(expand,text+offset,msg_kits->expand_bin_template);
 			offset+=ret;
 				
 		}
 		else
 		{
-			void * expand_template=memdb_get_template(expand->type,
+			deep_debug=1;
+			void * expand_template=memdb_clone_template(expand->type,
 				expand->subtype);
+			printf(" offset %d expand type %d expand subtype %d\n",offset,expand->type,expand->subtype);
+			deep_debug=0;
 			if(expand_template==NULL)
 			{
 				ret=struct_2_json(msg_box->pexpand[i],text+offset,msg_kits->expand_bin_template);
@@ -855,30 +909,46 @@ int message_output_clear_json(void * message, char * text)
 			{
 				ret=struct_2_json(msg_box->pexpand[i],text+offset,msg_kits->expand_head_template);
 				if(ret<0)
-					return ret;
+				{
+					free_struct_template(expand_template);
+					goto err;
+				}
 				offset+=ret-1;
+				printf(" convert offset %d expand %d 's head to %d length string\n",offset,i,ret);
 				Strcpy(buffer,",\"expand\":");
 				Strcpy(text+offset,buffer);
 				offset+=Strlen(buffer);
 				msg_expand=(MSG_EXPAND *)msg_box->pexpand[i];
+				deep_debug=1;
 				ret=struct_2_json(msg_expand->expand,text+offset,expand_template);
+				deep_debug=0;
 				if(ret<0)
-					return ret;
+				{
+					free_struct_template(expand_template);
+					goto err;
+				}
 				offset+=ret;
 				text[offset++]='}';
 				text[offset]='\0';
+				printf(" convert offset %d to %d length string\n",offset,ret);
+				free_struct_template(expand_template);
 			}
 		}
 		text[offset++]=',';
 	}
+
+	printf(" current offset is %d\n",offset);
 	if(i!=0)
 		offset--;
 	Strcpy(buffer,"]}");
 	Strcpy(text+offset,buffer);
 	offset+=Strlen(buffer);
-
 	Free(buffer);
 	return offset;
+err:
+	Free(buffer);
+err1:
+	return ret;
 }
 
 int message_read_head(void ** message,void * blob,int blob_size)

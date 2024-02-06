@@ -62,6 +62,8 @@ int  _convert_frame_func (void *addr, void * data, void * struct_template,
 		if(ret<0)
 			return ret;
 	}
+	if(deep_debug)
+		printf("convert_frame_func:start para %p circle\n",para);
 
 
 	do{
@@ -71,11 +73,15 @@ int  _convert_frame_func (void *addr, void * data, void * struct_template,
 		{
 			if(curr_node==root_node)
 			{
+				if(deep_debug)
+					printf("convert_frame_func:finish curr_node %p circle\n",curr_node);
 				break;
 			}
 			temp_node=curr_node;
 			curr_node=curr_node->parent;
 			curr_elem=&curr_node->elem_list[curr_node->temp_var];
+			if(deep_debug)
+				printf("convert_frame_func:upgrade temp_var %d curr_elem %p \n",curr_node->temp_var,curr_elem);
 			curr_elem->index++;
 			if(funcs->exitstruct!=NULL)
 			{
@@ -110,9 +116,11 @@ int  _convert_frame_func (void *addr, void * data, void * struct_template,
 		}
 
    // deep debug start
-    //    if(deep_debug)
-    //        printf("elem name %s offset %d size %d\n",curr_elem->elem_desc->name,curr_elem->offset,curr_elem->size); 
-    //deep debug end
+   
+        if(deep_debug)
+            printf("convert_frame_func:elem name %s offset %d para_addr %p temp_var %d elem addr %p\n",curr_elem->elem_desc->name,curr_elem->offset,para,curr_node->temp_var,curr_elem); 
+    
+   //deep debug end
 
 			// throughout the node tree: into the sub_struct
 		if(_issubsetelem(curr_elem->elem_desc->type))
@@ -440,6 +448,8 @@ int _clone_template_start(void * addr,void * data,void * elem, void * para)
 	clone_node->offset=my_para->source_node->offset;
 	clone_node->size=my_para->source_node->size;
 	clone_node->flag=my_para->source_node->flag;
+	if(deep_debug)
+		printf("_clone_template_start: para %p clone_node %p source_node %p\n",para,my_para->clone_node,my_para->source_node);
 	return 0;
 }
 
@@ -521,6 +531,7 @@ int _clone_template_proc_func(void * addr,void * data,void * elem, void * para)
 	clone_elem->index=curr_elem->index;	
 	clone_elem->limit=curr_elem->index;	
 	clone_elem->ref=curr_elem->ref;
+//	clone_elem->elem_desc=curr_elem->elem_desc;
 
 //	clone_elem->father=my_para->parent_elem;
 
@@ -555,18 +566,25 @@ void * clone_struct_template(void * struct_template)
 		.finish=_clone_template_finish,
 	};
 
-	static struct clone_template_para my_para;
+	struct clone_template_para  * my_para;
+	my_para=Dalloc0(sizeof(*my_para),struct_template);
 	
 	STRUCT_NODE * root_node = Calloc0(sizeof(STRUCT_NODE));
 	if(root_node==NULL)
+	{
+		Free0(my_para);
 		return NULL;
-	my_para.source_node=(STRUCT_NODE *)struct_template;
-	my_para.clone_node=root_node;
-	root_node->struct_desc=my_para.source_node->struct_desc;
+	}
+	my_para->source_node=(STRUCT_NODE *)struct_template;
+	my_para->clone_node=root_node;
+	root_node->struct_desc=my_para->source_node->struct_desc;
 	ret = _convert_frame_func(NULL,NULL,struct_template,&clone_template_ops,
-		&my_para);
+		my_para);
+	Free0(my_para);
 	if(ret<0)
+	{
 		return NULL;
+	}
 	return root_node;
 }
 void free_struct_template(void * struct_template)
@@ -1430,6 +1448,11 @@ int _tojson_start(void * addr, void * data,void *elem,void * para)
 	struct default_para * my_para=para;
 	char * json_str=data;
 	
+	if(deep_debug)
+	{
+		printf("_tojson_start:offset %d para addr %p str addr %p\n",my_para->offset,my_para,json_str);
+	}
+	
 	*json_str='{';
 	my_para->offset=1;
 	return 1;	
@@ -1524,19 +1547,30 @@ int _tojson_proc_func(void * addr, void * data, void * elem,void * para)
 	char * json_str=data;
 	struct elem_template	* curr_elem=elem;
 	int ret=0,text_len;
-	char buf[4096];
+	char * buf;
 	// get this elem's ops
 	ELEM_OPS * elem_ops=_elem_get_ops(curr_elem);
 	if(elem_ops==NULL)
 		return -EINVAL;
+	buf= Talloc0(2048);
 	ret=_print_elem_name(data,elem,para);
 	text_len=_elem_get_text_value(addr,buf,curr_elem);
 	if(text_len<0)
+	{
+		Free(buf);	
 		return text_len;
+	}	
 	text_len = _getjsonstr(json_str+my_para->offset,buf,text_len,_getelemjsontype(curr_elem->elem_desc->type));
 	*(json_str+my_para->offset+text_len)=',';
 	text_len+=1;
 	my_para->offset+=text_len;
+	/*
+	if(deep_debug)
+	{
+		printf("_tojson_proc_func:offset %d text_len %d json_str %p %s\n",my_para->offset,text_len,json_str,json_str);
+	}
+	*/
+	Free(buf);
 	return ret+text_len;
 }
 
@@ -1564,12 +1598,20 @@ int struct_2_json(void * addr, char * json_str, void * struct_template)
 		.proc_func=&_tojson_proc_func,
 		.finish=&_tojson_finish,
 	};	
-	static struct default_para my_para;
-	my_para.offset=0;
-	ret = _convert_frame_func(addr,json_str,struct_template,&struct_2_json_ops,		&my_para);
+	struct default_para * my_para;
+	my_para=Dalloc0(sizeof(*my_para),struct_template);
+	if(my_para==NULL)
+		return -ENOMEM;
+	my_para->offset=0;
+	ret = _convert_frame_func(addr,json_str,struct_template,&struct_2_json_ops,my_para);
 	if(ret<0)
+	{
+		Free0(my_para);
 		return ret;
-	return my_para.offset;
+	}
+	ret=my_para->offset;
+	Free0(my_para);
+	return ret;
 }
 int struct_2_part_json(void * addr, char * json_str, void * struct_template,int flag)
 {
@@ -1583,13 +1625,21 @@ int struct_2_part_json(void * addr, char * json_str, void * struct_template,int 
 		.proc_func=&_tojson_proc_func,
 		.finish=&_tojson_finish,
 	};	
-	static struct part_deal_para my_para;
-	my_para.offset=0;
-	my_para.flag=flag;
-	ret = _convert_frame_func(addr,json_str,struct_template,&struct_2_part_json_ops,		&my_para);
+	struct part_deal_para * my_para;
+	my_para=Dalloc0(sizeof(*my_para),struct_template);
+	if(my_para==NULL)
+		return -ENOMEM;
+	my_para->flag=flag;
+	my_para->offset=0;
+	ret = _convert_frame_func(addr,json_str,struct_template,&struct_2_part_json_ops,my_para);
 	if(ret<0)
+	{
+		Free0(my_para);
 		return ret;
-	return my_para.offset;
+	}
+	ret=my_para->offset;
+	Free0(my_para);
+	return ret;
 }
 
 struct jsonto_para

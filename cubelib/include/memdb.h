@@ -114,6 +114,7 @@ void * memdb_find_byname(char * name,int type,int subtype);
 int memdb_find_recordtype(int type,int subtype);
 int memdb_set_template(int type, int subtype, void * struct_template);
 void * memdb_get_template(int type, int subtype);
+void * memdb_clone_template(int type, int subtype);
 int  memdb_set_index(int type,int subtype,int flag,char * elem_list);
 int memdb_store_index(void * record,char * name,int flag);
 
