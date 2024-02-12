@@ -84,6 +84,7 @@ typedef struct elem_template
 	int index;     // count the elem in an array  
 	int limit;     // count the elem's size
 	struct elem_template * father; // this elem's father elem
+	int reentry_count;	     // count the reentry_event  
 }ELEM_NODE;
 
 typedef struct struct_template_node
@@ -96,6 +97,7 @@ typedef struct struct_template_node
 	struct struct_elem_attr * struct_desc;   // the describe array of this struct
 	struct elem_template * elem_list;        // this struct's elem node list 
 	int temp_var;   // a temp value in this struct node
+	int reentry_count;	     // count the reentry_event  
 	
 }STRUCT_NODE;
 
