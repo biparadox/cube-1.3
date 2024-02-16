@@ -168,10 +168,11 @@ int  _convert_frame_func (void *addr, void * data, void * struct_template,
 
 struct create_para
 {
-	int offset;
-	int curr_offset;
-	STRUCT_NODE * curr_node;
-	struct elem_template * parent_elem;
+	int offset; /*compute the sum offset of the struct */
+	int curr_offset; /* store the current offset */ 
+	STRUCT_NODE * curr_node; /*the current template node in lookup process  */
+	struct elem_template * parent_elem; /* when curr node is a substruct, this var point to its parent node 's ELEM_NODE */
+					   /* it is used for return parent struct's elem lookup */	
 };
 
 int _create_template_start(void * addr,void * data,void * elem, void * para)
@@ -179,6 +180,7 @@ int _create_template_start(void * addr,void * data,void * elem, void * para)
 	int ret;
 	int i;
 	struct create_para * my_para = para;
+
 	my_para->offset=0;
 	my_para->curr_offset=0;
 	STRUCT_NODE * root_node=elem;
@@ -187,6 +189,7 @@ int _create_template_start(void * addr,void * data,void * elem, void * para)
 	my_para->curr_node=root_node;
 	// prepare the root node's elem_list
 	root_node->elem_no=_count_struct_num(root_node->struct_desc);
+	root_node->reentry_count++;
 	
 	root_node->elem_list=Dalloc0(sizeof(struct elem_template)*root_node->elem_no,&root_node->elem_list);
 	if(root_node->elem_list==NULL)
@@ -372,6 +375,8 @@ int _create_template_proc_func(void * addr,void * data,void * elem, void * para)
 int _create_template_finish(void * addr,void * data,void * elem, void * para)
 {
 	struct create_para * my_para = para;
+	STRUCT_NODE * root_node=(STRUCT_NODE *)elem;
+	root_node->reentry_count--;
 	return 0;
 }
 
@@ -387,16 +392,20 @@ void * create_struct_template(struct struct_elem_attr * struct_desc)
 		.finish=_create_template_finish,
 	};
 
-	static struct create_para my_para;
+	struct create_para * my_para;
 	
 	STRUCT_NODE * root_node = Calloc0(sizeof(STRUCT_NODE));
 	if(root_node==NULL)
 		return NULL;
+	my_para=Dalloc0(sizeof(*my_para),root_node);
+	if(my_para==NULL)
+		return -ENOMEM;
 	root_node->struct_desc=struct_desc;
 	ret = _convert_frame_func(NULL,NULL,root_node,&create_template_ops,
-		&my_para);
+		my_para);
 	if(ret<0)
 		return NULL;
+	Free0(my_para);
 	return root_node;
 }
 
@@ -419,11 +428,12 @@ int _clone_template_start(void * addr,void * data,void * elem, void * para)
 	my_para->parent_elem=NULL;
 	STRUCT_NODE * root_node=elem;
 	STRUCT_NODE * clone_node=my_para->clone_node;
+	STRUCT_NODE * source_node=my_para->source_node;
 	STRUCT_NODE * temp_node;
-	my_para->source_node=root_node;
 	// prepare the root node's elem_list
-	clone_node->elem_no=root_node->elem_no;
-	clone_node->struct_desc=root_node->struct_desc;
+	source_node->reentry_count++;
+	clone_node->elem_no=source_node->elem_no;
+	clone_node->struct_desc=source_node->struct_desc;
 
 	clone_node->elem_list=Dalloc0(sizeof(struct elem_template)*clone_node->elem_no,&clone_node->elem_list);
 	if(clone_node->elem_list==NULL)
@@ -445,11 +455,11 @@ int _clone_template_start(void * addr,void * data,void * elem, void * para)
 			temp_node->parent=clone_node;
 		}
 	} 
-	clone_node->offset=my_para->source_node->offset;
-	clone_node->size=my_para->source_node->size;
-	clone_node->flag=my_para->source_node->flag;
+	clone_node->offset=source_node->offset;
+	clone_node->size=source_node->size;
+	clone_node->flag=source_node->flag;
 	if(deep_debug)
-		printf("_clone_template_start: para %p clone_node %p source_node %p\n",para,my_para->clone_node,my_para->source_node);
+		printf("_clone_template_start: para %p clone_node %p source_node %p reentry %d\n",para,my_para->clone_node,source_node,source_node->reentry_count);
 	return 0;
 }
 
@@ -459,18 +469,22 @@ int _clone_template_enterstruct(void * addr,void * data,void * elem, void * para
 	int i;
 	struct clone_template_para * my_para = para;
 	struct elem_template * curr_elem=elem;
+	struct elem_template * source_elem;
 	int index;
-	STRUCT_NODE * clone_node;
+	
+
+	STRUCT_NODE * clone_node=curr_elem->ref;
+	STRUCT_NODE * source_node;
 	STRUCT_NODE * temp_node;
 
-	index=my_para->source_node->temp_var;
+	index=my_para->clone_node->temp_var;
 	
 	my_para->parent_elem=&my_para->clone_node->elem_list[index];
-	clone_node=my_para->parent_elem->ref;
 	clone_node->parent=my_para->clone_node;
 	my_para->clone_node=clone_node;
 
-	my_para->source_node=curr_elem->ref;
+	source_elem=&my_para->source_node->elem_list[index];
+	my_para->source_node=source_elem->ref;
 
 	clone_node->temp_var=0;	
 
@@ -520,17 +534,17 @@ int _clone_template_exitstruct(void * addr,void * data,void * elem, void * para)
 int _clone_template_proc_func(void * addr,void * data,void * elem, void * para)
 {
 	struct clone_template_para * my_para = para;
-	struct elem_template * curr_elem = elem;
-	int   index = my_para->source_node->temp_var;
-	struct elem_template * clone_elem=&my_para->clone_node->elem_list[index];
+	int   index = my_para->clone_node->temp_var;
+	struct elem_template * clone_elem = elem;
+	struct elem_template * source_elem=&my_para->source_node->elem_list[index];
 	STRUCT_NODE * clone_node=my_para->clone_node; 
  
-	clone_elem->offset=curr_elem->offset;	
-	clone_elem->size=curr_elem->size;	
-	clone_elem->flag=curr_elem->flag;	
-	clone_elem->index=curr_elem->index;	
-	clone_elem->limit=curr_elem->index;	
-	clone_elem->ref=curr_elem->ref;
+	clone_elem->offset=source_elem->offset;	
+	clone_elem->size=source_elem->size;	
+	clone_elem->flag=source_elem->flag;	
+	clone_elem->index=source_elem->index;	
+	clone_elem->limit=source_elem->index;	
+	clone_elem->ref=source_elem->ref;
 //	clone_elem->elem_desc=curr_elem->elem_desc;
 
 //	clone_elem->father=my_para->parent_elem;
@@ -551,6 +565,8 @@ int _clone_template_proc_func(void * addr,void * data,void * elem, void * para)
 int _clone_template_finish(void * addr,void * data,void * elem, void * para)
 {
 	struct clone_template_para * my_para = para;
+	STRUCT_NODE * source_node=(STRUCT_NODE *)my_para->source_node;
+	source_node->reentry_count--;
 	return 0;
 }
 
@@ -578,7 +594,7 @@ void * clone_struct_template(void * struct_template)
 	my_para->source_node=(STRUCT_NODE *)struct_template;
 	my_para->clone_node=root_node;
 	root_node->struct_desc=my_para->source_node->struct_desc;
-	ret = _convert_frame_func(NULL,NULL,struct_template,&clone_template_ops,
+	ret = _convert_frame_func(NULL,NULL,root_node,&clone_template_ops,
 		my_para);
 	Free0(my_para);
 	if(ret<0)
