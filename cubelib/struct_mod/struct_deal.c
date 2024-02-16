@@ -917,12 +917,15 @@ int blob_2_struct(void * blob, void * addr, void * struct_template)
 		.enterstruct=&blob_2_struct_enterstruct,
 		.proc_func=&proc_blob_2_struct,
 	};	
-	static struct default_para my_para;
-	my_para.offset=0;
-	ret = _convert_frame_func(addr,blob,struct_template,&blob_2_struct_ops,&my_para);
+	struct default_para * my_para;
+	my_para=Dalloc0(sizeof(*my_para),struct_template);
+	my_para->offset=0;
+	ret = _convert_frame_func(addr,blob,struct_template,&blob_2_struct_ops,my_para);
 	if(ret<0)
 		return ret;
-	return my_para.offset;
+	ret=my_para->offset;
+	Free0(my_para);
+	return ret;
 }
 
 
