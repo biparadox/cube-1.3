@@ -813,12 +813,17 @@ int struct_2_blob(void * addr, void * blob, void * struct_template)
 		.exitstruct=&struct_2_blob_exitstruct,
 		.proc_func=&proc_struct_2_blob,
 	};	
-	static struct default_para my_para;
-	my_para.offset=0;
-	ret = _convert_frame_func(addr,blob,struct_template,&struct_2_blob_ops,		&my_para);
+	struct default_para * my_para;
+	my_para=Dalloc0(sizeof(*my_para),struct_template);
+	if(my_para==NULL)
+		return -ENOMEM;
+	my_para->offset=0;
+	ret = _convert_frame_func(addr,blob,struct_template,&struct_2_blob_ops,my_para);
 	if(ret<0)
 		return ret;
-	return my_para.offset;
+	ret=my_para->offset;
+	Free0(my_para);
+	return ret;
 }
 
 struct part_deal_para
@@ -844,13 +849,18 @@ int struct_2_part_blob(void * addr,void * blob, void * struct_template,int flag)
 		.exitstruct=&struct_2_blob_exitstruct,
 		.proc_func=&proc_struct_2_blob,
 	};	
-	static struct part_deal_para my_para;
-	my_para.flag=flag;
-	my_para.offset=0;
-	ret= _convert_frame_func(addr,blob,struct_template,&struct_2_blob_ops,		&my_para);
+	struct part_deal_para * my_para;
+	my_para=Dalloc0(sizeof(*my_para),struct_template);
+	if(my_para==NULL)
+		return -ENOMEM;
+	my_para->flag=flag;
+	my_para->offset=0;
+	ret= _convert_frame_func(addr,blob,struct_template,&struct_2_blob_ops,my_para);
 	if(ret<0)
 		return ret;
-	return my_para.offset;
+	ret=my_para->offset;
+	Free0(my_para);
+	return ret;
 }
 
 
@@ -938,13 +948,18 @@ int blob_2_part_struct(void * blob,void * addr, void * struct_template,int flag)
 		.enterstruct=&blob_2_struct_enterstruct,
 		.proc_func=&proc_blob_2_struct,
 	};	
-	static struct part_deal_para my_para;
-	my_para.flag=flag;
-	my_para.offset=0;
-	ret= _convert_frame_func(addr,blob,struct_template,&blob_2_struct_ops,		&my_para);
+	struct part_deal_para * my_para;
+	my_para=Dalloc0(sizeof(*my_para),struct_template);
+	if(my_para==NULL)
+		return -ENOMEM;
+	my_para->flag=flag;
+	my_para->offset=0;
+	ret= _convert_frame_func(addr,blob,struct_template,&blob_2_struct_ops,my_para);
 	if(ret<0)
 		return ret;
-	return my_para.offset;
+	ret=my_para->offset;
+	Free0(my_para);
+	return ret;
 }
 // clone struct area
 int clone_struct_enterstruct(void * src, void * destr, void * elem,void * para)
@@ -1008,13 +1023,16 @@ int struct_clone(void * src, void * destr, void * struct_template)
 		.enterstruct=&clone_struct_enterstruct,
 		.proc_func=&proc_clone_struct,
 	};	
-	static struct default_para my_para;
-	my_para.offset=0;
+	struct default_para * my_para;
+	my_para=Dalloc0(sizeof(*my_para),struct_template);
+	my_para->offset=0;
 
-	ret = _convert_frame_func(src,destr,struct_template,&clone_struct_ops,		&my_para);
+	ret = _convert_frame_func(src,destr,struct_template,&clone_struct_ops,my_para);
 	if(ret<0)
 		return ret;
-	return my_para.offset;
+	ret=my_para->offset;
+	Free0(my_para);
+	return ret;
 }
 
 void * clone_struct(void * addr,void * struct_template)
@@ -1040,13 +1058,18 @@ int struct_part_clone(void * src,void *destr, void * struct_template,int flag)
 		.enterstruct=&clone_struct_enterstruct,
 		.proc_func=&proc_clone_struct,
 	};	
-	static struct part_deal_para my_para;
-	my_para.flag=flag;
-	my_para.offset=0;
-	ret= _convert_frame_func(destr,src,struct_template,&clone_struct_ops,		&my_para);
+	struct part_deal_para * my_para;
+	my_para=Dalloc0(sizeof(*my_para),struct_template);
+	if(my_para==NULL)
+		return -ENOMEM;
+	my_para->flag=flag;
+	my_para->offset=0;
+	ret= _convert_frame_func(destr,src,struct_template,&clone_struct_ops,my_para);
 	if(ret<0)
 		return ret;
-	return my_para.offset;
+	ret=my_para->offset;
+	Free0(my_para);
+	return ret;
 }
 
 // compare struct area
@@ -1113,10 +1136,14 @@ int struct_compare(void * src, void * destr, void * struct_template)
 		.enterstruct=&compare_struct_enterstruct,
 		.proc_func=&proc_compare_struct,
 	};	
-	static struct default_para my_para;
-	my_para.offset=0;
+	struct default_para * my_para;
+	my_para=Dalloc0(sizeof(*my_para),struct_template);
+	if(my_para==NULL)
+		return -ENOMEM;
+	my_para->offset=0;
 
-	ret = _convert_frame_func(src,destr,struct_template,&clone_struct_ops,		&my_para);
+	ret = _convert_frame_func(src,destr,struct_template,&clone_struct_ops,my_para);
+	Free0(my_para);
 	return ret;
 }
 
@@ -1130,11 +1157,17 @@ int struct_part_compare(void * src,void *destr, void * struct_template,int flag)
 		.enterstruct=&compare_struct_enterstruct,
 		.proc_func=&proc_compare_struct,
 	};	
-	static struct part_deal_para my_para;
-	my_para.flag=flag;
-	my_para.offset=0;
+	struct part_deal_para * my_para;
+	my_para=Dalloc0(sizeof(*my_para),struct_template);
+	if(my_para==NULL)
+		return -ENOMEM;
+	my_para->flag=flag;
+	my_para->offset=0;
 
-	ret = _convert_frame_func(src,destr,struct_template,&clone_struct_ops,		&my_para);
+	ret = _convert_frame_func(src,destr,struct_template,&clone_struct_ops,my_para);
+	if(ret<0)
+		return ret;
+	Free0(my_para);
 	return ret;
 }
 int struct_read_elem(char * name,void * addr, void * elem_data,void * struct_template)
@@ -1801,11 +1834,15 @@ int json_2_struct(void * root, void * addr, void * struct_template)
 		.exitstruct=&_jsonto_exitstruct,
 		.proc_func=&_jsonto_proc_func,
 	};	
-	static struct jsonto_para my_para;
-	my_para.json_node=root;
-	ret = _convert_frame_func(addr,root,struct_template,&json_2_struct_ops,		&my_para);
+	struct jsonto_para * my_para;
+	my_para=Dalloc0(sizeof(*my_para),struct_template);
+	if(my_para==NULL)
+		return -ENOMEM;
+	my_para->json_node=root;
+	ret = _convert_frame_func(addr,root,struct_template,&json_2_struct_ops,my_para);
 	if(ret<0)
 		return ret;
+	Free0(my_para);
 	return 0;
 }
 
@@ -1832,12 +1869,16 @@ int json_2_part_struct(void * root, void * addr, void * struct_template,int flag
 		.exitstruct=&_jsonto_exitstruct,
 		.proc_func=&_jsonto_proc_func,
 	};	
-	static struct part_jsonto_para my_para;
-	my_para.json_node=root;
-	my_para.flag=flag;
-	ret = _convert_frame_func(addr,root,struct_template,&json_2_part_struct_ops,		&my_para);
+	struct part_jsonto_para * my_para;
+	my_para=Dalloc0(sizeof(*my_para),struct_template);
+	if(my_para==NULL)
+		return -ENOMEM;
+	my_para->json_node=root;
+	my_para->flag=flag;
+	ret = _convert_frame_func(addr,root,struct_template,&json_2_part_struct_ops,my_para);
 	if(ret<0)
 		return ret;
+	Free0(my_para);
 	return 0;
 }
 
@@ -1932,12 +1973,16 @@ int json_marked_struct(void * root, void * struct_template,int flag)
 		.exitstruct=&_json_marked_exitstruct,
 		.proc_func=&_json_marked_procfunc,
 	};	
-	static struct json_marked_para my_para;
-	my_para.father_node=struct_template;
-	my_para.flag=flag;
-	ret = _convert_frame_func(NULL,root,struct_template,&json_marked_struct_ops,&my_para);
+	struct json_marked_para * my_para;
+	my_para=Dalloc0(sizeof(*my_para),struct_template);
+	if(my_para==NULL)
+		return -ENOMEM;
+	my_para->father_node=struct_template;
+	my_para->flag=flag;
+	ret = _convert_frame_func(NULL,root,struct_template,&json_marked_struct_ops,my_para);
 	if(ret<0)
 		return ret;
+	Free0(my_para);
 	return 0;
 }
 int struct_set_allflag(void * struct_template,int flag)
