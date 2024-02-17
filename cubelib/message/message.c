@@ -895,11 +895,8 @@ int message_output_clear_json(void * message, char * text)
 		}
 		else
 		{
-			deep_debug=1;
 			void * expand_template=memdb_clone_template(expand->type,
 				expand->subtype);
-			printf(" offset %d expand type %d expand subtype %d\n",offset,expand->type,expand->subtype);
-			deep_debug=0;
 			if(expand_template==NULL)
 			{
 				ret=struct_2_json(msg_box->pexpand[i],text+offset,msg_kits->expand_bin_template);
@@ -919,9 +916,7 @@ int message_output_clear_json(void * message, char * text)
 				Strcpy(text+offset,buffer);
 				offset+=Strlen(buffer);
 				msg_expand=(MSG_EXPAND *)msg_box->pexpand[i];
-				deep_debug=1;
 				ret=struct_2_json(msg_expand->expand,text+offset,expand_template);
-				deep_debug=0;
 				if(ret<0)
 				{
 					free_struct_template(expand_template);

@@ -62,8 +62,8 @@ int  _convert_frame_func (void *addr, void * data, void * struct_template,
 		if(ret<0)
 			return ret;
 	}
-	if(deep_debug)
-		printf("convert_frame_func:start para %p circle\n",para);
+//	if(deep_debug)
+//		printf("convert_frame_func:start para %p circle\n",para);
 
 
 	do{
@@ -73,15 +73,15 @@ int  _convert_frame_func (void *addr, void * data, void * struct_template,
 		{
 			if(curr_node==root_node)
 			{
-				if(deep_debug)
-					printf("convert_frame_func:finish curr_node %p circle\n",curr_node);
+//				if(deep_debug)
+//					printf("convert_frame_func:finish curr_node %p circle\n",curr_node);
 				break;
 			}
 			temp_node=curr_node;
 			curr_node=curr_node->parent;
 			curr_elem=&curr_node->elem_list[curr_node->temp_var];
-			if(deep_debug)
-				printf("convert_frame_func:upgrade temp_var %d curr_elem %p \n",curr_node->temp_var,curr_elem);
+//			if(deep_debug)
+//				printf("convert_frame_func:upgrade temp_var %d curr_elem %p \n",curr_node->temp_var,curr_elem);
 			curr_elem->index++;
 			if(funcs->exitstruct!=NULL)
 			{
@@ -117,8 +117,8 @@ int  _convert_frame_func (void *addr, void * data, void * struct_template,
 
    // deep debug start
    
-        if(deep_debug)
-            printf("convert_frame_func:elem name %s offset %d para_addr %p temp_var %d elem addr %p\n",curr_elem->elem_desc->name,curr_elem->offset,para,curr_node->temp_var,curr_elem); 
+  //      if(deep_debug)
+    //        printf("convert_frame_func:elem name %s offset %d para_addr %p temp_var %d elem addr %p\n",curr_elem->elem_desc->name,curr_elem->offset,para,curr_node->temp_var,curr_elem); 
     
    //deep debug end
 
@@ -458,8 +458,8 @@ int _clone_template_start(void * addr,void * data,void * elem, void * para)
 	clone_node->offset=source_node->offset;
 	clone_node->size=source_node->size;
 	clone_node->flag=source_node->flag;
-	if(deep_debug)
-		printf("_clone_template_start: para %p clone_node %p source_node %p reentry %d\n",para,my_para->clone_node,source_node,source_node->reentry_count);
+//	if(deep_debug)
+//		printf("_clone_template_start: para %p clone_node %p source_node %p reentry %d\n",para,my_para->clone_node,source_node,source_node->reentry_count);
 	return 0;
 }
 
@@ -1500,10 +1500,10 @@ int _tojson_start(void * addr, void * data,void *elem,void * para)
 	struct default_para * my_para=para;
 	char * json_str=data;
 	
-	if(deep_debug)
-	{
-		printf("_tojson_start:offset %d para addr %p str addr %p\n",my_para->offset,my_para,json_str);
-	}
+//	if(deep_debug)
+//	{
+//		printf("_tojson_start:offset %d para addr %p str addr %p\n",my_para->offset,my_para,json_str);
+//	}
 	
 	*json_str='{';
 	my_para->offset=1;
