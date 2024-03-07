@@ -11,10 +11,11 @@ enum alloc_type
     ALLOC_ERR
 };
 
-#define Pointer_Type_Mask  0xF000
-#define Pointer_Size_Mask  0x0FFF
-#define Pointer_Desc(pointer)   (*(UINT16 *)((BYTE *)pointer -2))
-#define Pointer_Type(pointer)   ((Pointer_Desc(pointer)&Pointer_Type_Mask)>>12)
+#define Pointer_Type_Mask  0xF0000000
+#define Pointer_Size_Mask  0x0FFFFFFF
+#define Pointer_Size_bits  28
+#define Pointer_Desc(pointer)   (*(UINT32 *)((BYTE *)pointer -4))
+#define Pointer_Type(pointer)   ((Pointer_Desc(pointer)&Pointer_Type_Mask)>>Pointer_Size_bits)
 #define Pointer_Size(pointer)   (Pointer_Desc(pointer)&Pointer_Size_Mask)
 
 typedef struct alloc_head

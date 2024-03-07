@@ -111,7 +111,7 @@ void * Talloc(int size)
     if(pointer==NULL)
         return NULL;
     *(UINT32 *)pointer=size;
-    *(UINT32 *)pointer|=ALLOC_TEMP<<12;
+    *(UINT32 *)pointer|=ALLOC_TEMP<<Pointer_Size_bits;
 
     return pointer+sizeof(UINT32);   
 
@@ -141,7 +141,7 @@ void * Salloc(int size)
     pointer=malloc(size+sizeof(UINT32));
     if(pointer==NULL)
     *(UINT32 *)pointer=size;
-    *(UINT32 *)pointer|=ALLOC_STATIC<<12;
+    *(UINT32 *)pointer|=ALLOC_STATIC<<Pointer_Size_bits;
 
     return pointer+sizeof(UINT32);   
 //	return general_alloc(ALLOC_STATIC,0,&static_struct,size);
@@ -172,7 +172,7 @@ void * Dalloc(int size,void * base)
         return NULL;
     *(void **)pointer=base;
     *(UINT32 *)(pointer+sizeof(void *))=size;
-    *(UINT32 *)(pointer+sizeof(void *))|=ALLOC_DYNAMIC<<12;
+    *(UINT32 *)(pointer+sizeof(void *))|=ALLOC_DYNAMIC<<Pointer_Size_bits;
 
     return pointer+sizeof(UINT32)+sizeof(void *);   
 }
@@ -209,7 +209,7 @@ void * Calloc(int size)
     if(pointer==NULL)
         return NULL;
     *(UINT32 *)pointer=size;
-    *(UINT32 *)pointer|=ALLOC_CACHE<<12;
+    *(UINT32 *)pointer|=ALLOC_CACHE<<Pointer_Size_bits;
 
     return pointer+sizeof(UINT32);   
 /*
@@ -272,22 +272,6 @@ int Free(void * pointer)
 			return -EINVAL;
 	}	
 	return 0;
-/*
-	struct alloc_head * mem_head=(struct alloc_head *)(pointer-sizeof(POINTER_LIST));
-	switch(mem_head->type)
-	{
-		case ALLOC_TEMP:
-			return TFree(pointer);
-		case ALLOC_STATIC:
-			return SFree(pointer);
-		case ALLOC_DYNAMIC:
-			return DFree(pointer);
-		case ALLOC_CACHE:
-			return CFree(pointer,mem_head->flag);
-		default:
-			return -EINVAL;
-	}	
-*/
 }
 
 int Free0(void * pointer)

@@ -779,7 +779,7 @@ int message_output_clear_json(void * message, char * text)
 	Strcpy(text,"{ \"HEAD\":");
 	offset=Strlen(text);
 
-	printf("offset start: %d\n",offset);
+	//printf("offset start: %d\n",offset);
 
 	if(msg_kits->head_template!=NULL)
 	{
@@ -812,13 +812,13 @@ int message_output_clear_json(void * message, char * text)
 		goto err;
 	}
 	offset+=ret;
-	printf("offset %d msg head %d\n",offset,ret);
+	//printf("offset %d msg head %d\n",offset,ret);
 	// output record text
 	Strcpy(buffer,",\"RECORD\":[");
 	ret=Strlen(buffer);
 	Strcpy(text+offset,buffer);
 	offset+=ret;	
-	printf("offset %d record ret %d\n",offset,ret);
+	//printf("offset %d record ret %d\n",offset,ret);
 
    	if((message_get_flag(message) & MSG_FLAG_CRYPT)
 		||(msg_box->record_template==NULL))
@@ -862,7 +862,7 @@ int message_output_clear_json(void * message, char * text)
 				goto err;
 			}
 			offset+=ret;
-			printf(" output %d record data offset %d ret %d\n",i,offset,ret);
+			//printf(" output %d record data offset %d ret %d\n",i,offset,ret);
 		}
 		free_struct_template(temp_template);
     	}
@@ -872,7 +872,7 @@ int message_output_clear_json(void * message, char * text)
 	offset+=Strlen(buffer);
 	for(i=0;i<msg_head->expand_num;i++)
 	{
-		printf(" output %d expand data offset \n",msg_head->expand_num,offset);
+		//printf(" output %d expand data offset \n",msg_head->expand_num,offset);
 		MSG_EXPAND * expand;
 		expand=msg_box->pexpand[i];
 		if(expand==NULL)
@@ -911,7 +911,7 @@ int message_output_clear_json(void * message, char * text)
 					goto err;
 				}
 				offset+=ret-1;
-				printf(" convert offset %d expand %d 's head to %d length string\n",offset,i,ret);
+				//printf(" convert offset %d expand %d 's head to %d length string\n",offset,i,ret);
 				Strcpy(buffer,",\"expand\":");
 				Strcpy(text+offset,buffer);
 				offset+=Strlen(buffer);
@@ -925,14 +925,14 @@ int message_output_clear_json(void * message, char * text)
 				offset+=ret;
 				text[offset++]='}';
 				text[offset]='\0';
-				printf(" convert offset %d to %d length string\n",offset,ret);
+				//printf(" convert offset %d to %d length string\n",offset,ret);
 				free_struct_template(expand_template);
 			}
 		}
 		text[offset++]=',';
 	}
 
-	printf(" current offset is %d\n",offset);
+//	printf(" current offset is %d\n",offset);
 	if(i!=0)
 		offset--;
 	Strcpy(buffer,"]}");
@@ -2413,7 +2413,7 @@ void * message_clone(void * message)
 				void * record=clone_struct(src_msg->precord[i],src_msg->record_template);
 				if(record==NULL)
 				{
-					printf("duplicate message's record error!\n");
+					printf("message_clone:duplicate message's record error!\n");
 					message_free(new_msg);
 					return NULL;	
 				}
@@ -2444,7 +2444,7 @@ void * message_clone(void * message)
 			ret=message_add_expand_data(new_msg,old_expand->type,old_expand->subtype,old_expand->expand);
 			if(ret<0)
 			{
-				printf("duplicate message's expand error!\n");
+				printf("message_clone:duplicate message's expand error!\n");
 				message_free(new_msg);
 				return NULL;	
 			}
@@ -2452,7 +2452,7 @@ void * message_clone(void * message)
 		}
 		else if(old_expand=(MSG_EXPAND *)src_msg->expand[i])
 		{
-			printf("need to duplicate the bin expand value!,not finished!\n");
+			printf("message_clone:need to duplicate the bin expand value!,not finished!\n");
 		}
 		else
 		{
