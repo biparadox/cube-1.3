@@ -498,6 +498,7 @@ int read_record_file(char * record_file)
 	int fd;
 	int ret;
 	void * record_template;
+	DB_RECORD * db_record;
 	int count=0;
 	fd=open(record_file,O_RDONLY);
 	if(fd<0)
@@ -555,8 +556,8 @@ int read_record_file(char * record_file)
 				void * temp_node=json_find_elem("name",record_node);
 				if(temp_node!=NULL)
 					record_name=json_get_valuestr(temp_node);
-				ret=memdb_store(record,type,subtype,record_name);
-				if(ret>=0)
+				db_record=memdb_store(record,type,subtype,record_name);
+				if(db_record!=NULL)
 				{
 					record=NULL;
 					count++;
