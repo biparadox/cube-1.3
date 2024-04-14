@@ -96,6 +96,10 @@ int proc_get_uuid(BYTE * uuid);
 
 // ex_module func end
 // struct func start
+
+int struct_get_elem_no(void * struct_template);
+void * struct_get_elem(void * struct_template,int elem_no);
+
 int struct_size(void * struct_template);
 int struct_2_blob(void * addr, void * blob, void * struct_template);
 int struct_2_part_blob(void * addr, void * blob, void * struct_template, int flag);
@@ -109,6 +113,8 @@ int struct_compare(void * src, void * destr, void * struct_template);
 int struct_part_compare(void * src, void * destr, void * struct_template,int flag);
 int struct_read_elem(char * name, void * addr, void * elem_data, void * struct_template);
 int struct_write_elem(char * name, void * addr, void * elem_data, void * struct_template);
+int struct_read_elem_byno(int elem_no, void * addr, void * elem_data, void * struct_template);
+int struct_write_elem_byno(int elem_no, void * addr, void * elem_data, void * struct_template);
 int struct_read_elem_text(char * name, void * addr, char * text, void * struct_template);
 int struct_write_elem_text(char * name, void * addr, char * string, void * struct_template);
 char * dup_str(char * src, int size);

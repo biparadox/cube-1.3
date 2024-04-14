@@ -59,6 +59,15 @@ enum cube_struct_elem_attr
 	CUBE_ELEM_FLAG_TEMP=0x1000,
 };
 
+typedef struct struct_elem_attr
+{
+	char * name;  // this element's name
+	enum cube_struct_elem_type type;  // this element's type
+	int size;     // the size of this elem(only in fixed state	
+	void * ref;   // a pointer to the reference of this elem
+	void * def;   
+}__attribute__((packed)) ELEM_ATTR;
+
 // struct define end
 // memdb define start
 enum base_cube_db

@@ -1181,7 +1181,7 @@ int struct_get_elem_no(void * struct_template)
 		return -EINVAL;
 	return curr_node->elem_no;
 }
-ELEM_ATTR * struct_get_elem(void * struct_template,int elem_no)
+void * struct_get_elem(void * struct_template,int elem_no)
 {
 	STRUCT_NODE * curr_node=struct_template;
 	int ret;

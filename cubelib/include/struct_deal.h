@@ -112,7 +112,7 @@ typedef struct elem_convert_ops
 int struct_deal_init(void );
 
 int struct_get_elem_no(void * struct_template);
-ELEM_ATTR * struct_get_elem(void * struct_template,int elem_no);
+void * struct_get_elem(void * struct_template,int elem_no);
 
 // alloc and free the struct
 int get_fixed_elemsize(int type);
