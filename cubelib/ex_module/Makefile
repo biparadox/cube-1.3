@@ -4,7 +4,7 @@ CC=gcc
 CCP=g++
 STRUCTOBJ= ex_module.o sec_msgqueue.o ex_module_slot.o
 LIBNAME=exmodule
-DEPENDLIB= -lmessage -lmemdb -lbasefunc -lcrypto_func -lstruct -ljson -lalloc -lstring -lpthread
+DEPENDLIB= -lsys_func -lmessage -lmemdb -lbasefunc -lcrypto_func -lstruct -ljson -lalloc -lstring -lpthread 
 
 main: ../lib/lib$(LIBNAME).so  ../lib/lib$(LIBNAME).a test_main
 test_main: test_main.c ../lib/lib$(LIBNAME).so 
