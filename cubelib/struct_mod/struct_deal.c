@@ -1170,6 +1170,28 @@ int struct_part_compare(void * src,void *destr, void * struct_template,int flag)
 	Free0(my_para);
 	return ret;
 }
+
+int struct_get_elem_no(void * struct_template)
+{
+	STRUCT_NODE * curr_node=struct_template;
+	ELEM_OPS * elem_ops;
+	int ret;
+
+	if(curr_node == NULL)
+		return -EINVAL;
+	return curr_node->elem_no;
+}
+void * struct_get_elem(void * struct_template,int elem_no)
+{
+	STRUCT_NODE * curr_node=struct_template;
+	int ret;
+	if( (elem_no <0) || (elem_no >=curr_node->elem_no))
+	       return -EINVAL;
+		
+	struct elem_template * curr_elem= &curr_node->struct_desc[elem_no];
+	return curr_elem;
+}
+
 int struct_read_elem(char * name,void * addr, void * elem_data,void * struct_template)
 {
 	STRUCT_NODE * curr_node=struct_template;
@@ -1181,6 +1203,23 @@ int struct_read_elem(char * name,void * addr, void * elem_data,void * struct_tem
 	
 	return _elem_get_bin_value(addr,elem_data,curr_elem);
 }
+int struct_read_elem_byno(int elem_no,void * addr, void * elem_data,void * struct_template)
+{
+	STRUCT_NODE * curr_node=struct_template;
+	ELEM_OPS * elem_ops;
+	void * elem_addr;
+	int ret;
+	if( (elem_no <0) || (elem_no >=curr_node->elem_no))
+	       return -EINVAL;
+		
+	struct elem_template * curr_elem= &curr_node->struct_desc[elem_no];
+	if(curr_elem==NULL)
+		return -EINVAL;
+	elem_addr=addr+_elem_get_offset(curr_elem);
+	
+	return _elem_get_bin_value(elem_addr,elem_data,curr_elem);
+}
+
 
 int struct_read_elem_text(char * name,void * addr, char * text,void * struct_template)
 {
@@ -1214,6 +1253,21 @@ int struct_write_elem_text(char * name,void * addr, char * text,void * struct_te
 		return -EINVAL;
 	return _elem_set_text_value(addr,text,curr_elem);
 }
+int struct_write_elem_byno(int elem_no,void * addr, void * elem_data,void * struct_template)
+{
+	STRUCT_NODE * curr_node=struct_template;
+	int ret;
+	void * elem_addr;
+	if( (elem_no <0) || (elem_no >=curr_node->elem_no))
+	       return -EINVAL;
+		
+	struct elem_template * curr_elem= &curr_node->struct_desc[elem_no];
+	if(curr_elem==NULL)
+		return -EINVAL;
+	elem_addr=addr+_elem_get_offset(curr_elem);
+	return _elem_set_bin_value(elem_addr,elem_data,curr_elem);
+}
+
 int _struct_get_elem_value(char * name, void * addr,void * struct_template)
 {
 	char elem_data[64];

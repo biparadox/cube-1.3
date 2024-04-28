@@ -1,0 +1,121 @@
+{
+	"head":
+	{
+		"name":"cube_audit_type",
+		"type":"TYPELIST"
+	},
+	"record":
+	{
+		"elem_no":1,
+		"elemlist":
+		[
+			"CUBE_AUDIT=0x251",
+		]
+	}
+}
+{
+	"head":
+	{
+		"name":"cube_audit_subtypelist",
+		"type":"SUBTYPELIST"
+	},
+	"record":
+	{
+		"type":"CUBE_AUDIT",
+		"elem_no":4,
+		"elemlist":
+		[
+			"ROUTE_SELECT=0x01",
+			"MODULE_SELECT",
+			"ROUTE_FILTER=0x20",
+			"MODULE_FILTER",
+		]
+	}
+}
+{
+	"head":
+	{
+		"name":"audit_filter_op",
+		"type":"NAMELIST"
+	},
+	"record":
+	{
+		"elem_no":3,
+		"elemlist":
+		[
+			"FILTER_SELALL=0x01",
+			"FILTER_EXCEPT",
+			"FILTER_SELSEQ"
+		]
+	}
+}
+{
+	"head":
+	{
+		"name":"cube_audit_route_select",
+		"type":"RECORDTYPE"
+	},
+	"record":
+	{
+		"type":"CUBE_AUDIT",
+		"subtype":"ROUTE_SELECT",
+		"struct_desc":
+		{
+			"elem_desc":
+			[
+				{"name":"route_name","type":"STRING","size":32},
+				{"name":"filter_op","type":"ENUM","ref_name":"audit_filter_op"},
+				{"name":"seq_num","type":"INT"},
+			]
+		}
+	}
+}
+{
+	"head":
+	{
+		"name":"cube_audit_module_select",
+		"type":"RECORDTYPE"
+	},
+	"record":
+	{
+		"type":"CUBE_AUDIT",
+		"subtype":"MODULE_SELECT",
+		"struct_desc":
+		{
+			"elem_desc":
+			[
+				{"name":"sender_name","type":"STRING","size":32},
+				{"name":"receiver_name","type":"STRING","size":32},
+				{"name":"filter_op","type":"ENUM","ref_name":"audit_filter_op"},
+			]
+		}
+	}
+}
+{
+	"head":
+	{
+		"name":"cube_audit_route_filter",
+		"type":"RECORDTYPE"
+	},
+	"record":
+	{
+		"type":"CUBE_AUDIT",
+		"subtype":"ROUTE_FILTER",
+		"struct_desc":
+		{
+			"elem_desc":
+			[
+				{"name":"route_name","type":"STRING","size":32},
+				{"name":"filter_op","type":"ENUM","ref_name":"audit_filter_op"},
+				{"name":"seq_num","type":"INT"},
+				{"name":"seq_counter","type":"INT"},
+				{"name":"match_uuid","type":"UUID"}
+			]
+		}
+		"index":
+		{
+			"flag":"INDEX",
+			"elemlist":"route_name,filter_op,seq_num"
+		}
+	}	
+}

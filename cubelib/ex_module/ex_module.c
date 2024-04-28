@@ -18,6 +18,7 @@
 #include "struct_deal.h"
 //#include "connector.h"
 #include "ex_module.h"
+#include "sys_func.h"
 
 #include "slot_list.h"
 
@@ -719,6 +720,7 @@ int proc_share_data_getvalue(char * valuename,void * value)
 	int ret;
 	
 	ret=struct_read_elem(valuename,main_module->context,value,main_module->context_template);
+	print_cubeaudit("proc_share_data_getvalue: get %s value %s",valuename,value);
 	return ret;
 
 }
@@ -731,6 +733,7 @@ int proc_share_data_setvalue(char * valuename,void * value)
 	context=main_module->context;
 	if(context==NULL)
 		return -1;
+	print_cubeaudit("proc_share_data_setvalue: set %s to %s",valuename,value);
 	int ret;
 	ret=struct_write_elem(valuename,main_module->context,value,main_module->context_template);
 	return ret;

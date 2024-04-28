@@ -111,6 +111,9 @@ typedef struct elem_convert_ops
 
 int struct_deal_init(void );
 
+int struct_get_elem_no(void * struct_template);
+void * struct_get_elem(void * struct_template,int elem_no);
+
 // alloc and free the struct
 int get_fixed_elemsize(int type);
 int iselemneeddef(int type);
@@ -148,6 +151,8 @@ int struct_part_compare(void * src, void * destr, void * struct_template,int fla
 
 int struct_read_elem(char * name, void * addr, void * elem_data, void * struct_template);
 int struct_write_elem(char * name, void * addr, void * elem_data, void * struct_template);
+int struct_read_elem_byno(int elem_no, void * addr, void * elem_data, void * struct_template);
+int struct_write_elem_byno(int elem_no, void * addr, void * elem_data, void * struct_template);
 int struct_read_elem_text(char * name, void * addr, char * text, void * struct_template);
 int struct_write_elem_text(char * name, void * addr, char * string, void * struct_template);
 void * get_desc_from_template(void * struct_template);
