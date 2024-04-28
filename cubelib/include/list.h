@@ -77,4 +77,9 @@ static __inline__ void List_del(struct List_head * head)
 		return;
 
 }
+
+#define list_for_each_safe(pos, n, head) \
+    for (pos = (head)->next, n = pos->next; pos != (head); \
+        pos = n, n = pos->next)
+
 #endif

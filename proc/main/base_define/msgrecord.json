@@ -1,1 +1,62 @@
-../../../cubelib/dispatch/msgrecord.json
+{
+	"head":
+	{
+		"name":"conn_sync",
+		"type":"RECORDTYPE",
+	},
+	"record":
+	{
+		"type":"MESSAGE",
+		"subtype":"CONN_SYNI",
+		"struct_desc":
+		{
+			"elem_desc":
+			[
+				{"name":"uuid","type":"UUID"},
+				{"name":"server_name","type":"ESTRING","size":256},
+				{"name":"service","type":"ESTRING","size":64},
+				{"name":"server_addr","type":"ESTRING","size":256},
+				{"name":"flags","type":"INT"},
+				{"name":"nonce","type":"BINDATA","size":32},
+			]
+		},
+		"index":
+		{
+			"flag":"INDEX",
+			"elemlist":"server_name,service,server_addr"
+		}
+	}	
+}
+{
+	"head":
+	{
+		"name":"conn_acki",
+		"type":"RECORDTYPE",
+	},
+	"record":
+	{
+		"type":"MESSAGE",
+		"subtype":"CONN_ACKI",
+		"struct_desc":
+		{
+			"elem_desc":
+			[
+				{"name":"uuid","type":"UUID"},
+				{"name":"client_name","type":"ESTRING","size":256},
+				{"name":"client_proc","type":"ESTRING","size":64},
+				{"name":"client_addr","type":"ESTRING","size":256},
+				{"name":"server_uuid","type":"UUID"},
+				{"name":"server_name","type":"ESTRING","size":256},
+				{"name":"service","type":"ESTRING","size":64},
+				{"name":"server_addr","type":"ESTRING","size":256},
+				{"name":"flags","type":"INT"},
+				{"name":"nonce","type":"STRING","size":32},
+			]
+		},
+		"index":
+		{
+			"flag":"INDEX",
+			"elemlist":"client_name,client_proc,client_addr,server_name,service,server_addr"
+		}
+	}	
+}

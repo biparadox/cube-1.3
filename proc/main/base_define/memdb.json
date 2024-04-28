@@ -1,1 +1,73 @@
-../../../cubelib/memdb/memdb.json
+{
+	"head":
+	{
+		"name":"memdb_uuid_head",
+		"type":"RECORDTYPE",
+	},
+	"record":
+	{
+		"type":"MEMDB",
+		"subtype":"UUID_HEAD",
+		"struct_desc":
+		{
+			"elem_desc":
+			[
+				{"name":"uuid","type":"UUID"},
+				{"name":"name","type":"STRING","size":32},
+				{"name":"type","type":"TYPE"},
+				{"name":"subtype","type":"SUBTYPE","def":"type"}
+			]
+		}
+		"index":
+		{
+			"flag":"INDEX",
+			"elemlist":"uuid,name,type,subtype"
+		}
+	}	
+}
+{
+	"head":
+	{
+		"name":"memdb_index_elem",
+		"type":"RECORDTYPE"
+	},
+	"record":
+	{
+		"type":"MEMDB",
+		"subtype":"INDEX_ELEM",
+		"struct_desc":
+		{
+			"elem_desc":
+			[
+				{"name":"head","type":"SUBSTRUCT","ref_name":"memdb_uuid_head"},
+				{"name":"flag","type":"INT"},
+				{"name":"uuid","type":"UUID"}
+			]
+		}
+		"index":
+		{
+			"flag":"INDEX",
+			"elemlist":"head,flag,uuid"
+		}
+	}	
+}
+{
+	"head":
+	{
+		"name":"uuid_array_record",
+		"type":"RECORDTYPE"
+	},
+	"record":
+	{
+		"type":"RECORD",
+		"subtype":"UUID_ARRAY",
+		"struct_desc":
+		{
+			"elem_desc":
+			[
+				{"name":"record_num","type":"INT"},
+				{"name":"trace_record","type":"DEFUUIDARRAY","def":"record_num"}
+			]
+		}
+	}	
+}

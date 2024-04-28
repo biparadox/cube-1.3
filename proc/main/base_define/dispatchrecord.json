@@ -1,1 +1,72 @@
-../../../cubelib/dispatch/dispatchrecord.json
+{
+	"head":
+	{
+		"name":"dispatch_policy_head",
+		"type":"RECORDTYPE"
+	},
+	"record":
+	{
+		"type":"DISPATCH",
+		"subtype":"POLICY_HEAD",
+		"struct_desc":
+		{
+			"elem_desc":
+			[
+				{"name":"name","type":"ESTRING"},
+				{"name":"state","type":"ENUM","ref_name":"dispatch_policy_state"},
+				{"name":"type","type":"ENUM","ref_name":"message_flow_type"},
+				{"name":"sender","type":"STRING","size":32},
+				{"name":"newname","type":"ESTRING"},
+				{"name":"ljump","type":"INT"},
+				{"name":"rjump","type":"INT"}
+			]
+		},
+		"index":
+		{
+			"flag":"INDEX",
+			"elemlist":"name,state,type,sender,newname,ljump,rjump"
+		}
+	}	
+}
+{
+	"head":
+	{
+		"name":"dispatch_match_head",
+		"type":"RECORDTYPE"
+	},
+	"record":
+	{
+		"type":"DISPATCH",
+		"subtype":"MATCH_HEAD",
+		"struct_desc":
+		{
+			"elem_desc":
+			[
+				{"name":"op","type":"ENUM","ref_name":"match_op_type"},
+				{"name":"area","type":"ENUM","ref_name":"message_area_type"},
+				{"name":"type","type":"TYPE"},
+				{"name":"subtype","type":"SUBTYPE","def":"type"}
+			]
+		}
+	}	
+}
+{
+	"head":
+	{
+		"name":"dispatch_router_rule",
+		"type":"RECORDTYPE"
+	},
+	"record":
+	{
+		"type":"DISPATCH",
+		"subtype":"ROUTE_RULE",
+		"struct_desc":
+		{
+			"elem_desc":
+			[
+				{"name":"target_type","type":"ENUM","ref_name":"route_target_type"},
+				{"name":"target_name","type":"ESTRING"}
+			]
+		}
+	}	
+}
