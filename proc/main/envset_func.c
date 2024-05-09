@@ -34,7 +34,7 @@ int envset_func(char * envset_file)
     int ret;
     int retval;
     int i,j;
-    char namebuffer[DIGEST_SIZE*4];
+    char namebuffer[DIGEST_SIZE*16];
 
     char * cube_path;
     char * ld_library_path;
@@ -90,7 +90,7 @@ int envset_func(char * envset_file)
 	    return -EINVAL;
     }			
 
-    offset=json_node_getvalue(define_elem,json_buffer,DIGEST_SIZE*4)+1;
+    offset=json_node_getvalue(define_elem,json_buffer,DIGEST_SIZE*8)+1;
     cube_path=json_buffer; 	
     offset++;	
 
@@ -98,12 +98,12 @@ int envset_func(char * envset_file)
     setenv("CUBE_BASE_DEFINE",namebuffer,1);
 
     // set CUBELIBPATH environment
-    Strncpy(namebuffer,cube_path,DIGEST_SIZE*3);
+    Strncpy(namebuffer,cube_path,DIGEST_SIZE*7);
     Strcat(namebuffer,"/cubelib");
     setenv("CUBELIBPATH",namebuffer,1);
 
     // set CUBESYSPATH environment
-    Strncpy(namebuffer,cube_path,DIGEST_SIZE*3);
+    Strncpy(namebuffer,cube_path,DIGEST_SIZE*7);
     Strcat(namebuffer,"/proc");
     setenv("CUBESYSPATH",namebuffer,1);
 
@@ -111,12 +111,12 @@ int envset_func(char * envset_file)
     define_elem=json_find_elem("CUBE_DEFINE_PATH",define_node);
     if(define_elem==NULL)
     {	
-	    Strncpy(json_buffer+offset,cube_path,DIGEST_SIZE*3);
+	    Strncpy(json_buffer+offset,cube_path,DIGEST_SIZE*7);
 	    Strcat(json_buffer+offset,"/proc/define");
     }
     else
     {
-	    ret=json_node_getvalue(define_elem,json_buffer+offset,DIGEST_SIZE*4);
+	    ret=json_node_getvalue(define_elem,json_buffer+offset,DIGEST_SIZE*16);
 	    if(ret<=0)
 		    return -EINVAL;
     }
@@ -129,13 +129,13 @@ int envset_func(char * envset_file)
     define_elem=json_find_elem("CUBE_SYS_PLUGIN",define_node);
     if(define_elem==NULL)
     {	
-	    Strncpy(namebuffer,cube_path,DIGEST_SIZE*3);
+	    Strncpy(namebuffer,cube_path,DIGEST_SIZE*7);
 	    Strcat(namebuffer,"/proc/plugin");
 	    setenv("CUBE_SYS_PLUGIN",namebuffer,1);
     }
     else
     {
-	    ret=json_node_getvalue(define_elem,namebuffer,DIGEST_SIZE*4);
+	    ret=json_node_getvalue(define_elem,namebuffer,DIGEST_SIZE*16);
 	    if(ret<=0)
 		    return -EINVAL;
 	    setenv("CUBE_SYS_PLUGIN",namebuffer,1);
@@ -145,13 +145,13 @@ int envset_func(char * envset_file)
     define_elem=json_find_elem("CUBE_BASE_DEFINE",define_node);
     if(define_elem==NULL)
     {	
-	    Strncpy(namebuffer,cube_path,DIGEST_SIZE*3);
+	    Strncpy(namebuffer,cube_path,DIGEST_SIZE*7);
 	    Strcat(namebuffer,"/proc/main/base_define");
 	    setenv("CUBE_BASE_DEFINE",namebuffer,1);
     }
     else
     {
-	    ret=json_node_getvalue(define_elem,namebuffer,DIGEST_SIZE*4);
+	    ret=json_node_getvalue(define_elem,namebuffer,DIGEST_SIZE*8);
 	    if(ret<=0)
 		    return -EINVAL;
 	    setenv("CUBE_BASE_DEFINE",namebuffer,1);
@@ -193,7 +193,7 @@ int envset_func(char * envset_file)
 	else
 	{
 		app_path=instance_buffer+instance_offset;
-    		ret=json_node_getvalue(define_elem,app_path,DIGEST_SIZE*4);
+    		ret=json_node_getvalue(define_elem,app_path,DIGEST_SIZE*16);
 		if(ret<=0)
 		{
 			print_cubeerr("CUBE_APP_PATH format error!\n");
@@ -210,7 +210,7 @@ int envset_func(char * envset_file)
 		print_cubeerr("error format! without instance name!\n");
 		return -EINVAL;
     	}
-   	ret=json_node_getvalue(define_elem,namebuffer,DIGEST_SIZE*4);
+   	ret=json_node_getvalue(define_elem,namebuffer,DIGEST_SIZE*16);
 	if(ret<=0)
 	{
 		print_cubeerr("INSTANCE format error!\n");
@@ -238,7 +238,7 @@ int envset_func(char * envset_file)
     		}
 		else
 		{
-   			ret=json_node_getvalue(define_elem,namebuffer,DIGEST_SIZE*4);
+   			ret=json_node_getvalue(define_elem,namebuffer,DIGEST_SIZE*16);
 			if(ret<=0)
 			{
 				print_cubeerr("CUBE_APP_PLUGIN format error!\n");
@@ -263,7 +263,7 @@ int envset_func(char * envset_file)
     		}
 		else
 		{
-   			ret=json_node_getvalue(define_elem,namebuffer,DIGEST_SIZE*4);
+   			ret=json_node_getvalue(define_elem,namebuffer,DIGEST_SIZE*16);
 			if(ret<=0)
 			{
 				print_cubeerr("CUBE_DEFINE_PATH format error!\n");
@@ -291,7 +291,7 @@ int envset_func(char * envset_file)
     		}
 		else
 		{
-   			ret=json_node_getvalue(define_elem,namebuffer,DIGEST_SIZE*4);
+   			ret=json_node_getvalue(define_elem,namebuffer,DIGEST_SIZE*16);
 			if(ret<=0)
 			{
 				print_cubeerr("CUBE_APP_LIB format error!\n");
@@ -316,7 +316,7 @@ int envset_func(char * envset_file)
 	}
 	else
     	{	
-	    ret=json_node_getvalue(define_elem,instance_buffer+instance_offset,DIGEST_SIZE*4);
+	    ret=json_node_getvalue(define_elem,instance_buffer+instance_offset,DIGEST_SIZE*16);
 	    if(ret<=0)
 		    return -EINVAL;
 	    setenv("CUBE_OUTPUT",instance_buffer+instance_offset,1);

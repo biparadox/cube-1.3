@@ -1,7 +1,7 @@
 {
 	"head":
 	{
-		"name":"cube_audit_type",
+		"name":"cube_desc_record_type",
 		"type":"TYPELIST"
 	},
 	"record":
@@ -9,63 +9,51 @@
 		"elem_no":1,
 		"elemlist":
 		[
-			"CUBE_AUDIT=0x251",
+			"CUBE_DESC_RECORD=0x201",
 		]
 	}
 }
 {
 	"head":
 	{
-		"name":"cube_audit_subtypelist",
+		"name":"cube_desc_record_subtype",
 		"type":"SUBTYPELIST"
 	},
 	"record":
 	{
-		"type":"CUBE_AUDIT",
-		"elem_no":4,
+		"elem_no":8,
 		"elemlist":
 		[
-			"ROUTE_SELECT=0x01",
-			"MODULE_SELECT",
-			"ROUTE_FILTER=0x20",
-			"MODULE_FILTER",
+			"NAMEELEM",
+			"NAMELIST",
+			"ENUM",
+			"FLAG",
+			"TYPE",
+			"SUBTYPE",
+			"RECORDELEM",
+			"RECORD"
 		]
 	}
 }
 {
 	"head":
 	{
-		"name":"audit_filter_op",
-		"type":"NAMELIST"
-	},
-	"record":
-	{
-		"elem_no":3,
-		"elemlist":
-		[
-			"FILTER_SELALL=0x01",
-			"FILTER_EXCEPT",
-			"FILTER_SELSEQ"
-		]
-	}
-}
-{
-	"head":
-	{
-		"name":"cube_audit_route_select",
+		"name":"cube_desc_record_nameelem",
 		"type":"RECORDTYPE"
 	},
 	"record":
 	{
-		"type":"CUBE_AUDIT",
-		"subtype":"ROUTE_SELECT",
+		"type":"CUBE_DESC_RECORD",
+		"subtype":"NAMEELEM",
 		"struct_desc":
 		{
 			"elem_desc":
 			[
-				{"name":"route_name","type":"STRING","size":32},
-				{"name":"filter_op","type":"ENUM","ref_name":"audit_filter_op"},
-				{"name":"seq_num","type":"INT"},
+				{"name":"name","type":"STRING","size":32},
+				{"name":"struct_uuid","type":"UUID"},
+				{"name":"struct_type","type":"ENUM","ref_name":"basic_record_namelist"},
+				{"name":"elem_type","type":"ENUM","ref_name":"elem_namelist"},
+				{"name":"value","type":"INT"},
 			]
 		}
 	}
@@ -73,20 +61,20 @@
 {
 	"head":
 	{
-		"name":"cube_audit_module_select",
+		"name":"cube_desc_record_namelist",
 		"type":"RECORDTYPE"
 	},
 	"record":
 	{
-		"type":"CUBE_AUDIT",
-		"subtype":"MODULE_SELECT",
+		"type":"CUBE_DESC_RECORD",
+		"subtype":"NAMELIST",
 		"struct_desc":
 		{
 			"elem_desc":
 			[
-				{"name":"sender_name","type":"STRING","size":32},
-				{"name":"receiver_name","type":"STRING","size":32},
-				{"name":"filter_op","type":"ENUM","ref_name":"audit_filter_op"},
+				{"name":"name","type":"STRING","size":32},
+				{"name":"struct_uuid","type":"UUID"},
+				{"name":"elem_no","type":"INT"}
 			]
 		}
 	}
