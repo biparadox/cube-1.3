@@ -1,1 +1,235 @@
-../../../cubelib/dispatch/base_msg.json
+{
+	"head":
+	{
+		"name":"base_msg",
+		"type":"RECORDTYPE"
+	},
+	"record":
+	{
+		"type":"MESSAGE",
+		"subtype":"BASE_MSG",
+		"struct_desc":
+		{
+			"elem_desc":
+			[
+				{"name":"message","type":"ESTRING"}
+			]
+		},
+		"index":
+		{
+			"flag":"INDEX",
+			"elemlist":"message"
+		}
+	}
+}
+{
+	"head":
+	{
+		"name":"uuid_record",
+		"type":"RECORDTYPE"
+	},
+	"record":
+	{
+		"type":"MESSAGE",
+		"subtype":"UUID_RECORD",
+		"struct_desc":
+		{
+			"elem_desc":
+			[
+				{"name":"uuid","type":"UUID"}
+			]
+		}
+	}
+}
+{
+	"head":
+	{
+		"name":"types",
+		"type":"RECORDTYPE"
+	},
+	"record":
+	{
+		"type":"MESSAGE",
+		"subtype":"TYPES",
+		"struct_desc":
+		{
+			"elem_desc":
+			[
+				{"name":"type","type":"TYPE"},
+				{"name":"subtype","type":"SUBTYPE","def":"type"}
+			]
+		}
+	}
+}
+{
+	"head":
+	{
+		"name":"message_ctrl_type",
+		"type":"NAMELIST"
+	},
+	"record":
+	{
+		"elem_no":6,
+		"elemlist":
+		[
+			"INIT=0x01",
+			"START=0x02",
+			"SLEEP=0x03",
+			"RESUME=0x04",
+			"STOP=0x05",
+			"EXIT=0x06",
+		]
+	}
+}
+{
+	"head":
+	{
+		"name":"ctrl_message",
+		"type":"RECORDTYPE"
+	},
+	"record":
+	{
+		"type":"MESSAGE",
+		"subtype":"CTRL",
+		"struct_desc":
+		{
+			"elem_desc":
+			[
+				{"name":"ctrl","type":"ENUM","ref_name":"message_ctrl_type"},
+				{"name":"name","type":"ESTRING"}
+			]
+		}
+	}
+}
+{
+	"head":
+	{
+		"name":"sized_bindata",
+		"type":"RECORDTYPE"
+	},
+	"record":
+	{
+		"type":"MESSAGE",
+		"subtype":"SIZED_BINDATA",
+		"struct_desc":
+		{
+			"elem_desc":
+			[
+				{"name":"size","type":"INT"},
+				{"name":"bindata","type":"DEFINE","def":"size"}
+			]
+		}
+	}
+}
+{
+	"head":
+	{
+		"name":"module_state",
+		"type":"RECORDTYPE"
+	},
+	"record":
+	{
+		"type":"MESSAGE",
+		"subtype":"MODULE_STATE",
+		"struct_desc":
+		{
+			"elem_desc":
+			[
+				{"name":"name","type":"STRING","size":32},
+				{"name":"state","type":"INT"}
+			]
+		}
+	}
+}
+{
+	"head":
+	{
+		"name":"base_number",
+		"type":"RECORDTYPE"
+	},
+	"record":
+	{
+		"type":"MESSAGE",
+		"subtype":"NUMBER",
+		"struct_desc":
+		{
+			"elem_desc":
+			[
+				{"name":"number","type":"INT"}
+			]
+		},
+		"index":
+		{
+			"flag":"INDEX",
+			"elemlist":"number"
+		}
+	}
+}
+{
+	"head":
+	{
+		"name":"record_instance_info",
+		"type":"RECORDTYPE"
+	},
+	"record":
+	{
+		"type":"MESSAGE",
+		"subtype":"INSTANCE_INFO",
+		"struct_desc":
+		{
+			"elem_desc":
+			[
+				{"name":"proc_name","type":"STRING","size":32},
+				{"name":"node_uuid","type":"UUID"},
+				{"name":"user_name","type":"STRING","size":32}
+			]
+		},
+		"index":
+		{
+			"flag":"INDEX",
+			"elemlist":"proc_name,node_uuid,user_name"
+		}
+	}
+}
+{
+	"head":
+	{
+		"name":"record_string_array",
+		"type":"RECORDTYPE"
+	},
+	"record":
+	{
+		"type":"MESSAGE",
+		"subtype":"STRING_ARRAY",
+		"struct_desc":
+		{
+			"elem_desc":
+			[
+				{"name":"num","type":"INT"},
+				{"name":"strings","type":"DEFSTRARRAY","size":32,"def":"num"}
+			]
+		}
+	}
+}
+{
+	"head":
+	{
+		"name":"record_virtual_node",
+		"type":"RECORDTYPE"
+	},
+	"record":
+	{
+		"type":"MESSAGE",
+		"subtype":"VIRTUAL_NODE",
+		"struct_desc":
+		{
+			"elem_desc":
+			[
+				{"name":"virt_type","type":"INT"},
+				{"name":"node_name","type":"STRING","size":32},
+                {"name":"domain","type":"STRING","size":32},
+                {"name":"node_uuid","type":"UUID"}
+			]
+		}
+	}
+}

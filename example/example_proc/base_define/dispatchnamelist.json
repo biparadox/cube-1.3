@@ -1,1 +1,82 @@
-../../../cubelib/dispatch/dispatchnamelist.json
+{
+	"head":
+	{
+		"name":"match_op_type",
+		"type":"NAMELIST"
+	},
+	"record":
+	{
+		"elem_no":5,
+		"elemlist":
+		[
+			"AND=0x01",
+			"OR",
+			"NOT",
+			"ORNOT",
+			"ERROR"
+		]
+	}
+}
+{
+	"head":
+	{
+		"name":"message_area_type",
+		"type":"NAMELIST"
+	},
+	"record":
+	{
+		"elem_no":5,
+		"elemlist":
+		[
+			"NOAREA=0x01",
+			"HEAD=0x02",
+			"RECORD=0x04",
+			"EXPAND=0x08",
+			"ERR=0xFF"
+		]
+	}
+}
+{
+	"head":
+	{
+		"name":"route_target_type",
+		"type":"NAMELIST"
+	},
+	"record":
+	{
+		"elem_no":9,
+		"elemlist":
+		[
+			"LOCAL",
+			"NAME=0x02",
+			"UUID=0x04",
+			"CONN=0x08",
+			"RECORD=0x10",
+			"EXPAND=0x20",
+			"CHANNEL=0x40",
+			"PORT=0x80",
+			"MIXUUID=0x100",
+			"FINISH=0x1000",
+			"ERROR=0xFFFF"
+		]
+	}
+}
+{
+	"head":
+	{
+		"name":"dispatch_policy_state",
+		"type":"NAMELIST"
+	},
+	"record":
+	{
+		"elem_no":5,
+		"elemlist":
+		[
+			"OPEN=0x01",
+			"CLOSE",
+			"WAIT",
+			"TEST",
+			"IGNORE"
+		]
+	}
+}

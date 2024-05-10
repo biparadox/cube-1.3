@@ -1,1 +1,135 @@
-../../../cubelib/dispatch/subtypelist.json
+{
+	"head":
+	{
+		"name":"subtypelist_memdb",
+		"type":"SUBTYPELIST"
+	},
+	"record":
+	{
+		"type":"MEMDB",
+		"elem_no":2,
+		"elemlist":
+		[
+			"UUID_HEAD=0x01",
+			"INDEX_ELEM"
+		]
+	}
+}
+{
+	"head":
+	{
+		"name":"subtype_record",
+		"type":"SUBTYPELIST"
+	},
+	"record":
+	{
+		"type":"RECORD",
+		"elem_no":4,
+		"elemlist":
+		[
+			"UUID=0x01",
+			"UUID_ARRAY",
+			"STRING",
+			"TYPES"
+		]
+	}
+}
+{
+	"head":
+	{
+		"name":"message_subtypelist",
+		"type":"SUBTYPELIST"
+	},
+	"record":
+	{
+		"type":"MESSAGE",
+		"elem_no":16,
+		"elemlist":
+		[
+			"HEAD=0x01",
+			"EXPAND",
+			"EXPAND_HEAD",
+			"CONN_SYNI",
+			"CONN_ACKI",
+			"BASE_MSG",
+			"UUID_RECORD",
+			"CTRL",
+			"TYPES",
+			"SIZED_BINDATA",
+			"MODULE_STATE",
+			"NUMBER",
+			"INSTANCE_INFO",
+			"STRING_ARRAY",
+            "VIRTUAL_NODE",
+			"NODEFINE_HEAD=0x100"
+		]
+	}
+}
+{
+	"head":
+	{
+		"name":"message_expand_subtypelist",
+		"type":"SUBTYPELIST"
+	},
+	"record":
+	{
+		"type":"MSG_EXPAND",
+		"elem_no":3,
+		"elemlist":
+		[
+			"FLOW_TRACE=0x01",
+			"ASPECT_POINT",
+			"ROUTE_RECORD"
+		]
+	}
+}
+{
+	"head":
+	{
+		"name":"tube_subtypelist",
+		"type":"SUBTYPELIST"
+	},
+	"record":
+	{
+		"type":"DISPATCH",
+		"elem_no":3,
+		"elemlist":
+		[
+			"POLICY_HEAD=0x01",
+			"MATCH_HEAD",
+			"ROUTE_RULE"
+		]
+	}
+}
+{
+	"head":
+	{
+		"name":"exmodule_subtypelist",
+		"type":"SUBTYPELIST"
+	},
+	"record":
+	{
+		"type":"EXMODULE",
+		"elem_no":1,
+		"elemlist":
+		[
+			"LIB_PARA=0x01"
+		]
+	}
+}
+{
+	"head":
+	{
+		"name":"sys_conn_subtypelist",
+		"type":"SUBTYPELIST"
+	},
+	"record":
+	{
+		"type":"SYS_CONN",
+		"elem_no":1,
+		"elemlist":
+		[
+			"PEER_INFO"
+		]
+	}
+}

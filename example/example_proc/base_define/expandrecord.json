@@ -1,1 +1,67 @@
-../../../cubelib/dispatch/expandrecord.json
+{
+	"head":
+	{
+		"name":"expand_flow_trace",
+		"type":"RECORDTYPE"
+	},
+	"record":
+	{
+		"type":"MSG_EXPAND",
+		"subtype":"FLOW_TRACE",
+		"struct_desc":
+		{
+			"elem_desc":
+			[
+				{"name":"record_num","type":"INT"},
+				{"name":"trace_record","type":"DEFUUIDARRAY","def":"record_num"}
+			]
+		}
+	}	
+}
+{
+	"head":
+	{
+		"name":"expand_aspect_point",
+		"type":"RECORDTYPE",
+	},
+	"record":
+	{
+		"type":"MSG_EXPAND",
+		"subtype":"ASPECT_POINT",
+		"struct_desc":
+		{
+			"elem_desc":
+			[
+				{"name":"record_num","type":"INT"},
+				{"name":"aspect_proc","type":"DEFUUIDARRAY","def":"record_num"},
+				{"name":"aspect_point","type":"DEFUUIDARRAY","def":"record_num"}
+			]
+		}
+	}	
+}
+{
+	"head":
+	{
+		"name":"expand_route_record",
+		"type":"RECORDTYPE"
+	},
+	"record":
+	{
+		"type":"MSG_EXPAND",
+		"subtype":"ROUTE_RECORD",
+		"struct_desc":
+		{
+			"elem_desc":
+			[
+				{"name":"sender_uuid","type":"UUID"},
+				{"name":"receiver_uuid","type":"UUID"},
+				{"name":"route","type":"STRING","size":32},
+				{"name":"flow","type":"ENUM","ref_name":"message_flow_type"},
+				{"name":"state","type":"ENUM","ref_name":"message_flow_type"},
+				{"name":"flag","type":"FLAG","ref_name":"message_flag_type"},
+				{"name":"ljump","type":"INT"},
+				{"name":"rjump","type":"INT"}
+			]
+		}
+	}	
+}
