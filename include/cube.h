@@ -12,6 +12,11 @@ int Free0(void * pointer);
 // function from alloc.h end
 
 // function from basefunc.h
+typedef struct tagnameofvalue
+{
+	char * name;
+	int value;
+}__attribute__((packed)) NAME2VALUE;
 
 typedef struct uuid_head
 {
