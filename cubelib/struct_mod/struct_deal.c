@@ -1212,10 +1212,10 @@ int struct_read_elem_byno(int elem_no,void * addr, void * elem_data,void * struc
 	if( (elem_no <0) || (elem_no >=curr_node->elem_no))
 	       return -EINVAL;
 		
-	struct elem_template * curr_elem= &curr_node->struct_desc[elem_no];
+	struct elem_template * curr_elem= &(curr_node->elem_list[elem_no]);
 	if(curr_elem==NULL)
 		return -EINVAL;
-	elem_addr=addr+_elem_get_offset(curr_elem);
+	elem_addr=addr;
 	
 	return _elem_get_bin_value(elem_addr,elem_data,curr_elem);
 }
@@ -1261,10 +1261,10 @@ int struct_write_elem_byno(int elem_no,void * addr, void * elem_data,void * stru
 	if( (elem_no <0) || (elem_no >=curr_node->elem_no))
 	       return -EINVAL;
 		
-	struct elem_template * curr_elem= &curr_node->struct_desc[elem_no];
+	struct elem_template * curr_elem= &(curr_node->elem_list[elem_no]);
 	if(curr_elem==NULL)
 		return -EINVAL;
-	elem_addr=addr+_elem_get_offset(curr_elem);
+	elem_addr=addr;
 	return _elem_set_bin_value(elem_addr,elem_data,curr_elem);
 }
 
