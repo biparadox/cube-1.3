@@ -113,6 +113,7 @@ int blob_2_struct(void * blob, void * addr, void * struct_template);
 
 int struct_clone(void * src, void * destr, void * struct_template);
 int struct_part_clone(void * src, void * destr, void * struct_template,int flag);
+int struct_comp_elem(char * name,void * src_addr, void * dest_addr,void * template);
 int struct_comp_elem_value(char * name,void * src, void * value, void * struct_template);
 int struct_compare(void * src, void * destr, void * struct_template);
 int struct_part_compare(void * src, void * destr, void * struct_template,int flag);

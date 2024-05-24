@@ -1112,6 +1112,42 @@ int proc_compare_struct(void * src,void * destr,void * elem,void * para)
 	return ret;
 } 
 
+int struct_comp_elem(char * name,void * src_addr, void * dest_addr,void * template)
+{
+	struct elem_template * elem;
+	void * elem_addr;
+	BYTE * value_buf,* value_buf1;
+	int ret;
+	int src_size,dest_size;
+
+
+	value_buf = Talloc0(DIGEST_SIZE*64);
+	if(value_buf == NULL)
+		return -ENOMEM;
+	value_buf1 = value_buf+DIGEST_SIZE*32;
+
+	ret=struct_read_elem(name,src_addr,value_buf,template);
+	if(ret<0)
+		return ret;
+	src_size=ret;
+	ret=struct_read_elem(name,dest_addr,value_buf1,template);
+	if(ret<0)
+	{
+		Free0(value_buf);
+		return ret;
+	}
+	dest_size=ret;
+	if(src_size!=dest_size)
+	{
+		Free0(value_buf);
+		return 0;
+	}
+	ret = Memcmp(value_buf,value_buf1,src_size);
+	Free0(value_buf);
+	if(ret==0)
+		return 1;
+	return 0;
+}
 int struct_comp_elem_value(char * name,void * addr, void * elem_value,void * template)
 {
 	struct elem_template * elem;
