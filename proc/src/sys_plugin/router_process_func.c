@@ -1,6 +1,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <errno.h>
 #include <limits.h>
 #include <dirent.h>
@@ -8,6 +9,7 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/socket.h>
+#include <sys/types.h>
 
 #include "data_type.h"
 #include "alloc.h"
@@ -154,17 +156,33 @@ int proc_audit_route_init()
 	return ret;
 }
 
-int 	proc_audit_init()
+int proc_audit_init()
 {
-	char audit_text[4096];
-        const char * audit_filename= "./message.log";
-    	int fd ;
-	char *beginstr="\n**************Begin new trust node proc****************************\n";
-    	fd=open(audit_filename,O_WRONLY|O_CREAT|O_APPEND);
-    	if(fd<0)
+	int ret;
+//	ret = mkdir("message_log",0755);
+
+//	if(ret < 0 && errno != EEXIST){
+//		perror("mkdir message_log failed!!!\n");
+//		return -ENOENT;
+//	}
+	
+	char* dir_name = "message_log";
+	DIR* dir_stream = opendir(dir_name);
+	if(dir_stream == NULL){
+		print_cubeerr("open message_log dir failed\n");
 		return -ENOENT;
-	write(fd,beginstr,strlen(beginstr));
-	close(fd);
+	}
+	struct dirent* dir_item = NULL;
+	while((dir_item = readdir(dir_stream)) != NULL){
+		char path[100] = "./message_log/";
+		strcat(path,dir_item->d_name);
+
+		if(strcmp(dir_item->d_name,".") == 0 || strcmp(dir_item->d_name,"..") == 0){
+			continue;
+		}
+		unlink(path);
+	}
+
 	return 0;
 }
 
@@ -235,33 +253,41 @@ int proc_audit_route_filter(void * message)
 	
 	return ret;
 }
-
-int     proc_audit_log (void * message)
+int proc_audit_log(void *message)
 {
-//	if(deep_debug==0)
-//		return 0;
-
 	int ret;
-	char *isostr="\n************************************************************\n";
+	char *isostr = "\n************************************************************\n";
 	char audit_text[4096];
-        const char * audit_filename= "./message.log";
-    	int fd ;
+	int fd;
 
-	if(proc_audit_route_filter(message)<=0)
-		return 0;
+	MSG_HEAD *msg_head = message_get_head(message);
+	char filename[64] = "./message_log/";
+	strcat(filename, msg_head->route);
+	strcat(filename, ".log");
 
-	ret=message_output_json(message,audit_text);	
+	ret = message_output_json(message, audit_text);
+	audit_text[ret] = 0;
 
-	audit_text[ret]=0;			
-   	fd=open(audit_filename,O_WRONLY|O_APPEND);
-   	if(fd<0)
-		return -ENOENT;
-	print_pretty_text(audit_text,fd);
-	//write(fd,audit_text,ret+1);
-	write(fd,isostr,strlen(isostr));
-	close(fd);
+	if (access(filename, F_OK) != 0)
+	{
+		char *beginstr = "\n**************Begin new trust node proc****************************\n";
+		fd = open(filename, O_CREAT | O_WRONLY | O_APPEND, 0755);
+		if (fd < 0)
+			return -ENOENT;
+		write(fd, beginstr, strlen(beginstr));
+		close(fd);
+	}
+	else
+	{
+		fd = open(filename, O_CREAT | O_WRONLY | O_APPEND, 0755);
+		if (fd < 0)
+			return -ENOENT;
+
+		print_pretty_text(audit_text, fd);
+		write(fd, isostr, strlen(isostr)); 				
+		close(fd);
+ 	}
 }
-
 			
 int proc_router_recv_msg(void * message,char * local_uuid,char * proc_name)
 {

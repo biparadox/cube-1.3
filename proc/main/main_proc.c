@@ -37,6 +37,7 @@ static char plugin_config_file[DIGEST_SIZE*2]="./plugin_config.cfg";
 static char main_config_file[DIGEST_SIZE*2]="./main_config.cfg";
 static char sys_config_file[DIGEST_SIZE*2]="./sys_config.cfg";
 static char msgaudit_file[DIGEST_SIZE*2]="./message.log";
+static char msgaudit_dir[DIGEST_SIZE*2]="message_log";
 static char connector_plugin_file[DIGEST_SIZE*2]="libconnector_process_func.so";
 static char router_plugin_file[DIGEST_SIZE*2]="librouter_process_func.so";
 
@@ -74,6 +75,7 @@ int main(int argc,char **argv)
     void * root_node;
     void * temp_node;
     PROC_INIT plugin_proc; 
+    int fd;
 
     char * baseconfig[] =
     {
@@ -100,9 +102,24 @@ int main(int argc,char **argv)
     start_para.argc=argc;
     start_para.argv=argv;	
 
-    int fd =open(msgaudit_file,O_CREAT|O_RDWR|O_TRUNC,0666);
-    close(fd);
-    audit_file_init();	
+//    int fd =open(msgaudit_file,O_CREAT|O_RDWR|O_TRUNC,0666);
+//    close(fd);
+//    audit_file_init();	
+   ret = mkdir(msgaudit_dir,0755);
+
+   if(ret < 0)
+   {
+	if(errno != EEXIST){
+	   print_cubeerr("mkdir message_log failed! errno %d",errno);
+                return -ENOENT;
+	}
+   }
+   else
+   {
+	   print_cubeaudit("mkdir message_log for every router's message store!");
+   }	
+   system("rm -f message_log/*.log");
+
     sys_plugin=getenv("CUBE_SYS_PLUGIN");
 //	alloc_init(alloc_buffer);
 	struct_deal_init();
