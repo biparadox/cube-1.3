@@ -119,9 +119,9 @@ int main(int argc,char **argv)
     	start_para.argv[i]=argv[i+1];
     }	
 
-    int fd =open(msgaudit_file,O_CREAT|O_RDWR|O_TRUNC,0666);
-    close(fd);
-    audit_file_init();	
+    int fd ;
+    
+	audit_file_init();	
     sys_plugin=getenv("CUBE_SYS_PLUGIN");
 //	alloc_init(alloc_buffer);
 	struct_deal_init();

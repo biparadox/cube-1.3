@@ -159,27 +159,33 @@ int proc_audit_route_init()
 int proc_audit_init()
 {
 	int ret;
-//	ret = mkdir("message_log",0755);
+	char* dir_name = "./message_log";
 
-//	if(ret < 0 && errno != EEXIST){
-//		perror("mkdir message_log failed!!!\n");
-//		return -ENOENT;
-//	}
-	
-	char* dir_name = "message_log";
+	ret = mkdir(dir_name,0755);
+	if(ret < 0 && errno != EEXIST){
+		print_cubeerr("mkdir message_log failed! errno %d\n",errno);
+	}else{
+		print_cubeaudit("mkdir message_log for ervery router's message store!\n");	
+	}
+
 	DIR* dir_stream = opendir(dir_name);
 	if(dir_stream == NULL){
-		print_cubeerr("open message_log dir failed\n");
-		return -ENOENT;
+		return 0;
 	}
-	struct dirent* dir_item = NULL;
-	while((dir_item = readdir(dir_stream)) != NULL){
-		char path[100] = "./message_log/";
-		strcat(path,dir_item->d_name);
 
-		if(strcmp(dir_item->d_name,".") == 0 || strcmp(dir_item->d_name,"..") == 0){
+
+	struct dirent *dir_item = NULL;
+
+	while ((dir_item = readdir(dir_stream)) != NULL)
+	{
+		char path[100] = "./message_log/";
+		strcat(path, dir_item->d_name);
+
+		if (strcmp(dir_item->d_name, ".") == 0 || strcmp(dir_item->d_name, "..") == 0)
+		{
 			continue;
 		}
+
 		unlink(path);
 	}
 
@@ -274,7 +280,9 @@ int proc_audit_log(void *message)
 		fd = open(filename, O_CREAT | O_WRONLY | O_APPEND, 0755);
 		if (fd < 0)
 			return -ENOENT;
+		
 		write(fd, beginstr, strlen(beginstr));
+		print_pretty_text(audit_text, fd);
 		close(fd);
 	}
 	else
@@ -282,9 +290,9 @@ int proc_audit_log(void *message)
 		fd = open(filename, O_CREAT | O_WRONLY | O_APPEND, 0755);
 		if (fd < 0)
 			return -ENOENT;
-
-		print_pretty_text(audit_text, fd);
+		
 		write(fd, isostr, strlen(isostr)); 				
+		print_pretty_text(audit_text, fd);
 		close(fd);
  	}
 }

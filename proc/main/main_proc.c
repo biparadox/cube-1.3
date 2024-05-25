@@ -104,21 +104,21 @@ int main(int argc,char **argv)
 
 //    int fd =open(msgaudit_file,O_CREAT|O_RDWR|O_TRUNC,0666);
 //    close(fd);
-//    audit_file_init();	
-   ret = mkdir(msgaudit_dir,0755);
+    audit_file_init();	
+  // ret = mkdir(msgaudit_dir,0755);
 
-   if(ret < 0)
-   {
-	if(errno != EEXIST){
-	   print_cubeerr("mkdir message_log failed! errno %d",errno);
-                return -ENOENT;
-	}
-   }
-   else
-   {
-	   print_cubeaudit("mkdir message_log for every router's message store!");
-   }	
-   system("rm -f message_log/*.log");
+   //if(ret < 0)
+   //{
+//	if(errno != EEXIST){
+//	   print_cubeerr("mkdir message_log failed! errno %d",errno);
+  //              return -ENOENT;
+//	}
+  // }
+  // else
+   //{
+//	   print_cubeaudit("mkdir message_log for every router's message store!");
+  // }	
+  // system("rm -f message_log/*.log");
 
     sys_plugin=getenv("CUBE_SYS_PLUGIN");
 //	alloc_init(alloc_buffer);

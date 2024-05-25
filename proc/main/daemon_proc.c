@@ -174,10 +174,10 @@ int cube_proc(struct start_para * start_para)
 	 NULL
     };
 
-    int fd =open(msgaudit_file,O_CREAT|O_RDWR|O_TRUNC,0666);
-    close(fd);
-    audit_file_init();	
-    sys_plugin=getenv("CUBE_SYS_PLUGIN");
+    	int fd ;
+	
+	audit_file_init();	
+	sys_plugin=getenv("CUBE_SYS_PLUGIN");
 //	alloc_init(alloc_buffer);
 	struct_deal_init();
 	memdb_init();
