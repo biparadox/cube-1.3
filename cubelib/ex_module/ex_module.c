@@ -720,7 +720,7 @@ int proc_share_data_getvalue(char * valuename,void * value)
 	int ret;
 	
 	ret=struct_read_elem(valuename,main_module->context,value,main_module->context_template);
-	print_cubeaudit("proc_share_data_getvalue: get %s value %s",valuename,value);
+	print_cubeaudit("proc_share_data_getvalue: get %s value",valuename);
 	return ret;
 
 }
@@ -733,7 +733,7 @@ int proc_share_data_setvalue(char * valuename,void * value)
 	context=main_module->context;
 	if(context==NULL)
 		return -1;
-	print_cubeaudit("proc_share_data_setvalue: set %s to %s",valuename,value);
+	print_cubeaudit("proc_share_data_setvalue: set %s value",valuename);
 	int ret;
 	ret=struct_write_elem(valuename,main_module->context,value,main_module->context_template);
 	return ret;

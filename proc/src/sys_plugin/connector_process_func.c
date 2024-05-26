@@ -750,6 +750,11 @@ int proc_conn_start(void * sub_proc,void * para)
 				if(message_head->receiver_uuid[0]==':')
 				{
 					send_conn=hub_get_connector(sub_proc_pointer->hub,message_head->receiver_uuid+1);
+					if(send_conn == NULL)
+					{
+						print_cubeerr(" conn_proc error: can't find connect target %s",message_head->receiver_uuid);
+						continue;
+					}
 					int type=connector_get_type(send_conn);
 					if((type==CONN_P2P_BIND)||(type==CONN_P2P_RAND))
 						af_inet_p2p_getfirstpeer(send_conn);
@@ -768,7 +773,7 @@ int proc_conn_start(void * sub_proc,void * para)
 
 			if(send_conn==NULL)
 			{
-				print_cubeerr("can't find target, send message to default connector!\n");
+				print_cubeerr("conn_proc error: can't find target, send message to default connector!\n");
 				send_conn=default_conn;
 			}
 
