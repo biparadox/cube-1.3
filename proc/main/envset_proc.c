@@ -188,6 +188,13 @@ int main(int argc,char **argv)
     print_cubeaudit("this machine's local uuid is %s\n",buffer);
     proc_share_data_setvalue("uuid",local_uuid);
 
+    // output the proc uuid
+    proc_share_data_getvalue("proc_name",namebuffer);
+    comp_proc_uuid(local_uuid,namebuffer,uuid);
+    digest_to_uuid(uuid,buffer);
+    buffer[64]=0;
+    print_cubeaudit("this instance's local proc uuid is %s\n",buffer);
+
     // init all the proc database
 
     usleep(time_val.tv_usec);
