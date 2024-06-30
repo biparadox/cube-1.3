@@ -35,6 +35,24 @@
 {
 	"head":
 	{
+		"name":"enum_http_server_fileattr",
+		"type":"NAMELIST"
+	},
+	"record":
+	{
+		"elem_no":4,
+		"elemlist":
+		[
+			"NORMAL=0x01",
+			"CRYPT",
+			"SIGN",
+			"AUTH"
+		]
+	}
+}
+{
+	"head":
+	{
 		"name":"enum_http_server_action",
 		"type":"NAMELIST"
 	},
@@ -53,7 +71,7 @@
 {
 	"head":
 	{
-		"name":"enum_http_server_file",
+		"name":"enum_http_server_result",
 		"type":"NAMELIST"
 	},
 	"record":
@@ -88,75 +106,12 @@
 		{
 			"elem_desc":
 			[
-				{"name":"creater","type":"ESTRING","size":64},
+				{"name":"server_name","type":"ESTRING","size":32},
+				{"name":"ip_addr","type":"ESTRING","size":16},
+				{"name":"port","type":"INT"},
 				{"name":"uuid","type":"UUID"},
-				{"name":"type","type":"TYPE"},
-				{"name":"subtype","type":"SUBTYPE","def":"type"},
-				{"name":"creater","type":"ESTRING","size":64},
-				{"name":"creater_uuid","type":"UUID"},
-				{"name":"file_path","type":"ESTRING","size":128},
-				{"name":"file_uuid","type":"UUID"},
-				{"name":"file_describe","type":"ESTRING","size":512}
-			]
-		},
-		"index":
-		{
-			"flag":"INDEX",
-			"elemlist":"type,subtype,creater,creater_uuid,file_path,file_uuid"
-		}
-	}	
-}
-{
-	"head":
-	{
-		"name":"policyfile_data",
-		"type":"RECORDTYPE"
-	},
-	"record":
-	{
-		"type":"FILE_TRANS",
-		"subtype":"FILE_DATA",
-		"struct_desc":
-		{
-			"elem_desc":
-			[
-				{"name":"uuid","type":"UUID"},
-				{"name":"filename","type":"ESTRING"},
-				{"name":"total_size","type":"INT"},
-				{"name":"record_no","type":"INT"},
-				{"name":"offset","type":"INT"},
-				{"name":"data_size","type":"INT"},
-				{"name":"file_data","type":"DEFINE","def":"data_size"}
-			]
-		}
-		"index":
-		{
-			"flag":"INDEX",
-			"elemlist":"filename,total_size,record_no,offset,data_size,file_data"
-		}
-	}	
-}
-{
-	"head":
-	{
-		"name":"policyfile_store",
-		"type":"RECORDTYPE"
-	},
-	"record":
-	{
-		"type":"FILE_TRANS",
-		"subtype":"FILE_STORE",
-		"struct_desc":
-		{
-			"elem_desc":
-			[
-				{"name":"uuid","type":"UUID"},
-				{"name":"filename","type":"ESTRING"},
-				{"name":"file_size","type":"INT"},
-				{"name":"block_size","type":"INT"},
-				{"name":"block_num","type":"INT"},
-				{"name":"mark_len","type":"INT"},
-				{"name":"marks","type":"DEFINE","def":"mark_len"}
+				{"name":"server_dir","type":"ESTRING","size":128},
+				{"name":"server_desc","type":"ESTRING","size":128}
 			]
 		}
 	}	
@@ -164,20 +119,22 @@
 {
 	"head":
 	{
-		"name":"policyfile_req",
+		"name":"http_server_file",
 		"type":"RECORDTYPE"
 	},
 	"record":
 	{
-		"type":"FILE_TRANS",
-		"subtype":"REQUEST",
+		"type":"HTTP_SERVER",
+		"subtype":"FILE",
 		"struct_desc":
 		{
 			"elem_desc":
 			[
+				{"name":"file_name","type":"ESTRING","size":128},
 				{"name":"uuid","type":"UUID"},
-				{"name":"filename","type":"ESTRING"},
-				{"name":"requestor","type":"ESTRING"}
+				{"name":"owner","type":"ESTRING","size":32},
+				{"name":"attr_flag","type":"ENUM","ref_name":"enum_http_server_fileattr"},
+				{"name":"meta_uuid","type":"UUID"},
 			]
 		}
 	}	
@@ -185,20 +142,46 @@
 {
 	"head":
 	{
-		"name":"policyfile_notice",
+		"name":"http_server_action",
 		"type":"RECORDTYPE"
 	},
 	"record":
 	{
-		"type":"FILE_TRANS",
-		"subtype":"NOTICE",
+		"type":"HTTP_SERVER",
+		"subtype":"ACTION",
 		"struct_desc":
 		{
 			"elem_desc":
 			[
+				{"name":"server_name","type":"ESTRING","size":32},
+				{"name":"file_name","type":"ESTRING","size":128},
 				{"name":"uuid","type":"UUID"},
-				{"name":"filename","type":"ESTRING"},
-				{"name":"result","type":"INT"}
+				{"name":"action","type":"ENUM","ref_name":"enum_http_server_action"},
+				{"name":"user","type":"ESTRING","size":32},
+			]
+		}
+	}	
+}
+{
+	"head":
+	{
+		"name":"http_server_result",
+		"type":"RECORDTYPE"
+	},
+	"record":
+	{
+		"type":"HTTP_SERVER",
+		"subtype":"ACTION",
+		"struct_desc":
+		{
+			"elem_desc":
+			[
+				{"name":"server_name","type":"ESTRING","size":32},
+				{"name":"file_name","type":"ESTRING","size":128},
+				{"name":"uuid","type":"UUID"},
+				{"name":"result","type":"ENUM","ref_name":"enum_http_server_result"},
+				{"name":"user","type":"ESTRING","size":32},
+				{"name":"result_desc","type":"ESTRING","size":128},
 			]
 		}
 	}	
