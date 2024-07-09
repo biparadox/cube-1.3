@@ -148,6 +148,13 @@ typedef struct tagMessage_Expand_Data  //general expand data struct
    void * expand;
 } __attribute__((packed)) MSG_EXPAND;
 
+struct start_para
+{
+	int argc;
+	char **argv;
+};
+
+
 void * message_get_head(void * message);
 int message_get_type(void * message);
 int message_get_subtype(void * message);
