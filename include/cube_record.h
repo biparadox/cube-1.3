@@ -89,7 +89,7 @@ typedef struct connect_ack
 {
 	char uuid[DIGEST_SIZE];    //client's uuid
 	char * client_name;	     // this client's name
-	char * client_process;       // this client's process
+	char * client_proc;       // this client's process
 	char * client_addr;          // client's address
 	char server_uuid[DIGEST_SIZE];  //server's uuid
 	char * server_name;               //server's name
