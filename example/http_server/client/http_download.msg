@@ -1,0 +1,10 @@
+{
+	"type":"HTTP_SERVER",
+	"subtype":"ACTION"
+}
+{
+	"server_name":"example_http_server",
+	"action":"DOWNLOAD",
+	"user":"zhao",
+	"file_name":"test.txt"
+}
