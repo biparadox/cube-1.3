@@ -282,7 +282,8 @@ int proc_audit_log(void *message)
 			return -ENOENT;
 		
 		write(fd, beginstr, strlen(beginstr));
-		print_pretty_text(audit_text, fd);
+		write(fd, audit_text,strlen(audit_text)); 				
+		//print_pretty_text(audit_text, fd);
 		close(fd);
 	}
 	else
@@ -292,7 +293,8 @@ int proc_audit_log(void *message)
 			return -ENOENT;
 		
 		write(fd, isostr, strlen(isostr)); 				
-		print_pretty_text(audit_text, fd);
+		write(fd, audit_text,strlen(audit_text)); 				
+		//print_pretty_text(audit_text, fd);
 		close(fd);
  	}
 }

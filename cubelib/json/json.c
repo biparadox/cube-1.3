@@ -520,7 +520,7 @@ int json_solve_str(void ** root, char *str)
                 	ret=json_get_strvalue(value_buffer,str+offset);
                 	if(ret<0)
                     		return ret;
-                	if(ret>DIGEST_SIZE*8+2)
+                	if(ret>DIGEST_SIZE*24+2)
                     		return -EINVAL;
 			json_set_type(child_node,JSON_ELEM_STRING,0);
 			child_node->value_str=Dalloc(ret,child_node);

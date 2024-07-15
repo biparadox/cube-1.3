@@ -19,13 +19,11 @@
 #include "ex_module.h"
 
 #include "sys_func.h"
+#include "http_server.h"
 #include "http_fileserver_agent.h"
-#include "file_struct.h"
 
 
 //static struct timeval time_val={0,20*1000};
-static int block_size=512;
-
 
 int http_fileserver_agent_init(void * sub_proc,void * para)
 {
@@ -67,20 +65,20 @@ int http_fileserver_agent_start(void * sub_proc,void * para)
 			ex_module_sendmsg(sub_proc,recv_msg);
 			continue;
 		}
-		if(type==TYPE(FILE_TRANS))
+		if(type==TYPE(HTTP_SERVER))
 		{
-			if(subtype==SUBTYPE(FILE_TRANS,FILE_DATA))
+			if(subtype==SUBTYPE(HTTP_SERVER,SERVER))
 			{
-				proc_file_receive(sub_proc,recv_msg);
+				proc_http_server_register(sub_proc,recv_msg);
 			}
-			else if(subtype==SUBTYPE(FILE_TRANS,REQUEST))
+			else if(subtype==SUBTYPE(HTTP_SERVER,ACTION))
 			{
-				proc_file_send(sub_proc,recv_msg);
+				proc_http_server_action(sub_proc,recv_msg);
 			}
-            else
-            {
+            		else
+            		{
 			    ex_module_sendmsg(sub_proc,recv_msg);
-            }
+            		}
 		}
 		else
 		{
@@ -91,106 +89,194 @@ int http_fileserver_agent_start(void * sub_proc,void * para)
 };
 
 
-int _is_samefile_exists(void * record)
+int _is_samefile_exists(RECORD(HTTP_SERVER,FILE) * http_file, void * record)
 {
-	struct policyfile_data * pfdata=record;
 	char digest[DIGEST_SIZE];
 	int fd;
 	int ret;
-	fd=open(pfdata->filename,O_RDONLY);
+	fd=open(http_file->file_name,O_RDONLY);
 	if(fd>0)
 	{
 		close(fd);
-		ret=calculate_sm3(pfdata->filename,digest);
+		ret=calculate_sm3(http_file->file_name,digest);
 		if(ret<0)
-			return ret;
-		if(Memcmp(pfdata->uuid,digest,DIGEST_SIZE)!=0)
+			return -EINVAL;
+		if(Memcmp(http_file->uuid,digest,DIGEST_SIZE)!=0)
 		{
-			return 1;
+			return ENUM(HTTP_SERVER_RESULT,OCCUPY);
 		}
-		return 0;
+		else
+			return ENUM(HTTP_SERVER_RESULT,EXIST);
 	}
-	return 2;	
+	return ENUM(HTTP_SERVER_RESULT,EMPTY);	
 
 }
 
-int get_filedata_from_message(void * message)
+int proc_http_server_register(void * sub_proc,void * recv_msg)
 {
-	struct policyfile_data * pfdata;
-	int retval;
-	MSG_HEAD * message_head;
-	int fd;
-        BYTE digest[DIGEST_SIZE];
-	int type;
-	int subtype;
 
+	int ret;
+	RECORD(HTTP_SERVER,SERVER) * http_server;
 
-	pfdata= Talloc(sizeof(struct policyfile_data));
-        if(pfdata==NULL)
-       		return -ENOMEM;	       
-	message_head=message_get_head(message);
-	if(message_head==NULL)
+	ret=message_get_record(recv_msg,&http_server,0);
+	if(ret<0)
 		return -EINVAL;
+	memdb_store(http_server,TYPE_PAIR(HTTP_SERVER,SERVER),http_server->server_name);
 	
-	type=message_get_type(message);
-	subtype=message_get_subtype(message);
-	if((type!=TYPE(FILE_TRANS)) && (subtype!=SUBTYPE(FILE_TRANS,FILE_DATA)))
+	void * type_msg = message_gen_typesmsg(TYPE_PAIR(HTTP_SERVER,SERVER),NULL);
+	if(type_msg!=NULL)
 	{
-		return -EINVAL;
+		ex_module_sendmsg(sub_proc,type_msg);
 	}
 
-	if(message_get_flag(message) &MSG_FLAG_CRYPT)
-	{
-		print_cubeerr("error! filedata message is crypted!\n");
-		return -EINVAL;
-	}
-	retval=message_get_record(message,&pfdata,0);
+	return 0;
+}
+		
+	
 
-	fd=open(pfdata->filename,O_CREAT|O_WRONLY,0666);
-	if(fd<0)
-		return fd;
-	lseek(fd,pfdata->offset,SEEK_SET);
-	write(fd,pfdata->file_data,pfdata->data_size);
-	close(fd);
+int proc_http_server_action(void * sub_proc,void * recv_msg)
+{
+	int ret;
+	RECORD(HTTP_SERVER,ACTION) * file_action;
+	ret=message_get_record(recv_msg,&file_action,0);
+	if(ret<0)
+		return -EINVAL;
+	if(file_action->action == ENUM(HTTP_SERVER_ACTION,START))
+	{
+		ret = proc_http_server_start(sub_proc,recv_msg,file_action);
+	}	
+	else if(file_action->action == ENUM(HTTP_SERVER_ACTION,DOWNLOAD))
+	{
+		ret = proc_http_file_download(sub_proc,recv_msg,file_action);
+	}	
+	else if(file_action->action == ENUM(HTTP_SERVER_ACTION,CHECK))
+	{
+		ret = proc_http_file_check(sub_proc,recv_msg,file_action);
+	}	
+
+	return ret;
+}
+
+int proc_http_server_start(void * sub_proc,void * recv_msg,
+	       RECORD(HTTP_SERVER,ACTION) * file_action)
+{
+	int ret;
+	char cmd_buf[DIGEST_SIZE*8];
+	char short_buf[DIGEST_SIZE];
+	RECORD(HTTP_SERVER,SERVER) * http_server;
+
+	DB_RECORD * db_record;
+
+	if(Isemptyuuid(file_action->uuid))
+	{
+		db_record = memdb_find_byname(file_action->server_name,TYPE_PAIR(HTTP_SERVER,SERVER));
+		if(db_record == NULL)
+			return -EINVAL;
+	}
+	else
+	{
+		db_record = memdb_find_first(TYPE_PAIR(HTTP_SERVER,SERVER),"uuid",
+				file_action->uuid);
+		if(db_record == NULL)
+			return -EINVAL;
+
+	}
+	http_server = db_record->record;
+
+	Strcpy(cmd_buf,"python3 -m http.server");
+	if(http_server->port > 0)
+	{
+		Itoa(http_server->port,short_buf);
+		Strcat(cmd_buf," ");
+		Strcat(cmd_buf,short_buf);
+	}
+	if(http_server->ip_addr != NULL)
+	{
+		Strcat(cmd_buf," --bind ");
+		Strcat(cmd_buf,http_server->ip_addr);
+	}
+	if(http_server->server_dir != NULL)
+	{
+		Strcat(cmd_buf," --directory ");
+		Strcat(cmd_buf,http_server->server_dir);
+	} 
+	print_cubeaudit("http_fileserver_agent: exec cmd %s",cmd_buf);
+	system(cmd_buf);
 	return 0;
 }
 
-int proc_file_receive(void * sub_proc,void * message)
+int proc_http_file_download(void * sub_proc,void * recv_msg,
+	       RECORD(HTTP_SERVER,ACTION) * file_action)
 {
-	struct policyfile_data * pfdata;
-	struct policyfile_store * storedata;
 	int ret;
-	void * send_msg;
+	char cmd_buf[DIGEST_SIZE*8];
+	char short_buf[DIGEST_SIZE];
+	RECORD(HTTP_SERVER,SERVER) * http_server;
 
-	print_cubeaudit("begin file receive!\n");
-	char buffer[4096];
-	BYTE digest[DIGEST_SIZE];
-	int blobsize=0;
-	int fd;
+	DB_RECORD * db_record;
 
-	if(message_get_flag(message) &MSG_FLAG_CRYPT)
-	{
-		print_cubeerr("error! filedata message is crypted!\n");
+	db_record = memdb_find_byname(file_action->server_name,TYPE_PAIR(HTTP_SERVER,SERVER));
+	if(db_record == NULL)
 		return -EINVAL;
+
+	http_server = db_record->record;
+
+	Strcpy(cmd_buf,"curl -O http://");
+	if(http_server->ip_addr != NULL)
+		Strcat(cmd_buf,http_server->ip_addr);
+	else
+		Strcat(cmd_buf,"127.0.0.1");
+	if(http_server->port > 0)
+	{
+		Itoa(http_server->port,short_buf);
+		Strcat(cmd_buf,":");
+		Strcat(cmd_buf,short_buf);
 	}
+	else
+		Strcat(cmd_buf,":8000");
+	Strcat(cmd_buf,"/");
+	Strcat(cmd_buf,file_action->file_name);
+	system(cmd_buf);
+	return 0;
+}
 
-	ret=message_get_record(message,&pfdata,0);
-	if(ret<0)
+int proc_http_file_check(void * sub_proc,void * recv_msg,
+	       RECORD(HTTP_SERVER,ACTION) * file_action)
+{
+	int ret;
+	char cmd_buf[DIGEST_SIZE*8];
+	char short_buf[DIGEST_SIZE];
+	RECORD(HTTP_SERVER,SERVER) * http_server;
+
+	DB_RECORD * db_record;
+
+	db_record = memdb_find_byname(file_action->server_name,TYPE_PAIR(HTTP_SERVER,SERVER));
+	if(db_record == NULL)
 		return -EINVAL;
-	if(pfdata->total_size==pfdata->data_size)
+
+	http_server = db_record->record;
+
+	Strcpy(cmd_buf,"curl -O http://");
+	if(http_server->ip_addr != NULL)
+		Strcat(cmd_buf,http_server->ip_addr);
+	else
+		Strcat(cmd_buf,"127.0.0.1");
+	if(http_server->port > 0)
 	{
-		// judge if there exists a same-name file 
-		switch(ret=_is_samefile_exists(pfdata))
-		{
-			case 0:     // samefile exists
-				print_cubeerr("file %s has existed!\n",pfdata->filename);
-				struct policyfile_notice * pfnotice;
-				pfnotice=Talloc0(sizeof(struct policyfile_notice));
-				if(pfnotice==NULL)
-					return -ENOMEM;
-				Memcpy(pfnotice->uuid,pfdata->uuid,DIGEST_SIZE);
-				pfnotice->filename=dup_str(pfdata->filename,0);
-				pfnotice->result=0;	
+		Itoa(http_server->port,short_buf);
+		Strcat(cmd_buf,":");
+		Strcat(cmd_buf,short_buf);
+	}
+	else
+		Strcat(cmd_buf,":8000");
+	Strcat(cmd_buf,"/");
+	Strcat(cmd_buf,file_action->file_name);
+	system(cmd_buf);
+	return 0;
+}
+
+/*
+
 				send_msg=message_create(TYPE_PAIR(FILE_TRANS,FILE_NOTICE),message);
 				if(send_msg==NULL)
 					return -EINVAL;
@@ -423,3 +509,4 @@ int proc_file_send(void * sub_proc,void * message)
 
 	return 0;
 }
+*/

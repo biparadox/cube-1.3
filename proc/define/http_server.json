@@ -61,7 +61,7 @@
 		"elem_no":4,
 		"elemlist":
 		[
-			"UPLOAD=0x01",
+			"START=0x01",
 			"DOWNLOAD",
 			"CHECK",
 			"DELETE"
@@ -171,7 +171,7 @@
 	"record":
 	{
 		"type":"HTTP_SERVER",
-		"subtype":"ACTION",
+		"subtype":"RESULT",
 		"struct_desc":
 		{
 			"elem_desc":
