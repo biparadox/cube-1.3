@@ -1518,7 +1518,7 @@ int _stripjsonarraychar(char * text,int len)
 	}
 	if(state!=STRIP_FINISH)
 		return -EINVAL;
-	return i-offset;
+	return i+1-offset;
 	
 }
 

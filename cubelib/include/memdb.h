@@ -20,7 +20,7 @@
 #define TYPE_PAIR(type,subtype) DTYPE_##type,SUBTYPE_##type##_##subtype
 #define RECORD(type,subtype) record_##type##_##subtype
 #define tagRECORD(type,subtype) tagrecord_##type##_##subtype
-#define ENUM(class) ENUM_##class
+#define ENUM_DEFINE(class) ENUM_##class
 #define ENUM(class,item) ENUM_##class_##item
 
 enum dynamic_memdb_typelist
