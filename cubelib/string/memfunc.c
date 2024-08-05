@@ -78,7 +78,7 @@ char * Strncpy(char *dest,const char *src,int n)
 	while((*s!=0)&&(n--)) 
 		*d++=*s++;
 	
-	if(n>=0)
+	if(n>0)
         	*d=0;
 	return dest;
 
