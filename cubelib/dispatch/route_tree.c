@@ -1463,6 +1463,8 @@ int router_dup_activemsg_info (void * message)
 	message_set_route(msg_box,msg_head->route);
 	new_msg_head->ljump=msg_head->ljump;	
 	new_msg_head->rjump=msg_head->rjump;	
+	Memcpy(new_msg_head->nonce,msg_head->nonce,DIGEST_SIZE);
+	new_msg_head->rjump=msg_head->rjump;	
 
 	MSG_EXPAND * old_expand;
 	MSG_EXPAND * new_expand;

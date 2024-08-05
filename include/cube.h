@@ -181,6 +181,7 @@ int message_set_flag(void * message, int flag);
 int message_get_flag(void * message);
 int message_get_blob(void * message, void ** blob);
 int message_set_blob(void * message,void * blob, int size);
+void * message_set_activemsg(void * message,void * active_msg);
 
 int message_2_json(void * message,char * json_str);
 int json_2_message(char * json_str,void ** message);
