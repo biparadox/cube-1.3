@@ -85,22 +85,28 @@ int json_2_message(char * json_str,void ** message)
     if(curr_record==NULL)
          return -EINVAL;
     char node_name[DIGEST_SIZE*2];
-    ret=json_node_getname(curr_record,node_name);
-    if(!strcmp(node_name,"BIN_FORMAT"))
+
+    if(json_get_type(record_node)==JSON_ELEM_MAP)
     {
-	BYTE * radix64_string;
-	radix64_string=malloc(4096);
-	if(radix64_string==NULL)
-		return -ENOMEM;
-	ret=json_node_getvalue(curr_record,radix64_string,4096);
-	if(ret<0)
-		return -EINVAL;
-	int radix64_len=strnlen(radix64_string,4096);
-	msg_head->record_size=radix_to_bin_len(radix64_len);
-	msg_box->blob=malloc(msg_head->record_size);
-	if(msg_box->blob==NULL)
-		return -ENOMEM;
-	ret=radix64_to_bin(msg_box->blob,radix64_len,radix64_string);
+       // record is not array, so it should be BIN_FORMAT or EMPTY 	    
+    	ret=json_node_getname(curr_record,node_name);
+
+    	if(!strcmp(node_name,"BIN_FORMAT"))
+    	{
+		BYTE * radix64_string;
+		radix64_string=malloc(4096);
+		if(radix64_string==NULL)
+			return -ENOMEM;
+		ret=json_node_getvalue(curr_record,radix64_string,4096);
+		if(ret<0)
+			return -EINVAL;
+		int radix64_len=strnlen(radix64_string,4096);
+		msg_head->record_size=radix_to_bin_len(radix64_len);
+		msg_box->blob=malloc(msg_head->record_size);
+		if(msg_box->blob==NULL)
+			return -ENOMEM;
+		ret=radix64_to_bin(msg_box->blob,radix64_len,radix64_string);
+	}
    }
     else
    {

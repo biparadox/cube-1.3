@@ -642,7 +642,7 @@ int message_output_json(void * message, char * text)
 		return ret;
 	offset+=ret;
 	// output record text
-	Strcpy(buffer,",\"RECORD\":[");
+	Strcpy(buffer,",\"RECORD\":");
 	ret=Strlen(buffer);
 	Strcpy(text+offset,buffer);
 	offset+=ret;	
@@ -671,6 +671,7 @@ int message_output_json(void * message, char * text)
 	}
     	else 
     	{   
+		text[offset++]='[';
 		for(i=0;i<msg_head->record_num;i++)
 		{
 			if(i>0)
@@ -681,9 +682,10 @@ int message_output_json(void * message, char * text)
 				return ret;
 			offset+=ret;
 		}
+		text[offset++]=']';
     	}
 	
-	Strcpy(buffer,"],\"EXPAND\" :[");
+	Strcpy(buffer,",\"EXPAND\" :[");
 	Strcpy(text+offset,buffer);
 	offset+=Strlen(buffer);
 	for(i=0;i<msg_head->expand_num;i++)
@@ -814,7 +816,7 @@ int message_output_clear_json(void * message, char * text)
 	offset+=ret;
 	//printf("offset %d msg head %d\n",offset,ret);
 	// output record text
-	Strcpy(buffer,",\"RECORD\":[");
+	Strcpy(buffer,",\"RECORD\":");
 	ret=Strlen(buffer);
 	Strcpy(text+offset,buffer);
 	offset+=ret;	
@@ -844,6 +846,7 @@ int message_output_clear_json(void * message, char * text)
 	}
     	else 
     	{   
+		text[offset++]='[';
 		temp_template=clone_struct_template(msg_box->record_template);
 		if(temp_template ==NULL)
 		{
@@ -864,10 +867,11 @@ int message_output_clear_json(void * message, char * text)
 			offset+=ret;
 			//printf(" output %d record data offset %d ret %d\n",i,offset,ret);
 		}
+		text[offset++]=']';
 		free_struct_template(temp_template);
     	}
 	
-	Strcpy(buffer,"],\"EXPAND\" :[");
+	Strcpy(buffer,",\"EXPAND\" :[");
 	Strcpy(text+offset,buffer);
 	offset+=Strlen(buffer);
 	for(i=0;i<msg_head->expand_num;i++)
