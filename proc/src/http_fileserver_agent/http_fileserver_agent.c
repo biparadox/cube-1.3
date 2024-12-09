@@ -149,6 +149,10 @@ int proc_http_server_action(void * sub_proc,void * recv_msg)
 	{
 		ret = proc_http_file_download(sub_proc,recv_msg,file_action);
 	}	
+	else if(file_action->action == ENUM(HTTP_SERVER_ACTION,UPLOAD))
+	{
+		ret = proc_http_file_upload(sub_proc,recv_msg,file_action);
+	}	
 	else if(file_action->action == ENUM(HTTP_SERVER_ACTION,CHECK))
 	{
 		ret = proc_http_file_check(sub_proc,recv_msg,file_action);
@@ -197,8 +201,11 @@ int proc_http_server_start(void * sub_proc,void * recv_msg,
 	}
 	if(http_server->server_dir != NULL)
 	{
-		Strcat(cmd_buf," --directory ");
-		Strcat(cmd_buf,http_server->server_dir);
+		if(http_server->server_dir[0]!=0)
+		{
+			Strcat(cmd_buf," --directory ");
+			Strcat(cmd_buf,http_server->server_dir);
+		}
 	} 
 	print_cubeaudit("http_fileserver_agent: exec cmd %s",cmd_buf);
 	system(cmd_buf);
@@ -237,6 +244,42 @@ int proc_http_file_download(void * sub_proc,void * recv_msg,
 	Strcat(cmd_buf,"/");
 	Strcat(cmd_buf,file_action->file_name);
 	system(cmd_buf);
+	return 0;
+}
+
+int proc_http_file_upload(void * sub_proc,void * recv_msg,
+	       RECORD(HTTP_SERVER,ACTION) * file_action)
+{
+	int ret;
+	char cmd_buf[DIGEST_SIZE*8];
+	char short_buf[DIGEST_SIZE];
+	RECORD(HTTP_SERVER,SERVER) * http_server;
+
+	DB_RECORD * db_record;
+
+	db_record = memdb_find_byname(file_action->server_name,TYPE_PAIR(HTTP_SERVER,SERVER));
+	if(db_record == NULL)
+		return -EINVAL;
+
+	http_server = db_record->record;
+
+	Strcpy(cmd_buf,"curl -X http://");
+	if(http_server->ip_addr != NULL)
+		Strcat(cmd_buf,http_server->ip_addr);
+	else
+		Strcat(cmd_buf,"127.0.0.1");
+	if(http_server->port > 0)
+	{
+		Itoa(http_server->port,short_buf);
+		Strcat(cmd_buf,":");
+		Strcat(cmd_buf,short_buf);
+	}
+	else
+		Strcat(cmd_buf,":8000");
+	Strcat(cmd_buf,"/");
+	Strcat(cmd_buf,file_action->file_name);
+	system(cmd_buf);
+	print_cubeaudit("http_file_agent: exec %s",cmd_buf);
 	return 0;
 }
 

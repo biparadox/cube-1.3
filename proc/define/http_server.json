@@ -58,11 +58,12 @@
 	},
 	"record":
 	{
-		"elem_no":4,
+		"elem_no":5,
 		"elemlist":
 		[
 			"START=0x01",
 			"DOWNLOAD",
+			"UPLOAD",
 			"CHECK",
 			"DELETE"
 		]
