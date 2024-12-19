@@ -187,7 +187,7 @@ int proc_http_server_start(void * sub_proc,void * recv_msg,
 	}
 	http_server = db_record->record;
 
-	Strcpy(cmd_buf,"python3 -m http.server");
+	Strcpy(cmd_buf,"python3 -m ./http_server2.py");
 	if(http_server->port > 0)
 	{
 		Itoa(http_server->port,short_buf);
@@ -196,14 +196,14 @@ int proc_http_server_start(void * sub_proc,void * recv_msg,
 	}
 	if(http_server->ip_addr != NULL)
 	{
-		Strcat(cmd_buf," --bind ");
+		Strcat(cmd_buf," -ip_addr ");
 		Strcat(cmd_buf,http_server->ip_addr);
 	}
 	if(http_server->server_dir != NULL)
 	{
 		if(http_server->server_dir[0]!=0)
 		{
-			Strcat(cmd_buf," --directory ");
+			Strcat(cmd_buf," -path ");
 			Strcat(cmd_buf,http_server->server_dir);
 		}
 	} 
@@ -263,7 +263,13 @@ int proc_http_file_upload(void * sub_proc,void * recv_msg,
 
 	http_server = db_record->record;
 
-	Strcpy(cmd_buf,"curl -X http://");
+	Strcpy(cmd_buf,"curl -F \"file=@");
+	Strcat(cmd_buf,"/");
+	Strcat(cmd_buf,file_action->file_name);
+	Strcat(cmd_buf,"\"");
+
+
+	Strcat(cmd_buf," http://");
 	if(http_server->ip_addr != NULL)
 		Strcat(cmd_buf,http_server->ip_addr);
 	else
@@ -276,8 +282,6 @@ int proc_http_file_upload(void * sub_proc,void * recv_msg,
 	}
 	else
 		Strcat(cmd_buf,":8000");
-	Strcat(cmd_buf,"/");
-	Strcat(cmd_buf,file_action->file_name);
 	system(cmd_buf);
 	print_cubeaudit("http_file_agent: exec %s",cmd_buf);
 	return 0;
