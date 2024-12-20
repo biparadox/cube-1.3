@@ -187,11 +187,12 @@ int proc_http_server_start(void * sub_proc,void * recv_msg,
 	}
 	http_server = db_record->record;
 
-	Strcpy(cmd_buf,"python3 -m ./http_server2.py");
+	//Strcpy(cmd_buf,"python3 -m ./http_server2.py");
+	Strcpy(cmd_buf,"python3 ./http_server2.py");
 	if(http_server->port > 0)
 	{
 		Itoa(http_server->port,short_buf);
-		Strcat(cmd_buf," ");
+		Strcat(cmd_buf," -port ");
 		Strcat(cmd_buf,short_buf);
 	}
 	if(http_server->ip_addr != NULL)
@@ -264,7 +265,6 @@ int proc_http_file_upload(void * sub_proc,void * recv_msg,
 	http_server = db_record->record;
 
 	Strcpy(cmd_buf,"curl -F \"file=@");
-	Strcat(cmd_buf,"/");
 	Strcat(cmd_buf,file_action->file_name);
 	Strcat(cmd_buf,"\"");
 
