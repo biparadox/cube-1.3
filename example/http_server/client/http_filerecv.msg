@@ -4,7 +4,7 @@
 }
 {
 	"server_name":"http_server",
-	"action":"DOWNLOAD",
-	"user":"zhao",
-	"file_name":"http_server_start.msg"
+	"file_name":"test.txt",
+	"action":"DOWNLOAD"
+	"user":"qian"
 }

@@ -245,6 +245,7 @@ int proc_http_file_download(void * sub_proc,void * recv_msg,
 	Strcat(cmd_buf,"/");
 	Strcat(cmd_buf,file_action->file_name);
 	system(cmd_buf);
+	print_cubeaudit("http_fileserver_agent: exec cmd %s",cmd_buf);
 	return 0;
 }
 
