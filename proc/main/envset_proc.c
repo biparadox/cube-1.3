@@ -307,16 +307,20 @@ int main(int argc,char **argv)
   		ret=ex_module_start(ex_module,NULL);
 	  	if(ret<0)
   			return ret;
+		print_cubeaudit("monitor ex_modulec %s started successfully!\n",ex_module_getname(ex_module));
 	  }
 	  else if(ex_module_gettype(ex_module) == MOD_TYPE_START)
 	  {
   		ret=ex_module_start(ex_module,&start_para);
 	  	if(ret<0)
   			return ret;
+		print_cubeaudit("start ex_module %s started successfully!\n",ex_module_getname(ex_module));
 
 	  }
-      print_cubeaudit("ex_module %s started successfully!",ex_module_getname(ex_module));
-	  	
+	  else
+	  {
+		print_cubeaudit("special ex_module %s started successfully!\n",ex_module_getname(ex_module));
+	  }      
       ret= get_next_ex_module(&ex_module);
 	  active_module_no++;
       if(ret<0)

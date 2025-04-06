@@ -377,6 +377,10 @@ int cube_proc(struct start_para * start_para)
 		print_cubeaudit("start ex_module %s started successfully!\n",ex_module_getname(ex_module));
 
 	  }
+	  else
+	  {
+		print_cubeaudit("special ex_module %s started successfully!\n",ex_module_getname(ex_module));
+	 }
 	  	
     	  ret= get_next_ex_module(&ex_module);
 	  active_module_no++;
