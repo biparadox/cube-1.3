@@ -14,7 +14,7 @@
 //#include "kernel_comp.h"
 #include "list.h"
 #include "attrlist.h"
-#include "string.h"
+#include "memfunc.h"
 #include "struct_deal.h"
 #include "basefunc.h"
 #include "memdb.h"

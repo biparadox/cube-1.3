@@ -21,7 +21,7 @@
 
 #include <stdio.h>
 #include "../include/data_type.h"
-#include "../include/string.h"
+#include "../include/memfunc.h"
 
 int main() {
 
@@ -80,7 +80,7 @@ int main() {
 	printf("\n%s\n",buffer);
 	
 	i=1<<12;
-	printf( "%d bit!\n",Getlowestbit(&i,4,1));
+	printf( "%d bit!\n",Getlowestbit((BYTE *)(&i),4,1));
 	Memset(buffer,0,20);
 	buffer[8]=0x10;
 	printf( "%d bit!\n",Getlowestbit(buffer,20,1));

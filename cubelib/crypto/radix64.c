@@ -2,7 +2,7 @@
 //#include<linux/errno.h>
 
 #include "../include/data_type.h"
-#include "../include/string.h"
+#include "../include/memfunc.h"
 #include "../include/errno.h"
 
 #include "../include/radix64.h"

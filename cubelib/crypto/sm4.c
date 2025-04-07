@@ -54,7 +54,7 @@
 
 #include "sm4.h"
 #include "../include/data_type.h"
-#include "../include/string.h"
+#include "../include/memfunc.h"
 #include <stdio.h>
 
 /*
