@@ -7,6 +7,12 @@ enum subtype_http_server {
 	SUBTYPE(HTTP_SERVER,ACTION),
 	SUBTYPE(HTTP_SERVER,RESULT)
 };
+enum enum_http_server_type
+{
+	ENUM(HTTP_SERVER_TYPE,SERVER)=0x01,	
+	ENUM(HTTP_SERVER_TYPE,CLIENT),	
+};
+
 enum enum_http_server_fileattr
 {
 	ENUM(HTTP_SERVER_ATTR,NORMAL)=0x01,	
@@ -40,6 +46,7 @@ enum enum_http_server_result
 
 typedef struct http_server_server{
 	char * server_name;
+	int local_type;
 	char * ip_addr;
 	int port;
 	BYTE uuid[32];

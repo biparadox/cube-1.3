@@ -35,6 +35,22 @@
 {
 	"head":
 	{
+		"name":"enum_http_server_type",
+		"type":"NAMELIST"
+	},
+	"record":
+	{
+		"elem_no":2,
+		"elemlist":
+		[
+			"SERVER=0x01",
+			"CLIENT",
+		]
+	}
+}
+{
+	"head":
+	{
 		"name":"enum_http_server_fileattr",
 		"type":"NAMELIST"
 	},
@@ -88,8 +104,9 @@
 			"FINISH=0x10",
 			"SUCCEED",
 			"ERR_NOSERVER=0x101",
-			"ERR_TIMEOUT=0x102",
-			"ERR_NOTCONN=0x103"
+			"ERR_NOTCLIENT=0x102",
+			"ERR_TIMEOUT=0x103",
+			"ERR_NOTCONN=0x104"
 		]
 	}
 }
@@ -108,6 +125,7 @@
 			"elem_desc":
 			[
 				{"name":"server_name","type":"ESTRING","size":32},
+				{"name":"local_type","type":"ENUM","ref_name":"enum_http_server_type"},
 				{"name":"ip_addr","type":"ESTRING","size":16},
 				{"name":"port","type":"INT"},
 				{"name":"uuid","type":"UUID"},

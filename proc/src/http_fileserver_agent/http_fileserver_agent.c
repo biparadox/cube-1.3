@@ -187,6 +187,27 @@ int proc_http_server_start(void * sub_proc,void * recv_msg,
 	}
 	http_server = db_record->record;
 
+	// check if 
+	if(http_server->local_type != 1) 
+		// this server is not server mode
+	{
+		RECORD(HTTP_SERVER,RESULT) * result_record;
+		result_record =Talloc0(sizeof(*result_record));
+		if(result_record ==NULL)
+			return -ENOMEM;
+		result_record->server_name = dup_str(file_action->server_name,DIGEST_SIZE);
+		result_record->user = dup_str(file_action->user,DIGEST_SIZE);
+		result_record->result= 0x101;  // ERR_NOSERVER error
+		result_record->result_desc = dup_str("client can't start server!",0);
+		
+		void * result_msg =message_create(TYPE_PAIR(HTTP_SERVER,RESULT),recv_msg);
+		message_add_record(result_msg,result_record);
+		ex_module_sendmsg(sub_proc,result_msg);
+		
+		Free0(result_record);
+		return 0;			
+	}
+
 	//Strcpy(cmd_buf,"python3 -m ./http_server2.py");
 	Strcpy(cmd_buf,"python3 ./http_server2.py");
 	if(http_server->port > 0)
@@ -210,6 +231,7 @@ int proc_http_server_start(void * sub_proc,void * recv_msg,
 	} 
 	print_cubeaudit("http_fileserver_agent: exec cmd %s",cmd_buf);
 	system(cmd_buf);
+	ex_module_sendmsg(sub_proc,recv_msg);
 	return 0;
 }
 
@@ -220,6 +242,7 @@ int proc_http_file_download(void * sub_proc,void * recv_msg,
 	char cmd_buf[DIGEST_SIZE*8];
 	char short_buf[DIGEST_SIZE];
 	RECORD(HTTP_SERVER,SERVER) * http_server;
+	RECORD(HTTP_SERVER,RESULT) * result_record;
 
 	DB_RECORD * db_record;
 
@@ -228,6 +251,27 @@ int proc_http_file_download(void * sub_proc,void * recv_msg,
 		return -EINVAL;
 
 	http_server = db_record->record;
+
+	if(http_server->local_type != 2) 
+		// this server is not client mode
+	{
+		result_record =Talloc0(sizeof(*result_record));
+		if(result_record ==NULL)
+			return -ENOMEM;
+		result_record->server_name = dup_str(file_action->server_name,DIGEST_SIZE);
+		result_record->file_name = dup_str(file_action->file_name,DIGEST_SIZE);
+		result_record->user = dup_str(file_action->user,DIGEST_SIZE);
+		result_record->result= 0x102;  // ERR_NOTCLIENT error
+		result_record->result_desc = dup_str("download can't execute at server!",0);
+		
+		void * result_msg =message_create(TYPE_PAIR(HTTP_SERVER,RESULT),recv_msg);
+		message_add_record(result_msg,result_record);
+		ex_module_sendmsg(sub_proc,result_msg);
+		
+		Free0(result_record);
+		return 0;			
+	}
+
 
 	Strcpy(cmd_buf,"curl -O http://");
 	if(http_server->ip_addr != NULL)
@@ -246,6 +290,8 @@ int proc_http_file_download(void * sub_proc,void * recv_msg,
 	Strcat(cmd_buf,file_action->file_name);
 	system(cmd_buf);
 	print_cubeaudit("http_fileserver_agent: exec cmd %s",cmd_buf);
+
+	ex_module_sendmsg(sub_proc,recv_msg);
 	return 0;
 }
 
@@ -256,6 +302,7 @@ int proc_http_file_upload(void * sub_proc,void * recv_msg,
 	char cmd_buf[DIGEST_SIZE*8];
 	char short_buf[DIGEST_SIZE];
 	RECORD(HTTP_SERVER,SERVER) * http_server;
+	RECORD(HTTP_SERVER,RESULT) * result_record;
 
 	DB_RECORD * db_record;
 
@@ -264,6 +311,27 @@ int proc_http_file_upload(void * sub_proc,void * recv_msg,
 		return -EINVAL;
 
 	http_server = db_record->record;
+
+	if(http_server->local_type != 2) 
+		// this server is not client mode
+	{
+		result_record =Talloc0(sizeof(*result_record));
+		if(result_record ==NULL)
+			return -ENOMEM;
+		result_record->server_name = dup_str(file_action->server_name,DIGEST_SIZE);
+		result_record->file_name = dup_str(file_action->file_name,DIGEST_SIZE);
+		result_record->user = dup_str(file_action->user,DIGEST_SIZE);
+		result_record->result= 0x102;  // ERR_NOTCLIENT error
+		result_record->result_desc = dup_str("upload can't execute at server!",0);
+		
+		void * result_msg =message_create(TYPE_PAIR(HTTP_SERVER,RESULT),recv_msg);
+		message_add_record(result_msg,result_record);
+		ex_module_sendmsg(sub_proc,result_msg);
+		
+		Free0(result_record);
+		return 0;			
+	}
+
 
 	Strcpy(cmd_buf,"curl -F \"file=@");
 	Strcat(cmd_buf,file_action->file_name);
@@ -285,6 +353,7 @@ int proc_http_file_upload(void * sub_proc,void * recv_msg,
 		Strcat(cmd_buf,":8000");
 	system(cmd_buf);
 	print_cubeaudit("http_file_agent: exec %s",cmd_buf);
+	ex_module_sendmsg(sub_proc,recv_msg);
 	return 0;
 }
 
