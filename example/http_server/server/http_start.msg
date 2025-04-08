@@ -1,9 +1,0 @@
-{
-	"type":"HTTP_SERVER",
-	"subtype":"ACTION"
-}
-{
-	"server_name":"example_http_server",
-	"action":"START",
-	"user":"zhao"
-}
