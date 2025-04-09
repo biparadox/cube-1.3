@@ -230,7 +230,12 @@ int proc_http_server_start(void * sub_proc,void * recv_msg,
 		}
 	} 
 	print_cubeaudit("http_fileserver_agent: exec cmd %s",cmd_buf);
-	system(cmd_buf);
+	pid_t pid = fork();
+	if(pid == 0){
+		// child proc
+		system(cmd_buf);
+		return 0;
+	}
 	ex_module_sendmsg(sub_proc,recv_msg);
 	return 0;
 }
@@ -288,7 +293,12 @@ int proc_http_file_download(void * sub_proc,void * recv_msg,
 		Strcat(cmd_buf,":8000");
 	Strcat(cmd_buf,"/");
 	Strcat(cmd_buf,file_action->file_name);
-//	system(cmd_buf);
+	pid_t pid = fork();
+	if(pid == 0){
+		// child proc
+		system(cmd_buf);
+		return 0;
+	}
 	print_cubeaudit("http_fileserver_agent: exec cmd %s",cmd_buf);
 
 	ex_module_sendmsg(sub_proc,recv_msg);
@@ -351,7 +361,12 @@ int proc_http_file_upload(void * sub_proc,void * recv_msg,
 	}
 	else
 		Strcat(cmd_buf,":8000");
-	system(cmd_buf);
+	pid_t pid = fork();
+	if(pid == 0){
+		// child proc
+		system(cmd_buf);
+		return 0;
+	}
 	print_cubeaudit("http_file_agent: exec %s",cmd_buf);
 	ex_module_sendmsg(sub_proc,recv_msg);
 	return 0;
