@@ -288,7 +288,7 @@ int proc_http_file_download(void * sub_proc,void * recv_msg,
 		Strcat(cmd_buf,":8000");
 	Strcat(cmd_buf,"/");
 	Strcat(cmd_buf,file_action->file_name);
-	system(cmd_buf);
+//	system(cmd_buf);
 	print_cubeaudit("http_fileserver_agent: exec cmd %s",cmd_buf);
 
 	ex_module_sendmsg(sub_proc,recv_msg);
