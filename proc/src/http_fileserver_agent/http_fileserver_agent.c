@@ -405,16 +405,17 @@ int proc_http_file_check(void * sub_proc,void * recv_msg,
 		// now it is in server mode
 		// build file name
 		Strncpy(cmd_buf,http_server->server_dir,DIGEST_SIZE*4);
+		Strcat(cmd_buf,"/");
 		Strncat(cmd_buf,file_action->file_name,DIGEST_SIZE*8-1);
 
 		if(access(cmd_buf,R_OK))
 		{
-			http_result = ENUM(HTTP_SERVER_RESULT,EXIST);
+			http_result ->result = ENUM(HTTP_SERVER_RESULT,EXIST);
 			calculate_sm3(cmd_buf,http_result->uuid);
 		}
 		else
 		{
-			http_result = ENUM(HTTP_SERVER_RESULT,ERR_NOTFOUND);
+			http_result->result = ENUM(HTTP_SERVER_RESULT,ERR_NOTFOUND);
 			http_result->result_desc = dup_str("can't find file!",DIGEST_SIZE);
 		}
 	}
@@ -424,12 +425,12 @@ int proc_http_file_check(void * sub_proc,void * recv_msg,
 		// now it is in client mode
 		if(access(cmd_buf,R_OK))
 		{
-			http_result = ENUM(HTTP_SERVER_RESULT,EXIST);
+			http_result->result = ENUM(HTTP_SERVER_RESULT,EXIST);
 			calculate_sm3(cmd_buf,http_result->uuid);
 		}
 		else
 		{
-			http_result = ENUM(HTTP_SERVER_RESULT,ERR_NOTFOUND);
+			http_result->result = ENUM(HTTP_SERVER_RESULT,ERR_NOTFOUND);
 			http_result->result_desc = dup_str("can't find file!",DIGEST_SIZE);
 		}
 	}
