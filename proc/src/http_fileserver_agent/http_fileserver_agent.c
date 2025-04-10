@@ -379,31 +379,67 @@ int proc_http_file_check(void * sub_proc,void * recv_msg,
 	char cmd_buf[DIGEST_SIZE*8];
 	char short_buf[DIGEST_SIZE];
 	RECORD(HTTP_SERVER,SERVER) * http_server;
+	RECORD(HTTP_SERVER,RESULT) * http_result;
+	RECORD(HTTP_SERVER,FILE) * http_fileinfo;
+	void * new_msg;
 
 	DB_RECORD * db_record;
-
+	
+	// get http_server info from memdb
 	db_record = memdb_find_byname(file_action->server_name,TYPE_PAIR(HTTP_SERVER,SERVER));
 	if(db_record == NULL)
 		return -EINVAL;
 
 	http_server = db_record->record;
 
-	Strcpy(cmd_buf,"curl -O http://");
-	if(http_server->ip_addr != NULL)
-		Strcat(cmd_buf,http_server->ip_addr);
-	else
-		Strcat(cmd_buf,"127.0.0.1");
-	if(http_server->port > 0)
+	http_result = Talloc0(sizeof(*http_result));
+	if(http_result ==NULL)
+		return -ENOMEM;
+	http_result->server_name = dup_str(file_action->server_name,DIGEST_SIZE);
+	http_result->file_name = dup_str(file_action->file_name,DIGEST_SIZE*4);
+	http_result->user = dup_str(file_action->user,DIGEST_SIZE);
+
+	// check local instance is server or client
+	if(http_server->local_type == ENUM(HTTP_SERVER_TYPE,SERVER))
 	{
-		Itoa(http_server->port,short_buf);
-		Strcat(cmd_buf,":");
-		Strcat(cmd_buf,short_buf);
+		// now it is in server mode
+		// build file name
+		Strncpy(cmd_buf,http_server->server_dir,DIGEST_SIZE*4);
+		Strncat(cmd_buf,file_action->file_name,DIGEST_SIZE*8-1);
+
+		if(access(cmd_buf,R_OK))
+		{
+			http_result = ENUM(HTTP_SERVER_RESULT,EXIST);
+			calculate_sm3(cmd_buf,http_result->uuid);
+		}
+		else
+		{
+			http_result = ENUM(HTTP_SERVER_RESULT,ERR_NOTFOUND);
+			http_result->result_desc = dup_str("can't find file!",DIGEST_SIZE);
+		}
 	}
 	else
-		Strcat(cmd_buf,":8000");
-	Strcat(cmd_buf,"/");
-	Strcat(cmd_buf,file_action->file_name);
-	system(cmd_buf);
+	{
+		Strncpy(cmd_buf,file_action->file_name,DIGEST_SIZE*4);
+		// now it is in client mode
+		if(access(cmd_buf,R_OK))
+		{
+			http_result = ENUM(HTTP_SERVER_RESULT,EXIST);
+			calculate_sm3(cmd_buf,http_result->uuid);
+		}
+		else
+		{
+			http_result = ENUM(HTTP_SERVER_RESULT,ERR_NOTFOUND);
+			http_result->result_desc = dup_str("can't find file!",DIGEST_SIZE);
+		}
+	}
+
+	new_msg = message_create(TYPE_PAIR(HTTP_SERVER,RESULT),recv_msg);
+	if(new_msg == NULL)
+		return -EINVAL;
+	message_add_record(new_msg,http_result);
+	ex_module_sendmsg(sub_proc,new_msg);
+
 	return 0;
 }
 
