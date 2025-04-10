@@ -408,7 +408,7 @@ int proc_http_file_check(void * sub_proc,void * recv_msg,
 		Strcat(cmd_buf,"/");
 		Strncat(cmd_buf,file_action->file_name,DIGEST_SIZE*8-1);
 
-		if(access(cmd_buf,R_OK))
+		if(access(cmd_buf,R_OK)==0)
 		{
 			http_result ->result = ENUM(HTTP_SERVER_RESULT,EXIST);
 			calculate_sm3(cmd_buf,http_result->uuid);
@@ -423,7 +423,7 @@ int proc_http_file_check(void * sub_proc,void * recv_msg,
 	{
 		Strncpy(cmd_buf,file_action->file_name,DIGEST_SIZE*4);
 		// now it is in client mode
-		if(access(cmd_buf,R_OK))
+		if(access(cmd_buf,R_OK)==0)
 		{
 			http_result->result = ENUM(HTTP_SERVER_RESULT,EXIST);
 			calculate_sm3(cmd_buf,http_result->uuid);
