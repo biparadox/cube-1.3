@@ -6,6 +6,6 @@
 	"server_name":"http_server",
 	"local_type":"CLIENT",
 	"ip_addr":"127.0.0.1",
-	"server_dir":"/root/centoscloud/cube-1.3/example/http_server/server/server_dir",
+	"file_dir":"client_dir",
 	"server_desc":"an example http_server"
 }

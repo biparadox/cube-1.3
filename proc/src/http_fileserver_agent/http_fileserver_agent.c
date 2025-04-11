@@ -221,12 +221,12 @@ int proc_http_server_start(void * sub_proc,void * recv_msg,
 		Strcat(cmd_buf," -ip_addr ");
 		Strcat(cmd_buf,http_server->ip_addr);
 	}
-	if(http_server->server_dir != NULL)
+	if(http_server->file_dir != NULL)
 	{
-		if(http_server->server_dir[0]!=0)
+		if(http_server->file_dir[0]!=0)
 		{
 			Strcat(cmd_buf," -path ");
-			Strcat(cmd_buf,http_server->server_dir);
+			Strcat(cmd_buf,http_server->file_dir);
 		}
 	} 
 	print_cubeaudit("http_fileserver_agent: exec cmd %s",cmd_buf);
@@ -404,7 +404,7 @@ int proc_http_file_check(void * sub_proc,void * recv_msg,
 	{
 		// now it is in server mode
 		// build file name
-		Strncpy(cmd_buf,http_server->server_dir,DIGEST_SIZE*4);
+		Strncpy(cmd_buf,http_server->file_dir,DIGEST_SIZE*4);
 		Strcat(cmd_buf,"/");
 		Strncat(cmd_buf,file_action->file_name,DIGEST_SIZE*8-1);
 

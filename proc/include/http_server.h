@@ -53,7 +53,7 @@ typedef struct http_server_server{
 	char * ip_addr;
 	int port;
 	BYTE uuid[32];
-	char * server_dir;
+	char * file_dir;
 	char * server_desc;
 }__attribute__((packed)) RECORD(HTTP_SERVER,SERVER);
 

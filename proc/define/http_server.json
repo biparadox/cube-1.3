@@ -131,7 +131,7 @@
 				{"name":"ip_addr","type":"ESTRING","size":16},
 				{"name":"port","type":"INT"},
 				{"name":"uuid","type":"UUID"},
-				{"name":"server_dir","type":"ESTRING","size":128},
+				{"name":"file_dir","type":"ESTRING","size":128},
 				{"name":"server_desc","type":"ESTRING","size":128}
 			]
 		}
