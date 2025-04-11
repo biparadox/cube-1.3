@@ -278,7 +278,9 @@ int proc_http_file_download(void * sub_proc,void * recv_msg,
 	}
 
 
-	Strcpy(cmd_buf,"curl -O http://");
+	Strcpy(cmd_buf,"cd ");
+	Strcat(cmd_buf,http_server->file_dir);
+	Strcat(cmd_buf," && curl -O http://");
 	if(http_server->ip_addr != NULL)
 		Strcat(cmd_buf,http_server->ip_addr);
 	else
@@ -343,7 +345,9 @@ int proc_http_file_upload(void * sub_proc,void * recv_msg,
 	}
 
 
-	Strcpy(cmd_buf,"curl -F \"file=@");
+	Strcpy(cmd_buf,"cd ");
+	Strcat(cmd_buf,http_server->file_dir);
+	Strcat(cmd_buf," && curl -F \"file=@");
 	Strcat(cmd_buf,file_action->file_name);
 	Strcat(cmd_buf,"\"");
 
@@ -421,6 +425,8 @@ int proc_http_file_check(void * sub_proc,void * recv_msg,
 	}
 	else
 	{
+		Strncpy(cmd_buf,http_server->file_dir,DIGEST_SIZE*4);
+		Strcat(cmd_buf,"/");
 		Strncpy(cmd_buf,file_action->file_name,DIGEST_SIZE*4);
 		// now it is in client mode
 		if(access(cmd_buf,R_OK)==0)
