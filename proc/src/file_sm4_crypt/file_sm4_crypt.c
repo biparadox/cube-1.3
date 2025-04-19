@@ -13,6 +13,7 @@
 #include "cube.h"
 #include "cube_define.h"
 #include "cube_record.h"
+#include "file_sm4_crypt.h"
 
 extern struct timeval time_val={0,50*1000};
 BYTE Buf[DIGEST_SIZE*32];
@@ -23,6 +24,18 @@ int file_sm4_crypt_init(void * sub_proc,void * para)
 {
 	int ret;
 	// add youself's plugin init func here
+    	struct init_struct * init_para=para;
+	print_cubeaudit("init_para %p\n",para);
+    	if(para!=NULL)
+        {		
+		print_cubeaudit("file_sm4_crypt: set default key %s",init_para->default_key);
+		Memset(default_key,0,DIGEST_SIZE);	   
+		Strncpy(default_key,init_para->default_key,DIGEST_SIZE);
+	}
+	else
+	{
+		print_cubeaudit("file_sm4_crypt: not set default key, use \"123456\" as default key");
+	}
 	return 0;
 }
 
