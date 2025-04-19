@@ -109,7 +109,7 @@ int proc_crypt_file(void *sub_proc, void *recv_msg)
 
     // get command from message
 
-    offset = Getfiledfromstr(cmd_buf,cmd->name,":",DIGEST_SIZE/2);
+    offset = Getfiledfromstr(cmd_buf,cmd->name,':',DIGEST_SIZE/2);
     if(offset<0)
 	    return -EINVAL;
 
@@ -198,7 +198,7 @@ int proc_crypt_file_expand(void *sub_proc, void *recv_msg)
     // get command from message
     cmd = msg_expand->expand;
 
-    offset = Getfiledfromstr(cmd_buf,cmd->name,":",DIGEST_SIZE/2);
+    offset = Getfiledfromstr(cmd_buf,cmd->name,':',DIGEST_SIZE/2);
     if(offset<0)
 	    return -EINVAL;
 
