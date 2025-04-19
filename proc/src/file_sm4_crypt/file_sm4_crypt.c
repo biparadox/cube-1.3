@@ -102,7 +102,7 @@ int proc_crypt_file(void *sub_proc, void *recv_msg)
 	
     // get crypt cmd from message
     if ((ret = message_get_record(recv_msg, &cmd, 0)) < 0)
-        return -EINVAL;
+        return ret;
 
     // get command from message
 
@@ -160,6 +160,85 @@ int proc_crypt_file(void *sub_proc, void *recv_msg)
     message_add_record(new_msg,cmd);
   
     return ex_module_sendmsg(sub_proc, new_msg);
+}
+
+int proc_crypt_file_expand(void *sub_proc, void *recv_msg)
+{
+    void        *new_msg;
+    char        file_buf[DIGEST_SIZE*4] = {0};
+    char        output_file_buf[DIGEST_SIZE*4] = {0};
+    int ret;
+ 
+    int crypt_mode=0;   // 0: do nothing
+                        // 1: crypt
+			// 2: decrypt    
+
+
+    MSG_EXPAND  *msg_expand;
+    char cmd_buf[DIGEST_SIZE/2] = {0};
+    char crypt_key[DIGEST_SIZE] = {0};
+    int offset;
+
+    RECORD(GENERAL_RETURN,UUID)         *cmd;
+	
+    // get crypt cmd from message
+    if ((ret = message_remove_expand(recv_msg, TYPE_PAIR(GENERAL_RETURN,UUID),&msg_expand)) < 0)
+        return ret;
+
+    // get command from message
+    cmd = msg_expand->expand;
+
+    offset = Getfiledfromstr(cmd_buf,cmd->name,":",DIGEST_SIZE/2);
+    if(offset<0)
+	    return -EINVAL;
+
+    Strncpy(file_buf,cmd->name+offset+1,DIGEST_SIZE*4);
+       
+   // check mode and build output file name
+   if(Strncmp(cmd_buf,"encrypt",DIGEST_SIZE/2)==0)
+   {
+		crypt_mode=1;   
+		Strncpy(output_file_buf,file_buf,DIGEST_SIZE*4-5);
+		Strcat(output_file_buf,".sm4");
+   }
+   else if(Strncmp(cmd_buf,"decrypt",DIGEST_SIZE/2)==0)
+   {
+		crypt_mode=2; 
+	        offset = Strnlen(file_buf,DIGEST_SIZE*4-1);
+		if(Strcmp(file_buf+offset-4,".sm4")!=0)
+		{
+			print_cubeerr("file_sm4_crypt: decrypt file name is not *.sm4 format!");
+			return -EINVAL;
+		}	
+		Strncpy(output_file_buf,file_buf,offset-4);
+   }
+
+   // get crypt key
+
+   if(!Isemptyuuid(cmd->return_value))
+   {
+	Memcpy(crypt_key,cmd->return_value,DIGEST_SIZE);
+   }
+   else
+   {
+	Memcpy(crypt_key,default_key,DIGEST_SIZE/2);
+	Memcpy(crypt_key+DIGEST_SIZE/2,default_iv,DIGEST_SIZE/2);
+   }
+	
+    /* Start encrypt/decrypt  file */
+    if ((ret = _datademo_file_sm4_crypt(file_buf, output_file_buf,crypt_key,crypt_mode)) < 0)
+    	return -EINVAL;
+    
+    if(crypt_mode)
+    {
+	    Free(cmd->name);
+	    cmd->name=dup_str(output_file_buf,DIGEST_SIZE*4);
+	    calculate_sm3(cmd->name,cmd->return_value);
+    }	
+
+    message_add_expand_data(recv_msg,cmd,TYPE_PAIR(GENERAL_RETURN,UUID));
+  
+    return ex_module_sendmsg(sub_proc, recv_msg);
 	
     /*i=0;
 
