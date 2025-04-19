@@ -115,9 +115,7 @@ int proc_crypt_file(void *sub_proc, void *recv_msg)
 
     if(file_dir[0]!=0)
     {
-   	 Strncpy(file_buf,file_dir,DIGEST_SIZE*2);
-   	 Strcat(file_buf,"/");
-    	Strncat(file_buf,cmd->name+offset+1,DIGEST_SIZE*4);
+    	 Strncpy(file_buf,cmd->name+offset+1,DIGEST_SIZE*4);
     }
     else
     	Strncpy(file_buf,cmd->name+offset+1,DIGEST_SIZE*4);
@@ -154,14 +152,13 @@ int proc_crypt_file(void *sub_proc, void *recv_msg)
    }
 	
     /* Start encrypt/decrypt  file */
-    if ((ret = _datademo_file_sm4_crypt(file_buf, output_file_buf,crypt_key,crypt_mode)) < 0)
+    if ((ret = _datademo_file_sm4_crypt(file_buf, output_file_buf,crypt_key,crypt_mode,cmd->return_value)) < 0)
     	return -EINVAL;
     
     if(crypt_mode)
     {
 	    Free(cmd->name);
 	    cmd->name=dup_str(output_file_buf,DIGEST_SIZE*4);
-	    calculate_sm3(cmd->name,cmd->return_value);
     }	
 
     new_msg = message_create(TYPE_PAIR(GENERAL_RETURN,UUID),recv_msg);
@@ -204,9 +201,7 @@ int proc_crypt_file_expand(void *sub_proc, void *recv_msg)
 
     if(file_dir[0]!=0)
     {
-   	 Strncpy(file_buf,file_dir,DIGEST_SIZE*2);
-   	 Strcat(file_buf,"/");
-    	Strncat(file_buf,cmd->name+offset+1,DIGEST_SIZE*4);
+    	Strncpy(file_buf,cmd->name+offset+1,DIGEST_SIZE*4);
     }
     else
     	Strncpy(file_buf,cmd->name+offset+1,DIGEST_SIZE*4);
@@ -243,13 +238,16 @@ int proc_crypt_file_expand(void *sub_proc, void *recv_msg)
    }
 	
     /* Start encrypt/decrypt  file */
-    if ((ret = _datademo_file_sm4_crypt(file_buf, output_file_buf,crypt_key,crypt_mode)) < 0)
+    if ((ret = _datademo_file_sm4_crypt(file_buf, output_file_buf,crypt_key,crypt_mode,cmd->return_value)) < 0)
     	return -EINVAL;
     
     if(crypt_mode)
     {
 	    Free(cmd->name);
 	    cmd->name=dup_str(output_file_buf,DIGEST_SIZE*4);
+
+
+
 	    calculate_sm3(cmd->name,cmd->return_value);
     }	
 
@@ -283,7 +281,8 @@ int proc_crypt_file_expand(void *sub_proc, void *recv_msg)
     return ret;*/
 }
 
-int _datademo_file_sm4_crypt(char * file_name, char * output_file_name, BYTE * file_key,int crypt_mode) 
+int _datademo_file_sm4_crypt(char * file_name, char * output_file_name, BYTE * file_key,
+		int crypt_mode, BYTE * uuid) 
 {
     int ret;
     int fd;
@@ -298,11 +297,15 @@ int _datademo_file_sm4_crypt(char * file_name, char * output_file_name, BYTE * f
     BYTE * crypt_buf;
     BYTE digest[DIGEST_SIZE];
     struct stat statbuf;
+    char file_buf[DIGEST_SIZE*6+1];
 
-    if(crypt_mode ==0)
-	   return  0;
 
-    fd=open(file_name,O_RDONLY);
+    Strncpy(file_buf,file_dir,DIGEST_SIZE*2);
+    Strcat(file_buf,"/");
+    offset=Strlen(file_buf);
+    Strncpy(file_buf+offset,file_name,DIGEST_SIZE*4);
+
+    fd=open(file_buf,O_RDONLY);
     if(fd<0)
         return fd;
     if(fstat(fd,&statbuf)<0)
@@ -312,13 +315,19 @@ int _datademo_file_sm4_crypt(char * file_name, char * output_file_name, BYTE * f
     }
     file_size=statbuf.st_size;
 
+    if(crypt_mode ==0)
+    {
+    	calculate_sm3(file_buf,uuid);
+	return  0;
+    }
 
     block_size = DIGEST_SIZE*16;
 
     plain_buf = Buf;
     crypt_buf=plain_buf+block_size;
 
-    target_fd=open(output_file_name,O_WRONLY|O_TRUNC|O_CREAT,0644);
+    Strncpy(file_buf+offset,output_file_name,DIGEST_SIZE*4);
+    target_fd=open(file_buf,O_WRONLY|O_TRUNC|O_CREAT,0644);
     if(target_fd<0)
         return target_fd;
     
@@ -341,15 +350,31 @@ int _datademo_file_sm4_crypt(char * file_name, char * output_file_name, BYTE * f
                 return -EINVAL;
             offset+=left_size;
         }
-        crypt_size=sm4_context_crypt(plain_buf,&crypt_buf,ret,file_key);
-        ret=write(target_fd,crypt_buf,crypt_size);
-        if(ret!=crypt_size)
-            return -EINVAL;
+	switch(crypt_mode)
+	{
+		case 1:
+
+       		 	crypt_size=sm4_context_crypt(plain_buf,&crypt_buf,ret,file_key);
+        	 	ret=write(target_fd,crypt_buf,crypt_size);
+        	 	if(ret!=crypt_size)
+            			return -EINVAL;
+			break;
+		case 2:
+       		 	crypt_size=sm4_context_decrypt(plain_buf,&crypt_buf,ret,file_key);
+        	 	ret=write(target_fd,crypt_buf,crypt_size);
+        	 	if(ret!=crypt_size)
+            			return -EINVAL;
+			break;
+		default:
+			return -EINVAL;
+	}
+
         total_crypt_size+=crypt_size;
 
     }
     close(fd);
     close(target_fd);
     
+    calculate_sm3(file_buf,uuid);
     return total_crypt_size;
 }
