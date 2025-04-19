@@ -15,10 +15,10 @@
 #include "cube_record.h"
 #include "file_sm4_crypt.h"
 
-extern struct timeval time_val={0,50*1000};
 BYTE Buf[DIGEST_SIZE*32];
 BYTE default_key[DIGEST_SIZE/2]="123456";
 BYTE default_iv[16] = {0x01,0x23,0x45,0x67,0x89,0xab,0xcd,0xef,0xfe,0xdc,0xba,0x98,0x76,0x54,0x32,0x10};
+char file_dir[DIGEST_SIZE*2+1];
 
 int file_sm4_crypt_init(void * sub_proc,void * para)
 {
@@ -31,6 +31,9 @@ int file_sm4_crypt_init(void * sub_proc,void * para)
 		print_cubeaudit("file_sm4_crypt: set default key %s",init_para->default_key);
 		Memset(default_key,0,DIGEST_SIZE);	   
 		Strncpy(default_key,init_para->default_key,DIGEST_SIZE);
+		Memset(file_dir,0,DIGEST_SIZE*2+1);	   
+		if(init_para->file_dir!=NULL)
+			Strncpy(file_dir,init_para->file_dir,DIGEST_SIZE*2);
 	}
 	else
 	{
@@ -110,7 +113,14 @@ int proc_crypt_file(void *sub_proc, void *recv_msg)
     if(offset<0)
 	    return -EINVAL;
 
-    Strncpy(file_buf,cmd->name+offset+1,DIGEST_SIZE*4);
+    if(file_dir[0]!=0)
+    {
+   	 Strncpy(file_buf,file_dir,DIGEST_SIZE*2);
+   	 Strcat(file_buf,"/");
+    	Strncat(file_buf,cmd->name+offset+1,DIGEST_SIZE*4);
+    }
+    else
+    	Strncpy(file_buf,cmd->name+offset+1,DIGEST_SIZE*4);
        
    // check mode and build output file name
    if(Strncmp(cmd_buf,"encrypt",DIGEST_SIZE/2)==0)
@@ -192,7 +202,14 @@ int proc_crypt_file_expand(void *sub_proc, void *recv_msg)
     if(offset<0)
 	    return -EINVAL;
 
-    Strncpy(file_buf,cmd->name+offset+1,DIGEST_SIZE*4);
+    if(file_dir[0]!=0)
+    {
+   	 Strncpy(file_buf,file_dir,DIGEST_SIZE*2);
+   	 Strcat(file_buf,"/");
+    	Strncat(file_buf,cmd->name+offset+1,DIGEST_SIZE*4);
+    }
+    else
+    	Strncpy(file_buf,cmd->name+offset+1,DIGEST_SIZE*4);
        
    // check mode and build output file name
    if(Strncmp(cmd_buf,"encrypt",DIGEST_SIZE/2)==0)

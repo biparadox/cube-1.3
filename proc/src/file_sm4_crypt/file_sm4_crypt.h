@@ -9,5 +9,6 @@ int file_sm4_crypt_start(void * sub_proc,void * para);
 struct init_struct
 {
 	char default_key[DIGEST_SIZE];
+	char * file_dir;
 };
 #endif
