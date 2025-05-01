@@ -68,6 +68,11 @@ typedef struct struct_elem_attr
 	void * def;   
 }__attribute__((packed)) ELEM_ATTR;
 
+struct struct_namelist
+{
+	int elem_no;
+	NAME2VALUE * elemlist;
+}__attribute__((packed));
 // struct define end
 // memdb define start
 enum base_cube_db
