@@ -22,6 +22,8 @@
 #define tagRECORD(type,subtype) tagrecord_##type##_##subtype
 #define ENUM_DEFINE(class) ENUM_##class
 #define ENUM(class,item) ENUM_##class_##item
+#define FLAG_DEFINE(class) FLAG_##class
+#define FLAG(class,item) FLAG_##class_##item
 
 enum dynamic_memdb_typelist
 {
