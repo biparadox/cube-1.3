@@ -196,6 +196,8 @@ void * message_gen_typesmsg(int type,int subtype,void * active_msg);
 #define tagRECORD(type,subtype) tagrecord_##type##_##subtype
 #define ENUM_DEFINE(class) ENUM_##class
 #define ENUM(class,item) ENUM_##class_##item
+#define FLAG_DEFINE(class) FLAG_##class
+#define FLAG(class,item) FLAG_##class_##item
 
 typedef struct db_record
 {
