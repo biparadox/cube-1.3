@@ -1337,11 +1337,11 @@ int message_route_setremotestart( void * msg)
 	    msg_box->policy = route_path;
 	    if(msg_box->head.state != MSG_STATE_RESPONSE)
 	    {
-		    msg_box->path_site = &route_path->route_path.head.list;
+		    msg_box->path_site = &(route_path->route_path.head.list);
 	    }
 	    else
 	    {
-		    msg_box->path_site=&route_path->response_path.head.list;
+		    msg_box->path_site=&(route_path->response_path.head.list);
 	    }
 	
 	
@@ -1485,6 +1485,7 @@ int message_route_settracetarget(void * msg,void * node)
 {
 	struct message_box * message=msg;
 	TRACE_NODE * trace_node = node;
+	ROUTE_PATH * route_path;
 	if(trace_node ==NULL)
 	{
 		message->head.flow=MSG_FLOW_FINISH;
@@ -1493,6 +1494,8 @@ int message_route_settracetarget(void * msg,void * node)
 	Memcpy(message->head.sender_uuid,trace_node->target_uuid,DIGEST_SIZE);
 	message->head.flag &= ~MSG_FLAG_LOCAL;
 	message->policy=trace_node->path;
+	route_path = message->policy;
+	message->path_site = &(route_path->response_path.head.list);
 	return 1;	
 }
 int message_route_gettracetarget(void * msg,void * node)
