@@ -233,6 +233,7 @@ int  memdb_get_typeno(char * typestr);
 int  memdb_get_subtypeno(int typeno,char * typestr);
 char * memdb_get_typestr(int typeno);
 char * memdb_get_subtypestr(int typeno,int subtypeno);
+void * memdb_get_subtypelist(int type);
 void * memdb_get_template(int type, int subtype);
 int memdb_comp_uuid(void * record);
 int memdb_comp_record_uuid(void * record,int type,int subtype, BYTE * uuid);

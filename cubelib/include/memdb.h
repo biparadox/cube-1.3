@@ -142,6 +142,5 @@ int memdb_comp_uuid(void * record);
 int memdb_comp_record_uuid(void * record,int type,int subtype, BYTE * uuid);
 void * memdb_read_struct_template(void * node);
 
-
 #endif
 
