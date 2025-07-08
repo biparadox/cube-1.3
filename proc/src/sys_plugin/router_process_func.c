@@ -485,7 +485,7 @@ int proc_router_start(void * sub_proc,void * para)
 			// this pro is a port proc
 			curr_proc_type=ex_module_gettype(sub_proc);
 
-			// check if sub_proc has message 
+			// enum module,check module and get module's sending message 
 			ret=recv_ex_module_msg(sub_proc,&message);
 			if(ret<0)
 			{
@@ -499,12 +499,11 @@ int proc_router_start(void * sub_proc,void * para)
 				continue;	
 			}
 
+				// get message's sender as origin_proc
 			Strncpy(origin_proc,ex_module_getname(sub_proc),DIGEST_SIZE);
 			print_cubeaudit("router get proc %.64s's message ",origin_proc); 
 
-
-
-			// message's value reset
+				// if origin message is not		message's value reset
 			if(Strcmp(origin_proc,"connector_proc")!=0)
 			{
 				message_set_sender(message,origin_proc);
@@ -547,7 +546,6 @@ int proc_router_start(void * sub_proc,void * para)
 		
 			// enter the message route match process
 			
-
 			if(message->policy!=NULL)
 			// if message has path already
 			{
@@ -698,6 +696,11 @@ int proc_router_start(void * sub_proc,void * para)
 				}
 				
 			}
+			else
+			{
+				print_cubeerr("message rote is nor deliver or query mode");
+				return -EINVAL;
+			}
 			if(issend==1)
 			{
 				issend=0;
@@ -740,6 +743,7 @@ int proc_router_start(void * sub_proc,void * para)
 								}
 								break;
 							default:
+								print_cubeaudit("message branch is nor dup no aspect");
 								break;
 						}
 						curr_record = _node_list_getnext(&curr_pathnode->aspect_branch);

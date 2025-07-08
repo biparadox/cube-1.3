@@ -49,7 +49,7 @@
 	},
 	"record":
 	{
-		"elem_no":7,
+		"elem_no":8,
 		"elemlist":
 		[
 			"LOCAL=0x01",
@@ -58,7 +58,8 @@
 			"SIGN=0x20",
 			"ZIP=0x40",
 			"VERIFY=0x80",
-			"FOLLOW=0x100"
+			"FOLLOW=0x100",
+			"ASPECT=0x200"
 		]
 	}
 }

@@ -553,6 +553,7 @@ void * route_dup_message(void * message,BRANCH_NODE * branch)
 	struct message_box * new_msg = message_clone(message);
 	if(new_msg==NULL)
 		return NULL;
+	new_msg->head.flag |= MSG_FLAG_ASPECT;
 	new_msg->head.ljump=1;
 	new_msg->head.rjump=1;
 	Strncpy(new_msg->head.route,branch_path->name,DIGEST_SIZE);
@@ -631,7 +632,7 @@ int route_aspect_message(void * message,BRANCH_NODE * branch)
 
 	msg_box->head.ljump=1;
 	msg_box->head.rjump=1;
-		
+	msg_box->head.flag |= MSG_FLAG_ASPECT;
 	message_route_setstart(message,branch_path);
 	return 1;
 }
@@ -1300,6 +1301,25 @@ int message_route_setstart( void * msg, void * path)
 
 }
 
+TRACE_NODE * _create_trace_node(void * message)
+{	
+		struct message_box * msg_box = (struct message_box *)message;
+		NODE_LIST * hash_list = &hash_forest[_hash_index(msg_box->head.nonce)];
+		if(hash_list==NULL)
+		    return NULL;
+		// build a query trace node and add it in hash nodelist 	
+		TRACE_NODE * trace_node = Dalloc0(sizeof(*trace_node),NULL);
+		if(trace_node ==NULL)
+			return NULL;
+		Memcpy(trace_node->msg_uuid,msg_box->head.nonce,DIGEST_SIZE);
+		Memcpy(trace_node->source_uuid,msg_box->head.sender_uuid,DIGEST_SIZE);
+		trace_node->path=msg_box->policy;
+		
+		// add trace_node to hash_nodelist 
+        _node_list_add(hash_list,trace_node);
+		return trace_node;
+}
+
 int message_route_setremotestart( void * msg)
 {
 	int ret;
@@ -1327,7 +1347,11 @@ int message_route_setremotestart( void * msg)
 	
 	    if((message_get_flow(msg)==MSG_FLOW_QUERY) &&(msg_box->head.state!=MSG_STATE_RESPONSE))
 	    {
-		    // find hash nodelist
+			TRACE_NODE * trace_node =_create_trace_node(msg);
+			if(trace_node ==NULL)
+				return -EINVAL;
+			/*
+		 	// find hash nodelist
 		    NODE_LIST * hash_list = &hash_forest[_hash_index(msg_box->head.nonce)];
 		    if(hash_list==NULL)
 			    return -EINVAL;
@@ -1341,7 +1365,7 @@ int message_route_setremotestart( void * msg)
 		
 		    // add trace_node to hash_nodelist 
       		 _node_list_add(hash_list,trace_node);
-			
+			 */
 	    }
     }
 	else  //perhaps this is the return info of aspect policy
