@@ -283,9 +283,6 @@ int main(int argc,char **argv)
     	}
     }	
     
-/*
-    }
-  */   
     usleep(time_val.tv_usec);
     print_cubeaudit("system plugin connector_proc is prepared!");
     ret=ex_module_start(conn_proc,NULL);

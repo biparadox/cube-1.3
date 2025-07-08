@@ -25,6 +25,8 @@ int virtual_node_init(void * sub_proc, void * para)
 {
 	int ret;
     char uuid_str[DIGEST_SIZE*2+1];
+	BYTE uuid[DIGEST_SIZE];
+	char proc_name[DIGEST_SIZE];
 
     // Init virtuan node Func
     struct virtual_node_para * virt_para=para;
@@ -41,16 +43,24 @@ int virtual_node_init(void * sub_proc, void * para)
         virtual_node =Talloc0(sizeof(*virtual_node));
         if(virtual_node ==NULL)
             return -ENOMEM;
-        Strncpy(virtual_node->node_name,virt_para->node_name,DIGEST_SIZE);
         Strncpy(virtual_node->domain,virt_para->domain,DIGEST_SIZE);
 
-        calculate_context_sm3(virtual_node->node_name,Strlen(virtual_node->node_name),virtual_node->node_uuid);
-        proc_share_data_setvalue("uuid",virtual_node->node_uuid);
-        Memset(uuid_str,0,DIGEST_SIZE*2+1);
-        digest_to_uuid(virtual_node->node_uuid,uuid_str);
-        
-        print_cubeaudit("virtual_node init :change virtual node uuid to %s!",uuid_str);
 
+		if(virt_para->node_name != NULL)
+		{
+			Strncpy(virtual_node->node_name,virt_para->node_name,DIGEST_SIZE);
+			calculate_context_sm3(virtual_node->node_name,Strlen(virtual_node->node_name),virtual_node->node_uuid);
+			proc_share_data_setvalue("uuid",virtual_node->node_uuid);
+			Memset(uuid_str,0,DIGEST_SIZE*2+1);
+			digest_to_uuid(virtual_node->node_uuid,uuid_str);
+        
+			print_cubeaudit("virtual_node init :change virtual node uuid to %s name to %s!",uuid_str,virtual_node->node_name);
+			proc_share_data_getvalue("proc_name",proc_name);
+			comp_proc_uuid(virtual_node->node_uuid,proc_name,uuid);
+			digest_to_uuid(uuid,uuid_str);
+			print_cubeaudit("virtual_node init : change instance's local proc uuid to %s\n",uuid_str);
+		}
+		
         // store virtual_node struct
         DB_RECORD * db_record;
         db_record = memdb_find_byname("default",TYPE_PAIR(MESSAGE,VIRTUAL_NODE));

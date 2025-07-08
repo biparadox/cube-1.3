@@ -1424,7 +1424,7 @@ void * _find_flowtype_node(NODE_LIST * hash_list,BYTE * comp_uuid,enum message_f
 }
 
 
-int message_route_findtrace(void * msg,enum message_flow_type flow)
+void * message_route_findtrace(void * msg,enum message_flow_type flow)
 {
 	struct message_box * message=msg;
 	TRACE_NODE * trace_node;
@@ -1437,17 +1437,21 @@ int message_route_findtrace(void * msg,enum message_flow_type flow)
 	if(hash_list==NULL)
 		return -EINVAL;
 	trace_record = _find_flowtype_node(hash_list,message->head.nonce,flow);
+	/*
 	if(trace_record ==NULL)
 	{
 		message->head.flow=MSG_FLOW_FINISH;
         return 0;
     }
+	*/
+	/*
 	if(flow==MSG_FLOW_QUERY)
 	{
 		trace_node=trace_record->record;
 		Memcpy(message->head.receiver_uuid,trace_node->source_uuid,DIGEST_SIZE);
 		message->head.state = MSG_STATE_RESPONSE;
 		message->head.flag &= ~MSG_FLAG_LOCAL;
+		message->policy=trace_node->path;
 	}
 	else if(flow ==MSG_FLOW_ASPECT)
 	{
@@ -1456,7 +1460,53 @@ int message_route_findtrace(void * msg,enum message_flow_type flow)
 		//Free(aspect_node); 	
     	//List_del(&trace_record);
 	}
+	*/
     	//_node_list_del(trace_record);
+	if(trace_record==NULL)
+		return NULL;
+	return trace_record->record;	
+}
+
+int message_route_settracesrc(void * msg,void * node)
+{
+	struct message_box * message=msg;
+	TRACE_NODE * trace_node = node;
+	if(trace_node ==NULL)
+	{
+		message->head.flow=MSG_FLOW_FINISH;
+        return 0;
+    }
+	Memcpy(message->head.receiver_uuid,trace_node->source_uuid,DIGEST_SIZE);
+	message->head.state = MSG_STATE_RESPONSE;
+	message->head.flag &= ~MSG_FLAG_LOCAL;
+	return 1;	
+}
+int message_route_settracetarget(void * msg,void * node)
+{
+	struct message_box * message=msg;
+	TRACE_NODE * trace_node = node;
+	if(trace_node ==NULL)
+	{
+		message->head.flow=MSG_FLOW_FINISH;
+        return 0;
+    }
+	Memcpy(message->head.sender_uuid,trace_node->target_uuid,DIGEST_SIZE);
+	message->head.flag &= ~MSG_FLAG_LOCAL;
+	message->policy=trace_node->path;
+	return 1;	
+}
+int message_route_gettracetarget(void * msg,void * node)
+{
+	struct message_box * message=msg;
+	TRACE_NODE * trace_node = node;
+	Memcpy(trace_node->target_uuid,message->head.receiver_uuid,DIGEST_SIZE);
+	return 1;	
+}
+int message_route_aspectrecover(void * msg,void * node)
+{
+	struct message_box * message=msg;
+	ASPECT_NODE * aspect_node = node;
+	_recover_aspect_message(message,aspect_node);
 	return 1;	
 }
 

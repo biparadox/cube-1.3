@@ -44,7 +44,6 @@ typedef struct tagtrace_node
 	BYTE msg_uuid[DIGEST_SIZE];
 	enum message_flow_type trace_flag; // 0 means query response, i means aspect
 	BYTE source_uuid[DIGEST_SIZE];
-	BYTE target_uuid[DIGEST_SIZE];
 	void * aspect_site;
 	void * path;
 }__attribute__((packed)) TRACE_NODE;
@@ -130,11 +129,4 @@ void * route_read_policy(void * policy_node);
 
 Record_List * _node_list_getfirst(void * list);
 Record_List * _node_list_getnext(void * list);
-
-void * message_route_findtrace(void * msg,enum message_flow_type flow);
-int message_route_settracesrc(void * msg,void * node);
-int message_route_settracetarget(void * msg,void * node);
-int message_route_gettracetarget(void * msg,void * node);
-int message_route_aspectrecover(void * msg,void * node);
-
 #endif

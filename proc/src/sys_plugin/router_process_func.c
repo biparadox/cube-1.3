@@ -549,6 +549,7 @@ int proc_router_start(void * sub_proc,void * para)
 			if(message->policy!=NULL)
 			// if message has path already
 			{
+
 				_waiting_message_add(message);
 			}
 			// if message is init message
@@ -597,21 +598,24 @@ int proc_router_start(void * sub_proc,void * para)
 			else
 			{
 				// we should find message's response record and reload the path
-				ret=message_route_setremotestart(message);
-				if(ret<0)
+				TRACE_NODE * trace_node;
+				trace_node=message_route_findtrace(message,MSG_FLOW_QUERY);
+				if(trace_node == NULL)
 				{
 					print_cubeerr("Fatal error in remotestart!");
 					return ret;
 				}
+				ret= message_route_settracetarget(message,trace_node);
 				if(message->policy==NULL)
 				{
 				    print_cubeaudit("maybe an aspect remote msg %.64s come",msg_head->route);
 					proc_audit_log(message);
 				}
-                		else
-                		{
+                else
+                {
+
 				    print_cubeaudit("response remote msg match path %.64s's policy",msg_head->route);
-                		}
+                }
 				print_cubeaudit("router_proc: add message to send queue");
 				_waiting_message_add(message);
 
@@ -655,33 +659,39 @@ int proc_router_start(void * sub_proc,void * para)
 				{
 					if(msg_head->rjump>1)
 					{
-						ret=message_route_findtrace(message,MSG_FLOW_QUERY);
-						if(ret<0)
+						TRACE_NODE * trace_node;
+						trace_node=message_route_findtrace(message,MSG_FLOW_QUERY);
+						if(trace_node == NULL)
 						{
 							proc_audit_log(message);
 							print_cubeerr("find trace message (%d %d)failed!\n",message->head.record_type,message->head.record_subtype);
 						}
 						else
 						{
+							if((msg_head->state & MSG_STATE_RESPONSE)||(ret==ROUTE_TARGET_FINISH))  
+							{
+								ret= message_route_settracesrc(message,trace_node);
+							}
+							else
+							{
+								ret= message_route_gettracetarget(message,trace_node);
+							}
 							proc_audit_log(message);
 							issend=1;
 						}
 					}
 					else
 					{
-						ret=message_route_findtrace(message,MSG_FLOW_ASPECT);
-						if(ret<0)   // find aspect error!
+						ASPECT_NODE * aspect_node;
+						aspect_node=message_route_findtrace(message,MSG_FLOW_ASPECT);
+						if(aspect_node == NULL)   // find aspect error!
 						{
 							proc_audit_log(message);
-							print_cubeerr("find trace message (%d %d)failed!\n",message->head.record_type,message->head.record_subtype);
-						}
-						else if (ret ==0) // no aspect node, should search if it will be aspect
-						{
-							proc_audit_log(message);
-                            issend=1;
+							print_cubeerr("find aspect  message (%d %d)failed!\n",message->head.record_type,message->head.record_subtype);
 						}
                         else              // find an aspect node  
                         {
+							ret= message_route_aspectrecover(message,aspect_node);
 							proc_audit_log(message);
 							issend=1;
 							isaspect=1;
@@ -698,7 +708,7 @@ int proc_router_start(void * sub_proc,void * para)
 			}
 			else
 			{
-				print_cubeerr("message rote is nor deliver or query mode");
+				print_cubeerr("message route is nor deliver or query mode");
 				return -EINVAL;
 			}
 			if(issend==1)
