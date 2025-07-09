@@ -1276,31 +1276,6 @@ int rule_get_target(void * router_rule,void * message,void **result)
     return rule->target_type;	
 }
 
-int message_route_setstart( void * msg, void * path)
-{
-	int ret;
-	struct message_box * msg_box = (struct message_box *)msg;
-	ROUTE_PATH * route_path = (ROUTE_PATH *)path;
-	ROUTE_NODE * startnode;
-	char * receiver;
-	
-	msg_box->policy = path;
-	msg_box->head.flow=route_path->flow;
-	msg_box->head.state = MSG_STATE_MATCH;
-	Strncpy(msg_box->head.route,route_path->name,DIGEST_SIZE);
-//	msg_box->path_site=NULL;
-//	return 0;
-
-	msg_box->path_site = &route_path->route_path.head.list;
-//	startnode = get_curr_pathsite(msg);
-//	if(startnode==NULL)
-//		return -EINVAL;
-	
-//	return rule_get_target(&startnode->this_target,msg,&receiver);
-	return 1;
-
-}
-
 TRACE_NODE * _create_trace_node(void * message)
 {	
 		struct message_box * msg_box = (struct message_box *)message;
@@ -1319,6 +1294,30 @@ TRACE_NODE * _create_trace_node(void * message)
         _node_list_add(hash_list,trace_node);
 		return trace_node;
 }
+
+int message_route_setstart( void * msg, void * path)
+{
+	int ret;
+	struct message_box * msg_box = (struct message_box *)msg;
+	ROUTE_PATH * route_path = (ROUTE_PATH *)path;
+	ROUTE_NODE * startnode;
+	char * receiver;
+	
+	msg_box->policy = path;
+	msg_box->head.flow=route_path->flow;
+	msg_box->head.state = MSG_STATE_MATCH;
+	Strncpy(msg_box->head.route,route_path->name,DIGEST_SIZE);
+
+	msg_box->path_site = &route_path->route_path.head.list;
+    if((message_get_flow(msg)==MSG_FLOW_QUERY) &&(msg_box->head.state!=MSG_STATE_RESPONSE))
+    {
+		TRACE_NODE * trace_node =_create_trace_node(msg);
+		if(trace_node ==NULL)
+			return -EINVAL;
+	}
+	return 1;
+}
+
 
 int message_route_setremotestart( void * msg)
 {

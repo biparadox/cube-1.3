@@ -602,7 +602,9 @@ int proc_router_start(void * sub_proc,void * para)
 				trace_node=message_route_findtrace(message,MSG_FLOW_QUERY);
 				if(trace_node == NULL)
 				{
+					proc_audit_log(message);
 					print_cubeerr("Fatal error in remotestart!");
+					usleep(1000);
 					return ret;
 				}
 				ret= message_route_settracetarget(message,trace_node);
