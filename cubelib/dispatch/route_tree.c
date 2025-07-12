@@ -1401,7 +1401,7 @@ void * _find_flowtype_node(NODE_LIST * hash_list,BYTE * comp_uuid,enum message_f
 
 	while(curr_head != & hash_list->head.list)
 	{
-        curr_record=List_entry(curr_head,Record_List,list);
+        	curr_record=List_entry(curr_head,Record_List,list);
 		trace_node=curr_record->record;
 		if(trace_node==NULL)
 			return NULL;
@@ -1414,7 +1414,8 @@ void * _find_flowtype_node(NODE_LIST * hash_list,BYTE * comp_uuid,enum message_f
 			}
 			else
 			{
-				return curr_record;
+				if(flow !=MSG_FLOW_ASPECT)
+					return curr_record;
 			}	
 		}
 		curr_head=curr_head->next;		
