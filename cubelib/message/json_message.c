@@ -142,13 +142,14 @@ int json_2_message(char * json_str,void ** message)
 		if(msg_expand==NULL)
 			return -ENOMEM;
 
-		ret=json_2_struct(curr_expand,msg_expand,message_get_expand_template());
-		if(ret<0)
-			return ret;
 
 		void * tempnode;
 		if((tempnode=json_find_elem("expand",curr_expand))!=NULL)
 		{
+			ret=json_2_struct(curr_expand,msg_expand,message_get_expand_template());
+			if(ret<0)
+				return ret;
+
 			curr_expand_template=memdb_get_template(msg_expand->type,msg_expand->subtype);
 			if(curr_expand_template==NULL)
 				return -EINVAL;
@@ -159,16 +160,24 @@ int json_2_message(char * json_str,void ** message)
 			ret=json_2_struct(tempnode,msg_expand->expand,curr_expand_template);
 			if(ret<0)
 				return ret;
+        		message_add_expand(msg_box,msg_expand);
 		}
 		else
 		{
 			ret=json_2_struct(curr_expand,msg_expand,message_get_expand_bin_template());
 			if(ret<0)
 				return ret;
-			
+			int expand_headsize= sizeof(*msg_expand)-sizeof(void *);
+			int blob_size = msg_expand->data_size+expand_headsize;
+			BYTE * blob = Talloc0(blob_size);
+			if(blob==NULL)
+				return -ENOMEM;
+			Memcpy(blob,msg_expand,expand_headsize);
+			Memcpy(blob+expand_headsize,msg_expand->expand,msg_expand->data_size);
+			message_add_expand_blob(msg_box,blob_size,blob);
+			Free(blob);
 		}
 		
-        	message_add_expand(msg_box,msg_expand);
         	curr_expand=json_get_next_child(expand_node);
 
 	}

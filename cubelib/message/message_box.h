@@ -43,6 +43,7 @@ struct message_box
 int __message_add_record_site(void * message,int increment);
 int __message_alloc_record_site(void * message);
 void * message_get_expand_template();
+void * message_get_expand_bin_template();
 
 struct tag_msg_kits
 {

@@ -1528,7 +1528,6 @@ int router_dup_activemsg_info (void * message)
 	if(active_msg==message)
 	{
 		msg_head=message_get_head(message);
-	//	msg_head->ljump++;
 		return 0;
 	}
 	
