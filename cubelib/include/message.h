@@ -324,6 +324,7 @@ int message_record_struct2blob(void * message);
 int message_expand_struct2blob(void * message);
 int message_2_json(void * message,char * json_str);
 int json_2_message(char * json_str,void ** message);
+int json_2_clear_message(char * json_str,void ** message);
 int message_output_record_blob(void * message, BYTE ** blob);
 
 char * message_get_typestr(void * message);

@@ -121,7 +121,7 @@ int proc_log_msg_recover(void * sub_proc, char * filename,void * recv_msg)
 	if(read_size >=buf_size)
 		return -EINVAL;
 	
-	ret = json_2_message(buf,&new_msg);
+	ret = json_2_clear_message(buf,&new_msg);
 	if(new_msg == NULL)
 	{
 		print_cubeerr("log_msg_recover: message format error!");
