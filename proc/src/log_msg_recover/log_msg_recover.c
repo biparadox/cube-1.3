@@ -118,7 +118,7 @@ int proc_log_msg_recover(void * sub_proc, char * filename,void * recv_msg)
 			
 	read_size=read(fd,buf,buf_size);
 	
-	if(read_size >=buf_size)
+	if(read_size <0)
 		return -EINVAL;
 	
 	ret = json_2_clear_message(buf,&new_msg);
