@@ -2,7 +2,8 @@ CUBELIBPATH= ../../../cubelib
 CUBE_SYS_PATH= ../../
 dirs= echo_plugin file_dealer file_channel hello recordlib symm_crypt sm4crypt sys_plugin tcp_channel tcp_client \
 	 websocket_channel websocket_msgport echo_channel output_channel msgrecord_store msgfile_send msgrecord_print \
-	 msg2channel term_io msgtype_get record_find virtual_node http_fileserver_agent utc_timer file_sm4_crypt
+	 msg2channel term_io msgtype_get record_find virtual_node http_fileserver_agent utc_timer file_sm4_crypt \
+	 log_msg_recover
 all:
 	$(foreach N,$(dirs),make -C $(N);)
 clean:
