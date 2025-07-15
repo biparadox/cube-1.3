@@ -106,8 +106,11 @@ int proc_log_msg_recover(void * sub_proc, char * filename,void * recv_msg)
 	char * buf;
 	const int buf_size=DIGEST_SIZE*64;	
 	int read_size;
+	int message_size;
+	int left_size;
+	int offset;
+	int isend=0;
 
-	
 	fd=open(filename,O_RDONLY);
 	if(fd<0)
 		return -EIO;
@@ -115,35 +118,43 @@ int proc_log_msg_recover(void * sub_proc, char * filename,void * recv_msg)
 	buf = Talloc0(buf_size);
 	if(buf==NULL)
 		return -ENOMEM;
-			
-	read_size=read(fd,buf,buf_size);
+	left_size=0;
+		
+	offset=0;
+	do{	
+		read_size=read(fd,buf+left_size,buf_size-left_size);
+		if(read_size<=0)
+			break;
+		if(read_size<buf_size-left_size)
+			isend=1;
+		left_size+=read_size;
+		offset=0;
+		while(buf[offset]!='{')
+		{
+			offset++;
+			if(offset>=left_size-32)
+			{
+				Memcpy(buf,buf+offset,left_size-offset);
+				continue;		
+			}
+		}
 	
-	if(read_size >=buf_size)
-		return -EINVAL;
-	
-	ret = json_2_clear_message(buf,&new_msg);
-	if(new_msg == NULL)
-	{
-		print_cubeerr("log_msg_recover: message format error!");
-		return -EINVAL;
-	}
-/*	
-	ret=message_load_record(new_msg);
-	if(ret<0)
-	{
-		printf("load record failed!\n");
-		return ret;
-	}
-	ret=message_load_expand(new_msg);
-	if(ret<0)
-	{
-		printf("load expand failed!\n");
-		return ret;
-	}
-	*/
+		message_size = json_2_clear_message(buf+offset,&new_msg);
+		if(new_msg == NULL)
+		{
+			print_cubeerr("log_msg_recover: message format error!");
+			return -EINVAL;
+		}
+		message_set_activemsg(new_msg,recv_msg);
+		ex_module_sendmsg(sub_proc,new_msg);
+		usleep(infile_delay);
+		
+		left_size-=offset+message_size;
+		if(left_size<0)
+			return -EINVAL;
 
-	message_set_activemsg(new_msg,recv_msg);
-
-	ex_module_sendmsg(sub_proc,new_msg);
+		Memcpy(buf,buf+offset+message_size,left_size);
+	}while(isend==0);
+	close(fd);
 	return ret;
 }
